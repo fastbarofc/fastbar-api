@@ -1,0 +1,64 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\SectorController;
+use App\Http\Controllers\OfficeController;
+use App\Http\Controllers\CollaboratorController;
+use App\Http\Controllers\EventStatusController;
+use App\Http\Controllers\DecoratorController;
+use App\Http\Controllers\EventCaptureController;
+use App\Http\Controllers\KitController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\EventTypeController;
+use App\Http\Controllers\EventPlaceController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\PartnerController;
+
+    
+Route::controller(AuthController::class)->group(function () {
+    Route::post('/login', 'login')->name('login');
+    Route::post('/register', 'register')->name('register');
+    Route::post('/logout', 'logout')->middleware('auth:api')->name('logout');
+});
+
+Route::group(['middleware' => 'auth:api'], function () {
+
+    Route::resource('users', UserController::class)->except(['store']);
+    Route::post('users/{user}/sync-roles', [UserController::class, 'syncRoles'])->name('users.sync-roles');
+    Route::post('users/{user}/sync-permissions', [UserController::class, 'syncPermissions'])->name('users.sync-permissions');
+
+    Route::resource('collaborators', CollaboratorController::class);
+
+    Route::resource('roles', RoleController::class);
+    Route::post('roles/{role}/sync-permissions', [RoleController::class, 'syncPermissions'])->name('roles.sync-permissions');
+
+    Route::resource('permissions', PermissionController::class)->only(['index', 'show']);
+
+    Route::resource('sectors', SectorController::class);
+    Route::get('sectors/{sector}/offices', [SectorController::class, 'offices'])->name('sectors.offices');
+
+    Route::resource('offices', OfficeController::class);
+
+    Route::resource('event-statuses', EventStatusController::class);
+
+    Route::resource('decorators', DecoratorController::class);
+
+    Route::resource('event-captures', EventCaptureController::class);
+    
+    Route::resource('kits', KitController::class);
+
+    Route::resource('products', ProductController::class);
+
+    Route::resource('event-types', EventTypeController::class);
+
+    Route::resource('event-places', EventPlaceController::class);
+
+    Route::resource('events', EventController::class);
+
+    Route::resource('partners', PartnerController::class);
+});

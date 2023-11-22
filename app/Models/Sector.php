@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Cviebrock\EloquentSluggable\Sluggable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
+use OwenIt\Auditing\Auditable;
+
+class Sector extends Model implements AuditableInterface
+{
+    use HasFactory, SoftDeletes, Sluggable, Auditable;
+
+    protected $fillable = [
+        'name',
+        'slug'
+    ];
+
+    public function sluggable(): array
+    {
+        return [
+            'slug' => [
+                'source' => ['name']
+            ]
+        ];
+    }
+
+    public function offices()
+    {
+        return $this->hasMany(Office::class);
+    }
+}
