@@ -36,4 +36,9 @@ class Kit extends Model implements AuditableInterface
     {
         return $this->belongsTo(Kit::class);
     }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'kit_product')->withPivot(['value', 'optional']);
+    }
 }

@@ -24,12 +24,12 @@ class StoreEventRequest extends FormRequest
             'lease'              => 'required|numeric|min:0',
             'guests'             => 'required|numeric',
             'min_guests'         => 'required|numeric|min:1',
-            'date_time'               => 'required|date',
+            'date_time'          => 'required|date',
             'value_unit'         => 'required|string',
             'descont_unit'       => 'required|string',
-            'courtesy_parthenon' => 'string|max:255',
-            'courtesy_partner'   => 'string|max:255',
-            'courtesies'         => 'string|max:255',
+            'courtesy_parthenon' => 'nullable|string|max:255',
+            'courtesy_partner'   => 'nullable|string|max:255',
+            'courtesies'         => 'nullable|string|max:255',
         ];
     }
 

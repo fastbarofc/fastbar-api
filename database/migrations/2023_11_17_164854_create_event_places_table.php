@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('responsible');
             $table->string('description');
             $table->string('phone_1');
-            $table->string('phone_2');
+            $table->string('phone_2')->nullable();
             $table->string('email');
             $table->timestamps();
             $table->softDeletes();

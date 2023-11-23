@@ -20,7 +20,7 @@ class StorePartnerRequest extends FormRequest
             'responsible' => 'required|string|max:255',
             'email'       => 'required|email|unique:partners',
             'phone_1'     => 'required|string|max:20|celular_com_ddd',
-            'phone_2'     => 'string|max:20|celular_com_ddd',
+            'phone_2'     => 'nullable|string|max:20|celular_com_ddd',
         ];
     }
 

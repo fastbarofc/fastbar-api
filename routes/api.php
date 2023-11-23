@@ -18,6 +18,10 @@ use App\Http\Controllers\EventTypeController;
 use App\Http\Controllers\EventPlaceController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PartnerController;
+use App\Http\Controllers\CeremonialController;
+use App\Http\Controllers\EventGiftController;
+use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\UnitController;
 
     
 Route::controller(AuthController::class)->group(function () {
@@ -61,4 +65,12 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('events', EventController::class);
 
     Route::resource('partners', PartnerController::class);
+
+    Route::resource('ceremonials', CeremonialController::class);
+
+    Route::resource('event-gifts', EventGiftController::class);
+
+    Route::resource('materials', MaterialController::class);
+
+    Route::resource('units', UnitController::class);
 });
