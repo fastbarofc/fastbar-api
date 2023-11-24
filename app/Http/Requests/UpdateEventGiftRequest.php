@@ -17,7 +17,8 @@ class UpdateEventGiftRequest extends FormRequest
     {
         return [
             'description' => 'string|max:255|unique:event_gifts,description,' . $this->route('event_gift')->id,
-            'quantity'      => 'numeric|min:0',
+            'event_id'    => 'numeric|exists:events,id',
+            'quantity'    => 'numeric|min:0',
         ];
     }
 
@@ -27,8 +28,10 @@ class UpdateEventGiftRequest extends FormRequest
             'description.string' => 'O campo descrição deve ser uma string.',
             'description.max'    => 'O campo descrição deve ter no máximo 255 caracteres.',
             'description.unique' => 'Essa descrição já está sendo utiliada',
-            'quantity.numeric'     => 'O campo quantidade deve ser conter apenas números.',
-            'quantity.min'         => 'O campo quantidade não pode ser negativo',
+            'event_id.numeric'   => 'O campo ID do evento deve conter apenas números.',
+            'event_id.exists'    => 'O campo ID do evento deve ser um evento válida',
+            'quantity.numeric'   => 'O campo quantidade deve ser conter apenas números.',
+            'quantity.min'       => 'O campo quantidade não pode ser negativo',
         ];
     }
 }

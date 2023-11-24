@@ -17,11 +17,16 @@ class Eventkit extends Model implements AuditableInterface
         'value',
         'themed_table',
         'ordination',
-        'aptional',
+        'optional',
     ];
 
     public function kits()
     {
         return $this->belongsToMany(kit::class, 'kit_product')->withPivot(['value', 'themed_table', 'optional']);
+    }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'event_kit_product')->withPivot(['event_id', 'value', 'ordination', 'optional', 'average consumption ', 'quantity', 'comments ']);
     }
 }

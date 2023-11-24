@@ -22,6 +22,8 @@ use App\Http\Controllers\CeremonialController;
 use App\Http\Controllers\EventGiftController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\UnitController;
+use App\Http\Controllers\ExtraSaleController;
+use App\Http\Controllers\OfficeEventController;
 
     
 Route::controller(AuthController::class)->group(function () {
@@ -63,6 +65,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('event-places', EventPlaceController::class);
 
     Route::resource('events', EventController::class);
+    Route::get('events/{event}/gifts', [EventController::class, 'gifts'])->name('events.gifts');
+    Route::get('events/{event}/materials', [EventController::class, 'materials'])->name('events.materials');
 
     Route::resource('partners', PartnerController::class);
 
@@ -73,4 +77,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('materials', MaterialController::class);
 
     Route::resource('units', UnitController::class);
+
+    Route::resource('extra-sales', ExtraSaleController::class);
+
+    Route::resource('office-events', OfficeEventController::class);
 });

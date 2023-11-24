@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Models;
+
+use Cviebrock\EloquentSluggable\Sluggable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
+use OwenIt\Auditing\Auditable;
+
+class OfficeEvent extends Model implements AuditableInterface
+{
+    use HasFactory, SoftDeletes, Auditable, Sluggable;
+
+    protected $fillable = [
+        'description', 
+        'slug',
+        'daily',
+        'coordinator',
+        'date',
+    ];
+
+    public function sluggable(): array
+    {
+        return [
+            'slug' => [
+                'source' => ['description']
+            ]
+        ];
+    }
+}

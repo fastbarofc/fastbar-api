@@ -12,7 +12,8 @@ class EventGiftResource extends JsonResource
         return [
             'id'          => $this->id,
             'description' => $this->description,
-            'quantity'      => $this->quantity,
+            'event_id'    => $this->event_id,
+            'quantity'    => $this->quantity,
         ];
     }
 }

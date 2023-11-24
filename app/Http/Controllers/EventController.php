@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
+use App\Http\Resources\EventGiftResource;
+use App\Http\Resources\MaterialResource;
 use App\Models\Event;
 use App\Http\Resources\EventResource;
 
@@ -25,16 +27,28 @@ class EventController extends Controller
     {
         return response()->json(new EventResource($event), 200);
     }
-
+    
     public function update(UpdateEventRequest $request, Event $event)
     {
         $event->update($request->all());
         return response()->json(new EventResource($event), 200);
     }
-
+    
     public function destroy(Event $event)
     {
         $event->delete();
         return response()->json([], 204);
+    }
+
+    public function gifts(Event $event)
+    {
+        $gifts = $event->eventGifts;
+        return response()->json(EventGiftResource::collection($gifts), 200);
+    }
+
+    public function materials(Event $event)
+    {
+        $materials = $event->materials;
+        return response()->json(MaterialResource::collection($materials), 200);
     }
 }

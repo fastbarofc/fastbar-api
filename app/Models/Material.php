@@ -26,4 +26,9 @@ class Material extends Model implements AuditableInterface
             ]
         ];
     }
+
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'event_material');
+    }
 }

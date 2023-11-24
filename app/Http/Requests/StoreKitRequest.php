@@ -27,7 +27,7 @@ class StoreKitRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'kit_id.numeric'        => 'O campo ID do kit é deve conter apenas números.',
+            'kit_id.numeric'        => 'O campo ID do kit deve conter apenas números.',
             'name.required'         => 'O campo nome é obrigatório.',
             'name.string'           => 'O campo nome deve ser um texto.',
             'name.max'              => 'O campo nome deve ter no máximo 255 caracteres.',

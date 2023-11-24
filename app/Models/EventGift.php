@@ -15,6 +15,7 @@ class EventGift extends Model implements AuditableInterface
     protected $fillable = [
         'description',
         'slug',
+        'event_id',
         'quantity',
     ];
 

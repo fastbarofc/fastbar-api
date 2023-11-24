@@ -44,4 +44,9 @@ class Product extends Model implements AuditableInterface
     {
         return $this->belongsToMany(kit::class, 'kit_product')->withPivot(['value', 'optional']);
     }
+    
+    public function eventKits()
+    {
+        return $this->belongsToMany(EventKit::class, 'event_kit_product')->withPivot(['event_id', 'value', 'ordination', 'optional', 'average consumption ', 'quantity', 'comments ']);
+    }
 }

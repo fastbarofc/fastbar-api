@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('description');
             $table->string('slug');
+            $table->foreignId('event_id')->nullable()->constrained()->cascadeOnDelete();
             $table->integer('quantity');
             $table->timestamps();
             $table->softDeletes();

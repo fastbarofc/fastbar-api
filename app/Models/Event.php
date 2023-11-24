@@ -48,4 +48,18 @@ class Event extends Model implements AuditableInterface
     {
         return $this->belongsTo(EventPlace::class);
     }
+
+    public function officeEvents()
+    {
+        return $this->belongsToMany(OfficeEvent::class, 'event_office_event')->withPivot(['quantity']);
+    }
+
+    public function eventGifts() {
+        return $this->hasMany(EventGift::class);
+    }
+
+    public function materials()
+    {
+        return $this->belongsToMany(Material::class, 'event_material');
+    }
 }
