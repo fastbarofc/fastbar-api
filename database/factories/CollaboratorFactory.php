@@ -21,11 +21,14 @@ class CollaboratorFactory extends Factory
     {
         $email = $this->faker->unique()->safeEmail;
 
-        $user = User::factory()->state([
-            'email' => $email,
-        ])->create();
-
         $hasLogin = $this->faker->boolean;
+
+        if($hasLogin) {
+            $user = User::factory()->state([
+                'email' => $email,
+            ])->create();
+        }
+
 
         $office = Office::all()->random();
 

@@ -8,15 +8,13 @@ use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
-use App\Traits\IsPerson;
 
 class Collaborator extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable;
+    use HasFactory, SoftDeletes, Auditable;
 
     protected $fillable = [
         'name',
-        'slug',
         'nickname',
         'birth_date',
         'cpf',
@@ -29,14 +27,24 @@ class Collaborator extends Model implements AuditableInterface
         'has_login',
         'user_id'
     ];
-    
-    public function sluggable(): array
+
+    protected static function boot()
     {
-        return [
-            'slug' => [
-                'source' => ['name']
-            ]
-        ];
+        parent::boot();
+
+        static::creating(function ($model)
+        {
+            $model->cpf = preg_replace("/[^0-9]/", "", $model->cpf);
+            $model->phone_1 = preg_replace("/[^0-9]/", "", $model->phone_1);
+            $model->phone_2 = preg_replace("/[^0-9]/", "", $model->phone_2);
+        });
+
+        static::updating(function ($model)
+        {
+            $model->cpf = preg_replace("/[^0-9]/", "", $model->cpf);
+            $model->phone_1 = preg_replace("/[^0-9]/", "", $model->phone_1);
+            $model->phone_2 = preg_replace("/[^0-9]/", "", $model->phone_2);
+        });
     }
 
     public function sector()

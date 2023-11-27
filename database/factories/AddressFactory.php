@@ -21,12 +21,12 @@ class AddressFactory extends Factory
         $city = City::all()->random();
 
         return [
-            'street'    => $this->faker->sentence(),
-            'zip_code'  => Address::postcode(),
-            'number'    => $this->faker->randomNumber(5, false),
-            'district'  => $this->faker->city(),
-            'city_id'   => $city->id,
-            'state_id'  => $city->state_id,
+            'street'     => $this->faker->streetName,
+            'district'   => $this->faker->city,
+            'city_id'    => $city->id,
+            'state_id'   => $city->state_id,
+            'number'     => $this->faker->numerify('###'),
+            'zip_code'   => $this->faker->numerify('#####-###'),
         ];
     }
 }

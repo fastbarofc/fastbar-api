@@ -67,6 +67,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('events', EventController::class);
     Route::get('events/{event}/gifts', [EventController::class, 'gifts'])->name('events.gifts');
     Route::get('events/{event}/materials', [EventController::class, 'materials'])->name('events.materials');
+    Route::get('events/{event}/extra-sales', [EventController::class, 'extraSales'])->name('events.extra-sales');
 
     Route::resource('partners', PartnerController::class);
 

@@ -62,4 +62,12 @@ class Event extends Model implements AuditableInterface
     {
         return $this->belongsToMany(Material::class, 'event_material');
     }
+
+    public function extraSales() {
+        return $this->hasMany(ExtraSale::class);
+    }
+
+    public function eventKits() {
+        return $this->hasMany(EventKit::class);
+    }
 }

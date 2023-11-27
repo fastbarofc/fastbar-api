@@ -8,11 +8,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
 
-class Eventkit extends Model implements AuditableInterface
+class EventKit extends Model implements AuditableInterface
 {
     use HasFactory, HasFactory, SoftDeletes, Auditable;
 
     protected $fillable = [
+        'name',
+        'event_kit_id',
+        'event_id',
         'name',
         'value',
         'themed_table',
@@ -20,9 +23,14 @@ class Eventkit extends Model implements AuditableInterface
         'optional',
     ];
 
-    public function kits()
+    public function event()
     {
-        return $this->belongsToMany(kit::class, 'kit_product')->withPivot(['value', 'themed_table', 'optional']);
+        return $this->belongsTo(Kit::class);
+    }
+
+    public function kit()
+    {
+        return $this->belongsTo(Kit::class);
     }
 
     public function products()

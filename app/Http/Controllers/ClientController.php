@@ -7,7 +7,6 @@ use App\Http\Requests\UpdateClientRequest;
 use App\Http\Resources\ClientResource;
 use App\Models\Client;
 use App\Models\User;
-use App\Models\Person;
 
 class ClientController extends Controller
 {
@@ -23,10 +22,10 @@ class ClientController extends Controller
 
         $client = Client::create($data);
 
-        if (!empty($data['has_login'])) {
-            $data['password'] = bcrypt($data['password']);
-            $user = User::create($data);
-            $client->update(['user_id' => $user->id]);
+        if($client->type == Client::TYPE_FISICAL) {
+            $client->fisicalPerson()->create($data);
+        } else {
+            $client->legalPerson()->create($data);
         }
 
         return response()->json(new ClientResource($client), 201);
@@ -42,13 +41,10 @@ class ClientController extends Controller
         $data = $request->all();
         $client->update($data);
 
-        if (!empty($data['has_login'])) {
-            $user = User::updateOrCreate(['id' => $client->user_id], [
-                'name'     => $data['name'],
-                'email'    => $data['email'],
-                'password' => bcrypt($data['password'])
-            ]);
-            $client->update(['user_id' => $user->id]);
+        if($client->type == Client::TYPE_FISICAL) {
+            $client->fisicalPerson()->update($data);
+        } else {
+            $client->legalPerson()->update($data);
         }
 
         return response()->json(new ClientResource($client), 200);
@@ -56,10 +52,14 @@ class ClientController extends Controller
     
     public function destroy(Client $client)
     {
-        if($client->user) {
-            $client->user->delete();
+        if($client->type == Client::TYPE_FISICAL) {
+            $client->fisicalPerson()->delete();
+        } else {
+            $client->legalPerson()->delete();
         }
+
         $client->delete();
         return response()->json([], 204);
     }
+    
 }

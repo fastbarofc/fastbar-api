@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\UniqueCpf;
 
 class StoreClientRequest extends FormRequest
 {
@@ -20,7 +19,7 @@ class StoreClientRequest extends FormRequest
             'name'       => 'required|string|max:255|unique:clients',
             'nickname'   => 'string|max:255',
             'birth_date' => 'date',
-            'cpf'        => ['string', 'max:14', 'cpf', new UniqueCpf],
+            'cpf'        => ['string', 'max:14', 'cpf'],
             'rg'         => 'string|max:20',
             'phone_1'    => 'required|string|max:20|celular_com_ddd',
             'phone_2'    => 'string|max:20|celular_com_ddd',

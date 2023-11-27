@@ -22,6 +22,23 @@ class Partner extends Model implements AuditableInterface
         'phone_2',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model)
+        {
+            $model->phone_1 = preg_replace("/[^0-9]/", "", $model->phone_1);
+            $model->phone_2 = preg_replace("/[^0-9]/", "", $model->phone_2);
+        });
+
+        static::updating(function ($model)
+        {
+            $model->phone_1 = preg_replace("/[^0-9]/", "", $model->phone_1);
+            $model->phone_2 = preg_replace("/[^0-9]/", "", $model->phone_2);
+        });
+    }
+
     public function sluggable(): array
     {
         return [

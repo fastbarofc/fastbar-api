@@ -7,8 +7,6 @@ use App\Http\Requests\UpdateCollaboratorRequest;
 use App\Http\Resources\CollaboratorResource;
 use App\Models\Collaborator;
 use App\Models\User;
-use App\Models\Person;
-use App\Models\FisicalPerson;
 use App\Models\Address;
 
 class CollaboratorController extends Controller
@@ -101,7 +99,6 @@ class CollaboratorController extends Controller
         if($collaborator->user) {
             $collaborator->user->delete();
         }
-        $person = Person::where('id', $collaborator->person_id)->first();
         $collaborator->delete();
         return response()->json([], 204);
     }

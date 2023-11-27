@@ -28,11 +28,13 @@ class FisicalPerson extends Model implements AuditableInterface
         static::creating(function ($model)
         {
             $model->cpf = preg_replace("/[^0-9]/", "", $model->cpf);
+            $model->rg = preg_replace("/[^0-9]/", "", $model->rg);
         });
 
         static::updating(function ($model)
         {
             $model->cpf = preg_replace("/[^0-9]/", "", $model->cpf);
+            $model->rg = preg_replace("/[^0-9]/", "", $model->rg);
         });
     }
 

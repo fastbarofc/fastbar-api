@@ -29,4 +29,9 @@ class OfficeEvent extends Model implements AuditableInterface
             ]
         ];
     }
+
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'event_office_event')->withPivot(['quantity']);
+    }
 }

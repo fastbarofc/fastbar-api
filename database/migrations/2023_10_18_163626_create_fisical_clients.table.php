@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('clients', function (Blueprint $table) {
+        Schema::create('fisical_clients', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('fisical_person_id')->constrained('fisical_people');
-            $table->string('how_met')->nullable();
+            $table->string('name');
+            $table->string('nickname')->nullable();
+            $table->date('birth_date')->nullable();
+            $table->string('cpf')->unique();
+            $table->string('rg')->nullable();
+            $table->foreignId('client_id')->constrained();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -25,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('clients');
+        Schema::dropIfExists('fisical_clients');
     }
 };

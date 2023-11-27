@@ -6,8 +6,10 @@ use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use App\Http\Resources\EventGiftResource;
 use App\Http\Resources\MaterialResource;
-use App\Models\Event;
 use App\Http\Resources\EventResource;
+use App\Http\Resources\ExtraSaleResource;
+use App\Http\Resources\EventKitResource;
+use App\Models\Event;
 
 class EventController extends Controller
 {
@@ -50,5 +52,17 @@ class EventController extends Controller
     {
         $materials = $event->materials;
         return response()->json(MaterialResource::collection($materials), 200);
+    }
+    
+    public function extraSales(Event $event)
+    {
+        $extraSales = $event->extraSales;
+        return response()->json(ExtraSaleResource::collection($extraSales), 200);
+    }  
+
+    public function eventKits(Event $event)
+    {
+        $eventKit = $event->eventKits;
+        return response()->json(EventKitResource::collection($eventKit), 200);
     }
 }
