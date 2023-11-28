@@ -19,7 +19,7 @@ class Product extends Model implements AuditableInterface
         'description',
         'group',
         'barcode',
-        'unit',
+        'unit_id',
         'weight',
         'manufatturer',
         'value',
@@ -38,6 +38,11 @@ class Product extends Model implements AuditableInterface
                 'source' => ['name']
             ]
         ];
+    }
+
+    public function unit() 
+    {
+        return $this->belongsTo(Unit::class);
     }
 
     public function kits()

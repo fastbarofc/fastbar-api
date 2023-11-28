@@ -3,21 +3,22 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Unit;
+use App\Models\Event;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ExtraSale>
- */
 class ExtraSaleFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
+        $unit = Unit::all()->random();
+        $event = Event::all()->random();
+
         return [
-            //
+            'description' => $this->faker->sentence(3, true),
+            'unit_id'     => $unit->id,
+            'quantity'    => $this->faker->numberBetween(10, 40),
+            'value_unit'  => $this->faker->numberBetween(10, 300),
+            'event_id'    => $event->id,
         ];
     }
 }

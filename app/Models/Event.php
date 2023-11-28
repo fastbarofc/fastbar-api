@@ -16,7 +16,6 @@ class Event extends Model implements AuditableInterface
     protected $fillable = [
         'name',
         'slug',
-        'responsible',
         'event_type_id',
         'event_place_id',
         'lease',

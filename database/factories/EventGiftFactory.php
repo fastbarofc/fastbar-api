@@ -3,21 +3,17 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Event;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\EventGift>
- */
 class EventGiftFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
+        $event = Event::all()->random();
         return [
-            //
+            'description'=> $this->faker->word,
+            'event_id'=> $event->id,
+            'quantity'=> $this->faker->numberBetween($min = 10, $max = 30),
         ];
     }
 }

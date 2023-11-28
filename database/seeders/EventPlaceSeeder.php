@@ -8,9 +8,6 @@ use App\Models\EventPlace;
 
 class EventPlaceSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         EventPlace::factory(10)->hasAddress()->create();

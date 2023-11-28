@@ -3,21 +3,22 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Unit;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
- */
 class ProductFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
+        $unit = Unit::all()->random();
+
         return [
-            //
+            'name'              => $this->faker->unique()->word,
+            'description'       => $this->faker->words(3, true),
+            'unit_id'           => $unit->id,
+            'value'             => $this->faker->randomFloat(2, 20, 3000),
+            'marketable'        => $this->faker->boolean,
+            'display_checklist' => $this->faker->boolean,
+            'own_production'    => $this->faker->boolean,
         ];
     }
 }

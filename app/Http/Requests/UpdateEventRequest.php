@@ -18,7 +18,6 @@ class UpdateEventRequest extends FormRequest
     {
         return [
             'name'               => 'string|max:255|unique:events,name,' . $this->event->id,
-            'responsible'        => 'string|max:255',
             'event_type_id'      => 'exists:event_types,id',
             'event_place_id'     => 'exists:event_places,id',
             'lease'              => 'numeric|min:0',
@@ -39,9 +38,6 @@ class UpdateEventRequest extends FormRequest
             'name.string'               => 'O campo nome deve ser uma string',
             'name.max'                  => 'O campo nome deve ter no máximo 255 caracteres.',
             'name.unique'               => 'O nome informado já está em uso',
-            'responsible.required'      => 'O campo responsável é obrigatório',
-            'responsible.string'        => 'O campo responsável deve ser uma string',
-            'responsible.max'           => 'O campo responsável deve ter no máximo 255 caracteres.',
             'event_type_id.exists'      => 'O campo tipo de evento deve ser um tipo válido.',
             'event_place_id.exists'     => 'O campo local do evento deve ser um local válido.',
             'lease.string'              => 'O campo aluguel deve ser uma string',

@@ -4,20 +4,15 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Kit>
- */
 class KitFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            //
+            'name'=> $this->faker->name,
+            'themed_table'=> $this->faker->boolean,
+            'optional'=> $this->faker->boolean,
+            'value'=> $this->faker->randomFloat(2, 20, 1500),
         ];
     }
 }

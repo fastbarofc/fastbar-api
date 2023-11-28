@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('description');
             $table->string('group')->nullable();
             $table->string('barcode')->nullable();
-            $table->string('unit');
+            $table->foreignId('unit_id')->constrained();
             $table->float('weight')->nullable();
             $table->string('manufacturer')->nullable();
             $table->decimal('value', 9, 2)->default(0);

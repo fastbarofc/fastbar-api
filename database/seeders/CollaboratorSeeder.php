@@ -8,9 +8,6 @@ use App\Models\Collaborator;
 
 class CollaboratorSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         Collaborator::truncate();

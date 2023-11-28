@@ -24,8 +24,9 @@ use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\ExtraSaleController;
 use App\Http\Controllers\OfficeEventController;
+use App\Models\City;
+use App\Models\State;
 
-    
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
     Route::post('/register', 'register')->name('register');
@@ -33,11 +34,19 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 Route::group(['middleware' => 'auth:api'], function () {
+    
+    Route::get('states', function() {
+        return State::all();
+    });
+    
+    Route::get('cities/{state}', function(Request $request, State $state) {
+        return City::where('state_id', $state->id)->get();
+    });
 
     Route::resource('users', UserController::class)->except(['store']);
     Route::post('users/{user}/sync-roles', [UserController::class, 'syncRoles'])->name('users.sync-roles');
     Route::post('users/{user}/sync-permissions', [UserController::class, 'syncPermissions'])->name('users.sync-permissions');
-
+    
     Route::resource('collaborators', CollaboratorController::class);
 
     Route::resource('roles', RoleController::class);
@@ -82,4 +91,5 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('extra-sales', ExtraSaleController::class);
 
     Route::resource('office-events', OfficeEventController::class);
+
 });

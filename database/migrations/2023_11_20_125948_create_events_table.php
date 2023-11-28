@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug');
-            $table->string('responsible');
             $table->foreignId('event_type_id')->constrained();
             $table->foreignId('event_place_id')->constrained();
             $table->decimal('lease');
