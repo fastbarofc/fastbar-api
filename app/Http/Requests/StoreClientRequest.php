@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Validator;
 
 class StoreClientRequest extends FormRequest
 {
@@ -15,7 +16,7 @@ class StoreClientRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $data = [
             'name'       => 'required|string|max:255|unique:clients',
             'nickname'   => 'string|max:255',
             'birth_date' => 'date',
@@ -26,6 +27,12 @@ class StoreClientRequest extends FormRequest
             'email'      => 'email|unique:clients',
             'how_met'    => 'required|string|max:255'
         ];
+
+        if ($this->request->all()['address']) {
+            $this->validateAddress($this->request->all()['address']);
+        }
+
+        return $data;
     }
 
     public function messages(): array
@@ -55,5 +62,34 @@ class StoreClientRequest extends FormRequest
             'how_met.string'          => 'O campo como conheceu deve ser uma string.',
             'how_met.max'             => 'O campo como conheceu deve ter no máximo 255 caracteres.',
         ];
+    }
+
+    public function validateAddress(array $data) {
+        $validator = Validator::make($data, [
+            'street' => ['required', 'string'],
+            'district' => ['required', 'string'],
+            'complement' => ['nullable', 'string'],
+            'city_id' => ['required', 'exists:cities,id'],
+            'state_id' => ['required', 'exists:states,id'],
+            'number' => ['required'],
+            'zip_code' => ['required', 'formato_cep'],
+            'reference' => ['nullable', 'string'],
+        ],[
+            'street.required' => 'O campo rua é obrigatório',
+            'street.string' => 'O campo rua deve ser uma string',
+            'district.required' => 'O campo bairro é obrigatório',
+            'district.string' => 'O campo bairro deve ser uma string',
+            'complement.string' => 'O campo complemento deve ser uma string',
+            'city_id.required' => 'O campo city ID é obrigatório',
+            'city_id.exists' => 'O campo Cidade deve ser uma Cidade valida',
+            'state_id.required' => 'O campo state ID é obrigatório',
+            'state_id.exists' => 'O campo Estado deve ser um Estado valido',
+            'number.required' => 'O campo número é obrigatório',
+            'zip_code.required' => 'O campo CEP é obrigatório',
+            'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido',
+            'referencia.string' => 'O campo referencia deve ser uma string',
+        ]);
+
+        $validator->validate();
     }
 }

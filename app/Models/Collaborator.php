@@ -66,4 +66,9 @@ class Collaborator extends Model implements AuditableInterface
     {
         return $this->morphOne(Address::class, 'addressable');
     }
+
+    public function qualification() 
+    {
+        return $this->belongsToMany(Qualification::class, 'collaborator_qualification')->withPivot(['points']);
+    }
 }

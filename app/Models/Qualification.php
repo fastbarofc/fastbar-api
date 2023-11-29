@@ -13,7 +13,7 @@ class Qualification extends Model implements AuditableInterface
     use HasFactory, SoftDeletes, Auditable;
 
     protected $fillable = [
-        'name',
+        'description',
         'slug'
     ];
 
@@ -21,8 +21,13 @@ class Qualification extends Model implements AuditableInterface
     {
         return [
             'slug' => [
-                'source' => ['name']
+                'source' => ['description']
             ]
         ];
+    }
+
+    public function collaborator()
+    {
+        return $this->belongsToMany(Collaborator::class, 'collaborator_qualification')->withPivot(['points']);
     }
 }

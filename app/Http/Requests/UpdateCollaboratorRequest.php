@@ -99,8 +99,7 @@ class UpdateCollaboratorRequest extends FormRequest
             'zip_code.required' => 'O campo CEP é obrigatório',
             'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido',
             'referencia.string' => 'O campo referencia deve ser uma string',
-            
-    ]);
+        ]);
 
         $validator->validate();
     }

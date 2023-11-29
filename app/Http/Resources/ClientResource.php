@@ -26,7 +26,8 @@ class ClientResource extends JsonResource
             'fantasy_name' => $this->fantasy_name,
             'cnpj'     => $this->cnpj,
             'ie'    => $this->ie,
-            'im'   => $this->im
+            'im'   => $this->im,
+            'address'    => new AddressResource($this->address),
         ];
     }
 }

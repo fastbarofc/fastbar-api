@@ -34,6 +34,11 @@ class Client extends Model implements AuditableInterface
         });
     }
 
+    public function address()
+    {
+        return $this->morphOne(Address::class, 'addressable');
+    }
+    
     public function fisicalClient()
     {
         return $this->hasOne(FisicalClient::class);
@@ -46,51 +51,56 @@ class Client extends Model implements AuditableInterface
 
     public function getCpfAttribute()
     {
-        return $this->fisicalClient->cpf;
+        return !empty($this->fisicalClient) ? $this->fisicalClient->cpf : null; 
     }
 
     public function getCnpjAttribute()
     {
-        return $this->legalClient->cnpj;
+        return !empty($this->legalClient) ? $this->legalClient->cnpj : null;
     }
 
     public function getRgAttribute()
     {
-        return $this->fisicalClient->rg;
+        return !empty($this->fisicalClient) ? $this->fisicalClient->rg : null;
     }
 
     public function getImAttribute()
     {
-        return $this->legalClient->im;
+        return !empty($this->legalClient) ? $this->legalClient->im : null;
     }
 
     public function getIeAttribute()
     {
-        return $this->legalClient->ie;
+        return !empty($this->legalClient) ? $this->legalClient->ie : null;
     }
 
     public function getBirthDateAttribute()
     {
-        return $this->fisicalClient->birth_date;
+        return !empty($this->fisicalClient) ? $this->fisicalClient->birth_date : null;
     }
 
     public function getNameAttribute()
     {
-        return $this->fisicalClient->name;
+        return !empty($this->fisicalClient) ? $this->fisicalClient->name : null;
     }
 
     public function getCompanyNameAttribute()
     {
-        return $this->legalClient->company_name;
+        return !empty($this->legalClient) ? $this->legalClient->company_name : null;
     }
 
     public function getFantasyNameAttribute()
     {
-        return $this->legalClient->fantasy_name;
+        return !empty($this->legalClient) ? $this->legalClient->fantasy_name : null;
     }
 
     public function getNicknameAttribute()
     {
-        return $this->fisicalClient->nickname;
+        return !empty($this->fisicalClient) ? $this->fisicalClient->nickname : null;
     }
+
+    public function event()
+    {
+        return $this->belongsToMany(Event::class, 'client_event')->withPivot(['main']);
+    }    
 }

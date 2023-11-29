@@ -69,4 +69,9 @@ class Event extends Model implements AuditableInterface
     public function eventKits() {
         return $this->hasMany(EventKit::class);
     }
+
+    public function client()
+    {
+        return $this->belongsToMany(Client::class, 'client_event')->withPivot(['main']);
+    }
 }

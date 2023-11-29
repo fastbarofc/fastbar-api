@@ -4,20 +4,13 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\BlockedDate>
- */
 class BlockedDateFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            //
+            'date'=> $this->faker->unique()->dateTimeBetween('now', '+1 years'),
+            'description'=> $this->faker->streetName
         ];
     }
 }

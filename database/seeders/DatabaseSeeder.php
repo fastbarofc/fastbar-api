@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             EventSeeder::class,
             EventGiftSeeder::class,
             ExtraSaleSeeder::class,
+            BlockedDateSeeder::class,
         ]);
     }
 }

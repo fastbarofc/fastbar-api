@@ -6,12 +6,26 @@ use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use App\Http\Resources\ClientResource;
 use App\Models\Client;
+use App\Models\FisicalClient;
 use App\Models\User;
+use Illuminate\Http\Request;
+use App\Models\Address;
 
 class ClientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        if (!empty($request->type) && $request->type == Client::TYPE_FISICAL) {
+            $fisicalClients = Client::where('type', Client::TYPE_FISICAL)->get();
+            return response()->json(ClientResource::collection($fisicalClients), 200);
+        }
+        
+        if (!empty($request->type) && $request->type == Client::TYPE_LEGAL) {
+            $legalClients = Client::where('type', Client::TYPE_LEGAL)->get();
+            return response()->json(ClientResource::collection($legalClients), 200);
+        }
+
+
         $clients = Client::all();
         return response()->json(ClientResource::collection($clients), 200);
     }
@@ -26,6 +40,22 @@ class ClientController extends Controller
             $client->fisicalPerson()->create($data);
         } else {
             $client->legalPerson()->create($data);
+        }
+
+        if (!empty($data['address'])) {
+            $address = $data['address'];
+            Address::create([
+               'addressable_id'      => $client->id,
+               'addressable_type'    => Client::class,
+               'street'             => $address['street'],
+               'district'             => $address['district'],
+               'complement'             => $address['complement'],
+               'city_id'             => $address['city_id'],
+               'state_id'             => $address['state_id'],
+               'number'             => $address['number'],
+               'zip_code'             => $address['zip_code'],
+               'reference'             => $address['reference'],
+            ]);
         }
 
         return response()->json(new ClientResource($client), 201);
@@ -61,5 +91,4 @@ class ClientController extends Controller
         $client->delete();
         return response()->json([], 204);
     }
-    
 }

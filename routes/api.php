@@ -24,6 +24,7 @@ use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\ExtraSaleController;
 use App\Http\Controllers\OfficeEventController;
+use App\Http\Controllers\ClientController;
 use App\Models\City;
 use App\Models\State;
 
@@ -77,6 +78,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('events/{event}/gifts', [EventController::class, 'gifts'])->name('events.gifts');
     Route::get('events/{event}/materials', [EventController::class, 'materials'])->name('events.materials');
     Route::get('events/{event}/extra-sales', [EventController::class, 'extraSales'])->name('events.extra-sales');
+    Route::get('events/{event}/event-kits', [EventController::class, 'extraKits'])->name('events.event-kits');
 
     Route::resource('partners', PartnerController::class);
 
@@ -91,5 +93,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('extra-sales', ExtraSaleController::class);
 
     Route::resource('office-events', OfficeEventController::class);
+
+    Route::resource('clients', ClientController::class);
 
 });
