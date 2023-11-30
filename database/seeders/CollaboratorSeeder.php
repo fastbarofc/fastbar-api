@@ -10,7 +10,6 @@ class CollaboratorSeeder extends Seeder
 {
     public function run(): void
     {
-        Collaborator::truncate();
         Collaborator::factory(10)->create();
     }
 }

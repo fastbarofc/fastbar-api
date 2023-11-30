@@ -25,6 +25,7 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\ExtraSaleController;
 use App\Http\Controllers\OfficeEventController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ContractController;
 use App\Models\City;
 use App\Models\State;
 
@@ -96,4 +97,5 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::resource('clients', ClientController::class);
 
+    Route::resource('contracts', ContractController::class);
 });

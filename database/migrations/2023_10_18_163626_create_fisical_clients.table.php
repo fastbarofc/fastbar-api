@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('fisical_clients', function (Blueprint $table) {
@@ -16,7 +13,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('nickname')->nullable();
             $table->date('birth_date')->nullable();
-            $table->string('cpf')->unique();
+            $table->string('cpf')->nullable()->unique();
             $table->string('rg')->nullable();
             $table->foreignId('client_id')->constrained();
             $table->timestamps();
@@ -24,9 +21,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('fisical_clients');

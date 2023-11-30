@@ -12,11 +12,6 @@ use App\Models\User;
  */
 class CollaboratorFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $email = $this->faker->unique()->safeEmail;

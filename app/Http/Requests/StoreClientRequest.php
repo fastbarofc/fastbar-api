@@ -17,15 +17,18 @@ class StoreClientRequest extends FormRequest
     public function rules(): array
     {
         $data = [
+            'type'    => 'required|string|in:pf,pj',
+            'how_met'    => 'required|string|max:255',
+            'email'      => 'nullable|email|unique:clients',
+            'phone_1'    => 'nullable|string|max:20|celular_com_ddd',
+            'phone_2'    => 'nullable|string|max:20|celular_com_ddd',
+            //fiz até aqui em cima
+            //acho que tenho que adicionar os campos de fisical e legal aqui tbm, pq ele podem ser nullable
             'name'       => 'required|string|max:255|unique:clients',
             'nickname'   => 'string|max:255',
             'birth_date' => 'date',
             'cpf'        => ['string', 'max:14', 'cpf'],
             'rg'         => 'string|max:20',
-            'phone_1'    => 'required|string|max:20|celular_com_ddd',
-            'phone_2'    => 'string|max:20|celular_com_ddd',
-            'email'      => 'email|unique:clients',
-            'how_met'    => 'required|string|max:255'
         ];
 
         if ($this->request->all()['address']) {

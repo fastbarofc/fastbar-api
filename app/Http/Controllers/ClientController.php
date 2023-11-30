@@ -37,9 +37,9 @@ class ClientController extends Controller
         $client = Client::create($data);
 
         if($client->type == Client::TYPE_FISICAL) {
-            $client->fisicalPerson()->create($data);
+            $client->fisicalClient()->create($data);
         } else {
-            $client->legalPerson()->create($data);
+            $client->legalClient()->create($data);
         }
 
         if (!empty($data['address'])) {
@@ -72,9 +72,9 @@ class ClientController extends Controller
         $client->update($data);
 
         if($client->type == Client::TYPE_FISICAL) {
-            $client->fisicalPerson()->update($data);
+            $client->fisicalClient()->update($data);
         } else {
-            $client->legalPerson()->update($data);
+            $client->legalClient()->update($data);
         }
 
         return response()->json(new ClientResource($client), 200);
@@ -83,9 +83,9 @@ class ClientController extends Controller
     public function destroy(Client $client)
     {
         if($client->type == Client::TYPE_FISICAL) {
-            $client->fisicalPerson()->delete();
+            $client->fisicalClient()->delete();
         } else {
-            $client->legalPerson()->delete();
+            $client->legalClient()->delete();
         }
 
         $client->delete();
