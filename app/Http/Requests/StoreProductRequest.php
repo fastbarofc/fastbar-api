@@ -59,9 +59,12 @@ class StoreProductRequest extends FormRequest
             'supplier.string'             => 'O campo fornecedor deve ser uma string.',
             'supplier.max'                => 'O campo fornecedor deve ter no máximo 255 caracteres.',
             'marketable.required'         => 'O campo comercializável é obrigatório.',
+            'marketable.boolean'          => 'O campo comercializável deve ser um formato válido.',
             'average_consumption.numeric' => 'O campo consumo médio deve conter apenas números.',
             'display_checklist.required'  => 'O campo checklist é obrigatório.',
+            'display_checklist.boolean'   => 'O campo checklist deve estar em formato válido.',
             'own_production.required'     => 'O campo produção própria é obrigatório.',
+            'own_production.boolean'      => 'O campo produção própria estar em formato válido.',
             'recipe_yield.numeric'        => 'O campo rendimento deve conter apenas números.',
         ];
     }

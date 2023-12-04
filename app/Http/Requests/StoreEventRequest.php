@@ -16,8 +16,8 @@ class StoreEventRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
-            'name'               => 'required|string|max:255|unique:events,name',
+        $data = [
+            'name'               => 'required|string|max:255',
             'event_type_id'      => 'required|exists:event_types,id',
             'event_place_id'     => 'required|exists:event_places,id',
             'lease'              => 'required|numeric|min:0',
@@ -29,7 +29,15 @@ class StoreEventRequest extends FormRequest
             'courtesy_parthenon' => 'nullable|string|max:255',
             'courtesy_partner'   => 'nullable|string|max:255',
             'courtesies'         => 'nullable|string|max:255',
+            'materials'          => 'nullable|array',
+            'materials.*'        => 'exists:materials,id',
+            'office_events'      => 'nullable|array',
+            'office_events.*'    => 'exists:office_events,id',
+            'clients'            => 'nullable|array',
+            'clients.*'          => 'exists:clients,id',
         ];
+
+        return $data;
     }
 
     public function messages(): array
@@ -38,7 +46,6 @@ class StoreEventRequest extends FormRequest
             'name.required'             => 'O campo nome é obrigatório',
             'name.string'               => 'O campo nome deve ser uma string',
             'name.max'                  => 'O campo nome deve ter no máximo 255 caracteres.',
-            'name.unique'               => 'O nome informado já está em uso',
             'event_type_id.required'    => 'O campo tipo de evento é obrigatório',
             'event_type_id.exists'      => 'O campo tipo de evento deve ser um tipo válido.',
             'event_place_id.required'   => 'O campo local do evento é obrigatório',
@@ -64,6 +71,9 @@ class StoreEventRequest extends FormRequest
             'courtesy_partner.max'      => 'O campo cortesia parceiro deve ter no máximo 255 caracteres.',
             'courtesies.string'         => 'O campo cortesias deve ser uma string',
             'courtesies.max'            => 'O campo cortesias deve ter no máximo 255 caracteres.',
+            'materials.*.exists'        => 'O campo ID do material deve ser um ID válido.',
+            'office_events.*.exists'    => 'O campo ID função do evento deve ser um ID válido.',
+            'clients.*.exists'          => 'O campo ID do cliente deve ser um ID válido.',
         ];
     }
 }

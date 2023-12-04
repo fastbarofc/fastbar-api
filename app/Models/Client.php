@@ -99,7 +99,7 @@ class Client extends Model implements AuditableInterface
         return !empty($this->fisicalClient) ? $this->fisicalClient->nickname : null;
     }
 
-    public function event()
+    public function events()
     {
         return $this->belongsToMany(Event::class, 'client_event')->withPivot(['main']);
     }    

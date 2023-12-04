@@ -14,8 +14,6 @@ class File extends Model implements AuditableInterface
     use HasFactory, Auditable, SoftDeletes;
 
     protected $fillable = [
-        'fileable_id',
-        'fileable_type',
         'path',
         'name',
         'extension',

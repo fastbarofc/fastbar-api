@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class FileService
 {
-  public static function upload($file, $folder, $fileableId, $fileableType)
+  public static function upload($file, $folder)
   {
     $fullFileName = $file->getClientOriginalName();
     $filename     = explode('.', $fullFileName)[0];
@@ -18,9 +18,6 @@ class FileService
       'name'          => $filename,
       'path'          => $path,
       'extension'     => $extension,
-      
-      'fileable_id'   => $fileableId,
-      'fileable_type' => $fileableType,
     ]);
   }
 
@@ -31,5 +28,11 @@ class FileService
       return response()->download($filePath);
     }     
     abort(404, 'File Not Fount');
+  }
+
+  public static function delete(File $file)
+  {
+    Storage::disk('public')->delete($file->path);
+    $file->delete();
   }
 }

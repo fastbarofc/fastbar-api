@@ -17,18 +17,24 @@ class UpdateEventRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'               => 'string|max:255|unique:events,name,' . $this->event->id,
+            'name'               => 'string|max:255',
             'event_type_id'      => 'exists:event_types,id',
             'event_place_id'     => 'exists:event_places,id',
             'lease'              => 'numeric|min:0',
             'guests'             => 'numeric',
             'min_guests'         => 'numeric|min:1',
-            'date_time'          => 'required|date|after:now',
+            'date_time'          => 'date|after:now',
             'value_unit'         => 'string',
             'descont_unit'       => 'string',
             'courtesy_parthenon' => 'string|max:255',
             'courtesy_partner'   => 'string|max:255',
             'courtesies'         => 'string|max:255',
+            'materials'          => 'nullable|array',
+            'materials.*'        => 'exists:materials,id,' . $this->route('material')->id,
+            'office_events'      => 'nullable|array',
+            'office_events.*'    => 'exists:office_events,id,' . $this->route('office_event')->id,
+            'clients'            => 'nullable|array',
+            'clients.*'          => 'exists:clients,id,' . $this->route('client')->id,
         ];
     }
 
@@ -37,7 +43,6 @@ class UpdateEventRequest extends FormRequest
         return [
             'name.string'               => 'O campo nome deve ser uma string',
             'name.max'                  => 'O campo nome deve ter no máximo 255 caracteres.',
-            'name.unique'               => 'O nome informado já está em uso',
             'event_type_id.exists'      => 'O campo tipo de evento deve ser um tipo válido.',
             'event_place_id.exists'     => 'O campo local do evento deve ser um local válido.',
             'lease.string'              => 'O campo aluguel deve ser uma string',
@@ -45,7 +50,6 @@ class UpdateEventRequest extends FormRequest
             'guests.numeric'            => 'O campo convidados deve conter apenas números',
             'min_guests.numeric'        => 'O campo convidados mínimos deve conter apenas números',
             'min_guests.min'            => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
-            'date_time.required'        => 'O campo data e hora é obrigatório',
             'date_time.date'            => 'O campo data e hora deve ser uma data valida',
             'date_time.after'           => 'A data e hora devem ser maiores que a data e hora atuais.',
             'value_unit.string'         => 'O campo valor unitário deve ser uma string',
@@ -56,6 +60,9 @@ class UpdateEventRequest extends FormRequest
             'courtesy_partner.max'      => 'O campo cortesia parceiro deve ter no máximo 255 caracteres.',
             'courtesies.string'         => 'O campo cortesias deve ser uma string',
             'courtesies.max'            => 'O campo cortesias deve ter no máximo 255 caracteres.',
+            'materials.*.exists'        => 'O campo ID do material deve ser um ID válido.',
+            'office_events.*.exists'    => 'O campo ID função do evento deve ser um ID válido.',
+            'clients.*.exists'          => 'O campo ID do cliente deve ser um ID válido.',
         ];
     }
 }

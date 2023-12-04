@@ -29,6 +29,7 @@ class StoreCollaboratorRequest extends FormRequest
             'office_id'  => 'required|exists:offices,id',
             'has_login'  => 'boolean',
             'user_id'    => 'nullable|exists:users,id',
+            'file_id'    => 'nullable|exists:users,id',
         ];
 
         if ($this->request->get('has_login')) {
@@ -77,6 +78,7 @@ class StoreCollaboratorRequest extends FormRequest
             'password.required'       => 'O campo senha é obrigatório.',
             'password.string'         => 'O campo senha deve ser uma string.',
             'password.min'            => 'O campo senha deve ter no mínimo 8 caracteres.',
+            'file_id.exists'        => 'O campo ID do arquivo deve ser um ID válido.',
         ];
     }
 

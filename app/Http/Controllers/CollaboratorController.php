@@ -7,15 +7,28 @@ use App\Http\Requests\UpdateCollaboratorRequest;
 use App\Http\Resources\CollaboratorResource;
 use App\Models\Collaborator;
 use App\Models\User;
+use App\Models\File;
 use App\Models\Address;
+use Illuminate\Http\Request;
+use App\Services\FileService;
 
 class CollaboratorController extends Controller
 {
     
-    public function index()
+    public function index(Request $request)
     {
-        $collaborators = Collaborator::all();
-        return response()->json(CollaboratorResource::collection($collaborators), 200);
+        $perPage = $request->input('per_page', 10);
+        $collaborators = Collaborator::paginate($perPage);
+
+        return response()->json([
+            'data' => CollaboratorResource::collection($collaborators),
+            'pagination' => [
+                'current_page' => $collaborators->currentPage(),
+                'total_pages' => $collaborators->lastPage(),
+                'per_page' => $collaborators->perPage(),
+                'total' => $collaborators->total(),
+            ],
+        ], 200);
     }
     
     public function store(StoreCollaboratorRequest $request)
@@ -46,6 +59,11 @@ class CollaboratorController extends Controller
             ]);
         }
 
+        if ($request->hasFile('photo')) {
+            $photo = $request->file('photo'); //acho que essa linha nao precisa
+            $file = FileService::upload($photo, 'collaborator');
+            $collaborator->update(['file_id' => $file->id]);
+        }
 
         return response()->json(new CollaboratorResource($collaborator), 201);
     }
@@ -89,6 +107,17 @@ class CollaboratorController extends Controller
                     'reference'             => $address['reference'],
                 ]
             );        
+        }
+
+        if ($request->hasFile('photo')) {
+            if ($collaborator->file_id) {
+                $actualPhoto = File::where('id', $collaborator->file_id)->first();
+                FileService::delete($actualPhoto);
+                $actualPhoto->delete();
+            }
+            $photo = $request->file('photo'); //acho que nao precisa dessa linha
+            $photo = FileService::upload($photo, 'collaborator');
+            $collaborator->update(['file_id' => $photo->id]);
         }
 
         return response()->json(new CollaboratorResource($collaborator), 200);

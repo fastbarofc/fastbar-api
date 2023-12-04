@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('file', function (Blueprint $table) {
             $table->id();
-            $table->morphs('fileable');
             $table->string('path');
             $table->string('name');
             $table->string('extension');

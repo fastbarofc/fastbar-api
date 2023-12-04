@@ -25,6 +25,7 @@ class CollaboratorResource extends JsonResource
             'office_id'  => $this->office_id,
             'has_login'  => $this->has_login,
             'user_id'    => $this->user_id,
+            'file_id'    => $this->file_id,
         ];
 
         return $data;

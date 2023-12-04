@@ -55,7 +55,9 @@ class UpdateProductRequest extends FormRequest
             'supplier.string'             => 'O campo fornecedor deve ser uma string.',
             'supplier.max'                => 'O campo fornecedor deve ter no máximo 255 caracteres.',
             'average_consumption.numeric' => 'O campo consumo médio deve conter apenas números.',
-            'own_production.required'     => 'O campo produção própria é obrigatório.',
+            'marketable.boolean'          => 'O campo comercializável deve ser um booleano.',
+            'display_checklist.boolean'   => 'O campo display deve ser um booleano.',
+            'own_production.boolean'      => 'O campo produção própria deve ser um booleano.',
             'recipe_yield.numeric'        => 'O campo rendimento deve conter apenas números.',
         ];
     }

@@ -25,6 +25,7 @@ return new class extends Migration
             $table->foreignId('office_id')->constrained('offices');
             $table->boolean('has_login')->default(false);
             $table->foreignId('user_id')->nullable()->constrained('users');
+            $table->foreignId('file_id')->nullable()->constrained();
             $table->timestamps();
             $table->softDeletes();
         });

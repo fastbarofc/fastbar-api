@@ -25,7 +25,8 @@ class Collaborator extends Model implements AuditableInterface
         'sector_id',
         'office_id',
         'has_login',
-        'user_id'
+        'user_id',
+        'file_id',
     ];
 
     protected static function boot()
@@ -60,6 +61,11 @@ class Collaborator extends Model implements AuditableInterface
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function file()
+    {
+        return $this->belongsTo(File::class);
     }
 
     public function address()

@@ -21,7 +21,24 @@ class EventController extends Controller
 
     public function store(StoreEventRequest $request)
     {
-        $event = Event::create($request->all());
+        $data = $request->all();
+        $event = Event::create($data);
+        Event::create($request->all());
+
+        dd($data['materials']);
+        if(!empty($data['materials'])) {
+            $event->materials()->sync($data['materials']);
+        }
+
+        if(!empty($data['office_events'])) {
+            $event->officeEvents()->sync($data['office_events']);
+        }
+        
+        dd($data['clients']);
+        if(!empty($data['clients'])) {
+            $event->clients()->sync($data['clients']);
+        }
+
         return response()->json(new EventResource($event), 201);
     }
 
@@ -32,6 +49,12 @@ class EventController extends Controller
     
     public function update(UpdateEventRequest $request, Event $event)
     {
+        $data = $request->all();
+
+        if(!empty($data['materials'])) {
+            $event->materials()->sync($data['materials']);
+        }
+
         $event->update($request->all());
         return response()->json(new EventResource($event), 200);
     }

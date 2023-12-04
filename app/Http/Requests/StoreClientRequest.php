@@ -17,18 +17,21 @@ class StoreClientRequest extends FormRequest
     public function rules(): array
     {
         $data = [
-            'type'    => 'required|string|in:pf,pj',
-            'how_met'    => 'required|string|max:255',
-            'email'      => 'nullable|email|unique:clients',
-            'phone_1'    => 'nullable|string|max:20|celular_com_ddd',
-            'phone_2'    => 'nullable|string|max:20|celular_com_ddd',
-            //fiz até aqui em cima
-            //acho que tenho que adicionar os campos de fisical e legal aqui tbm, pq ele podem ser nullable
-            'name'       => 'required|string|max:255|unique:clients',
-            'nickname'   => 'string|max:255',
-            'birth_date' => 'date',
-            'cpf'        => ['string', 'max:14', 'cpf'],
-            'rg'         => 'string|max:20',
+            'type'         => 'required|string|in:pf,pj',
+            'how_met'      => 'required|string|max:255',
+            'email'        => 'required|email|unique:clients,email',
+            'phone_1'      => 'nullable|string|max:20|celular_com_ddd',
+            'phone_2'      => 'nullable|string|max:20|celular_com_ddd',
+            'name'         => 'nullable|string|max:255',
+            'nickname'     => 'nullable|string|max:255',
+            'birth_date'   => 'nullable|date',
+            'cpf'          => 'nullable|string|max:14|cpf',
+            'rg'           => 'nullable|string|max:20',
+            'company_name' => 'nullable|string|max:255',
+            'fantasy_name' => 'nullable|string|max:255',
+            'cnpj'         => 'nullable|string|max:18|cnpj',
+            'ie'           => 'nullable|string|max:255',
+            'im'           => 'nullable|string|max:255',
         ];
 
         if ($this->request->all()['address']) {
@@ -41,10 +44,22 @@ class StoreClientRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'           => 'O campo nome é obrigatório.',
+            'type.string'             => 'O campo tipo deve ser uma string.',
+            'type.in'           => 'O tipo informado de ser PF ou PJ.',
+            'how_met.required'        => 'O campo como conheceu é obrigatório.',
+            'how_met.string'          => 'O campo como conheceu deve ser uma string.',
+            'how_met.max'             => 'O campo como conheceu deve ter no máximo 255 caracteres.',
+            'email.required'           => 'O campo e-mail é obrigatório.',
+            'email.email'             => 'O campo e-mail deve ser um e-mail válido.',
+            'email.unique'            => 'Esse E-mail já está cadastrado.',
+            'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
+            'phone_1.max'             => 'O campo telefone 1 deve ter no máximo 20 caracteres.',
+            'phone_1.celular_com_ddd' => 'O campo telefone 1 deve ser um telefone válido.',
+            'phone_2.string'          => 'O campo telefone 2 deve ser uma string.',
+            'phone_2.max'             => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
+            'phone_2.celular_com_ddd' => 'O campo telefone 2 deve ser um telefone válido.',
             'name.string'             => 'O campo nome deve ser uma string.',
             'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.',
-            'name.unique'             => 'Esse nome já está sendo utilizado',
             'nickname.string'         => 'O campo apelido deve ser uma string.',
             'nickname.max'            => 'O campo apelido deve ter no máximo 255 caracteres.',
             'birth_date.date'         => 'O campo data de nascimento deve ser uma data válida.',
@@ -53,17 +68,17 @@ class StoreClientRequest extends FormRequest
             'cpf.cpf'                 => 'O campo CPF deve ser um CPF válido.',
             'rg.string'               => 'O campo RG deve ser uma string.',
             'rg.max'                  => 'O campo RG deve ter no máximo 20 caracteres.',
-            'phone_1.required'        => 'O campo telefone 1 é obrigatório.',
-            'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
-            'phone_1.max'             => 'O campo telefone 1 deve ter no máximo 20 caracteres.',
-            'phone_1.celular_com_ddd' => 'O campo telefone 1 deve ser um telefone válido.',
-            'phone_2.string'          => 'O campo telefone 2 deve ser uma string.',
-            'phone_2.max'             => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
-            'email.email'             => 'O campo e-mail deve ser um e-mail válido.',
-            'email.unique'            => 'Esse E-mail já está cadastrado.',
-            'how_met.required'        => 'O campo como conheceu é obrigatório.',
-            'how_met.string'          => 'O campo como conheceu deve ser uma string.',
-            'how_met.max'             => 'O campo como conheceu deve ter no máximo 255 caracteres.',
+            'company.string'             => 'O campo companhia deve ser uma string.',
+            'company.max'                => 'O campo companhia deve ter no máximo 255 caracteres.',
+            'fantasy_name.string'             => 'O campo nome fantasia deve ser uma string.',
+            'fantasy_name.max'                => 'O campo nome fantasia deve ter no máximo 255 caracteres.',
+            'cnpj.string'             => 'O campo CNPJ deve ser uma string.',
+            'cnpj.max'                => 'O campo CNPJ deve ter no máximo 255 caracteres.',
+            'cnpj.cnpj'                => 'O campo CNPJ deve ser um CNPJ válido.',
+            'ie.string'             => 'O campo inscrição estadual deve ser uma string.',
+            'ie.max'                => 'O campo inscrição estadual deve ter no máximo 255 caracteres.',
+            'im.string'             => 'O campo inscrição municipal deve ser uma string.',
+            'im.max'                => 'O campo inscrição municipal deve ter no máximo 255 caracteres.',
         ];
     }
 

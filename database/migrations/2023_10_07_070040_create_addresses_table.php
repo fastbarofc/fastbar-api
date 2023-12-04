@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->morphs('addressable');
             $table->string('street');
-            $table->string('number');
+            $table->integer('number');
             $table->string('complement')->nullable();
             $table->string('district');
             $table->string('zip_code');

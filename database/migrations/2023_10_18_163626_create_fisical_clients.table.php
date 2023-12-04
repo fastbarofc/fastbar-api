@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('fisical_clients', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->string('nickname')->nullable();
             $table->date('birth_date')->nullable();
-            $table->string('cpf')->nullable()->unique();
+            $table->string('cpf')->nullable();
             $table->string('rg')->nullable();
-            $table->foreignId('client_id')->constrained();
+            $table->foreignId('client_id')->nullable()->constrained();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -32,9 +32,4 @@ class Office extends Model implements AuditableInterface
     {
         return $this->belongsTo(Sector::class);
     }
-
-    public function events()
-    {
-        return $this->belongsToMany(Event::class, 'event_office_event')->withPivot(['quantity']);
-    }
 }

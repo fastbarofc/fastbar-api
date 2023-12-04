@@ -30,6 +30,7 @@ class UpdateCollaboratorRequest extends FormRequest
             'office_id'  => 'exists:offices,id',
             'has_login'  => 'boolean',
             'user_id'    => 'nullable|exists:users,id',
+            'file_id'    => 'nullable|exists:files,id',
         ];
 
         if ($this->request->get('has_login')) {
@@ -55,10 +56,10 @@ class UpdateCollaboratorRequest extends FormRequest
             'cpf.string'              => 'O campo CPF deve ser uma string.',
             'cpf.max'                 => 'O campo CPF deve ter no máximo 14 caracteres.',
             'cpf.cpf'                 => 'O campo CPF deve ser um CPF válido.',
-            'cpf.unique'                 => 'O CPF já está sendo utiliado',
+            'cpf.unique'              => 'O CPF já está sendo utiliado',
             'rg.string'               => 'O campo RG deve ser uma string.',
             'rg.max'                  => 'O campo RG deve ter no máximo 20 caracteres.',
-            'rg.unique'                  => 'O RG já está sendo utiliado',
+            'rg.unique'               => 'O RG já está sendo utiliado',
             'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
             'phone_1.max'             => 'O campo telefone 1 deve ter no máximo 20 caracteres.',
             'phone_1.celular_com_ddd' => 'O campo telefone 1 deve ser um telefone válido.',
@@ -71,34 +72,30 @@ class UpdateCollaboratorRequest extends FormRequest
             'office_id.exists'        => 'O campo cargo deve ser um cargo válido.',
             'has_login.boolean'       => 'O campo possui login deve ser um booleano.',
             'password.string'         => 'O campo senha deve ser uma string.',
-            'password.min'            => 'O campo senha deve ter no mínimo 8 caracteres.'
+            'password.min'            => 'O campo senha deve ter no mínimo 8 caracteres.',
+            'file_id.exists'          => 'O campo ID do arquivo deve ser um ID válido.',
         ];
     }
 
     public function validateAddress(array $data) {
         $validator = Validator::make($data, [
-            'street' => ['required', 'string'],
-            'district' => ['required', 'string'],
-            'complement' => ['nullable', 'string'],
-            'city_id' => ['required', 'exists:cities,id'],
-            'state_id' => ['required', 'exists:states,id'],
-            'number' => ['required'],
-            'zip_code' => ['required', 'formato_cep'],
-            'reference' => ['nullable', 'string'],
+            'street'     => ['string'],
+            'district'   => ['string'],
+            'complement' => ['string'],
+            'city_id'    => ['exists:cities,id'],
+            'state_id'   => ['exists:states,id'],
+            'number'     => ['integer'],
+            'zip_code'   => ['formato_cep'],
+            'reference'  => ['nullable', 'string'],
         ],[
-            'street.required' => 'O campo rua é obrigatório',
-            'street.string' => 'O campo rua deve ser uma string',
-            'district.required' => 'O campo bairro é obrigatório',
-            'district.string' => 'O campo bairro deve ser uma string',
-            'complement.string' => 'O campo complemento deve ser uma string',
-            'city_id.required' => 'O campo city ID é obrigatório',
-            'city_id.exists' => 'O campo Cidade deve ser uma Cidade valida',
-            'state_id.required' => 'O campo state ID é obrigatório',
-            'state_id.exists' => 'O campo Estado deve ser um Estado valido',
-            'number.required' => 'O campo número é obrigatório',
-            'zip_code.required' => 'O campo CEP é obrigatório',
-            'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido',
-            'referencia.string' => 'O campo referencia deve ser uma string',
+            'street.string'        => 'O campo rua deve ser uma string.',
+            'district.string'      => 'O campo bairro deve ser uma string.',
+            'complement.string'    => 'O campo complemento deve ser uma string.',
+            'city_id.exists'       => 'O campo Cidade deve ser uma Cidade valida.',
+            'state_id.exists'      => 'O campo Estado deve ser um Estado valido.',
+            'number.integer'       => 'O campo número é deve conter apenas números.',
+            'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido.',
+            'referencia.string'    => 'O campo referencia deve ser uma string.',
         ]);
 
         $validator->validate();

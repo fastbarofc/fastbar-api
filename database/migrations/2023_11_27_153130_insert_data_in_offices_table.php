@@ -12,7 +12,7 @@ return new class extends Migration
     {
         $board          = Sector::where('name', 'Diretoria')->first();
         $quality        = Sector::where('name', 'Qualidade')->first();
-        $financial        = Sector::where('name', 'Financeiro')->first();
+        $financial      = Sector::where('name', 'Financeiro')->first();
         $accounting     = Sector::where('name', 'Contabilidade')->first();
         $commercial     = Sector::where('name', 'Comercial')->first();
         $events         = Sector::where('name', 'Eventos')->first();
