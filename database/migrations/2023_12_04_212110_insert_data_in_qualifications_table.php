@@ -7,9 +7,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Qualification::create(['description' => 'Agilidade']);
@@ -20,13 +17,10 @@ return new class extends Migration
         Qualification::create(['description' => 'Simpatia']);
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('qualifications', function (Blueprint $table) {
-            //
+            Qualification::query()->delete(); 
         });
     }
 };
