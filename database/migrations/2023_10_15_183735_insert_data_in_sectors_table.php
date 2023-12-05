@@ -7,9 +7,7 @@ use App\Models\Sector;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Sector::create(['name' => 'Diretoria']);
@@ -26,9 +24,7 @@ return new class extends Migration
         Sector::create(['name' => 'Serviços']);
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    
     public function down(): void
     {
         Sector::query()->delete();

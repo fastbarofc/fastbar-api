@@ -8,9 +8,7 @@ use App\Models\State;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         $items = [
@@ -50149,9 +50147,7 @@ return new class extends Migration
         City::factory()->createMany($items);
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    
     public function down(): void
     {
         City::query()->delete();

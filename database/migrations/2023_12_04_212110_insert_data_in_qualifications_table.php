@@ -19,8 +19,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('qualifications', function (Blueprint $table) {
-            Qualification::query()->delete(); 
-        });
+        Qualification::query()->delete(); 
     }
 };
