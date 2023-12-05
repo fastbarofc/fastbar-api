@@ -30,7 +30,6 @@ class UpdateCollaboratorRequest extends FormRequest
             'office_id'  => 'exists:offices,id',
             'has_login'  => 'boolean',
             'user_id'    => 'nullable|exists:users,id',
-            'file_id'    => 'nullable|exists:files,id',
         ];
 
         if ($this->request->get('has_login')) {
@@ -72,8 +71,7 @@ class UpdateCollaboratorRequest extends FormRequest
             'office_id.exists'        => 'O campo cargo deve ser um cargo válido.',
             'has_login.boolean'       => 'O campo possui login deve ser um booleano.',
             'password.string'         => 'O campo senha deve ser uma string.',
-            'password.min'            => 'O campo senha deve ter no mínimo 8 caracteres.',
-            'file_id.exists'          => 'O campo ID do arquivo deve ser um ID válido.',
+            'password.min'            => 'O campo senha deve ter no mínimo 8 caracteres.'
         ];
     }
 

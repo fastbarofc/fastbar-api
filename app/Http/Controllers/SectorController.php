@@ -7,14 +7,26 @@ use App\Http\Requests\UpdateSectorRequest;
 use App\Models\Sector;
 use App\Http\Resources\SectorResource;
 use App\Http\Resources\OfficeResource;
+use App\Models\Office;
+use Illuminate\Http\Request;
 
 class SectorController extends Controller
 {
   
-    public function index()
+    public function index(Request $request)
     {
-        $sectors = Sector::all();
-        return response()->json(SectorResource::collection($sectors), 200);
+        $perPage = $request->input('per_page', 10);
+        $sectors = Sector::paginate($perPage);
+
+        return response()->json([
+            'data' => SectorResource::collection($sectors),
+            'pagination' => [
+                'current_page' => $sectors->currentPage(),
+                'total_pages' => $sectors->lastPage(),
+                'per_page' => $sectors->perPage(),
+                'total' => $sectors->total(),
+            ],
+        ], 200);
     }
     
     public function store(StoreSectorRequest $request)
@@ -40,9 +52,19 @@ class SectorController extends Controller
         return response([], 204);
     }
 
-    public function offices(Sector $sector)
+    public function offices(Request $request, Sector $sector)
     {
-        $offices = $sector->offices;
-        return response()->json(OfficeResource::collection($offices), 200);
+        $perPage = $request->input('per_page', 10);
+        $offices = Office::where('sector_id', $sector->id)->paginate($perPage);
+
+        return response()->json([
+            'data' => OfficeResource::collection($offices),
+            'pagination' => [
+                'current_page' => $offices->currentPage(),
+                'total_pages' => $offices->lastPage(),
+                'per_page' => $offices->perPage(),
+                'total' => $offices->total(),
+            ],
+        ], 200);
     }
 }

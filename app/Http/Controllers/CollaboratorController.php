@@ -9,8 +9,9 @@ use App\Models\Collaborator;
 use App\Models\User;
 use App\Models\File;
 use App\Models\Address;
-use Illuminate\Http\Request;
 use App\Services\FileService;
+use App\Models\Qualification;
+use Illuminate\Http\Request;
 
 class CollaboratorController extends Controller
 {
@@ -60,9 +61,21 @@ class CollaboratorController extends Controller
         }
 
         if ($request->hasFile('photo')) {
-            $photo = $request->file('photo'); //acho que essa linha nao precisa
+            $photo = $request->file('photo');
             $file = FileService::upload($photo, 'collaborator');
             $collaborator->update(['file_id' => $file->id]);
+        }
+
+        $qualifications = Qualification::all();
+
+        foreach ($qualifications as $qualification) {
+            $collaborator->qualifications()->attach($qualification->id, ['points' => 0]);
+        }
+
+        if (!empty($data['qualifications'])) {
+            foreach ($data['qualifications'] as $qualification) {
+                $collaborator->qualifications()->syncWithoutDetaching([$qualification['id'] => ['points' => $qualification['points']]]);
+            }
         }
 
         return response()->json(new CollaboratorResource($collaborator), 201);
@@ -115,9 +128,21 @@ class CollaboratorController extends Controller
                 FileService::delete($actualPhoto);
                 $actualPhoto->delete();
             }
-            $photo = $request->file('photo'); //acho que nao precisa dessa linha
+            $photo = $request->file('photo'); 
             $photo = FileService::upload($photo, 'collaborator');
             $collaborator->update(['file_id' => $photo->id]);
+        }
+
+        $qualifications = Qualification::all();
+
+        foreach ($qualifications as $qualification) {
+            $collaborator->qualifications()->sync([$qualification->id => ['points' => 0]]);
+        }
+
+        if (!empty($data['qualifications'])) {
+            foreach ($data['qualifications'] as $qualification) {
+                $collaborator->qualifications()->syncWithoutDetaching([$qualification['id'] => ['points' => $qualification['points']]]);
+            }
         }
 
         return response()->json(new CollaboratorResource($collaborator), 200);

@@ -6,13 +6,24 @@ use App\Http\Requests\StoreEventTypeRequest;
 use App\Http\Requests\UpdateEventTypeRequest;
 use App\Http\Resources\EventTypeResource;
 use App\Models\EventType;
+use Illuminate\Http\Request;
 
 class EventTypeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $eventTypes = EventType::all();
-        return response()->json(EventTypeResource::collection($eventTypes), 200);
+        $perPage = $request->input('per_page', 10);
+        $eventTypes = EventType::paginate($perPage);
+
+        return response()->json([
+            'data' => EventTypeResource::collection($eventTypes),
+            'pagination' => [
+                'current_page' => $eventTypes->currentPage(),
+                'total_pages' => $eventTypes->lastPage(),
+                'per_page' => $eventTypes->perPage(),
+                'total' => $eventTypes->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreEventTypeRequest $request)

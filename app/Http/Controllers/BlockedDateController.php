@@ -6,14 +6,27 @@ use App\Http\Requests\StoreBlockedDateRequest;
 use App\Http\Requests\UpdateBlockedDateRequest;
 use App\Models\BlockedDate;
 use App\Http\Resources\BlockedDateResource;
+use Illuminate\Http\Request;
 
 class BlockedDateController extends Controller
 {
     
-    public function index()
+    public function index(Request $request)
     {
         $blockedDates = BlockedDate::all();
-        return response()->json(BlockedDateResource::collection($blockedDates), 200);
+
+        $perPage = $request->input('per_page', 10);
+        $blockedDates = BlockedDate::paginate($perPage);
+
+        return response()->json([
+            'data' => BlockedDateResource::collection($blockedDates),                
+            'pagination' => [
+                'current_page' => $blockedDates->currentPage(),
+                'total_pages' => $blockedDates->lastPage(),
+                'per_page' => $blockedDates->perPage(),
+                'total' => $blockedDates->total(),
+            ],
+        ], 200);
     }
     
     public function store(StoreBlockedDateRequest $request)

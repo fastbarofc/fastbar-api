@@ -6,13 +6,24 @@ use App\Http\Requests\StoreCeremonialRequest;
 use App\Http\Requests\UpdateCeremonialRequest;
 use App\Http\Resources\CeremonialResource;
 use App\Models\Ceremonial;
+use Illuminate\Http\Request;
 
 class CeremonialController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $ceremonials = Ceremonial::all();
-        return response()->json(CeremonialResource::collection($ceremonials), 200);
+        $perPage = $request->input('per_page', 10);
+        $ceremonials = Ceremonial::paginate($perPage);
+
+            return response()->json([
+                'data'       => CeremonialResource::collection($ceremonials),
+                'pagination' => [
+                    'current_page' => $ceremonials->currentPage(),
+                    'total_pages'  => $ceremonials->lastPage(),
+                    'per_page'     => $ceremonials->perPage(),
+                    'total'        => $ceremonials->total(),
+                ],
+            ], 200);
     }
 
     public function store(StoreCeremonialRequest $request)

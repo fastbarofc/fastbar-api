@@ -6,14 +6,25 @@ use App\Http\Requests\StorePaymentMethodRequest;
 use App\Http\Requests\UpdatePaymentMethodRequest;
 use App\Models\PaymentMethod;
 use App\Http\Resources\PaymentMethodResource;
+use Illuminate\Http\Request;
 
 class PaymentMethodController extends Controller
 {
     
-    public function index()
+    public function index(Request $request)
     {
-        $paymentMethods = PaymentMethod::all();
-        return response()->json(PaymentMethodResource::collection($paymentMethods));
+        $perPage = $request->input('per_page', 10);
+        $paymentMethods = PaymentMethod::paginate($perPage);
+
+        return response()->json([
+            'data' => PaymentMethodResource::collection($paymentMethods),
+            'pagination' => [
+                'current_page' => $paymentMethods->currentPage(),
+                'total_pages' => $paymentMethods->lastPage(),
+                'per_page' => $paymentMethods->perPage(),
+                'total' => $paymentMethods->total(),
+            ],
+        ], 200);
     }
     
     public function store(StorePaymentMethodRequest $request)

@@ -6,13 +6,24 @@ use App\Http\Requests\StoreKitRequest;
 use App\Http\Requests\UpdateKitRequest;
 use App\Http\Resources\KitResource;
 use App\Models\Kit;
+use Illuminate\Http\Request;
 
 class KitController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $kits = Kit::all();
-        return response ()->json(KitResource::collection($kits), 200);
+        $perPage = $request->input('per_page', 10);
+        $kits = Kit::paginate($perPage);
+
+        return response()->json([
+            'data' => KitResource::collection($kits),
+            'pagination' => [
+                'current_page' => $kits->currentPage(),
+                'total_pages' => $kits->lastPage(),
+                'per_page' => $kits->perPage(),
+                'total' => $kits->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreKitRequest $request)

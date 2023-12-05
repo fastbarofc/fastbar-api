@@ -25,7 +25,14 @@ class CollaboratorResource extends JsonResource
             'office_id'  => $this->office_id,
             'has_login'  => $this->has_login,
             'user_id'    => $this->user_id,
-            'file_id'    => $this->file_id,
+            'photo'      => $this->photo,
+            'qualifications' => $this->qualifications->map(function ($qualification) {
+                return [
+                    'id' => $qualification->id,
+                    'description' => $qualification->description,
+                    'points' => $qualification->pivot->points ?? '0',
+                ];
+            }),
         ];
 
         return $data;

@@ -6,13 +6,24 @@ use App\Http\Requests\StoreContractRequest;
 use App\Http\Requests\UpdateContractRequest;
 use App\Http\Resources\ContractResource;
 use App\Models\Contract;
+use Illuminate\Http\Request;
 
 class ContractController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $contracts = Contract::all();
-        return response()->json(ContractResource::collection($contracts), 200);
+        $perPage = $request->input('per_page', 10);
+        $contracts = Contract::paginate($perPage);
+
+        return response()->json([
+            'data' => ContractResource::collection($contracts),
+            'pagination' => [
+                'current_page' => $contracts->currentPage(),
+                'total_pages' => $contracts->lastPage(),
+                'per_page' => $contracts->perPage(),
+                'total' => $contracts->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreContractRequest $request)

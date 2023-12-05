@@ -6,13 +6,24 @@ use App\Http\Requests\StoreDecoratorRequest;
 use App\Http\Requests\UpdateDecoratorRequest;
 use App\Http\Resources\DecoratorResource;
 use App\Models\Decorator;
+use Illuminate\Http\Request;
 
 class DecoratorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $decorators = Decorator::all();
-        return response()->json(DecoratorResource::collection($decorators), 200);
+        $perPage = $request->input('per_page', 10);
+        $decorators = Decorator::paginate($perPage);
+
+        return response()->json([
+            'data' => DecoratorResource::collection($decorators),
+            'pagination' => [
+                'current_page' => $decorators->currentPage(),
+                'total_pages' => $decorators->lastPage(),
+                'per_page' => $decorators->perPage(),
+                'total' => $decorators->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreDecoratorRequest $request)

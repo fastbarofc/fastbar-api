@@ -6,13 +6,24 @@ use App\Http\Requests\StoreEventStatusRequest;
 use App\Http\Requests\UpdateEventStatusRequest;
 use App\Http\Resources\EventStatusResource;
 use App\Models\EventStatus;
+use Illuminate\Http\Request;
 
 class EventStatusController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $eventStatuses = EventStatus::all();
-        return response()->json(EventStatusResource::collection($eventStatuses), 200);
+        $perPage = $request->input('per_page', 10);
+        $eventStatuses = EventStatus::paginate($perPage);
+
+        return response()->json([
+            'data' => EventStatusResource::collection($eventStatuses),
+            'pagination' => [
+                'current_page' => $eventStatuses->currentPage(),
+                'total_pages' => $eventStatuses->lastPage(),
+                'per_page' => $eventStatuses->perPage(),
+                'total' => $eventStatuses->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreEventStatusRequest $request)

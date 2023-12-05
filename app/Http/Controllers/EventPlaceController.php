@@ -7,13 +7,24 @@ use App\Http\Requests\UpdateEventPlaceRequest;
 use App\Http\Resources\EventPlaceResource;
 use App\Models\EventPlace;
 use App\Models\Address;
+use Illuminate\Http\Request;
 
 class EventPlaceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $eventPlaces = EventPlace::all();
-        return response()->json(EventPlaceResource::collection($eventPlaces), 200);
+        $perPage = $request->input('per_page', 10);
+        $eventPlaces = EventPlace::paginate($perPage);
+
+        return response()->json([
+            'data' => EventPlaceResource::collection($eventPlaces),
+            'pagination' => [
+                'current_page' => $eventPlaces->currentPage(),
+                'total_pages' => $eventPlaces->lastPage(),
+                'per_page' => $eventPlaces->perPage(),
+                'total' => $eventPlaces->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreEventPlaceRequest $request)

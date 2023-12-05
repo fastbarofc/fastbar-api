@@ -6,13 +6,24 @@ use App\Http\Requests\StoreEventCaptureRequest;
 use App\Http\Requests\UpdateEventCaptureRequest;
 use App\Models\EventCapture;
 use App\Http\Resources\EventCaptureResource;
+use Illuminate\Http\Request;
 
 class EventCaptureController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $eventCaptures = EventCapture::all();
-        return response()->json(EventCaptureResource::collection($eventCaptures), 200);
+        $perPage = $request->input('per_page', 10);
+        $eventCaptures = EventCapture::paginate($perPage);
+
+        return response()->json([
+            'data' => EventCaptureResource::collection($eventCaptures),
+            'pagination' => [
+                'current_page' => $eventCaptures->currentPage(),
+                'total_pages' => $eventCaptures->lastPage(),
+                'per_page' => $eventCaptures->perPage(),
+                'total' => $eventCaptures->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreEventCaptureRequest $request)

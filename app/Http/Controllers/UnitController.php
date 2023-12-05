@@ -6,13 +6,24 @@ use App\Http\Requests\StoreUnitRequest;
 use App\Http\Requests\UpdateUnitRequest;
 use App\Http\Resources\UnitResource;
 use App\Models\Unit;
+use Illuminate\Http\Request;
 
 class UnitController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $units = Unit::all();
-        return response()->json(UnitResource::collection($units), 200);
+        $perPage = $request->input('per_page', 10);
+        $units = Unit::paginate($perPage);
+
+        return response()->json([
+            'data' => UnitResource::collection($units),
+            'pagination' => [
+                'current_page' => $units->currentPage(),
+                'total_pages' => $units->lastPage(),
+                'per_page' => $units->perPage(),
+                'total' => $units->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreUnitRequest $request)

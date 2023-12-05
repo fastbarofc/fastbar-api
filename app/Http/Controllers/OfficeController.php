@@ -6,14 +6,25 @@ use App\Http\Requests\StoreOfficeRequest;
 use App\Http\Requests\UpdateOfficeRequest;
 use App\Models\Office;
 use App\Http\Resources\OfficeResource;
+use Illuminate\Http\Request;
 
 class OfficeController extends Controller
 {
     
-    public function index()
+    public function index(Request $request)
     {
-        $offices = Office::all();
-        return response()->json(OfficeResource::collection($offices), 200);
+        $perPage = $request->input('per_page', 10);
+        $offices = Office::paginate($perPage);
+
+        return response()->json([
+            'data' => OfficeResource::collection($offices),
+            'pagination' => [
+                'current_page' => $offices->currentPage(),
+                'total_pages' => $offices->lastPage(),
+                'per_page' => $offices->perPage(),
+                'total' => $offices->total(),
+            ],
+        ], 200);
     }
     
     public function store(StoreOfficeRequest $request)

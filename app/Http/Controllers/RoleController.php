@@ -11,10 +11,20 @@ use App\Http\Requests\UpdateRoleRequest;
 
 class RoleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Role::all();
-        return response()->json(RoleResource::collection($roles), 200);
+        $perPage = $request->input('per_page', 10);
+        $roles = Role::paginate($perPage);
+
+        return response()->json([
+            'data' => RoleResource::collection($roles),
+            'pagination' => [
+                'current_page' => $roles->currentPage(),
+                'total_pages' => $roles->lastPage(),
+                'per_page' => $roles->perPage(),
+                'total' => $roles->total(),
+            ],
+        ], 200);
     }
 
     public function show(Role $role)

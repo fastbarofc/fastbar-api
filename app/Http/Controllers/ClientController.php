@@ -17,17 +17,50 @@ class ClientController extends Controller
     {
         if (!empty($request->type) && $request->type == Client::TYPE_FISICAL) {
             $fisicalClients = Client::where('type', Client::TYPE_FISICAL)->get();
-            return response()->json(ClientResource::collection($fisicalClients), 200);
+
+            $perPage = $request->input('per_page', 10);
+            $clients = Client::paginate($perPage);
+
+            return response()->json([
+                'data' => ClientResource::collection($fisicalClients),
+                'pagination' => [
+                    'current_page' => $clients->currentPage(),
+                    'total_pages' => $clients->lastPage(),
+                    'per_page' => $clients->perPage(),
+                    'total' => $clients->total(),
+                ],
+            ], 200);
         }
         
         if (!empty($request->type) && $request->type == Client::TYPE_LEGAL) {
             $legalClients = Client::where('type', Client::TYPE_LEGAL)->get();
-            return response()->json(ClientResource::collection($legalClients), 200);
+
+            $perPage = $request->input('per_page', 10);
+            $clients = Client::paginate($perPage);
+
+            return response()->json([
+                'data' => ClientResource::collection($legalClients),
+                'pagination' => [
+                    'current_page' => $clients->currentPage(),
+                    'total_pages' => $clients->lastPage(),
+                    'per_page' => $clients->perPage(),
+                    'total' => $clients->total(),
+                ],
+            ], 200);
         }
 
+        $perPage = $request->input('per_page', 10);
+        $clients = Client::paginate($perPage);
 
-        $clients = Client::all();
-        return response()->json(ClientResource::collection($clients), 200);
+        return response()->json([
+            'data' => ClientResource::collection($clients),                
+            'pagination' => [
+                'current_page' => $clients->currentPage(),
+                'total_pages' => $clients->lastPage(),
+                'per_page' => $clients->perPage(),
+                'total' => $clients->total(),
+            ],
+        ], 200);
     }
     
     public function store(StoreClientRequest $request)

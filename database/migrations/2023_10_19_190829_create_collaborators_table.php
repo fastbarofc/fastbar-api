@@ -14,17 +14,17 @@ return new class extends Migration
         Schema::create('collaborators', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('nickname');
-            $table->date('birth_date');
-            $table->string('cpf');
-            $table->string('rg');
+            $table->string('nickname')->nullable();
+            $table->date('birth_date')->nullable();
+            $table->string('cpf')->nullable();
+            $table->string('rg')->nullable();
             $table->string('email');
             $table->string('phone_1');
-            $table->string('phone_2');
-            $table->foreignId('sector_id')->constrained('sectors');
-            $table->foreignId('office_id')->constrained('offices');
+            $table->string('phone_2')->nullable();
+            $table->foreignId('sector_id')->constrained();
+            $table->foreignId('office_id')->constrained();
             $table->boolean('has_login')->default(false);
-            $table->foreignId('user_id')->nullable()->constrained('users');
+            $table->foreignId('user_id')->nullable()->constrained();
             $table->foreignId('file_id')->nullable()->constrained();
             $table->timestamps();
             $table->softDeletes();

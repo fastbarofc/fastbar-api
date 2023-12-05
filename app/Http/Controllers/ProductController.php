@@ -6,13 +6,24 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::all();
-        return response()->json(ProductResource::collection($products), 200);
+        $perPage = $request->input('per_page', 10);
+        $products = Product::paginate($perPage);
+
+        return response()->json([
+            'data' => ProductResource::collection($products),
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'total_pages' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreProductRequest $request)

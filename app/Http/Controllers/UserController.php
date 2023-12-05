@@ -7,15 +7,25 @@ use App\Models\User;
 use App\Http\Resources\UserResource;
 use App\Http\Requests\SyncRoleUserRequest;
 use App\Http\Requests\SyncPermissionUserRequest;
-
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
-        return UserResource::collection($users);
+        $perPage = $request->input('per_page', 10);
+        $users = User::paginate($perPage);
+
+        return response()->json([
+            'data' => UserResource::collection($users),
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'total_pages' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+            ],
+        ], 200);
     }
 
     public function show(User $user)

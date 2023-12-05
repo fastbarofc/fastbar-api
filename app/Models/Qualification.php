@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
+use Cviebrock\EloquentSluggable\Sluggable;
 
 class Qualification extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Auditable;
+    use HasFactory, SoftDeletes, Auditable, Sluggable;
 
     protected $fillable = [
         'description',
@@ -26,7 +27,7 @@ class Qualification extends Model implements AuditableInterface
         ];
     }
 
-    public function collaborator()
+    public function collaborators()
     {
         return $this->belongsToMany(Collaborator::class, 'collaborator_qualification')->withPivot(['points']);
     }

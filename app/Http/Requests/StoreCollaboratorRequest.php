@@ -19,7 +19,7 @@ class StoreCollaboratorRequest extends FormRequest
         $data = [
             'name'       => 'required|string|max:255',
             'nickname'   => 'string|max:255',
-            'birth_date' => 'date',
+            'birth_date' => 'date|date_format:Y-m-d',
             'cpf'        => 'string|max:14|unique:collaborators,cpf',
             'rg'         => 'string|max:20|unique:collaborators,rg',
             'email'      => 'email', 
@@ -28,8 +28,7 @@ class StoreCollaboratorRequest extends FormRequest
             'sector_id'  => 'required|exists:sectors,id',
             'office_id'  => 'required|exists:offices,id',
             'has_login'  => 'boolean',
-            'user_id'    => 'nullable|exists:users,id',
-            'file_id'    => 'nullable|exists:users,id',
+            'user_id'    => 'nullable|exists:users,id'
         ];
 
         if ($this->request->get('has_login')) {
@@ -37,7 +36,7 @@ class StoreCollaboratorRequest extends FormRequest
             $data['email'] = 'required|email|unique:users,email';
         }
 
-        if ($this->request->all()['address']) {
+        if (!empty($this->request->all()['address'])) {
             $this->validateAddress($this->request->all()['address']);
         }
 
@@ -53,6 +52,7 @@ class StoreCollaboratorRequest extends FormRequest
             'nickname.string'         => 'O campo apelido deve ser uma string.',
             'nickname.max'            => 'O campo apelido deve ter no máximo 255 caracteres.',
             'birth_date.date'         => 'O campo data de nascimento deve ser uma data válida.',
+            'birth_date.date_format'  => 'O campo data de nascimento deve ser no formato Y-m-d.',
             'cpf.string'              => 'O campo CPF deve ser uma string.',
             'cpf.max'                 => 'O campo CPF deve ter no máximo 14 caracteres.',
             'cpf.cpf'                 => 'O campo CPF deve ser um CPF válido.',
@@ -77,8 +77,7 @@ class StoreCollaboratorRequest extends FormRequest
             'has_login.boolean'       => 'O campo possui login deve ser um booleano.',
             'password.required'       => 'O campo senha é obrigatório.',
             'password.string'         => 'O campo senha deve ser uma string.',
-            'password.min'            => 'O campo senha deve ter no mínimo 8 caracteres.',
-            'file_id.exists'        => 'O campo ID do arquivo deve ser um ID válido.',
+            'password.min'            => 'O campo senha deve ter no mínimo 8 caracteres.'
         ];
     }
 

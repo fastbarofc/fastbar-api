@@ -6,13 +6,24 @@ use App\Http\Requests\StoreEventGiftRequest;
 use App\Http\Requests\UpdateEventGiftRequest;
 use App\Http\Resources\EventGiftResource;
 use App\Models\EventGift;
+use Illuminate\Http\Request;
 
 class EventGiftController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $eventGifts = EventGift::all();
-        return response()->json(EventGiftResource::collection($eventGifts), 200);
+        $perPage = $request->input('per_page', 10);
+        $eventGifts = EventGift::paginate($perPage);
+
+        return response()->json([
+            'data' => EventGiftResource::collection($eventGifts),
+            'pagination' => [
+                'current_page' => $eventGifts->currentPage(),
+                'total_pages' => $eventGifts->lastPage(),
+                'per_page' => $eventGifts->perPage(),
+                'total' => $eventGifts->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreEventGiftRequest $request)

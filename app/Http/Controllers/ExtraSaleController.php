@@ -6,13 +6,24 @@ use App\Http\Requests\StoreExtraSaleRequest;
 use App\Http\Requests\UpdateExtraSaleRequest;
 use App\Http\Resources\ExtraSaleResource;
 use App\Models\ExtraSale;
+use Illuminate\Http\Request;
 
 class ExtraSaleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $extraSales = ExtraSale::all();
-        return response()->json(ExtraSaleResource::collection($extraSales), 200);
+        $perPage = $request->input('per_page', 10);
+        $extraSales = ExtraSale::paginate($perPage);
+
+        return response()->json([
+            'data' => ExtraSaleResource::collection($extraSales),
+            'pagination' => [
+                'current_page' => $extraSales->currentPage(),
+                'total_pages' => $extraSales->lastPage(),
+                'per_page' => $extraSales->perPage(),
+                'total' => $extraSales->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreExtraSaleRequest $request)

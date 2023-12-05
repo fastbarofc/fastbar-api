@@ -6,13 +6,24 @@ use App\Http\Requests\StoreMaterialRequest;
 use App\Http\Requests\UpdateMaterialRequest;
 use App\Http\Resources\MaterialResource;
 use App\Models\Material;
+use Illuminate\Http\Request;
 
 class MaterialController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $materials = Material::all();
-        return response()->json(MaterialResource::collection($materials), 200);
+        $perPage = $request->input('per_page', 10);
+        $materials = Material::paginate($perPage);
+
+        return response()->json([
+            'data' => MaterialResource::collection($materials),
+            'pagination' => [
+                'current_page' => $materials->currentPage(),
+                'total_pages' => $materials->lastPage(),
+                'per_page' => $materials->perPage(),
+                'total' => $materials->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreMaterialRequest $request)

@@ -6,13 +6,24 @@ use App\Http\Requests\StoreOfficeEventRequest;
 use App\Http\Requests\UpdateOfficeEventRequest;
 use App\Http\Resources\OfficeEventResource;
 use App\Models\OfficeEvent;
+use Illuminate\Http\Request;
 
 class OfficeEventController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $officeEvents = OfficeEvent::all();
-        return response()->json(OfficeEventResource::collection($officeEvents), 200);
+        $perPage = $request->input('per_page', 10);
+        $officeEvents = OfficeEvent::paginate($perPage);
+
+        return response()->json([
+            'data' => OfficeEventResource::collection($officeEvents),
+            'pagination' => [
+                'current_page' => $officeEvents->currentPage(),
+                'total_pages' => $officeEvents->lastPage(),
+                'per_page' => $officeEvents->perPage(),
+                'total' => $officeEvents->total(),
+            ],
+        ], 200);
     }
 
     public function store(StoreOfficeEventRequest $request)
