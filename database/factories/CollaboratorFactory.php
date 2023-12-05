@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Sector;
 use App\Models\Office;
+use App\Models\Qualification;
 use App\Models\User;
 
 /**
