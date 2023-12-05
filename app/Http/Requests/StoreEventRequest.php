@@ -26,6 +26,7 @@ class StoreEventRequest extends FormRequest
             'date_time'          => 'required|date|after:now',
             'value_unit'         => 'required|string',
             'descont_unit'       => 'required|string',
+            'contract_body'      => 'nullable',
             'courtesy_parthenon' => 'nullable|string|max:255',
             'courtesy_partner'   => 'nullable|string|max:255',
             'courtesies'         => 'nullable|string|max:255',

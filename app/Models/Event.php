@@ -24,6 +24,7 @@ class Event extends Model implements AuditableInterface
         'date_time',
         'value_unit',
         'descont_unit',
+        'contract_body',
         'courtesy_parthenon',
         'courtesy_partner',
         'courtesies',

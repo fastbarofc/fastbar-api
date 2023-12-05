@@ -20,6 +20,7 @@ return new class extends Migration
             $table->dateTime('date_time');
             $table->string('value_unit');
             $table->string('descont_unit');
+            $table->longText('contract_body')->nullable();
             $table->string('courtesy_parthenon')->nullable();
             $table->string('courtesy_partner')->nullable();
             $table->string('courtesies')->nullable();

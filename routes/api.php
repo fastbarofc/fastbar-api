@@ -26,7 +26,9 @@ use App\Http\Controllers\ExtraSaleController;
 use App\Http\Controllers\OfficeEventController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\CollaboratorIncidentController;
 use App\Models\City;
+use App\Models\CollaboratorIncident;
 use App\Models\State;
 
 Route::controller(AuthController::class)->group(function () {
@@ -98,4 +100,6 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('clients', ClientController::class);
 
     Route::resource('contracts', ContractController::class);
+
+    Route::resource('collaborator-incidents', CollaboratorIncidentController::class);
 });

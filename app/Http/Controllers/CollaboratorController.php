@@ -31,7 +31,8 @@ class CollaboratorController extends Controller
         }
 
         if($request->input('nickname')) {
-            $query->where('nickname', 'LIKE', "%$request->input('nickname')%");
+            $nickname = $request->input('nickname');
+            $query->where('nickname', 'LIKE', "%$nickname%");
         }
 
         $collaborators = $query->paginate($perPage);

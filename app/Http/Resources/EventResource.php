@@ -20,6 +20,7 @@ class EventResource extends JsonResource
             'date_time'          => $this->date_time,
             'value_unit'         => $this->value_unit,
             'descont_unit'       => $this->descont_unit,
+            'contract_body'      => $this->contract_body,
             'courtesy_parthenon' => $this->courtesy_parthenon,
             'courtesy_partner'   => $this->courtesy_partner,
             'courtesies'         => $this->courtesies,

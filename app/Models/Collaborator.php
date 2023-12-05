@@ -82,4 +82,9 @@ class Collaborator extends Model implements AuditableInterface
     {
         return $this->file?->path;
     }
+
+    public function collaboratorIncidadent()
+    {
+        return $this->hasMany(CollaboratorIncident::class);
+    }
 }

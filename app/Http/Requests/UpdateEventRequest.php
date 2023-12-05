@@ -26,6 +26,7 @@ class UpdateEventRequest extends FormRequest
             'date_time'          => 'date|after:now',
             'value_unit'         => 'string',
             'descont_unit'       => 'string',
+            'contract_body'      => 'nullable',
             'courtesy_parthenon' => 'string|max:255',
             'courtesy_partner'   => 'string|max:255',
             'courtesies'         => 'string|max:255',

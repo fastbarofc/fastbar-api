@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreDecoratorRequest;
 use App\Http\Requests\UpdateDecoratorRequest;
 use App\Http\Resources\DecoratorResource;
-use App\Models\Decorator;
 use Illuminate\Http\Request;
+use App\Models\Decorator;
 
 class DecoratorController extends Controller
 {

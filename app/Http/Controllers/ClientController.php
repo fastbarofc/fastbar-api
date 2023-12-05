@@ -5,52 +5,29 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use App\Http\Resources\ClientResource;
-use App\Models\Client;
 use App\Models\FisicalClient;
-use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Address;
+use App\Models\Client;
+use App\Models\User;
 
 class ClientController extends Controller
 {
     public function index(Request $request)
     {
-        if (!empty($request->type) && $request->type == Client::TYPE_FISICAL) {
-            $fisicalClients = Client::where('type', Client::TYPE_FISICAL)->get();
-
-            $perPage = $request->input('per_page', 10);
-            $clients = Client::paginate($perPage);
-
-            return response()->json([
-                'data' => ClientResource::collection($fisicalClients),
-                'pagination' => [
-                    'current_page' => $clients->currentPage(),
-                    'total_pages' => $clients->lastPage(),
-                    'per_page' => $clients->perPage(),
-                    'total' => $clients->total(),
-                ],
-            ], 200);
-        }
-        
-        if (!empty($request->type) && $request->type == Client::TYPE_LEGAL) {
-            $legalClients = Client::where('type', Client::TYPE_LEGAL)->get();
-
-            $perPage = $request->input('per_page', 10);
-            $clients = Client::paginate($perPage);
-
-            return response()->json([
-                'data' => ClientResource::collection($legalClients),
-                'pagination' => [
-                    'current_page' => $clients->currentPage(),
-                    'total_pages' => $clients->lastPage(),
-                    'per_page' => $clients->perPage(),
-                    'total' => $clients->total(),
-                ],
-            ], 200);
-        }
-
         $perPage = $request->input('per_page', 10);
-        $clients = Client::paginate($perPage);
+
+        $query = Client::query();
+
+        if($request->input('type')) {
+            $query->where('type', $request->input('type'));
+        }
+
+        if($request->input('email')) {
+            $query->where('email', $request->input('email'));
+        }
+
+        $clients = $query->paginate($perPage);
 
         return response()->json([
             'data' => ClientResource::collection($clients),                
