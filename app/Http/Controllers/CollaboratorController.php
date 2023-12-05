@@ -19,7 +19,22 @@ class CollaboratorController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $collaborators = Collaborator::paginate($perPage);
+
+        $query = Collaborator::query();
+
+        if($request->input('sector_id')) {
+            $query->where('sector_id', $request->input('sector_id'));
+        }
+
+        if($request->input('office_id')) {
+            $query->where('office_id', $request->input('office_id'));
+        }
+
+        if($request->input('nickname')) {
+            $query->where('nickname', 'LIKE', "%$request->input('nickname')%");
+        }
+
+        $collaborators = $query->paginate($perPage);
 
         return response()->json([
             'data' => CollaboratorResource::collection($collaborators),
