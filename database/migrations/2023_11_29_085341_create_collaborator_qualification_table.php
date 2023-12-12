@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('collaborator_qualification', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('collaborator_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('qualification_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('collaborator_id')->cascadeOnDelete()->constrained();
+            $table->foreignId('qualification_id')->cascadeOnDelete()->constrained();
             $table->integer('points');
             $table->timestamps();
             $table->softDeletes();

@@ -12,10 +12,10 @@ return new class extends Migration
             $table->id();
             $table->string('description');
             $table->string('slug');
-            $table->foreignId('unit_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('unit_id')->nullable()->cascadeOnDelete()->constrained();
             $table->integer('quantity');
             $table->string('value_unit');
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('event_id')->cascadeOnDelete()->constrained();
             $table->timestamps();
             $table->softDeletes();
         });

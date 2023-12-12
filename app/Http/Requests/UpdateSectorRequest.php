@@ -16,7 +16,7 @@ class UpdateSectorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|max:255|unique:sectors,name,' . $this->id
+            'name' => 'nullable|string|max:255|unique:sectors,name,' . $this->id
         ];
     }
 

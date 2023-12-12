@@ -16,7 +16,7 @@ class UpdateOfficeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|max:255|unique:offices,name,' . $this->route('office')->id,
+            'name' => 'nullable|string|max:255|unique:offices,name,' . $this->route('office')->id,
         ];
     }
 

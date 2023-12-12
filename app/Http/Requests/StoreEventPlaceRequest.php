@@ -26,7 +26,7 @@ class StoreEventPlaceRequest extends FormRequest
             'email'       => 'required|email',
         ];
 
-        if ($this->request->all()['address']) {
+        if (!empty($this->request->all()['address'])) {
             $this->validateAddress($this->request->all()['address']);
         }
 
@@ -43,9 +43,9 @@ class StoreEventPlaceRequest extends FormRequest
             'responsible.required'    => 'O campo nomeresponsável é obrigatório.',
             'responsible.string'      => 'O campo nomeresponsável deve ser uma string.',
             'responsible.max'         => 'O campo nomeresponsável deve ter no máximo 255 caracteres.',
-            'description.required'    => 'O campo dercrição é obrigatório.',
-            'description.string'      => 'O campo dercrição deve ser uma string.',
-            'description.max'         => 'O campo dercrição deve ter no máximo 255 caracteres.',
+            'description.required'    => 'O campo descrição é obrigatório.',
+            'description.string'      => 'O campo descrição deve ser uma string.',
+            'description.max'         => 'O campo descrição deve ter no máximo 255 caracteres.',
             'phone_1.required'        => 'O campo telefone 1 é obrigatório.',
             'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
             'phone_1.max'             => 'O campo telefone 1 deve ter no máximo 20 caracteres.',

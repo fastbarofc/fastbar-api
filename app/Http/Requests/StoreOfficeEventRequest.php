@@ -26,9 +26,9 @@ class StoreOfficeEventRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'description.required' => 'O campo dercrição é obrigatório.',
-            'description.string'   => 'O campo dercrição deve ser uma string.',
-            'description.max'      => 'O campo dercrição deve ter no máximo 255 caracteres.',
+            'description.required' => 'O campo descrição é obrigatório.',
+            'description.string'   => 'O campo descrição deve ser uma string.',
+            'description.max'      => 'O campo descrição deve ter no máximo 255 caracteres.',
             'description.unique'   => 'Essa descrição já está em uso.',
             'daily.required'       => 'O campo diária é obrigatório.',
             'coordinator.required' => 'O campo cordenador é obrigatório.',

@@ -27,9 +27,9 @@ class StoreExtraSaleRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'description.required' => 'O campo dercrição é obrigatório.',
-            'description.string'   => 'O campo dercrição deve ser uma string.',
-            'description.max'      => 'O campo dercrição deve ter no máximo 255 caracteres.',
+            'description.required' => 'O campo descrição é obrigatório.',
+            'description.string'   => 'O campo descrição deve ser uma string.',
+            'description.max'      => 'O campo descrição deve ter no máximo 255 caracteres.',
             'description.unique'   => 'Essa descrição já está em uso.',
             'unit_id.numeric'      => 'O campo ID da unidade deve conter apenas números.',
             'unit_id.exists'       => 'O campo ID da unidade deve ser uma unidade válida',

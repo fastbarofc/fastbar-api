@@ -16,11 +16,11 @@ class UpdatePartnerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => 'string|max:255|unique:partners,name,' . $this->route('partner')->id,
-            'responsible' => 'string|max:255',
-            'email'       => 'email|unique:partners,email,' . $this->route('partner')->id,
-            'phone_1'     => 'string|max:20|celular_com_ddd',
-            'phone_2'     => 'string|max:20|celular_com_ddd',
+            'name'        => 'nullable|string|max:255|unique:partners,name,' . $this->route('partner')->id,
+            'responsible' => 'nullable|string|max:255',
+            'email'       => 'nullable|email|unique:partners,email,' . $this->route('partner')->id,
+            'phone_1'     => 'nullable|string|max:20|celular_com_ddd',
+            'phone_2'     => 'nullable|string|max:20|celular_com_ddd',
         ];
     }
 

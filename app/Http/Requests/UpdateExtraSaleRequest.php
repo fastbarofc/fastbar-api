@@ -16,19 +16,19 @@ class UpdateExtraSaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'string|max:255|unique:extra_sales,description,' . $this->route('extra_sale')->id,
-            'unit_id'     => 'numeric|exists:units,id',
-            'quantity'    => 'numeric|min:0',
-            'value_unit'  => 'string',
-            'event_id'    => 'numeric|exists:events,id',
+            'description' => 'nullable|string|max:255|unique:extra_sales,description,' . $this->route('extra_sale')->id,
+            'unit_id'     => 'nullable|numeric|exists:units,id',
+            'quantity'    => 'nullable|numeric|min:0',
+            'value_unit'  => 'nullable|string',
+            'event_id'    => 'nullable|numeric|exists:events,id',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'description.string'   => 'O campo dercrição deve ser uma string.',
-            'description.max'      => 'O campo dercrição deve ter no máximo 255 caracteres.',
+            'description.string'   => 'O campo descrição deve ser uma string.',
+            'description.max'      => 'O campo descrição deve ter no máximo 255 caracteres.',
             'description.unique'   => 'Essa descrição já está em uso.',
             'unit_id.numeric'      => 'O campo ID da unidade deve conter apenas números.',
             'unit_id.exists'      => 'O campo ID da unidade deve ser uma unidade válida',

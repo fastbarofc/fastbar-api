@@ -34,7 +34,7 @@ class StoreClientRequest extends FormRequest
             'im'           => 'nullable|string|max:255',
         ];
 
-        if ($this->request->all()['address']) {
+        if (!empty($this->request->all()['address'])) {
             $this->validateAddress($this->request->all()['address']);
         }
 

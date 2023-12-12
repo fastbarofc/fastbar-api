@@ -16,7 +16,7 @@ class UpdateUnitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'string|max:255|unique:units,description,' . $this->route('unit')->id,
+            'description' => 'nullable|string|max:255|unique:units,description,' . $this->route('unit')->id,
         ];
     }
 

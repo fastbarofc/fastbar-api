@@ -17,10 +17,10 @@ class UpdateKitRequest extends FormRequest
     {
         return [
             'kit_id'          => 'nullable|numeric',
-            'name'         => 'string|max:255|unique:kits,name,' . $this->route('kit')->id,
-            'themed_table' => 'boolean',
-            'optional'     => 'boolean',
-            'value'        => 'numeric|min:0',
+            'name'         => 'nullable|string|max:255|unique:kits,name,' . $this->route('kit')->id,
+            'themed_table' => 'nullable|boolean',
+            'optional'     => 'nullable|boolean',
+            'value'        => 'nullable|numeric|min:0',
         ];
     }
 

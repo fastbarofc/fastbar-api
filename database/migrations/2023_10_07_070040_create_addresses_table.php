@@ -12,13 +12,13 @@ return new class extends Migration
         Schema::create('addresses', function (Blueprint $table) {
             $table->id();
             $table->morphs('addressable');
-            $table->string('street');
-            $table->integer('number');
+            $table->string('street')->nullable();
+            $table->integer('number')->nullable();
             $table->string('complement')->nullable();
-            $table->string('district');
-            $table->string('zip_code');
-            $table->foreignId('city_id')->constrained('cities');
-            $table->foreignId('state_id')->constrained('states');
+            $table->string('district')->nullable();
+            $table->string('zip_code')->nullable();
+            $table->foreignId('city_id')->nullable()->constrained('cities');
+            $table->foreignId('state_id')->nullable()->constrained('states');
             $table->text('reference')->nullable();
             $table->timestamps();
             $table->softDeletes();

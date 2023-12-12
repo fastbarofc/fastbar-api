@@ -18,17 +18,17 @@ class UpdateCollaboratorRequest extends FormRequest
     public function rules(): array
     {
         $data = [
-            'name'       => 'string|max:255',
-            'nickname'   => 'string|max:255',
-            'birth_date' => 'date',
-            'cpf'        => 'string|max:14|unique:collaborators,cpf,' . $this->route('collaborator')->id,
-            'rg'         => 'string|max:20|unique:collaborators,rg,' . $this->route('collaborator')->id,
-            'email'      => 'email',
-            'phone_1'    => 'string|max:20|celular_com_ddd',
-            'phone_2'    => 'string|max:20|celular_com_ddd',
-            'sector_id'  => 'exists:sectors,id',
-            'office_id'  => 'exists:offices,id',
-            'has_login'  => 'boolean',
+            'name'       => 'nullable|string|max:255',
+            'nickname'   => 'nullable|string|max:255',
+            'birth_date' => 'nullable|date',
+            'cpf'        => 'nullable|string|max:14|unique:collaborators,cpf,' . $this->route('collaborator')->id,
+            'rg'         => 'nullable|string|max:20|unique:collaborators,rg,' . $this->route('collaborator')->id,
+            'email'      => 'nullable|email',
+            'phone_1'    => 'nullable|string|max:20|celular_com_ddd',
+            'phone_2'    => 'nullable|string|max:20|celular_com_ddd',
+            'sector_id'  => 'nullable|exists:sectors,id',
+            'office_id'  => 'nullable|exists:offices,id',
+            'has_login'  => 'nullable|boolean',
             'user_id'    => 'nullable|exists:users,id',
         ];
 
@@ -37,7 +37,7 @@ class UpdateCollaboratorRequest extends FormRequest
             $data['email']    = 'required|email|unique:users,email,' . $this->route('collaborator')->id;
         }
 
-        if ($this->request->all()['address']) {
+        if (!empty($this->request->all()['address'])) {
             $this->validateAddress($this->request->all()['address']);
         }
 
@@ -77,13 +77,13 @@ class UpdateCollaboratorRequest extends FormRequest
 
     public function validateAddress(array $data) {
         $validator = Validator::make($data, [
-            'street'     => ['string'],
-            'district'   => ['string'],
-            'complement' => ['string'],
-            'city_id'    => ['exists:cities,id'],
-            'state_id'   => ['exists:states,id'],
-            'number'     => ['integer'],
-            'zip_code'   => ['formato_cep'],
+            'street'     => ['nullable', 'string'],
+            'district'   => ['nullable', 'string'],
+            'complement' => ['nullable', 'string'],
+            'city_id'    => ['nullable', 'exists:cities,id'],
+            'state_id'   => ['nullable', 'exists:states,id'],
+            'number'     => ['nullable', 'integer'],
+            'zip_code'   => ['nullable', 'formato_cep'],
             'reference'  => ['nullable', 'string'],
         ],[
             'street.string'        => 'O campo rua deve ser uma string.',

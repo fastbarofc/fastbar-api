@@ -16,18 +16,18 @@ class UpdateOfficeEventRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'string|max:255|unique:office_events,description,' . $this->route('office_event')->id,
-            'daily'       => 'boolean',
-            'coordinator' => 'boolean',
-            'date'        => 'boolean',
+            'description' => 'nullable|string|max:255|unique:office_events,description,' . $this->route('office_event')->id,
+            'daily'       => 'nullable|boolean',
+            'coordinator' => 'nullable|boolean',
+            'date'        => 'nullable|boolean',
         ];
     }
 
     public function messaghes(): array
     {
         return [
-            'description.string'  => 'O campo dercrição deve ser uma string.',
-            'description.max'     => 'O campo dercrição deve ter no máximo 255 caracteres.',
+            'description.string'  => 'O campo descrição deve ser uma string.',
+            'description.max'     => 'O campo descrição deve ter no máximo 255 caracteres.',
             'description.unique'  => 'Essa descrição já está em uso.',
             'daily.boolean'       => 'O campo diario precisa ser booleano.',
             'coordinator.boolean' => 'O campo cordanador precisa ser booleano.',

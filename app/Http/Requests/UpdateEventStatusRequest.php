@@ -16,7 +16,7 @@ class UpdateEventStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|max:255|unique:event_statuses,name,' . $this->route('event_status')->id,
+            'name' => 'nullable|string|max:255|unique:event_statuses,name,' . $this->route('event_status')->id,
         ];
     }
 

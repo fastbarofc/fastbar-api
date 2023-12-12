@@ -16,7 +16,7 @@ class UpdateQualificationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description'      => 'required|string|max:255|unique:qualifications,description,' . $this->qualification->id,
+            'description'      => 'nullable|string|max:255|unique:qualifications,description,' . $this->qualification->id,
         ];
     }
 }

@@ -34,7 +34,7 @@ class UpdateClientRequest extends FormRequest
             'im'           => 'nullable|string|max:255',
         ];
 
-        if ($this->request->all()['address']) {
+        if (!empty($this->request->all()['address'])) {
             $this->validateAddress($this->request->all()['address']);
         }
 
@@ -82,14 +82,14 @@ class UpdateClientRequest extends FormRequest
 
     public function validateAddress(array $data) {
         $validator = Validator::make($data, [
-            'street'     => ['string'],
-            'district'   => ['string'],
-            'complement' => ['string'],
-            'city_id'    => ['exists:cities,id'],
-            'state_id'   => ['exists:states,id'],
-            'number'     => ['integer'],
-            'zip_code'   => ['formato_cep'],
-            'reference'  => ['nullable', 'string'],
+            'street'     => ['nullable', 'string'],
+            'district'   => ['nullable', 'string'],
+            'complement' => ['nullable', 'string'],
+            'city_id'    => ['nullable', 'exists:cities,id'],
+            'state_id'   => ['nullable', 'exists:states,id'],
+            'number'     => ['nullable', 'integer'],
+            'zip_code'   => ['nullable', 'formato_cep'],
+            'reference'  => ['nullable', 'nullable', 'string'],
         ],[
             'street.string'        => 'O campo rua deve ser uma string.',
             'district.string'      => 'O campo bairro deve ser uma string.',

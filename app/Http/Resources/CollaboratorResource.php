@@ -33,7 +33,6 @@ class CollaboratorResource extends JsonResource
                     'points' => $qualification->pivot->points ?? '0',
                 ];
             }),
-            'incidents' => new CollaboratorIncidentResource($this->collaboratorIncidents),
         ];
 
         return $data;

@@ -17,15 +17,15 @@ class UpdateEventPlaceRequest extends FormRequest
     public function rules(): array
     {
         $data = [
-            'name'       => 'string|max:255|unique:event_places,name,' . $this->route('event_place')->id,
-            'responsible'=> 'string|max:255',
-            'description'=> 'string|max:255',
-            'phone_1'    => 'string|min:10|max:20',
-            'phone_2'    => 'string|min:10|max:20',
-            'email'      => 'email',
+            'name'       => 'nullable|string|max:255|unique:event_places,name,' . $this->route('event_place')->id,
+            'responsible'=> 'nullable|string|max:255',
+            'description'=> 'nullable|string|max:255',
+            'phone_1'    => 'nullable|string|min:10|max:20',
+            'phone_2'    => 'nullable|string|min:10|max:20',
+            'email'      => 'nullable|email',
         ];
 
-        if ($this->request->all()['address']) {
+        if (!empty($this->request->all()['address'])) {
             $this->validateAddress($this->request->all()['address']);
         }
 
@@ -38,10 +38,10 @@ class UpdateEventPlaceRequest extends FormRequest
             'name.string'             => 'O campo nome deve ser uma string.',
             'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.',
             'name.unique'             => 'O nome informado já está em uso.',
-            'responsible.string'      => 'O campo nomeresponsável deve ser uma string.',
-            'responsible.max'         => 'O campo nomeresponsável deve ter no máximo 255 caracteres.',
-            'description.string'      => 'O campo dercrição deve ser uma string.',
-            'description.max'         => 'O campo dercrição deve ter no máximo 255 caracteres.',
+            'responsible.string'      => 'O campo nome do responsável deve ser uma string.',
+            'responsible.max'         => 'O campo nome do responsável deve ter no máximo 255 caracteres.',
+            'description.string'      => 'O campo descrição deve ser uma string.',
+            'description.max'         => 'O campo descrição deve ter no máximo 255 caracteres.',
             'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
             'phone_1.max'             => 'O campo telefone 1 deve ter no máximo 20 caracteres.',
             'phone_1.celular_com_ddd' => 'O campo telefone 1 deve ser um telefone válido.',
@@ -57,13 +57,13 @@ class UpdateEventPlaceRequest extends FormRequest
 
     public function validateAddress(array $data) {
         $validator = Validator::make($data, [
-            'street'     => ['string'],
-            'district'   => ['string'],
-            'complement' => ['string'],
-            'city_id'    => ['exists:cities,id'],
-            'state_id'   => ['exists:states,id'],
-            'number'     => ['integer'],
-            'zip_code'   => ['formato_cep'],
+            'street'     => ['nullable', 'string'],
+            'district'   => ['nullable', 'string'],
+            'complement' => ['nullable', 'string'],
+            'city_id'    => ['nullable', 'exists:cities,id'],
+            'state_id'   => ['nullable', 'exists:states,id'],
+            'number'     => ['nullable', 'integer'],
+            'zip_code'   => ['nullable', 'formato_cep'],
             'reference'  => ['nullable', 'string'],
         ],[
             'street.string'        => 'O campo rua deve ser uma string.',

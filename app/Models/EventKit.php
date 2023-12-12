@@ -20,6 +20,7 @@ class EventKit extends Model implements AuditableInterface
         'value',
         'themed_table',
         'ordination',
+        'observation',
         'optional',
     ];
 

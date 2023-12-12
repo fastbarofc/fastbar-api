@@ -16,19 +16,19 @@ class UpdateProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'                => 'string|max:255|unique:products,name,' . $this->route('product')->id,
-            'description'         => 'string|max:255',
+            'name'                => 'nullable|string|max:255|unique:products,name,' . $this->route('product')->id,
+            'description'         => 'nullable|string|max:255',
             'group'               => 'nullable|string|max:255',
             'barcode'             => 'nullable|string|max:255',
-            'unit_id'             => 'numeric|exists:units,id',
+            'unit_id'             => 'nullable|numeric|exists:units,id',
             'weight'              => 'nullable|numeric',
             'manufatturer'        => 'nullable|string|max:255',
-            'value'               => 'numeric|min:0',
+            'value'               => 'nullable|numeric|min:0',
             'supplier'            => 'nullable|string|max:255',
-            'marketable'          => 'boolean',
+            'marketable'          => 'nullable|boolean',
             'average_consumption' => 'nullable|numeric',
-            'display_checklist'   => 'boolean',
-            'own_production'      => 'boolean',
+            'display_checklist'   => 'nullable|boolean',
+            'own_production'      => 'nullable|boolean',
             'recipe_yield'        => 'nullable|numeric',
         ];
     }

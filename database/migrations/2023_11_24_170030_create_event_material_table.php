@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('event_material', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('material_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('event_id')->cascadeOnDelete()->constrained();
+            $table->foreignId('material_id')->cascadeOnDelete()->constrained();
             $table->timestamps();
             $table->softDeletes();
         });

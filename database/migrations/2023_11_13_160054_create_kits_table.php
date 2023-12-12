@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('kits', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('kit_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('slug');
             $table->string('name');
             $table->boolean('themed_table');

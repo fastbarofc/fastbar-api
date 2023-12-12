@@ -21,7 +21,7 @@ class UpdateEventTypeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|max:255|unique:event_types,name,' . $this->route('event_type')->id,
+            'name' => 'nullable|string|max:255|unique:event_types,name,' . $this->route('event_type')->id,
         ];
     }
 

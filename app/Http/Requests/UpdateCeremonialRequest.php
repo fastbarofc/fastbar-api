@@ -16,11 +16,11 @@ class UpdateCeremonialRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => 'string|max:255|unique:ceremonials,name,' . $this->route('ceremonial')->id,
-            'accountable' => 'string|max:255',
-            'email'       => 'email|unique:ceremonials,email,' . $this->route('ceremonial')->id,
-            'phone_1'     => 'string|max:20|celular_com_ddd',
-            'phone_2'     => 'string|max:20|celular_com_ddd',
+            'name'        => 'nullable|string|max:255|unique:ceremonials,name,' . $this->route('ceremonial')->id,
+            'accountable' => 'nullable|string|max:255',
+            'email'       => 'nullable|email|unique:ceremonials,email,' . $this->route('ceremonial')->id,
+            'phone_1'     => 'nullable|string|max:20|celular_com_ddd',
+            'phone_2'     => 'nullable|string|max:20|celular_com_ddd',
         ];
     }
 

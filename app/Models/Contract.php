@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 
-class Contract extends Model implements AuditableInterface
+class Contract extends UuidModel implements AuditableInterface
 {
     use HasFactory, SoftDeletes, Auditable;
 

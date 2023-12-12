@@ -16,9 +16,9 @@ class UpdateEventGiftRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'string|max:255|unique:event_gifts,description,' . $this->route('event_gift')->id,
-            'event_id'    => 'numeric|exists:events,id',
-            'quantity'    => 'numeric|min:0',
+            'description' => 'nullable|string|max:255|unique:event_gifts,description,' . $this->route('event_gift')->id,
+            'event_id'    => 'nullable|numeric|exists:events,id',
+            'quantity'    => 'nullable|numeric|min:0',
         ];
     }
 

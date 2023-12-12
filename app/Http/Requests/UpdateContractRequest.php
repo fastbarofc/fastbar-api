@@ -16,7 +16,7 @@ class UpdateContractRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'event_id' => 'exists:events,id,' . $this->route('event')->id,
+            'event_id' => 'nullable|exists:events,id,' . $this->route('event')->id,
         ];
     }
 

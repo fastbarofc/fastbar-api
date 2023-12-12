@@ -16,11 +16,11 @@ class UpdateDecoratorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'       => 'string|max:255',
-            'email'      => 'email',
-            'responsible'=> 'nullable|string|max:255',
-            'phone_1'    => 'string|min:10|max:20',
-            'phone_2'    => 'nullable|string|min:10|max:20',
+            'name'       => 'nullable|string|max:255',
+            'email'      => 'nullable|email',
+            'responsible'=> 'nullable|nullable|string|max:255',
+            'phone_1'    => 'nullable|string|min:10|max:20',
+            'phone_2'    => 'nullable|nullable|string|min:10|max:20',
         ];
     }
 

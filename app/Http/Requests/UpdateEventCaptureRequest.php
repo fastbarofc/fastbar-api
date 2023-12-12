@@ -16,7 +16,7 @@ class UpdateEventCaptureRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|max:255|unique:event_captures,name,' . $this->route('event_capture')->id,
+            'name' => 'nullable|string|max:255|unique:event_captures,name,' . $this->route('event_capture')->id,
         ];
     }
 

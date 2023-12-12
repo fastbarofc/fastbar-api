@@ -10,12 +10,13 @@ return new class extends Migration
     {
         Schema::create('event_kits', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('event_kit_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('event_kit_id')->nullable()->cascadeOnDelete()->constrained();
+            $table->foreignId('event_id')->cascadeOnDelete()->constrained();
             $table->string('name');
-            $table->decimal('value');
-            $table->string('themed_table');
+            $table->decimal('value')->nullable();
+            $table->string('themed_table')->nullable();
             $table->integer('ordination');
+            $table->string('observation');
             $table->boolean('optional')->default(false);
             $table->timestamps();
             $table->softDeletes();

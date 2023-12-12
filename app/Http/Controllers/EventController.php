@@ -40,7 +40,6 @@ class EventController extends Controller
         $event = Event::create($data);
         Event::create($request->all());
 
-        dd($data['materials']);
         if(!empty($data['materials'])) {
             $event->materials()->sync($data['materials']);
         }
@@ -49,9 +48,15 @@ class EventController extends Controller
             $event->officeEvents()->sync($data['office_events']);
         }
         
-        dd($data['clients']);
         if(!empty($data['clients'])) {
             $event->clients()->sync($data['clients']);
+        }
+
+        if(!empty($data['event_kits'])) {
+            foreach ($data['event_kits'] as $eventKit) {
+                $eventKit['event_id'] = $event->id;
+                EventKit::create($eventKit);
+            }
         }
 
         return response()->json(new EventResource($event), 201);
@@ -71,6 +76,17 @@ class EventController extends Controller
         }
 
         $event->update($request->all());
+        
+        if(!empty($data['event_kits'])) {
+            foreach ($data['event_kits'] as $eventKit) {
+                $eventKit['event_id'] = $event->id;
+                if (!empty($eventKit['id'])) {
+                    EventKit::find($eventKit['id'])->update($eventKit);
+                    continue;
+                }
+                EventKit::create($eventKit);
+            }
+        }
         return response()->json(new EventResource($event), 200);
     }
     

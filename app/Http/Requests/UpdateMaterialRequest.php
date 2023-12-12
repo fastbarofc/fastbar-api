@@ -16,8 +16,8 @@ class UpdateMaterialRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'string|max:255|unique:materials,description,' . $this->route('material')->id,
-            'quantity'      => 'numeric|min:0',
+            'description' => 'nullable|string|max:255|unique:materials,description,' . $this->route('material')->id,
+            'quantity'      => 'nullable|numeric|min:0',
         ];
     }
 
