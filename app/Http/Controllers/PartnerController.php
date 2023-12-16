@@ -13,7 +13,16 @@ class PartnerController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $partners = Partner::paginate($perPage);
+
+        $query = Partner::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $partners = $query->paginate($perPage);
 
         return response()->json([
             'data' => PartnerResource::collection($partners),
@@ -23,6 +32,7 @@ class PartnerController extends Controller
                 'per_page' => $partners->perPage(),
                 'total' => $partners->total(),
             ],
+            'soretable_fields' => Partner::sortableFields()
         ], 200);
     }
 

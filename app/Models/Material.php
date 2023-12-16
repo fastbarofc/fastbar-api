@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,11 +11,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Material extends Model implements AuditableInterface
 {
-    use HasFactory, Sluggable, Auditable, SoftDeletes;
+    use HasFactory, Sluggable, Auditable, SoftDeletes, Sortable;
 
     protected $fillable = [
         'description',
         'slug',
+        'quantity',
+    ];
+
+    protected static $sortableFields = [
+        'description',
         'quantity',
     ];
 

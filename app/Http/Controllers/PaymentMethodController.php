@@ -14,7 +14,16 @@ class PaymentMethodController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $paymentMethods = PaymentMethod::paginate($perPage);
+
+        $query = PaymentMethod::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $paymentMethods = $query->paginate($perPage);
 
         return response()->json([
             'data' => PaymentMethodResource::collection($paymentMethods),
@@ -24,6 +33,7 @@ class PaymentMethodController extends Controller
                 'per_page' => $paymentMethods->perPage(),
                 'total' => $paymentMethods->total(),
             ],
+            'soretable_fields' => PaymentMethod::sortableFields()
         ], 200);
     }
     

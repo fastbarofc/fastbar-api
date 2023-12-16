@@ -13,7 +13,16 @@ class EventTypeController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $eventTypes = EventType::paginate($perPage);
+
+        $query = EventType::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $eventTypes = $query->paginate($perPage);
 
         return response()->json([
             'data' => EventTypeResource::collection($eventTypes),
@@ -23,6 +32,7 @@ class EventTypeController extends Controller
                 'per_page' => $eventTypes->perPage(),
                 'total' => $eventTypes->total(),
             ],
+            'soretable_fields' => EventType::sortableFields()
         ], 200);
     }
 

@@ -44,10 +44,8 @@ class UpdateEventPlaceRequest extends FormRequest
             'description.max'         => 'O campo descrição deve ter no máximo 255 caracteres.',
             'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
             'phone_1.max'             => 'O campo telefone 1 deve ter no máximo 20 caracteres.',
-            'phone_1.celular_com_ddd' => 'O campo telefone 1 deve ser um telefone válido.',
             'phone_2.string'          => 'O campo telefone 2 deve ser uma string.',
             'phone_2.max'             => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
-            'phone_2.celular_com_ddd' => 'O campo telefone 2 deve ser um telefone válido.',
             'email.email'             => 'O campo e-mail deve ser um e-mail válido.',
             'email.unique'            => 'E-mail já cadastrado.',
         ];

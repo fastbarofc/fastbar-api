@@ -13,7 +13,16 @@ class OfficeEventController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $officeEvents = OfficeEvent::paginate($perPage);
+
+        $query = OfficeEvent::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $officeEvents = $query->paginate($perPage);
 
         return response()->json([
             'data' => OfficeEventResource::collection($officeEvents),
@@ -23,6 +32,7 @@ class OfficeEventController extends Controller
                 'per_page' => $officeEvents->perPage(),
                 'total' => $officeEvents->total(),
             ],
+            'soretable_fields' => OfficeEvent::sortableFields()
         ], 200);
     }
 

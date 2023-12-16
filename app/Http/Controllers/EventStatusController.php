@@ -13,7 +13,16 @@ class EventStatusController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $eventStatuses = EventStatus::paginate($perPage);
+
+        $query = EventStatus::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $eventStatuses = $query->paginate($perPage);
 
         return response()->json([
             'data' => EventStatusResource::collection($eventStatuses),
@@ -23,6 +32,7 @@ class EventStatusController extends Controller
                 'per_page' => $eventStatuses->perPage(),
                 'total' => $eventStatuses->total(),
             ],
+            'soretable_fields' => EventStatus::sortableFields()
         ], 200);
     }
 

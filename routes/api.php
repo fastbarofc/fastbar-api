@@ -81,7 +81,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('events/{event}/gifts', [EventController::class, 'gifts'])->name('events.gifts');
     Route::get('events/{event}/materials', [EventController::class, 'materials'])->name('events.materials');
     Route::get('events/{event}/extra-sales', [EventController::class, 'extraSales'])->name('events.extra-sales');
-    Route::get('events/{event}/event-kits', [EventController::class, 'extraKits'])->name('events.event-kits');
+    Route::get('events/{event}/event-kits', [EventController::class, 'eventKits'])->name('events.event-kits');
+    Route::get('events/{event}/contracts', [EventController::class, 'resetContract'])->name('events.reset-contract');
 
     Route::resource('partners', PartnerController::class);
 

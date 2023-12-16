@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,12 +11,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EventGift extends Model implements AuditableInterface
 {
-    use HasFactory, Auditable, Sluggable, SoftDeletes;
+    use HasFactory, Auditable, Sluggable, SoftDeletes, Sortable;
 
     protected $fillable = [
         'description',
         'slug',
         'event_id',
+        'quantity',
+    ];
+
+    protected static $sortableFields = [
+        'description',
         'quantity',
     ];
 

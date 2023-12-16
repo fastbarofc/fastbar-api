@@ -13,7 +13,16 @@ class DecoratorController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $decorators = Decorator::paginate($perPage);
+
+        $query = Decorator::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $decorators = $query->paginate($perPage);
 
         return response()->json([
             'data' => DecoratorResource::collection($decorators),
@@ -23,6 +32,7 @@ class DecoratorController extends Controller
                 'per_page' => $decorators->perPage(),
                 'total' => $decorators->total(),
             ],
+            'soretable_fields' => Decorator::sortableFields()
         ], 200);
     }
 

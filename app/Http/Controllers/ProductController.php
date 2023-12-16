@@ -13,7 +13,16 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $products = Product::paginate($perPage);
+
+        $query = Product::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $products = $query->paginate($perPage);
 
         return response()->json([
             'data' => ProductResource::collection($products),
@@ -23,6 +32,7 @@ class ProductController extends Controller
                 'per_page' => $products->perPage(),
                 'total' => $products->total(),
             ],
+            'soretable_fields' => Product::sortableFields()
         ], 200);
     }
 

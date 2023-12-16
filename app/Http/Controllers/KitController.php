@@ -13,7 +13,16 @@ class KitController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $kits = Kit::paginate($perPage);
+
+        $query = Kit::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $kits = $query->paginate($perPage);
 
         return response()->json([
             'data' => KitResource::collection($kits),
@@ -23,6 +32,7 @@ class KitController extends Controller
                 'per_page' => $kits->perPage(),
                 'total' => $kits->total(),
             ],
+            'soretable_fields' => Kit::sortableFields()
         ], 200);
     }
 

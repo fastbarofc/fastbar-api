@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -10,18 +11,25 @@ use OwenIt\Auditing\Auditable;
 
 class EventKit extends Model implements AuditableInterface
 {
-    use HasFactory, HasFactory, SoftDeletes, Auditable;
+    use HasFactory, HasFactory, SoftDeletes, Auditable, Sortable;
 
     protected $fillable = [
         'name',
         'event_kit_id',
         'event_id',
-        'name',
         'value',
         'themed_table',
         'ordination',
         'observation',
         'optional',
+    ];
+
+    protected static $sortableFields = [
+        'name',
+        'value',
+        'themed_table',
+        'ordination',
+        'observation',
     ];
 
     public function event()

@@ -13,7 +13,16 @@ class ExtraSaleController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $extraSales = ExtraSale::paginate($perPage);
+
+        $query = ExtraSale::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $extraSales = $query->paginate($perPage);
 
         return response()->json([
             'data' => ExtraSaleResource::collection($extraSales),
@@ -23,6 +32,7 @@ class ExtraSaleController extends Controller
                 'per_page' => $extraSales->perPage(),
                 'total' => $extraSales->total(),
             ],
+            'soretable_fields' => ExtraSale::sortableFields()
         ], 200);
     }
 

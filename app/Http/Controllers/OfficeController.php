@@ -14,7 +14,16 @@ class OfficeController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $offices = Office::paginate($perPage);
+
+        $query = Office::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $offices = $query->paginate($perPage);
 
         return response()->json([
             'data' => OfficeResource::collection($offices),
@@ -24,6 +33,7 @@ class OfficeController extends Controller
                 'per_page' => $offices->perPage(),
                 'total' => $offices->total(),
             ],
+            'soretable_fields' => Office::sortableFields()
         ], 200);
     }
     

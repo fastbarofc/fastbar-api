@@ -13,7 +13,16 @@ class MaterialController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $materials = Material::paginate($perPage);
+
+        $query = Material::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $materials = $query->paginate($perPage);
 
         return response()->json([
             'data' => MaterialResource::collection($materials),
@@ -23,6 +32,7 @@ class MaterialController extends Controller
                 'per_page' => $materials->perPage(),
                 'total' => $materials->total(),
             ],
+            'soretable_fields' => Material::sortableFields()
         ], 200);
     }
 

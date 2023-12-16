@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;
@@ -11,7 +12,7 @@ use OwenIt\Auditing\Auditable;
 
 class Event extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable;
+    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable;
 
     protected $fillable = [
         'name',
@@ -28,6 +29,13 @@ class Event extends Model implements AuditableInterface
         'courtesy_parthenon',
         'courtesy_partner',
         'courtesies',
+    ];
+
+    protected static $sortableFields = [
+        'name',
+        'guests',
+        'lease',
+        'date_time',
     ];
 
     public function sluggable(): array
@@ -69,6 +77,10 @@ class Event extends Model implements AuditableInterface
 
     public function eventKits() {
         return $this->hasMany(EventKit::class);
+    }
+
+    public function contracts() {
+        return $this->hasMany(Contract::class);
     }
 
     public function clients()

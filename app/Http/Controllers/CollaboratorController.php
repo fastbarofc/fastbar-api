@@ -35,6 +35,12 @@ class CollaboratorController extends Controller
             $query->where('nickname', 'LIKE', "%$nickname%");
         }
 
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
         $collaborators = $query->paginate($perPage);
 
         return response()->json([
@@ -45,6 +51,7 @@ class CollaboratorController extends Controller
                 'per_page' => $collaborators->perPage(),
                 'total' => $collaborators->total(),
             ],
+            'soretable_fields' => Collaborator::sortableFields()
         ], 200);
     }
     

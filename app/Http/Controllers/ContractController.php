@@ -13,7 +13,16 @@ class ContractController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $contracts = Contract::paginate($perPage);
+
+        $query = Contract::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $contracts = $query->paginate($perPage);
 
         return response()->json([
             'data' => ContractResource::collection($contracts),
@@ -23,6 +32,7 @@ class ContractController extends Controller
                 'per_page' => $contracts->perPage(),
                 'total' => $contracts->total(),
             ],
+            'soretable_fields' => Contract::sortableFields()
         ], 200);
     }
 

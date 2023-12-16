@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;
@@ -11,7 +12,7 @@ use OwenIt\Auditing\Auditable;
 
 class Decorator extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes,Sluggable, Auditable;
+    use HasFactory, SoftDeletes,Sluggable, Auditable, Sortable;
 
     protected $fillable = [
         'name',
@@ -20,6 +21,12 @@ class Decorator extends Model implements AuditableInterface
         'responsible',
         'phone_1',
         'phone_2'
+    ];
+
+    protected static $sortableFields = [
+        'name',
+        'email',
+        'responsible',
     ];
 
     protected static function boot()

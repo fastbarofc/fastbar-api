@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use OwenIt\Auditing\Auditable;
 
 class OfficeEvent extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Auditable, Sluggable;
+    use HasFactory, SoftDeletes, Auditable, Sluggable, Sortable;
 
     protected $fillable = [
         'description', 
@@ -19,6 +20,10 @@ class OfficeEvent extends Model implements AuditableInterface
         'daily',
         'coordinator',
         'date',
+    ];
+
+    protected static $sortableFields = [
+        'description',
     ];
 
     public function sluggable(): array

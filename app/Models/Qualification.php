@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,11 +12,15 @@ use Cviebrock\EloquentSluggable\Sluggable;
 
 class Qualification extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Auditable, Sluggable;
+    use HasFactory, SoftDeletes, Auditable, Sluggable, Sortable;
 
     protected $fillable = [
         'description',
         'slug'
+    ];
+
+    protected static $sortableFields = [
+        'description',
     ];
 
     public function sluggable(): array

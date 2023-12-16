@@ -16,7 +16,16 @@ class SectorController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $sectors = Sector::paginate($perPage);
+
+        $query = Sector::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $sectors = $query->paginate($perPage);
 
         return response()->json([
             'data' => SectorResource::collection($sectors),
@@ -26,6 +35,7 @@ class SectorController extends Controller
                 'per_page' => $sectors->perPage(),
                 'total' => $sectors->total(),
             ],
+            'soretable_fields' => Sector::sortableFields()
         ], 200);
     }
     
@@ -55,7 +65,16 @@ class SectorController extends Controller
     public function offices(Request $request, Sector $sector)
     {
         $perPage = $request->input('per_page', 10);
-        $offices = Office::where('sector_id', $sector->id)->paginate($perPage);
+
+        $query = Sector::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $offices = $query->where('sector_id', $sector->id)->paginate($perPage);
 
         return response()->json([
             'data' => OfficeResource::collection($offices),

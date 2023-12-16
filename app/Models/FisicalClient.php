@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class FisicalClient extends Model implements AuditableInterface
 {
     use HasFactory, SoftDeletes, Auditable;
-
     protected $fillable = [
         'name',
         'nickname',

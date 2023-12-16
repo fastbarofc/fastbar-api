@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,7 +12,7 @@ use Cviebrock\EloquentSluggable\Sluggable;
 
 class Ceremonial extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable;
+    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable;
 
     protected $fillable = [
         'name',
@@ -20,7 +21,14 @@ class Ceremonial extends Model implements AuditableInterface
         'email',
         'phone_1',
         'phone_2',
-    ];protected static function boot()
+    ];
+    
+    protected static $sortableFields = [
+        'name',
+        'email',
+    ];
+
+    protected static function boot()
     {
         parent::boot();
 

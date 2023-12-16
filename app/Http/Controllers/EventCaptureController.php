@@ -13,7 +13,16 @@ class EventCaptureController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $eventCaptures = EventCapture::paginate($perPage);
+
+        $query = EventCapture::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $eventCaptures = $query->paginate($perPage);
 
         return response()->json([
             'data' => EventCaptureResource::collection($eventCaptures),
@@ -23,6 +32,7 @@ class EventCaptureController extends Controller
                 'per_page' => $eventCaptures->perPage(),
                 'total' => $eventCaptures->total(),
             ],
+            'soretable_fields' => EventCapture::sortableFields()
         ], 200);
     }
 

@@ -13,7 +13,16 @@ class UnitController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $units = Unit::paginate($perPage);
+
+        $query = Unit::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $units = $query->paginate($perPage);
 
         return response()->json([
             'data' => UnitResource::collection($units),
@@ -23,6 +32,7 @@ class UnitController extends Controller
                 'per_page' => $units->perPage(),
                 'total' => $units->total(),
             ],
+            'soretable_fields' => Unit::sortableFields()
         ], 200);
     }
 

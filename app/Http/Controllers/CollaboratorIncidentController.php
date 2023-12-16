@@ -13,7 +13,16 @@ class CollaboratorIncidentController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $collaboratorIncidents = CollaboratorIncident::paginate($perPage);
+
+        $query = CollaboratorIncident::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $collaboratorIncidents = $query->paginate($perPage);
 
         return response()->json([
             'data' => CollaboratorIncidentResource::collection($collaboratorIncidents),
@@ -23,6 +32,7 @@ class CollaboratorIncidentController extends Controller
                 'per_page' => $collaboratorIncidents->perPage(),
                 'total' => $collaboratorIncidents->total(),
             ],
+            'soretable_fields' => CollaboratorIncident::sortableFields()
         ], 200);
     }
 

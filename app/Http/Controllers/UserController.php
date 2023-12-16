@@ -15,7 +15,16 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $users = User::paginate($perPage);
+
+        $query = User::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $users = $query->paginate($perPage);
 
         return response()->json([
             'data' => UserResource::collection($users),
@@ -25,6 +34,7 @@ class UserController extends Controller
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
             ],
+            'soretable_fields' => User::sortableFields()
         ], 200);
     }
 

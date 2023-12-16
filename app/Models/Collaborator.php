@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;
@@ -11,7 +12,7 @@ use OwenIt\Auditing\Auditable;
 
 class Collaborator extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Auditable;
+    use HasFactory, SoftDeletes, Auditable, Sortable;
 
     protected $fillable = [
         'name',
@@ -29,6 +30,13 @@ class Collaborator extends Model implements AuditableInterface
         'file_id',
     ];
 
+    protected static $sortableFields = [
+        'name',
+        'nickname',
+        'birth_date',
+        'email',
+    ];
+
     protected static function boot()
     {
         parent::boot();
@@ -36,6 +44,7 @@ class Collaborator extends Model implements AuditableInterface
         static::creating(function ($model)
         {
             $model->cpf = preg_replace("/[^0-9]/", "", $model->cpf);
+            $model->rg = preg_replace("/[^0-9]/", "", $model->rg);
             $model->phone_1 = preg_replace("/[^0-9]/", "", $model->phone_1);
             $model->phone_2 = preg_replace("/[^0-9]/", "", $model->phone_2);
         });
@@ -43,6 +52,7 @@ class Collaborator extends Model implements AuditableInterface
         static::updating(function ($model)
         {
             $model->cpf = preg_replace("/[^0-9]/", "", $model->cpf);
+            $model->rg = preg_replace("/[^0-9]/", "", $model->rg);
             $model->phone_1 = preg_replace("/[^0-9]/", "", $model->phone_1);
             $model->phone_2 = preg_replace("/[^0-9]/", "", $model->phone_2);
         });

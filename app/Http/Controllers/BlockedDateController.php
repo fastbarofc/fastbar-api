@@ -16,7 +16,16 @@ class BlockedDateController extends Controller
         $blockedDates = BlockedDate::all();
 
         $perPage = $request->input('per_page', 10);
-        $blockedDates = BlockedDate::paginate($perPage);
+
+        $query = BlockedDate::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $blockedDates = $query->paginate($perPage);
 
         return response()->json([
             'data' => BlockedDateResource::collection($blockedDates),                
@@ -26,6 +35,7 @@ class BlockedDateController extends Controller
                 'per_page' => $blockedDates->perPage(),
                 'total' => $blockedDates->total(),
             ],
+            'soretable_fields' => BlockedDate::sortableFields()
         ], 200);
     }
     

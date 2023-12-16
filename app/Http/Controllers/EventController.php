@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
+use App\Http\Resources\ContractResource;
 use App\Http\Resources\EventGiftResource;
 use App\Http\Resources\MaterialResource;
 use App\Http\Resources\EventResource;
@@ -14,6 +15,8 @@ use App\Models\EventGift;
 use App\Models\Material;
 use App\Models\ExtraSale;
 use App\Models\EventKit;
+use App\Models\Contract;
+use App\Models\EventType;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -21,7 +24,16 @@ class EventController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $events = Event::paginate($perPage);
+
+        $query = Event::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $events = $query->paginate($perPage);
 
         return response()->json([
             'data' => EventResource::collection($events),
@@ -37,22 +49,39 @@ class EventController extends Controller
     public function store(StoreEventRequest $request)
     {
         $data = $request->all();
-        $event = Event::create($data);
+        $eventType = EventType::find($data['event_type_id']);
+        $event = Event::create([
+            'name'               => !empty($data['name']) ? $data['name'] : null,
+            'slug'               => !empty($data['slug']) ? $data['slug'] : null,
+            'event_type_id'      => !empty($data['event_type_id']) ? $data['event_type_id'] : null,
+            'event_place_id'     => !empty($data['event_place_id']) ? $data['event_place_id'] : null,
+            'lease'              => !empty($data['lease']) ? $data['lease'] : null,
+            'guests'             => !empty($data['guests']) ? $data['guests'] : null,
+            'min_guests'         => !empty($data['min_guests']) ? $data['min_guests'] : null,
+            'date_time'          => !empty($data['date_time']) ? $data['date_time'] : null,
+            'value_unit'         => !empty($data['value_unit']) ? $data['value_unit'] : null,
+            'descont_unit'       => !empty($data['descont_unit']) ? $data['descont_unit'] : null,
+            'contract_body'      => !empty($data['contract_body']) ? $data['contract_body'] : $eventType->contract_text,
+            'courtesy_parthenon' => !empty($data['courtesy_parthenon']) ? $data['courtesy_parthenon'] : null,
+            'courtesy_partner'   => !empty($data['courtesy_partner']) ? $data['courtesy_partner'] : null,
+            'courtesies'         => !empty($data['courtesies']) ? $data['courtesies'] : null,
+        ]);
+        
         Event::create($request->all());
 
-        if(!empty($data['materials'])) {
+        if (!empty($data['materials'])) {
             $event->materials()->sync($data['materials']);
         }
 
-        if(!empty($data['office_events'])) {
+        if (!empty($data['office_events'])) {
             $event->officeEvents()->sync($data['office_events']);
         }
         
-        if(!empty($data['clients'])) {
+        if (!empty($data['clients'])) {
             $event->clients()->sync($data['clients']);
         }
 
-        if(!empty($data['event_kits'])) {
+        if (!empty($data['event_kits'])) {
             foreach ($data['event_kits'] as $eventKit) {
                 $eventKit['event_id'] = $event->id;
                 EventKit::create($eventKit);
@@ -75,7 +104,13 @@ class EventController extends Controller
             $event->materials()->sync($data['materials']);
         }
 
-        $event->update($request->all());
+        if(!empty($data['office_events'])) {
+            $event->officeEvents()->sync($data['office_events']);
+        }
+        
+        if(!empty($data['clients'])) {
+            $event->clients()->sync($data['clients']);
+        }
         
         if(!empty($data['event_kits'])) {
             foreach ($data['event_kits'] as $eventKit) {
@@ -87,6 +122,8 @@ class EventController extends Controller
                 EventKit::create($eventKit);
             }
         }
+        
+        $event->update($request->all());
         return response()->json(new EventResource($event), 200);
     }
     
@@ -99,7 +136,16 @@ class EventController extends Controller
     public function gifts(Request $request, Event $event)
     {
         $perPage = $request->input('per_page', 10);
-        $eventGifts = EventGift::where('event_id', $event->id)->paginate($perPage);
+
+        $query = EventGift::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $eventGifts = $query->where('event_id', $event->id)->paginate($perPage);
 
         return response()->json([
             'data' => EventGiftResource::collection($eventGifts),
@@ -109,6 +155,7 @@ class EventController extends Controller
                 'per_page' => $eventGifts->perPage(),
                 'total' => $eventGifts->total(),
             ],
+            'soretable_fields' => Event::sortableFields()
         ], 200);
     }
 
@@ -116,7 +163,16 @@ class EventController extends Controller
     {
         $perPage = $request->input('per_page', 10);
         $materialIds = $event->materials->pluck('id');
-        $materials = Material::where('id', $materialIds[0])->paginate($perPage);
+
+        $query = Material::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $materials = $query->where('id', $materialIds[0])->paginate($perPage);
 
         return response()->json([
             'data' => MaterialResource::collection($materials),
@@ -132,7 +188,16 @@ class EventController extends Controller
     public function extraSales(Request $request, Event $event)
     {
         $perPage = $request->input('per_page', 10);
-        $extraSales = ExtraSale::where('event_id', $event->id)->paginate($perPage);
+
+        $query = ExtraSale::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $extraSales = $query->where('event_id', $event->id)->paginate($perPage);
 
         return response()->json([
             'data' => ExtraSaleResource::collection($extraSales),
@@ -148,7 +213,16 @@ class EventController extends Controller
     public function eventKits(Request $request, Event $event)
     {
         $perPage = $request->input('per_page', 10);
-        $eventKit = EventKit::where('event_id', $event->id)->paginate($perPage);
+
+        $query = EventKit::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $eventKit = $query->where('event_id', $event->id)->paginate($perPage);
 
         return response()->json([
             'data' => EventKitResource::collection($eventKit),
@@ -159,5 +233,37 @@ class EventController extends Controller
                 'total' => $eventKit->total(),
             ],
         ], 200);
+    }
+    
+    public function contracts(Request $request, Contract $contract)
+    {
+        $perPage = $request->input('per_page', 10);
+
+        $query = Contract::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $contract = $query->where('event_id', $contract->id)->paginate($perPage);
+
+        return response()->json([
+            'data' => ContractResource::collection($contract),
+            'pagination' => [
+                'current_page' => $contract->currentPage(),
+                'total_pages' => $contract->lastPage(),
+                'per_page' => $contract->perPage(),
+                'total' => $contract->total(),
+            ],
+        ], 200);
+    }
+
+    public function resetContract(Event $event) {
+        $eventType = $event->eventType;
+        $event->update([
+            'contract_body' => $eventType->contract_text
+        ]);
     }
 }

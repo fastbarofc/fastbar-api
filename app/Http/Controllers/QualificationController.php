@@ -14,7 +14,16 @@ class QualificationController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $qualifications = Qualification::paginate($perPage);
+
+        $query = Qualification::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $qualifications = $query->paginate($perPage);
 
         return response()->json([
             'data' => QualificationResource::collection($qualifications),
@@ -24,6 +33,7 @@ class QualificationController extends Controller
                 'per_page' => $qualifications->perPage(),
                 'total' => $qualifications->total(),
             ],
+            'soretable_fields' => Qualification::sortableFields()
         ], 200);
     }
     

@@ -27,6 +27,12 @@ class ClientController extends Controller
             $query->where('email', $request->input('email'));
         }
 
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
         $clients = $query->paginate($perPage);
 
         return response()->json([
@@ -37,6 +43,7 @@ class ClientController extends Controller
                 'per_page' => $clients->perPage(),
                 'total' => $clients->total(),
             ],
+            'soretable_fields' => Client::sortableFields()
         ], 200);
     }
     

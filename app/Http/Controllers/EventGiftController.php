@@ -13,7 +13,16 @@ class EventGiftController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $eventGifts = EventGift::paginate($perPage);
+
+        $query = EventGift::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $eventGifts = $query->paginate($perPage);
 
         return response()->json([
             'data' => EventGiftResource::collection($eventGifts),
@@ -23,6 +32,7 @@ class EventGiftController extends Controller
                 'per_page' => $eventGifts->perPage(),
                 'total' => $eventGifts->total(),
             ],
+            'soretable_fields' => EventGift::sortableFields()
         ], 200);
     }
 

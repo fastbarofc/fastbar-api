@@ -19,8 +19,8 @@ class StoreCeremonialRequest extends FormRequest
             'name'        => 'required|string|max:255|unique:ceremonials',
             'accountable' => 'required|string|max:255',
             'email'       => 'required|email|unique:ceremonials',
-            'phone_1'     => 'required|string|max:20|celular_com_ddd',
-            'phone_2'     => 'nullable|string|max:20|celular_com_ddd',
+            'phone_1'     => 'required|string|max:20',
+            'phone_2'     => 'nullable|string|max:20',
         ];
     }
 
@@ -40,10 +40,8 @@ class StoreCeremonialRequest extends FormRequest
             'phone_1.required'        => 'O campo telefone 1 é obrigatório.',
             'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
             'phone_1.max'             => 'O campo telefone 1 deve ter no máximo 20 caracteres.',
-            'phone_1.celular_com_ddd' => 'O campo telefone 1 deve ser um telefone válido.',
             'phone_2.string'          => 'O campo telefone 2 deve ser uma string.',
             'phone_2.max'             => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
-            'phone_2.celular_com_ddd' => 'O campo telefone 2 deve ser um telefone válido.',
         ];
     }
 }

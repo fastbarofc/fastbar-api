@@ -17,6 +17,7 @@ class State extends Model
         'slug'
     ];
 
+
     public function sluggable(): array
     {
         return [

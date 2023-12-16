@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;
@@ -11,7 +12,7 @@ use OwenIt\Auditing\Auditable;
 
 class ExtraSale extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable;
+    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable;
 
 	protected $fillable = [
         'description',
@@ -20,6 +21,12 @@ class ExtraSale extends Model implements AuditableInterface
         'quantity',
         'value_unit',
         'event_id',
+    ];
+
+    protected static $sortableFields = [
+        'description',
+        'quantity',
+        'value_unit',
     ];
 
     public function sluggable(): array

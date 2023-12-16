@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
@@ -14,12 +15,17 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 
 class User extends Authenticatable implements AuditableInterface
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasRoles, Auditable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasRoles, Auditable, Sortable;
 
     protected $fillable = [
         'name',
         'email',
         'password',
+    ];
+
+    protected static $sortableFields = [
+        'name',
+        'email',
     ];
 
     protected $hidden = [

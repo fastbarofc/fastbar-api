@@ -20,7 +20,7 @@ class UpdateDecoratorRequest extends FormRequest
             'email'      => 'nullable|email',
             'responsible'=> 'nullable|nullable|string|max:255',
             'phone_1'    => 'nullable|string|min:10|max:20',
-            'phone_2'    => 'nullable|nullable|string|min:10|max:20',
+            'phone_2'    => 'nullable|string|min:10|max:20',
         ];
     }
 

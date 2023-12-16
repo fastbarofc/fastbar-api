@@ -14,7 +14,16 @@ class EventPlaceController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $eventPlaces = EventPlace::paginate($perPage);
+
+        $query = EventPlace::query();
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $eventPlaces = $query->paginate($perPage);
 
         return response()->json([
             'data' => EventPlaceResource::collection($eventPlaces),
@@ -24,6 +33,7 @@ class EventPlaceController extends Controller
                 'per_page' => $eventPlaces->perPage(),
                 'total' => $eventPlaces->total(),
             ],
+            'soretable_fields' => EventPlace::sortableFields()
         ], 200);
     }
 
