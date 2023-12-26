@@ -23,8 +23,6 @@ class DatabaseSeeder extends Seeder
             ExtraSaleSeeder::class,
             BlockedDateSeeder::class,
             ClientSeeder::class,
-            LegalClientSeeder::class,
-            FisicalClientSeeder::class,
         ]);
     }
 }

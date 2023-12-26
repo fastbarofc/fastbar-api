@@ -27,6 +27,26 @@ class ClientController extends Controller
             $query->where('email', $request->input('email'));
         }
 
+        if($request->input('name')) {
+            $query->where('name', $request->input('name'));
+        }
+
+        if($request->input('company_name')) {
+            $query->where('company_name', $request->input('company_name'));
+        }
+
+        if($request->input('fantasy_name')) {
+            $query->where('fantasy_name', $request->input('fantasy_name'));
+        }
+
+        if($request->input('birth_date')) {
+            $query->where('birth_date', $request->input('birth_date'));
+        }
+
+        if($request->input('nickname')) {
+            $query->where('nickname', $request->input('nickname'));
+        }
+
         if($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
@@ -52,12 +72,6 @@ class ClientController extends Controller
         $data = $request->all();
 
         $client = Client::create($data);
-
-        if($client->type == Client::TYPE_FISICAL) {
-            $client->fisicalClient()->create($data);
-        } else {
-            $client->legalClient()->create($data);
-        }
 
         if (!empty($data['address'])) {
             $address = $data['address'];
@@ -88,23 +102,11 @@ class ClientController extends Controller
         $data = $request->all();
         $client->update($data);
 
-        if($client->type == Client::TYPE_FISICAL) {
-            $client->fisicalClient()->update($data);
-        } else {
-            $client->legalClient()->update($data);
-        }
-
         return response()->json(new ClientResource($client), 200);
     }
     
     public function destroy(Client $client)
     {
-        if($client->type == Client::TYPE_FISICAL) {
-            $client->fisicalClient()->delete();
-        } else {
-            $client->legalClient()->delete();
-        }
-
         $client->delete();
         return response()->json([], 204);
     }

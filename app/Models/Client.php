@@ -12,21 +12,36 @@ use OwenIt\Auditing\Auditable;
 class Client extends Model implements AuditableInterface
 {
     use HasFactory, SoftDeletes, Auditable, Sortable;
-
+        
     const TYPE_FISICAL = 'pf';
     const TYPE_LEGAL = 'pj';
 
-    protected $fillable = [
+    	protected $fillable = [
         'how_met',
         'type',
         'email',
         'phone_1',
-        'phone_2'
+        'phone_2',
+        'name',
+        'nickname',
+        'birth_date',
+        'cpf',
+        'rg',
+        'company_name',
+        'fantasy_name',
+        'cnpj',
+        'ie',
+        'im',
     ];
 
     protected static $sortableFields = [
         'type',
         'email',
+        'name',
+        'company_name',
+        'fantasy_name',
+        'birth_date',
+        'nickname',
     ];
 
     protected static function boot()
@@ -43,66 +58,6 @@ class Client extends Model implements AuditableInterface
     public function address()
     {
         return $this->morphOne(Address::class, 'addressable');
-    }
-    
-    public function fisicalClient()
-    {
-        return $this->hasOne(FisicalClient::class);
-    }
-
-    public function legalClient()
-    {
-        return $this->hasOne(LegalClient::class);
-    }
-
-    public function getCpfAttribute()
-    {
-        return !empty($this->fisicalClient) ? $this->fisicalClient->cpf : null; 
-    }
-
-    public function getCnpjAttribute()
-    {
-        return !empty($this->legalClient) ? $this->legalClient->cnpj : null;
-    }
-
-    public function getRgAttribute()
-    {
-        return !empty($this->fisicalClient) ? $this->fisicalClient->rg : null;
-    }
-
-    public function getImAttribute()
-    {
-        return !empty($this->legalClient) ? $this->legalClient->im : null;
-    }
-
-    public function getIeAttribute()
-    {
-        return !empty($this->legalClient) ? $this->legalClient->ie : null;
-    }
-
-    public function getBirthDateAttribute()
-    {
-        return !empty($this->fisicalClient) ? $this->fisicalClient->birth_date : null;
-    }
-
-    public function getNameAttribute()
-    {
-        return !empty($this->fisicalClient) ? $this->fisicalClient->name : null;
-    }
-
-    public function getCompanyNameAttribute()
-    {
-        return !empty($this->legalClient) ? $this->legalClient->company_name : null;
-    }
-
-    public function getFantasyNameAttribute()
-    {
-        return !empty($this->legalClient) ? $this->legalClient->fantasy_name : null;
-    }
-
-    public function getNicknameAttribute()
-    {
-        return !empty($this->fisicalClient) ? $this->fisicalClient->nickname : null;
     }
 
     public function events()
