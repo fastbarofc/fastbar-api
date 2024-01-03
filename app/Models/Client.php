@@ -32,6 +32,7 @@ class Client extends Model implements AuditableInterface
         'cnpj',
         'ie',
         'im',
+        'user_id'
     ];
 
     protected static $sortableFields = [
@@ -64,4 +65,8 @@ class Client extends Model implements AuditableInterface
     {
         return $this->belongsToMany(Event::class, 'client_event')->withPivot(['main']);
     }    
+
+    public function user() {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Role::create(['name' => 'Developer', 'slug' => 'developer', 'guard_name' => 'api']);
         Role::create(['name' => 'Admin', 'slug' => 'admin', 'guard_name' => 'api']);
+        Role::create(['name' => 'Client', 'slug' => 'client', 'guard_name' => 'api']);
     }
 
     public function down(): void

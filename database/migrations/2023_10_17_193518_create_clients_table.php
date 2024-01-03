@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('cnpj')->nullable();
             $table->string('ie')->nullable();
             $table->string('im')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();
             $table->softDeletes();
         });

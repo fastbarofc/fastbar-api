@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class UpdateClientRequest extends FormRequest
 {
@@ -16,10 +17,16 @@ class UpdateClientRequest extends FormRequest
 
     public function rules(): array
     {
+        $clientId = $this->route('client')->id;
+
         $data = [
             'type'         => 'nullable|string|in:pf,pj',
             'how_met'      => 'nullable|string|max:255',
-            'email'        => 'nullable|email|unique:clients,email,' . $this->route('client')->id,
+            'email'        => [
+                'nullable', 
+                'email',
+                Rule::unique('clients', 'email')->ignore($clientId),
+            ],
             'phone_1'      => 'nullable|string|max:20',
             'phone_2'      => 'nullable|string|max:20',
             'name'         => 'nullable|string|max:255',
@@ -34,7 +41,7 @@ class UpdateClientRequest extends FormRequest
             'im'           => 'nullable|string|max:255',
         ];
 
-        if (!empty($this->request->all()['address'])) {
+        if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
             $this->validateAddress($this->request->all()['address']);
         }
 

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -14,12 +15,22 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::query()->delete();
-        User::factory()
-            ->count(1)
+        $userAdmin = User::factory()
             ->state([
                 'name' => 'Admin',
                 'email' => 'admin@gmail.com.br'
             ])
+        ->create();
+        $roleAdmin = Role::where('name', 'Admin')->first();
+        $userAdmin->assignRole($roleAdmin);
+        
+        $userClient = User::factory()
+        ->state([
+            'name' => 'Client',
+            'email' => 'client@gmail.com.br'
+            ])
             ->create();
-    }
+            $roleClient = Role::where('name', 'Client')->first();
+            $userAdmin->assignRole($roleClient);
+        }
 }

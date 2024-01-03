@@ -67,7 +67,7 @@ class CollaboratorController extends Controller
             $collaborator->update(['user_id' => $user->id]);
         } 
 
-        if (!empty($data['address'])) {
+        if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];
             Address::create([
                'addressable_id'      => $collaborator->id,
@@ -123,7 +123,7 @@ class CollaboratorController extends Controller
             $collaborator->update(['user_id' => $user->id]);
         }
 
-        if (!empty($data['address'])) {
+        if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];
             Address::updateOrCreate(
                 [

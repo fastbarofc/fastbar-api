@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 
 class UpdateCollaboratorRequest extends FormRequest
@@ -17,13 +18,29 @@ class UpdateCollaboratorRequest extends FormRequest
     
     public function rules(): array
     {
+        $collaboratorId = $this->route('collaborator')->id;
+
         $data = [
             'name'       => 'nullable|string|max:255',
             'nickname'   => 'nullable|string|max:255',
             'birth_date' => 'nullable|date',
-            'cpf'        => 'nullable|string|max:14|unique:collaborators,cpf,' . $this->route('collaborator')->id,
-            'rg'         => 'nullable|string|max:20|unique:collaborators,rg,' . $this->route('collaborator')->id,
-            'email'      => 'nullable|email',
+            'cpf'        => [
+                'nullable',
+                'string',
+                'max:14',
+                Rule::unique('collaborators', 'cpf')->ignore($collaboratorId),
+            ],
+            'rg'         => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('collaborators', 'rg')->ignore($collaboratorId),
+            ],
+            'email'      => [
+                'nullable', 
+                'email',
+                Rule::unique('collaborators', 'email')->ignore($collaboratorId),
+            ],
             'phone_1'    => 'nullable|string|max:20',
             'phone_2'    => 'nullable|string|max:20',
             'sector_id'  => 'nullable|exists:sectors,id',
@@ -33,11 +50,15 @@ class UpdateCollaboratorRequest extends FormRequest
         ];
 
         if ($this->request->get('has_login')) {
-            $data['password'] = 'required|string|min:8';
-            $data['email']    = 'required|email|unique:users,email,' . $this->route('collaborator')->id;
+            $data['password'] = 'nullable|string|min:8';
+            $data['email']    = [
+                'nullable',
+                'email',
+                Rule::unique('collaborators', 'email')->ignore($collaboratorId),
+            ];
         }
 
-        if (!empty($this->request->all()['address'])) {
+        if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
             $this->validateAddress($this->request->all()['address']);
         }
 

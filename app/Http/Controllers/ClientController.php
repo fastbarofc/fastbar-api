@@ -73,7 +73,7 @@ class ClientController extends Controller
 
         $client = Client::create($data);
 
-        if (!empty($data['address'])) {
+        if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];
             Address::create([
                'addressable_id'      => $client->id,
@@ -101,6 +101,28 @@ class ClientController extends Controller
     {
         $data = $request->all();
         $client->update($data);
+
+        if (!empty($data['address']) && !empty($data['address']['street'])) {
+            $address = $data['address'];
+            Address::updateOrCreate(
+                [
+                    'addressable_id'      => $client->id,
+                    'addressable_type'    => Client::class
+                ], 
+                [
+                    'addressable_id'      => $client->id,
+                    'addressable_type'    => Client::class,
+                    'street'             => $address['street'],
+                    'district'             => $address['district'],
+                    'complement'             => $address['complement'],
+                    'city_id'             => $address['city_id'],
+                    'state_id'             => $address['state_id'],
+                    'number'             => $address['number'],
+                    'zip_code'             => $address['zip_code'],
+                    'reference'             => $address['reference'],
+                ]
+            );        
+        }
 
         return response()->json(new ClientResource($client), 200);
     }

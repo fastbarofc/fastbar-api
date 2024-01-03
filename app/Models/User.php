@@ -44,4 +44,8 @@ class User extends Authenticatable implements AuditableInterface
     {
         return $this->hasMany(Passport::tokenModel(), 'user_id')->orderBy('created_at', 'desc');
     }
+
+    public function client() {
+        return $this->hasOne(Client::class);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class UpdateEventPlaceRequest extends FormRequest
 {
@@ -16,8 +17,16 @@ class UpdateEventPlaceRequest extends FormRequest
 
     public function rules(): array
     {
+        $eventPlaceId = $this->route('event_place')->id;
+
         $data = [
-            'name'       => 'nullable|string|max:255|unique:event_places,name,' . $this->route('event_place')->id,
+            'name'       => [
+                'nullable', 
+                'string',
+                'max:255',
+                Rule::unique('event_places', 'name')->ignore($eventPlaceId),
+            ],
+            'nullable|string|max:255|unique:event_places,name,' . $this->route('event_place')->id,
             'responsible'=> 'nullable|string|max:255',
             'description'=> 'nullable|string|max:255',
             'phone_1'    => 'nullable|string|min:10|max:20',
@@ -25,7 +34,7 @@ class UpdateEventPlaceRequest extends FormRequest
             'email'      => 'nullable|email',
         ];
 
-        if (!empty($this->request->all()['address'])) {
+        if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
             $this->validateAddress($this->request->all()['address']);
         }
 

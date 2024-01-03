@@ -26,7 +26,7 @@ class StoreEventPlaceRequest extends FormRequest
             'email'       => 'required|email',
         ];
 
-        if (!empty($this->request->all()['address'])) {
+        if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
             $this->validateAddress($this->request->all()['address']);
         }
 
@@ -83,8 +83,7 @@ class StoreEventPlaceRequest extends FormRequest
             'zip_code.required'    => 'O campo CEP é obrigatório',
             'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido',
             'referencia.string'    => 'O campo referencia deve ser uma string',
-            
-    ]);
+        ]);
 
         $validator->validate();
     }

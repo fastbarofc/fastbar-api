@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\EventScope;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,6 +46,12 @@ class Event extends Model implements AuditableInterface
                 'source' => ['name']
             ]
         ];
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::addGlobalScope(new EventScope());
     }
 
     public function eventType() 

@@ -43,7 +43,7 @@ class EventPlaceController extends Controller
 
         $eventPlace = EventPlace::create($data);
 
-        if (!empty($data['address'])) {
+        if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];
             Address::create([
                'addressable_id'      => $eventPlace->id,
@@ -72,7 +72,7 @@ class EventPlaceController extends Controller
         $data = $request->all();
         $eventPlace->update($data);
 
-        if (!empty($data['address'])) {
+        if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];
             Address::updateOrCreate(
                 [
