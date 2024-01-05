@@ -28,6 +28,7 @@ class StoreCollaboratorRequest extends FormRequest
             'sector_id'  => 'required|exists:sectors,id',
             'office_id'  => 'required|exists:offices,id',
             'has_login'  => 'boolean',
+            'active'     => 'boolean',
             'user_id'    => 'nullable|exists:users,id'
         ];
 
@@ -73,6 +74,8 @@ class StoreCollaboratorRequest extends FormRequest
             'office_id.exists'       => 'O campo cargo deve ser um cargo válido.',
             'has_login.required'     => 'O campo login é obrigatório.',
             'has_login.boolean'      => 'O campo possui login deve ser um booleano.',
+            'active.required'        => 'O campo ativo é obrigatório.',
+            'active.boolean'         => 'O campo ativo deve ser um booleano.',
             'password.required'      => 'O campo senha é obrigatório.',
             'password.string'        => 'O campo senha deve ser uma string.',
             'password.min'           => 'O campo senha deve ter no mínimo 8 caracteres.'

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use App\Http\Resources\ClientResource;
-use App\Models\FisicalClient;
+use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use App\Models\Address;
 use App\Models\Client;
@@ -29,14 +30,6 @@ class ClientController extends Controller
 
         if($request->input('name')) {
             $query->where('name', $request->input('name'));
-        }
-
-        if($request->input('company_name')) {
-            $query->where('company_name', $request->input('company_name'));
-        }
-
-        if($request->input('fantasy_name')) {
-            $query->where('fantasy_name', $request->input('fantasy_name'));
         }
 
         if($request->input('birth_date')) {
@@ -72,6 +65,20 @@ class ClientController extends Controller
         $data = $request->all();
 
         $client = Client::create($data);
+
+        $randomPassword = Str::random(8);
+
+        $userData = [
+            'name'     => $client->name,
+            'email'    => $client->email,
+            'password' => bcrypt($randomPassword),
+        ];
+
+        $user = User::create($userData);
+        $client->update(['user_id' => $user->id]);
+
+        $roleClient = Role::where('name', 'Client')->first();
+        $user->assignRole($roleClient);
 
         if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];

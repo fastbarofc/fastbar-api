@@ -22,6 +22,12 @@ class OfficeEvent extends Model implements AuditableInterface
         'date',
     ];
 
+    protected $casts = [
+        'daily' => 'boolean',
+        'coordinator' => 'boolean',
+        'date' => 'boolean',
+    ];
+
     protected static $sortableFields = [
         'description',
     ];

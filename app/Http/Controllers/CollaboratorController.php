@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCollaboratorRequest;
 use App\Http\Requests\UpdateCollaboratorRequest;
 use App\Http\Resources\CollaboratorResource;
+use Spatie\Permission\Models\Role;
 use App\Models\Collaborator;
 use App\Models\User;
 use App\Models\File;
@@ -65,21 +66,24 @@ class CollaboratorController extends Controller
             $data['password'] = bcrypt($data['password']);
             $user = User::create($data);
             $collaborator->update(['user_id' => $user->id]);
+            
+            $roleAdmin = Role::where('name', 'Admin')->first();
+            $user->assignRole($roleAdmin);
         } 
 
         if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];
             Address::create([
-               'addressable_id'      => $collaborator->id,
-               'addressable_type'    => Collaborator::class,
-               'street'             => $address['street'],
-               'district'             => $address['district'],
-               'complement'             => $address['complement'],
-               'city_id'             => $address['city_id'],
-               'state_id'             => $address['state_id'],
-               'number'             => $address['number'],
-               'zip_code'             => $address['zip_code'],
-               'reference'             => $address['reference'],
+               'addressable_id'   => $collaborator->id,
+               'addressable_type' => Collaborator::class,
+               'street'           => $address['street'],
+               'district'         => $address['district'],
+               'complement'       => $address['complement'],
+               'city_id'          => $address['city_id'],
+               'state_id'         => $address['state_id'],
+               'number'           => $address['number'],
+               'zip_code'         => $address['zip_code'],
+               'reference'        => $address['reference'],
             ]);
         }
 
@@ -121,6 +125,15 @@ class CollaboratorController extends Controller
                 'password' => bcrypt($data['password'])
             ]);
             $collaborator->update(['user_id' => $user->id]);
+
+            $roleAdmin = Role::where('name', 'Admin')->first();
+
+            if ($data['active']) {
+                $user->assignRole($roleAdmin);
+            }
+            else {
+                $user->removeRole($roleAdmin);
+            }
         }
 
         if (!empty($data['address']) && !empty($data['address']['street'])) {
@@ -180,3 +193,11 @@ class CollaboratorController extends Controller
         return response()->json([], 204);
     }
 }
+
+/* 
+                'name'     => !empty($data['name']) ? $data['name'] : $actualCollaborator->name,
+                'email'    => !empty($data['email']) ? $data['email'] : $actualCollaborator->email,
+                'password' => !empty($data['password']) ? bcrypt($data['password']) : $actualCollaborator->password
+                */
+                
+

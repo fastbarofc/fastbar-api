@@ -56,7 +56,7 @@ class AuthServiceProvider extends ServiceProvider
         foreach ($operations as $operation) {
             $permission = "{$operation}-{$table}";
             if (!Permission::where('name', $permission)->exists()) {
-                Permission::create(['name' => $permission]);
+                Permission::create(['name' => $permission, 'guard_name' => 'api']);
             }
         }
     }

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreignId('sector_id')->constrained();
             $table->foreignId('office_id')->constrained();
             $table->boolean('has_login')->default(false);
+            $table->boolean('active')->default(true);
             $table->foreignId('user_id')->nullable()->constrained();
             $table->foreignId('file_id')->nullable()->constrained();
             $table->timestamps();

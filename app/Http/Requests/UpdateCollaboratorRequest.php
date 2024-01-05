@@ -46,6 +46,7 @@ class UpdateCollaboratorRequest extends FormRequest
             'sector_id'  => 'nullable|exists:sectors,id',
             'office_id'  => 'nullable|exists:offices,id',
             'has_login'  => 'nullable|boolean',
+            'active'     => 'nullable|boolean',
             'user_id'    => 'nullable|exists:users,id',
         ];
 
@@ -88,6 +89,7 @@ class UpdateCollaboratorRequest extends FormRequest
             'sector_id.exists'        => 'O campo setor deve ser um setor válido.',
             'office_id.exists'        => 'O campo cargo deve ser um cargo válido.',
             'has_login.boolean'       => 'O campo possui login deve ser um booleano.',
+            'active.boolean'         => 'O campo ativo deve ser um booleano.',
             'password.string'         => 'O campo senha deve ser uma string.',
             'password.min'            => 'O campo senha deve ter no mínimo 8 caracteres.'
         ];

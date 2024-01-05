@@ -27,8 +27,6 @@ class Client extends Model implements AuditableInterface
         'birth_date',
         'cpf',
         'rg',
-        'company_name',
-        'fantasy_name',
         'cnpj',
         'ie',
         'im',
@@ -39,8 +37,6 @@ class Client extends Model implements AuditableInterface
         'type',
         'email',
         'name',
-        'company_name',
-        'fantasy_name',
         'birth_date',
         'nickname',
     ];

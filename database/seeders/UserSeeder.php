@@ -29,8 +29,8 @@ class UserSeeder extends Seeder
             'name' => 'Client',
             'email' => 'client@gmail.com.br'
             ])
-            ->create();
-            $roleClient = Role::where('name', 'Client')->first();
-            $userAdmin->assignRole($roleClient);
+        ->create();
+        $roleClient = Role::where('name', 'Client')->first();
+        $userClient->assignRole($roleClient);
         }
 }

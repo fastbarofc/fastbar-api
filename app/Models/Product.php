@@ -32,6 +32,12 @@ class Product extends Model implements AuditableInterface
         'recipe_yield',
     ];
 
+    protected $casts = [
+        'marketable' => 'boolean',
+        'display_checklist' => 'boolean',
+        'own_production' => 'boolean',
+    ];
+
     protected static $sortableFields = [
         'name',
         'description',

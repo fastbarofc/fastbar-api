@@ -26,8 +26,14 @@ class Collaborator extends Model implements AuditableInterface
         'sector_id',
         'office_id',
         'has_login',
+        'active',
         'user_id',
         'file_id',
+    ];
+
+    protected $casts = [
+        'has_login' => 'boolean',
+        'active' => 'boolean'
     ];
 
     protected static $sortableFields = [

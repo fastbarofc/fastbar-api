@@ -23,6 +23,11 @@ class Kit extends Model implements AuditableInterface
         'value'
     ];
 
+    protected $casts = [
+        'themed_table' => 'boolean',
+        'optional' => 'boolean',  
+    ];
+
     protected static $sortableFields = [
         'name',
         'themed_table',

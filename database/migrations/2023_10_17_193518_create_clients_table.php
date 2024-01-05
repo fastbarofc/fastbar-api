@@ -18,10 +18,8 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('nickname')->nullable();
             $table->date('birth_date')->nullable();
-            $table->string('company_name')->nullable();
             $table->string('cpf')->nullable();
             $table->string('rg')->nullable();
-            $table->string('fantasy_name')->nullable();
             $table->string('cnpj')->nullable();
             $table->string('ie')->nullable();
             $table->string('im')->nullable();

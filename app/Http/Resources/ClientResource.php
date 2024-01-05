@@ -22,8 +22,6 @@ class ClientResource extends JsonResource
             'birth_date' => $this->birth_date,
             'cpf'      => $this->cpf,
             'rg'      => $this->rg,
-            'company_name' => $this->company_name,
-            'fantasy_name' => $this->fantasy_name,
             'cnpj'     => $this->cnpj,
             'ie'    => $this->ie,
             'im'   => $this->im,
