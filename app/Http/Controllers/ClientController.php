@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\Address;
 use App\Models\Client;
 use App\Models\User;
+use App\Notifications\UserPassword;
 
 class ClientController extends Controller
 {
@@ -66,9 +67,10 @@ class ClientController extends Controller
 
         $client = Client::create($data);
 
-        $randomPassword = Str::random(8);
-
         if (!empty($data['has_login'])) {
+
+            $randomPassword = Str::random(8);
+
             $userData = [
                 'name'     => $client->name,
                 'email'    => $client->email,
@@ -80,6 +82,9 @@ class ClientController extends Controller
     
             $roleClient = Role::where('name', 'Client')->first();
             $user->assignRole($roleClient);
+
+            $user->notify(new UserPassword($randomPassword));
+
         }
 
         if (!empty($data['address']) && !empty($data['address']['street'])) {
