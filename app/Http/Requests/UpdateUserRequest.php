@@ -17,7 +17,8 @@ class UpdateUserRequest extends FormRequest
     {
         $data = [
             'name'  => 'filled|string|max:255',
-            'email' => 'filled|email|max:255|unique:users,email,' . $this->id
+            'email' => 'filled|email|max:255|unique:users,email,' . $this->id,
+            'active' => 'nullable|boolean',
         ];
 
         if ($this->has('password')) {
@@ -41,7 +42,8 @@ class UpdateUserRequest extends FormRequest
             'password.filled'                     => 'A senha é obrigatória.',
             'password_confirmation.min'           => 'A confirmação de senha deve ter no mínimo 8 caracteres.',
             'password_confirmation.same'          => 'As senhas não conferem.',
-            'password_confirmation.required_with' => 'A confirmação de senha é obrigatória.'
+            'password_confirmation.required_with' => 'A confirmação de senha é obrigatória.',
+            'active.boolean'                      => 'O campo ativo deve ser um booleano.',
         ];
     }
 }

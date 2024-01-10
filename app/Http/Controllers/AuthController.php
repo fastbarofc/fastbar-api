@@ -21,6 +21,12 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if (!$user->active) {
+            return response([
+                'message' => ['O usuário está inativo.']
+            ], 401);
+        }
+
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
 
         $response = [
