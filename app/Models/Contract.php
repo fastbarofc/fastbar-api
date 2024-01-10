@@ -18,11 +18,15 @@ class Contract extends UuidModel implements AuditableInterface
         'version',
         'properties',
         'properties_diff',
+        'signed_at',
+        'client_id',
+        'ip',
     ];
 
     protected $casts = [
         'properties' => 'array',
-        'properties_diff' => 'array'
+        'properties_diff' => 'array',
+        'data' => 'array',
     ];
 
     protected static $sortableFields = [
@@ -33,6 +37,11 @@ class Contract extends UuidModel implements AuditableInterface
     public function event()
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
     }
 }
 

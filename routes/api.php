@@ -101,6 +101,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('clients', ClientController::class);
 
     Route::resource('contracts', ContractController::class);
+    Route::post('contracts/{contract}/to-sign', [ContractController::class, 'toSign'])->name('contracts.to-sign');
 
     Route::resource('collaborator-incidents', CollaboratorIncidentController::class);
 });

@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateContractRequest;
 use App\Http\Resources\ContractResource;
 use App\Models\Contract;
 use Illuminate\Http\Request;
+use App\Models\Event;
 
 class ContractController extends Controller
 {
@@ -43,6 +44,30 @@ class ContractController extends Controller
         $data['properties'] = [];
         $data['properties_diff'] = [];
 
+        $event = Event::find($data['event_id']);
+
+        $mainClient = $event->client->where('pivot.main', true)->first();
+
+        if (empty($mainClient->email)) {
+            return response()->json(['message' => 'O cliente principal não possui e-mail cadastrado.'], 400);
+        }
+
+        $properties = $event->getAttributes();
+
+        $materials = $event->materials;
+        $eventKits = $event->eventKits;
+        $eventGifts = $event->eventGifts;
+        $extraSales = $event->extraSales;
+        $officeEvents = $event->officeEvents;
+
+        $properties['materials'] = $materials->toArray();
+        $properties['event_kits'] = $eventKits->toArray();
+        $properties['event_gifts'] = $eventGifts->toArray();
+        $properties['extra_sales'] = $extraSales->toArray();
+        $properties['office_events'] = $officeEvents->toArray();
+
+        $data['properties'] = $properties;
+
         $contract = Contract::create($data);
         return response()->json(new ContractResource($contract), 201);
     }
@@ -64,5 +89,15 @@ class ContractController extends Controller
     {
         $contract->delete();
         return response()->json([], 204);
+    }
+
+    public function toSign(Request $request, Contract $contract)
+    {
+        $data = $request->all();
+        $data['signed_at'] = now();
+        $data['ip'] = $request->ip();
+
+        $contract->update($data);
+        return response()->json(new ContractResource($contract), 200);
     }
 }

@@ -14,6 +14,9 @@ return new class extends Migration
             $table->integer('version')->default(0);
             $table->json('properties');
             $table->json('properties_diff');
+            $table->timestamp('signed_at')->nullable();
+            $table->foreignId('client_id')->constrained();
+            $table->string('ip')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
