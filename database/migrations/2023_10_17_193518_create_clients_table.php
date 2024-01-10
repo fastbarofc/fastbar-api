@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('how_met')->nullable();
             $table->string('type');
-            $table->string('email');
+            $table->string('email')->nullable();
             $table->string('phone_1');
             $table->string('phone_2')->nullable();
             $table->string('name')->nullable();
