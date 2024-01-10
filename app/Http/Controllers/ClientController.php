@@ -68,17 +68,19 @@ class ClientController extends Controller
 
         $randomPassword = Str::random(8);
 
-        $userData = [
-            'name'     => $client->name,
-            'email'    => $client->email,
-            'password' => bcrypt($randomPassword),
-        ];
-
-        $user = User::create($userData);
-        $client->update(['user_id' => $user->id]);
-
-        $roleClient = Role::where('name', 'Client')->first();
-        $user->assignRole($roleClient);
+        if (!empty($data['has_login'])) {
+            $userData = [
+                'name'     => $client->name,
+                'email'    => $client->email,
+                'password' => bcrypt($randomPassword),
+            ];
+    
+            $user = User::create($userData);
+            $client->update(['user_id' => $user->id]);
+    
+            $roleClient = Role::where('name', 'Client')->first();
+            $user->assignRole($roleClient);
+        }
 
         if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];
@@ -129,6 +131,20 @@ class ClientController extends Controller
                     'reference'             => $address['reference'],
                 ]
             );        
+        }
+
+        if (!empty($data['has_login'])) {
+            $userData = [
+                'name'     => $client->name,
+                'email'    => $client->email,
+            ];
+    
+            $user = User::updateOrCreate(
+                [
+                    'id' => $client->user_id
+                ],
+                $userData
+            );
         }
 
         return response()->json(new ClientResource($client), 200);

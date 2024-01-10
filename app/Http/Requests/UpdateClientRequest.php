@@ -23,7 +23,7 @@ class UpdateClientRequest extends FormRequest
             'type'         => 'nullable|string|in:pf,pj',
             'how_met'      => 'nullable|string|max:255',
             'email'        => [
-                'nullable', 
+                'required_if:has_login,true', 
                 'email',
                 Rule::unique('clients', 'email')->ignore($clientId),
             ],

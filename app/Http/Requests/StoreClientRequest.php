@@ -19,7 +19,7 @@ class StoreClientRequest extends FormRequest
         $data = [
             'type'         => 'required|string|in:pf,pj',
             'how_met'      => 'nullable|string|max:255',
-            'email'        => 'nullable|email|unique:clients,email',
+            'email'        => 'required_if:has_login,true|nullable|email|unique:clients,email',
             'phone_1'      => 'required|string|max:20',
             'phone_2'      => 'nullable|string|max:20',
             'name'         => 'nullable|string|max:255',
@@ -30,6 +30,7 @@ class StoreClientRequest extends FormRequest
             'cnpj'         => 'nullable|string|max:18',
             'ie'           => 'nullable|string|max:255',
             'im'           => 'nullable|string|max:255',
+            'has_login'    => 'nullable|boolean',
         ];
 
         if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
