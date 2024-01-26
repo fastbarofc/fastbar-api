@@ -16,14 +16,14 @@ class UpdateContractRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'event_id' => 'nullable|exists:events,id,' . $this->route('event')->id,
+            
         ];
     }
 
     public function messages() 
     {
         return [
-            'event_id.exists' => 'O ID evento deve ser um ID válido',
+            
         ];
     }
 }

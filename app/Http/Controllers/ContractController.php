@@ -60,6 +60,8 @@ class ContractController extends Controller
         $extraSales = $event->extraSales;
         $officeEvents = $event->officeEvents;
 
+        $data['client_id'] = $mainClient->id;
+
         $properties['materials'] = $materials->toArray();
         $properties['event_kits'] = $eventKits->toArray();
         $properties['event_gifts'] = $eventGifts->toArray();
@@ -79,9 +81,61 @@ class ContractController extends Controller
 
     public function update(UpdateContractRequest $request, Contract $contract)
     {
-        $data = $request->all();
+        $newData = $request->all();
 
-        $contract->update($data);
+        $event = $contract->event;
+
+        $newData['version'] = Contract::where('event_id', $event->id)->count() + 1;
+        $newData['properties'] = [];
+        $newData['properties_diff'] = [];
+
+        $mainClient = $event->clients->where('pivot.main', true)->first();
+
+        if (empty($mainClient->email)) {
+            return response()->json(['message' => 'O cliente principal não possui e-mail cadastrado.'], 400);
+        }
+
+        $properties = $event->getAttributes();
+
+        $materials = $event->materials;
+        $eventKits = $event->eventKits;
+        $eventGifts = $event->eventGifts;
+        $extraSales = $event->extraSales;
+        $officeEvents = $event->officeEvents;
+
+        $properties['materials'] = $materials->toArray();
+        $properties['event_kits'] = $eventKits->toArray();
+        $properties['event_gifts'] = $eventGifts->toArray();
+        $properties['extra_sales'] = $extraSales->toArray();
+        $properties['office_events'] = $officeEvents->toArray();
+
+        $newData['properties'] = $properties;
+
+        $oldData = $contract->toArray();
+
+        $propertiesDiff = [];
+
+        foreach ($newData['properties'] as $key => $value) {
+            if ($key == 'updated_at') {
+                continue;
+            }
+
+            if ($oldData['properties'][$key] != $newData['properties'][$key]) {
+                $propertiesDiff[$key] = [
+                    'old' => $oldData['properties'][$key],
+                    'new' => $newData['properties'][$key],
+                    'operation' => empty($oldData['properties'][$key]) ? 'add' : (empty($newData['properties'][$key]) ? 'remove' : 'update')
+                ];
+            }
+        }
+
+        if (empty($propertiesDiff)) {
+            return response()->json(['message' => 'Nenhuma alteração foi realizada no evento.'], 400);
+        }
+
+        $newData['properties_diff'] = $propertiesDiff;
+
+        $contract->update($newData);
         return response()->json(new ContractResource($contract), 200);
     }
 
