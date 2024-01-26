@@ -32,6 +32,17 @@ return new class extends Migration
             'created_at' => now(),     
             'updated_at' => now(), 
         ]);
+
+        DB::table('oauth_access_tokens')->insert([     
+            'id' => '20e70534d68bf778b9dd5265271083605dc06fb9fea92a9f6d0d796ff31ad14abcd41ab9a39a3c9b',     
+            'user_id' => 1,     
+            'client_id' => '9ad9c4dc-2990-4664-a145-5e6c6438b77d',     
+            'name' => 'Laravel Password Grant Client',     
+            'scopes' => '[]',     
+            'revoked' => 0,     
+            'created_at' => now(),     
+            'updated_at' => now(), 
+        ]);
     }
 
     /**
