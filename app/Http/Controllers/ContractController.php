@@ -46,7 +46,7 @@ class ContractController extends Controller
 
         $event = Event::find($data['event_id']);
 
-        $mainClient = $event->client->where('pivot.main', true)->first();
+        $mainClient = $event->client?->where('pivot.main', true)->first();
 
         if (empty($mainClient->email)) {
             return response()->json(['message' => 'O cliente principal não possui e-mail cadastrado.'], 400);
