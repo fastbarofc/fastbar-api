@@ -20,6 +20,7 @@ class Event extends Model implements AuditableInterface
         'slug',
         'event_type_id',
         'event_place_id',
+        'event_status_id',
         'lease',
         'guests',
         'min_guests',

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('slug');
             $table->foreignId('event_type_id')->constrained();
             $table->foreignId('event_place_id')->constrained();
+            $table->foreignId('event_status_id')->constrained();
             $table->decimal('lease');
             $table->integer('guests');
             $table->integer('min_guests');
