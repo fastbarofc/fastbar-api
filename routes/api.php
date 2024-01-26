@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Models\City;
+use App\Models\State;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
@@ -27,9 +29,6 @@ use App\Http\Controllers\OfficeEventController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CollaboratorIncidentController;
-use App\Models\City;
-use App\Models\CollaboratorIncident;
-use App\Models\State;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -38,19 +37,21 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 Route::group(['middleware' => 'auth:api'], function () {
-    
-    Route::get('states', function() {
+
+    Route::get('states', function () {
         return State::all();
     });
-    
-    Route::get('cities/{state}', function(Request $request, State $state) {
+
+    Route::get('cities/{state}', function (Request $request, State $state) {
         return City::where('state_id', $state->id)->get();
     });
+});
 
+Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('users', UserController::class)->except(['store']);
     Route::post('users/{user}/sync-roles', [UserController::class, 'syncRoles'])->name('users.sync-roles');
     Route::post('users/{user}/sync-permissions', [UserController::class, 'syncPermissions'])->name('users.sync-permissions');
-    
+
     Route::resource('collaborators', CollaboratorController::class);
 
     Route::resource('roles', RoleController::class);
@@ -68,7 +69,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('decorators', DecoratorController::class);
 
     Route::resource('event-captures', EventCaptureController::class);
-    
+
     Route::resource('kits', KitController::class);
 
     Route::resource('products', ProductController::class);
