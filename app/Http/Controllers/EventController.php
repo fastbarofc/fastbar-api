@@ -55,6 +55,7 @@ class EventController extends Controller
             'slug'               => !empty($data['slug']) ? $data['slug'] : null,
             'event_type_id'      => !empty($data['event_type_id']) ? $data['event_type_id'] : null,
             'event_place_id'     => !empty($data['event_place_id']) ? $data['event_place_id'] : null,
+            'event_status_id'    => !empty($data['event_status_id']) ? $data['event_status_id'] : null,
             'lease'              => !empty($data['lease']) ? $data['lease'] : null,
             'guests'             => !empty($data['guests']) ? $data['guests'] : null,
             'min_guests'         => !empty($data['min_guests']) ? $data['min_guests'] : null,
