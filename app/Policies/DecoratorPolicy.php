@@ -13,7 +13,7 @@ class DecoratorPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-decorators');
     }
 
     /**
@@ -21,7 +21,7 @@ class DecoratorPolicy
      */
     public function view(User $user, Decorator $decorator): bool
     {
-        //
+        return $user->hasPermissionTo('view-decorators');
     }
 
     /**
@@ -29,7 +29,7 @@ class DecoratorPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-decorators');
     }
 
     /**
@@ -37,7 +37,7 @@ class DecoratorPolicy
      */
     public function update(User $user, Decorator $decorator): bool
     {
-        //
+        return $user->hasPermissionTo('update-decorators');
     }
 
     /**
@@ -45,7 +45,7 @@ class DecoratorPolicy
      */
     public function delete(User $user, Decorator $decorator): bool
     {
-        //
+        return $user->hasPermissionTo('delete-decorators');
     }
 
     /**
@@ -53,14 +53,14 @@ class DecoratorPolicy
      */
     public function restore(User $user, Decorator $decorator): bool
     {
-        //
+        return false;
     }
-
+    
     /**
      * Determine whether the user can permanently delete the model.
      */
     public function forceDelete(User $user, Decorator $decorator): bool
     {
-        //
+        return false;
     }
 }

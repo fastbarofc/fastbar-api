@@ -13,7 +13,7 @@ class EventGiftPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-event-gifts');
     }
 
     /**
@@ -21,7 +21,7 @@ class EventGiftPolicy
      */
     public function view(User $user, EventGift $eventGift): bool
     {
-        //
+        return $user->hasPermissionTo('view-event-gifts');
     }
 
     /**
@@ -29,7 +29,7 @@ class EventGiftPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-event-gifts');
     }
 
     /**
@@ -37,7 +37,7 @@ class EventGiftPolicy
      */
     public function update(User $user, EventGift $eventGift): bool
     {
-        //
+        return $user->hasPermissionTo('update-event-gifts');
     }
 
     /**
@@ -45,7 +45,7 @@ class EventGiftPolicy
      */
     public function delete(User $user, EventGift $eventGift): bool
     {
-        //
+        return $user->hasPermissionTo('delete-event-gifts');
     }
 
     /**
@@ -53,7 +53,7 @@ class EventGiftPolicy
      */
     public function restore(User $user, EventGift $eventGift): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class EventGiftPolicy
      */
     public function forceDelete(User $user, EventGift $eventGift): bool
     {
-        //
+        return false;
     }
 }

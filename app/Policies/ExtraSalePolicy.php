@@ -13,7 +13,7 @@ class ExtraSalePolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-extra-sales');
     }
 
     /**
@@ -21,7 +21,7 @@ class ExtraSalePolicy
      */
     public function view(User $user, ExtraSale $extraSale): bool
     {
-        //
+        return $user->hasPermissionTo('view-extra-sales');
     }
 
     /**
@@ -29,7 +29,7 @@ class ExtraSalePolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-extra-sales');
     }
 
     /**
@@ -37,7 +37,7 @@ class ExtraSalePolicy
      */
     public function update(User $user, ExtraSale $extraSale): bool
     {
-        //
+        return $user->hasPermissionTo('update-extra-sales');
     }
 
     /**
@@ -45,7 +45,7 @@ class ExtraSalePolicy
      */
     public function delete(User $user, ExtraSale $extraSale): bool
     {
-        //
+        return $user->hasPermissionTo('delete-extra-sales');
     }
 
     /**
@@ -53,7 +53,7 @@ class ExtraSalePolicy
      */
     public function restore(User $user, ExtraSale $extraSale): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class ExtraSalePolicy
      */
     public function forceDelete(User $user, ExtraSale $extraSale): bool
     {
-        //
+        return false;
     }
 }

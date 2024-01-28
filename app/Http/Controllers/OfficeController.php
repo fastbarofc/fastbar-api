@@ -10,6 +10,10 @@ use Illuminate\Http\Request;
 
 class OfficeController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(OfficeController::class, 'office');
+    }
     
     public function index(Request $request)
     {

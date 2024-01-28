@@ -21,6 +21,11 @@ use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(EventController::class, 'event');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
@@ -136,6 +141,8 @@ class EventController extends Controller
 
     public function gifts(Request $request, Event $event)
     {
+        $this->authorize('view', $event);
+
         $perPage = $request->input('per_page', 10);
 
         $query = EventGift::query();
@@ -162,6 +169,8 @@ class EventController extends Controller
 
     public function materials(Request $request, Event $event)
     {
+        $this->authorize('view', $event);
+
         $perPage = $request->input('per_page', 10);
         $materialIds = $event->materials->pluck('id');
 
@@ -188,6 +197,8 @@ class EventController extends Controller
     
     public function extraSales(Request $request, Event $event)
     {
+        $this->authorize('view', $event);
+
         $perPage = $request->input('per_page', 10);
 
         $query = ExtraSale::query();
@@ -213,6 +224,8 @@ class EventController extends Controller
 
     public function eventKits(Request $request, Event $event)
     {
+        $this->authorize('view', $event);
+
         $perPage = $request->input('per_page', 10);
 
         $query = EventKit::query();
@@ -238,6 +251,8 @@ class EventController extends Controller
     
     public function contracts(Request $request, Contract $contract)
     {
+        $this->authorize('view', $contract);
+
         $perPage = $request->input('per_page', 10);
 
         $query = Contract::query();
@@ -261,7 +276,10 @@ class EventController extends Controller
         ], 200);
     }
 
-    public function resetContract(Event $event) {
+    public function resetContract(Event $event) 
+    {
+        $this->authorize('resetContract', $event);
+
         $eventType = $event->eventType;
         $event->update([
             'contract_body' => $eventType->contract_text

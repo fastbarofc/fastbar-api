@@ -13,7 +13,7 @@ class EventStatusPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-event-statuses');
     }
 
     /**
@@ -21,7 +21,7 @@ class EventStatusPolicy
      */
     public function view(User $user, EventStatus $eventStatus): bool
     {
-        //
+        return $user->hasPermissionTo('view-event-statuses');
     }
 
     /**
@@ -29,7 +29,7 @@ class EventStatusPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-event-statuses');
     }
 
     /**
@@ -37,7 +37,7 @@ class EventStatusPolicy
      */
     public function update(User $user, EventStatus $eventStatus): bool
     {
-        //
+        return $user->hasPermissionTo('update-event-statuses');
     }
 
     /**
@@ -45,7 +45,7 @@ class EventStatusPolicy
      */
     public function delete(User $user, EventStatus $eventStatus): bool
     {
-        //
+        return $user->hasPermissionTo('delete-event-statuses');
     }
 
     /**
@@ -53,7 +53,7 @@ class EventStatusPolicy
      */
     public function restore(User $user, EventStatus $eventStatus): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class EventStatusPolicy
      */
     public function forceDelete(User $user, EventStatus $eventStatus): bool
     {
-        //
+        return false;
     }
 }

@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class EventStatusController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(EventStatusController::class, 'eventStatus');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

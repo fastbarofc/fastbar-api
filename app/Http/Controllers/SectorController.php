@@ -12,7 +12,11 @@ use Illuminate\Http\Request;
 
 class SectorController extends Controller
 {
-  
+    public function __construct()
+    {
+        $this->authorizeResource(SectorController::class, 'sector');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
@@ -64,6 +68,8 @@ class SectorController extends Controller
 
     public function offices(Request $request, Sector $sector)
     {
+        $this->authorize('view', $sector);
+
         $perPage = $request->input('per_page', 10);
 
         $query = Sector::query();

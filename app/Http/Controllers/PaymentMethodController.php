@@ -10,7 +10,11 @@ use Illuminate\Http\Request;
 
 class PaymentMethodController extends Controller
 {
-    
+    public function __construct()
+    {
+        $this->authorizeResource(PaymentMethodController::class, 'paymentMethod');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

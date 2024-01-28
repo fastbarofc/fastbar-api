@@ -13,7 +13,7 @@ class QualificationPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-qualifications');
     }
 
     /**
@@ -21,7 +21,7 @@ class QualificationPolicy
      */
     public function view(User $user, Qualification $qualification): bool
     {
-        //
+        return $user->hasPermissionTo('view-qualifications');
     }
 
     /**
@@ -29,7 +29,7 @@ class QualificationPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-qualifications');
     }
 
     /**
@@ -37,7 +37,7 @@ class QualificationPolicy
      */
     public function update(User $user, Qualification $qualification): bool
     {
-        //
+        return $user->hasPermissionTo('update-qualifications');
     }
 
     /**
@@ -45,7 +45,7 @@ class QualificationPolicy
      */
     public function delete(User $user, Qualification $qualification): bool
     {
-        //
+        return $user->hasPermissionTo('delete-qualifications');
     }
 
     /**
@@ -53,7 +53,7 @@ class QualificationPolicy
      */
     public function restore(User $user, Qualification $qualification): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class QualificationPolicy
      */
     public function forceDelete(User $user, Qualification $qualification): bool
     {
-        //
+        return false;
     }
 }

@@ -13,7 +13,7 @@ class EventTypePolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-event-types');
     }
 
     /**
@@ -21,7 +21,7 @@ class EventTypePolicy
      */
     public function view(User $user, EventType $eventType): bool
     {
-        //
+        return $user->hasPermissionTo('view-event-types');
     }
 
     /**
@@ -29,7 +29,7 @@ class EventTypePolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-event-types');
     }
 
     /**
@@ -37,7 +37,7 @@ class EventTypePolicy
      */
     public function update(User $user, EventType $eventType): bool
     {
-        //
+        return $user->hasPermissionTo('update-event-types');
     }
 
     /**
@@ -45,7 +45,7 @@ class EventTypePolicy
      */
     public function delete(User $user, EventType $eventType): bool
     {
-        //
+        return $user->hasPermissionTo('delete-event-types');
     }
 
     /**
@@ -53,7 +53,7 @@ class EventTypePolicy
      */
     public function restore(User $user, EventType $eventType): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class EventTypePolicy
      */
     public function forceDelete(User $user, EventType $eventType): bool
     {
-        //
+        return false;
     }
 }

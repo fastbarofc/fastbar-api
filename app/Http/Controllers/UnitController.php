@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class UnitController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(UnitController::class, 'unit');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

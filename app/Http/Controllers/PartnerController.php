@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class PartnerController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(PartnerController::class, 'partner');
+    }
+    
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

@@ -11,6 +11,11 @@ use Illuminate\Http\Request;
 
 class EventPlaceController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(EventPlaceController::class, 'eventPlace');
+    }
+    
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

@@ -13,7 +13,7 @@ class MaterialPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-materials');
     }
 
     /**
@@ -21,7 +21,7 @@ class MaterialPolicy
      */
     public function view(User $user, Material $material): bool
     {
-        //
+        return $user->hasPermissionTo('view-materials');
     }
 
     /**
@@ -29,7 +29,7 @@ class MaterialPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-materials');
     }
 
     /**
@@ -37,7 +37,7 @@ class MaterialPolicy
      */
     public function update(User $user, Material $material): bool
     {
-        //
+        return $user->hasPermissionTo('update-materials');
     }
 
     /**
@@ -45,7 +45,7 @@ class MaterialPolicy
      */
     public function delete(User $user, Material $material): bool
     {
-        //
+        return $user->hasPermissionTo('delete-materials');
     }
 
     /**
@@ -53,7 +53,7 @@ class MaterialPolicy
      */
     public function restore(User $user, Material $material): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class MaterialPolicy
      */
     public function forceDelete(User $user, Material $material): bool
     {
-        //
+        return false;
     }
 }

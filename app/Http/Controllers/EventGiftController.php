@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class EventGiftController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(EventGiftController::class, 'eventGift');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

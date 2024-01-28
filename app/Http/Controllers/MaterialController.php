@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class MaterialController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(MaterialController::class, 'material');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

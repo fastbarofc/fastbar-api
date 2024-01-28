@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class OfficeEventController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(OfficeEventController::class, 'officeEvent');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

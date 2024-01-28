@@ -13,7 +13,7 @@ class EventPlacePolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-event-places');
     }
 
     /**
@@ -21,7 +21,7 @@ class EventPlacePolicy
      */
     public function view(User $user, EventPlace $eventPlace): bool
     {
-        //
+        return $user->hasPermissionTo('view-event-places');
     }
 
     /**
@@ -29,7 +29,7 @@ class EventPlacePolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-event-places');
     }
 
     /**
@@ -37,7 +37,7 @@ class EventPlacePolicy
      */
     public function update(User $user, EventPlace $eventPlace): bool
     {
-        //
+        return $user->hasPermissionTo('update-event-places');
     }
 
     /**
@@ -45,7 +45,7 @@ class EventPlacePolicy
      */
     public function delete(User $user, EventPlace $eventPlace): bool
     {
-        //
+        return $user->hasPermissionTo('delete-event-places');
     }
 
     /**
@@ -53,7 +53,7 @@ class EventPlacePolicy
      */
     public function restore(User $user, EventPlace $eventPlace): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class EventPlacePolicy
      */
     public function forceDelete(User $user, EventPlace $eventPlace): bool
     {
-        //
+        return false;
     }
 }

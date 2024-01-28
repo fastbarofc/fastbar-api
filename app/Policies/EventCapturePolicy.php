@@ -13,7 +13,7 @@ class EventCapturePolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-event-captures');
     }
 
     /**
@@ -21,7 +21,7 @@ class EventCapturePolicy
      */
     public function view(User $user, EventCapture $eventCapture): bool
     {
-        //
+        return $user->hasPermissionTo('view-event-captures');
     }
 
     /**
@@ -29,7 +29,7 @@ class EventCapturePolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-event-captures');
     }
 
     /**
@@ -37,7 +37,7 @@ class EventCapturePolicy
      */
     public function update(User $user, EventCapture $eventCapture): bool
     {
-        //
+        return $user->hasPermissionTo('update-event-captures');
     }
 
     /**
@@ -45,7 +45,7 @@ class EventCapturePolicy
      */
     public function delete(User $user, EventCapture $eventCapture): bool
     {
-        //
+        return $user->hasPermissionTo('delete-event-captures');
     }
 
     /**
@@ -53,7 +53,7 @@ class EventCapturePolicy
      */
     public function restore(User $user, EventCapture $eventCapture): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class EventCapturePolicy
      */
     public function forceDelete(User $user, EventCapture $eventCapture): bool
     {
-        //
+        return false;
     }
 }

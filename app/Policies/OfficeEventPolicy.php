@@ -13,7 +13,7 @@ class OfficeEventPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-office-events');
     }
 
     /**
@@ -21,7 +21,7 @@ class OfficeEventPolicy
      */
     public function view(User $user, OfficeEvent $officeEvent): bool
     {
-        //
+        return $user->hasPermissionTo('view-office-events');
     }
 
     /**
@@ -29,7 +29,7 @@ class OfficeEventPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-office-events');
     }
 
     /**
@@ -37,7 +37,7 @@ class OfficeEventPolicy
      */
     public function update(User $user, OfficeEvent $officeEvent): bool
     {
-        //
+        return $user->hasPermissionTo('update-office-events');
     }
 
     /**
@@ -45,7 +45,7 @@ class OfficeEventPolicy
      */
     public function delete(User $user, OfficeEvent $officeEvent): bool
     {
-        //
+        return $user->hasPermissionTo('delete-office-events');
     }
 
     /**
@@ -53,7 +53,7 @@ class OfficeEventPolicy
      */
     public function restore(User $user, OfficeEvent $officeEvent): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class OfficeEventPolicy
      */
     public function forceDelete(User $user, OfficeEvent $officeEvent): bool
     {
-        //
+        return false;
     }
 }

@@ -13,7 +13,7 @@ class PaymentMethodPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-payment-methods');
     }
 
     /**
@@ -21,7 +21,7 @@ class PaymentMethodPolicy
      */
     public function view(User $user, PaymentMethod $paymentMethod): bool
     {
-        //
+        return $user->hasPermissionTo('view-payment-methods');
     }
 
     /**
@@ -29,7 +29,7 @@ class PaymentMethodPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-payment-methods');
     }
 
     /**
@@ -37,7 +37,7 @@ class PaymentMethodPolicy
      */
     public function update(User $user, PaymentMethod $paymentMethod): bool
     {
-        //
+        return $user->hasPermissionTo('update-payment-methods');
     }
 
     /**
@@ -45,7 +45,7 @@ class PaymentMethodPolicy
      */
     public function delete(User $user, PaymentMethod $paymentMethod): bool
     {
-        //
+        return $user->hasPermissionTo('delete-payment-methods');
     }
 
     /**
@@ -53,7 +53,7 @@ class PaymentMethodPolicy
      */
     public function restore(User $user, PaymentMethod $paymentMethod): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class PaymentMethodPolicy
      */
     public function forceDelete(User $user, PaymentMethod $paymentMethod): bool
     {
-        //
+        return false;
     }
 }

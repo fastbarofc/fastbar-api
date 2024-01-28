@@ -10,6 +10,11 @@ use App\Models\Decorator;
 
 class DecoratorController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(DecoratorController::class, 'decorator');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
