@@ -13,7 +13,7 @@ class ContractPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-contracts');
     }
 
     /**
@@ -21,7 +21,7 @@ class ContractPolicy
      */
     public function view(User $user, Contract $contract): bool
     {
-        //
+        return $user->hasPermissionTo('view-contracts');
     }
 
     /**
@@ -29,7 +29,7 @@ class ContractPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-contracts');
     }
 
     /**
@@ -37,7 +37,7 @@ class ContractPolicy
      */
     public function update(User $user, Contract $contract): bool
     {
-        //
+        return $user->hasPermissionTo('update-contracts');
     }
 
     /**
@@ -45,7 +45,7 @@ class ContractPolicy
      */
     public function delete(User $user, Contract $contract): bool
     {
-        //
+        return $user->hasPermissionTo('delete-contracts');
     }
 
     /**
@@ -53,7 +53,7 @@ class ContractPolicy
      */
     public function restore(User $user, Contract $contract): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,16 @@ class ContractPolicy
      */
     public function forceDelete(User $user, Contract $contract): bool
     {
-        //
+        return false;
     }
+
+    /**
+     * To sign contract
+     */
+    public function toSign(User $user, Contract $contract): bool
+    {
+        $client = $contract->client;
+        return $client->user_id === $user->id;
+    }
+
 }

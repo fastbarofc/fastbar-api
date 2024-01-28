@@ -11,6 +11,13 @@ use App\Models\Event;
 
 class ContractController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->authorizeResource(ContractController::class, 'contract');
+
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
@@ -147,6 +154,8 @@ class ContractController extends Controller
 
     public function toSign(Request $request, Contract $contract)
     {
+        $this->authorize('toSign', $contract);
+        
         $data = $request->all();
         $data['signed_at'] = now();
         $data['ip'] = $request->ip();

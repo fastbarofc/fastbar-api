@@ -16,6 +16,11 @@ use Illuminate\Http\Request;
 
 class CollaboratorController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->authorizeResource(Collaborator::class, 'collaborator');
+    }
     
     public function index(Request $request)
     {

@@ -13,7 +13,7 @@ class CeremonialPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-ceremonials');
     }
 
     /**
@@ -21,7 +21,7 @@ class CeremonialPolicy
      */
     public function view(User $user, Ceremonial $ceremonial): bool
     {
-        //
+        return $user->hasPermissionTo('view-ceremonials');
     }
 
     /**
@@ -29,7 +29,7 @@ class CeremonialPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-ceremonials');
     }
 
     /**
@@ -37,7 +37,7 @@ class CeremonialPolicy
      */
     public function update(User $user, Ceremonial $ceremonial): bool
     {
-        //
+        return $user->hasPermissionTo('update-ceremonials');
     }
 
     /**
@@ -45,7 +45,7 @@ class CeremonialPolicy
      */
     public function delete(User $user, Ceremonial $ceremonial): bool
     {
-        //
+        return $user->hasPermissionTo('delete-ceremonials');
     }
 
     /**
@@ -53,7 +53,7 @@ class CeremonialPolicy
      */
     public function restore(User $user, Ceremonial $ceremonial): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class CeremonialPolicy
      */
     public function forceDelete(User $user, Ceremonial $ceremonial): bool
     {
-        //
+        return false;
     }
 }

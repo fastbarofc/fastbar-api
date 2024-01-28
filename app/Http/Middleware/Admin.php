@@ -19,7 +19,7 @@ class Admin
         $user = $request->user();
 
         if (!empty($user)) {
-            if (!$user->hasRole('Admin')) {
+            if (!$user->isAdmin()) {
                 return response()->json(['message' => 'Forbidden'], 403);
             }
         }

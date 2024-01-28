@@ -49,4 +49,8 @@ class User extends Authenticatable implements AuditableInterface
     public function client() {
         return $this->hasOne(Client::class);
     }
+
+    public function isAdmin() {
+        return $this->hasRole('Admin');
+    }
 }

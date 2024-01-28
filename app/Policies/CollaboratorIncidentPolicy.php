@@ -13,7 +13,7 @@ class CollaboratorIncidentPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('list-collaborator-incidents');
     }
 
     /**
@@ -21,7 +21,7 @@ class CollaboratorIncidentPolicy
      */
     public function view(User $user, CollaboratorIncident $collaboratorIncident): bool
     {
-        //
+        return $user->hasPermissionTo('view-collaborator-incidents');
     }
 
     /**
@@ -29,7 +29,7 @@ class CollaboratorIncidentPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('create-collaborator-incidents');
     }
 
     /**
@@ -37,7 +37,7 @@ class CollaboratorIncidentPolicy
      */
     public function update(User $user, CollaboratorIncident $collaboratorIncident): bool
     {
-        //
+        return $user->hasPermissionTo('update-collaborator-incidents');
     }
 
     /**
@@ -45,7 +45,7 @@ class CollaboratorIncidentPolicy
      */
     public function delete(User $user, CollaboratorIncident $collaboratorIncident): bool
     {
-        //
+        return $user->hasPermissionTo('delete-collaborator-incidents');
     }
 
     /**
@@ -53,7 +53,7 @@ class CollaboratorIncidentPolicy
      */
     public function restore(User $user, CollaboratorIncident $collaboratorIncident): bool
     {
-        //
+        return false;
     }
 
     /**
@@ -61,6 +61,6 @@ class CollaboratorIncidentPolicy
      */
     public function forceDelete(User $user, CollaboratorIncident $collaboratorIncident): bool
     {
-        //
+        return false;
     }
 }

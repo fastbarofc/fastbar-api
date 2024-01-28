@@ -10,6 +10,12 @@ use Illuminate\Http\Request;
 
 class CeremonialController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->authorizeResource(Ceremonial::class, 'ceremonial');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

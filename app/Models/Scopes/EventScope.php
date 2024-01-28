@@ -12,7 +12,7 @@ class EventScope implements Scope
     {
         $user = auth()->user();
 
-        if (empty($user) || $user->hasRole('admin')) {
+        if (empty($user) || $user->isAdmin()) {
             return;
         }
 

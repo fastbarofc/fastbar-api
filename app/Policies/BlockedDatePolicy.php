@@ -13,7 +13,9 @@ class BlockedDatePolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('read-blocked-dates')
+            ? Response::allow()
+            : Response::deny('Você não tem permissão para listar datas bloqueadas.');
     }
 
     /**

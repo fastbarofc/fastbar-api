@@ -15,6 +15,12 @@ use App\Notifications\UserPassword;
 
 class ClientController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->authorizeResource(Client::class, 'client');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

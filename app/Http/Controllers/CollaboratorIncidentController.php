@@ -10,6 +10,12 @@ use Illuminate\Http\Request;
 
 class CollaboratorIncidentController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->authorizeResource(CollaboratorIncident::class, 'collaboratorIncident');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);

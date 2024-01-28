@@ -7,6 +7,15 @@ use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvid
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Ceremonial;
+use App\Models\Client;
+use App\Models\Collaborator;
+use App\Models\Contract;
+use App\Policies\CeremonialPolicy;
+use App\Policies\ClientPolicy;
+use App\Policies\CollaboratorPolicy;
+use App\Policies\ContractPolicy;
+
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -16,7 +25,10 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        //
+        Ceremonial::class => CeremonialPolicy::class,
+        Client::class => ClientPolicy::class,
+        Collaborator::class => CollaboratorPolicy::class,
+        Contract::class => ContractPolicy::class,
     ];
 
     /**
@@ -26,6 +38,12 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
         $this->registerPermissions();    
+
+        Gate::after(function ($user, $ability, $result, $arguments) {
+            if (!$result) {
+                abort(403, 'Forbidden');
+            }
+        });
     }
 
     /**
@@ -51,7 +69,7 @@ class AuthServiceProvider extends ServiceProvider
 
     private function createPermissionsForTable($table)
     {
-        $operations = ['create', 'read', 'update', 'delete'];
+        $operations = ['list', 'read', 'create', 'update', 'delete'];
 
         foreach ($operations as $operation) {
             $permission = "{$operation}-{$table}";
