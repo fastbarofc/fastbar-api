@@ -11,7 +11,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('list-units');
+        return $user->hasPermissionTo('list-users');
     }
 
     /**
@@ -19,7 +19,7 @@ class UserPolicy
      */
     public function view(User $user): bool
     {
-        return $user->hasPermissionTo('view-units');
+        return $user->hasPermissionTo('view-users');
     }
 
     /**
@@ -27,7 +27,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create-units');
+        return $user->hasPermissionTo('create-users');
     }
 
     /**
@@ -35,7 +35,7 @@ class UserPolicy
      */
     public function update(User $user): bool
     {
-        return $user->hasPermissionTo('update-units');
+        return $user->hasPermissionTo('update-users');
     }
 
     /**
@@ -43,7 +43,7 @@ class UserPolicy
      */
     public function delete(User $user): bool
     {
-        return $user->hasPermissionTo('delete-units');
+        return $user->hasPermissionTo('delete-users');
     }
 
     /**
@@ -64,11 +64,11 @@ class UserPolicy
 
     public function syncRoles(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('update-roles');
     }
 
     public function syncPermissions(User $user): bool
     {
-        //
+        return $user->hasPermissionTo('update-permissions');
     }
 }
