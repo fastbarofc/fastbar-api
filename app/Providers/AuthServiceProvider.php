@@ -99,6 +99,12 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
         $this->registerPermissions();    
 
+        Gate::before(function ($user, $ability) {
+            if ($user->isAdmin()) {
+                return true;
+            }
+        });
+
         Gate::after(function ($user, $ability, $result, $arguments) {
             if (!$result) {
                 abort(403, 'Forbidden');
