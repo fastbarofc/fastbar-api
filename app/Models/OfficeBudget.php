@@ -15,8 +15,7 @@ class OfficeBudget extends Model implements AuditableInterface
 
     protected $fillable = [
         'name',
-        'slug',
-        'event_id',
+        'slug'
     ];
 
     public function sluggable(): array
