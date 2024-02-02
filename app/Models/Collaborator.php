@@ -69,7 +69,7 @@ class Collaborator extends Model implements AuditableInterface
         return $this->belongsTo(Sector::class);
     }
 
-    public function office()
+    public function sectorOffice()
     {
         return $this->belongsTo(SectorOffice::class);
     }

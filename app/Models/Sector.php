@@ -32,8 +32,8 @@ class Sector extends Model implements AuditableInterface
         ];
     }
 
-    public function offices()
+    public function sectorOffices()
     {
-        return $this->hasMany(Office::class);
+        return $this->hasMany(SectorOffice::class);
     }
 }
