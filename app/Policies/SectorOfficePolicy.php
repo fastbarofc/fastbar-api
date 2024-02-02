@@ -5,7 +5,7 @@ namespace App\Policies;
 use App\Models\User;
 use App\Models\SectorOffice;
 
-class OfficePolicy
+class SectorOfficePolicy
 {
     public function viewAny(User $user): bool
     {

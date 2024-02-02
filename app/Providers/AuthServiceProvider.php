@@ -22,7 +22,8 @@ use App\Models\EventType;
 use App\Models\ExtraSale;
 use App\Models\Kit;
 use App\Models\Material;
-use App\Models\Office;
+use App\Models\SectorOffice;
+use App\Models\OfficeBudget;
 use App\Models\OfficeEvent;
 use App\Models\Partner;
 use App\Models\PaymentMethod;
@@ -47,15 +48,15 @@ use App\Policies\ExtraSalePolicy;
 use App\Policies\KitPolicy;
 use App\Policies\MaterialPolicy;
 use App\Policies\OfficeEventPolicy;
-use App\Policies\OfficePolicy;
+use App\Policies\SectorOfficePolicy;
 use App\Policies\PartnerPolicy;
 use App\Policies\PaymentMethodPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\QualificationPolicy;
-use App\Policies\RolePolicy;
 use App\Policies\SectorPolicy;
 use App\Policies\UnitPolicy;
 use App\Policies\UserPolicy;
+use App\Policies\OfficeBudgetPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -80,7 +81,7 @@ class AuthServiceProvider extends ServiceProvider
         ExtraSale::class => ExtraSalePolicy::class,
         Kit::class => KitPolicy::class,
         Material::class => MaterialPolicy::class,
-        Office::class => OfficePolicy::class,
+        SectorOffice::class => SectorOfficePolicy::class,
         OfficeEvent::class => OfficeEventPolicy::class,
         Partner::class => PartnerPolicy::class,
         PaymentMethod::class => PaymentMethodPolicy::class,
@@ -89,6 +90,7 @@ class AuthServiceProvider extends ServiceProvider
         Sector::class => SectorPolicy::class,
         Unit::class => UnitPolicy::class,
         User::class => UserPolicy::class,
+        OfficeBudget::class => OfficeBudgetPolicy::class,
     ];
 
     /**
