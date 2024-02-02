@@ -10,6 +10,12 @@ use App\Http\Resources\OfficeBudgetResource;
 
 class OfficeBudgetController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->authorizeResource(OfficeBudget::class, 'officeBudget');
+    }
+
     /**
      * Display a listing of the resource.
      */
