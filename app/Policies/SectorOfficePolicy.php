@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Office;
+use App\Models\SectorOffice;
 
 class OfficePolicy
 {
@@ -15,7 +15,7 @@ class OfficePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Office $office): bool
+    public function view(User $user, SectorOffice $sectorOffice): bool
     {
         return $user->hasPermissionTo('view-offices');
     }
@@ -31,7 +31,7 @@ class OfficePolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Office $office): bool
+    public function update(User $user, SectorOffice $sectorOffice): bool
     {
         return $user->hasPermissionTo('update-offices');
     }
@@ -39,7 +39,7 @@ class OfficePolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Office $office): bool
+    public function delete(User $user, SectorOffice $sectorOffice): bool
     {
         return $user->hasPermissionTo('delete-offices');
     }
@@ -47,7 +47,7 @@ class OfficePolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Office $office): bool
+    public function restore(User $user, SectorOffice $sectorOffice): bool
     {
         return false;
     }
@@ -55,7 +55,7 @@ class OfficePolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Office $office): bool
+    public function forceDelete(User $user, SectorOffice $sectorOffice): bool
     {
         return false;
     }

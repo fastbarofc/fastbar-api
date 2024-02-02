@@ -9,7 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\SectorController;
-use App\Http\Controllers\OfficeController;
+use App\Http\Controllers\SectorOfficeController;
 use App\Http\Controllers\CollaboratorController;
 use App\Http\Controllers\EventStatusController;
 use App\Http\Controllers\DecoratorController;
@@ -62,7 +62,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('sectors', SectorController::class);
     Route::get('sectors/{sector}/offices', [SectorController::class, 'offices'])->name('sectors.offices');
 
-    Route::resource('offices', OfficeController::class);
+    Route::resource('sector-offices', SectorOfficeController::class);
 
     Route::resource('event-statuses', EventStatusController::class);
 

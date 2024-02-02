@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Sector;
-use App\Models\Office;
+use App\Models\SectorOffice;
 use App\Models\Qualification;
 use App\Models\User;
 
@@ -26,7 +26,7 @@ class CollaboratorFactory extends Factory
         }
 
 
-        $office = Office::all()->random();
+        $sectorOffice = SectorOffice::all()->random();
 
         return [
             'name'       => $this->faker->name,
@@ -37,8 +37,8 @@ class CollaboratorFactory extends Factory
             'phone_1'    => $this->faker->phoneNumber,
             'phone_2'    => $this->faker->phoneNumber,
             'email'      => $email,
-            'sector_id'  => $office->sector_id,
-            'office_id'  => $office->id,
+            'sector_id'  => $sectorOffice->sector_id,
+            'sector_office_id'  => $sectorOffice->id,
             'user_id'    => $hasLogin ? $user->id : null,
             'has_login'  => $hasLogin,
         ];

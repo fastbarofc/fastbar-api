@@ -24,7 +24,7 @@ class Collaborator extends Model implements AuditableInterface
         'phone_1',
         'phone_2',
         'sector_id',
-        'office_id',
+        'sector_office_id',
         'has_login',
         'active',
         'user_id',
@@ -71,7 +71,7 @@ class Collaborator extends Model implements AuditableInterface
 
     public function office()
     {
-        return $this->belongsTo(Office::class);
+        return $this->belongsTo(SectorOffice::class);
     }
 
     public function user()

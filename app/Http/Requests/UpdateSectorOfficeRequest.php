@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateOfficeRequest extends FormRequest
+class UpdateSectorOfficeRequest extends FormRequest
 {
     protected $stopOnFirstFailure = true;
 

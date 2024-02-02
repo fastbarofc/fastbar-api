@@ -6,8 +6,8 @@ use App\Http\Requests\StoreSectorRequest;
 use App\Http\Requests\UpdateSectorRequest;
 use App\Models\Sector;
 use App\Http\Resources\SectorResource;
-use App\Http\Resources\OfficeResource;
-use App\Models\Office;
+use App\Http\Resources\SectorOfficeResource;
+use App\Models\SectorOffice;
 use Illuminate\Http\Request;
 
 class SectorController extends Controller
@@ -66,7 +66,7 @@ class SectorController extends Controller
         return response([], 204);
     }
 
-    public function offices(Request $request, Sector $sector)
+    public function sectorOffices(Request $request, Sector $sector)
     {
         $this->authorize('view', $sector);
 
@@ -80,15 +80,15 @@ class SectorController extends Controller
             $query->orderByField($sorteableField, $direction);
         }
 
-        $offices = $query->where('sector_id', $sector->id)->paginate($perPage);
+        $sectorOffices = $query->where('sector_id', $sector->id)->paginate($perPage);
 
         return response()->json([
-            'data' => OfficeResource::collection($offices),
+            'data' => SectorOfficeResource::collection($sectorOffices),
             'pagination' => [
-                'current_page' => $offices->currentPage(),
-                'total_pages' => $offices->lastPage(),
-                'per_page' => $offices->perPage(),
-                'total' => $offices->total(),
+                'current_page' => $sectorOffices->currentPage(),
+                'total_pages' => $sectorOffices->lastPage(),
+                'per_page' => $sectorOffices->perPage(),
+                'total' => $sectorOffices->total(),
             ],
         ], 200);
     }

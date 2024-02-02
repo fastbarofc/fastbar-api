@@ -32,8 +32,8 @@ class CollaboratorController extends Controller
             $query->where('sector_id', $request->input('sector_id'));
         }
 
-        if($request->input('office_id')) {
-            $query->where('office_id', $request->input('office_id'));
+        if($request->input('sector_office_id')) {
+            $query->where('sector_office_id', $request->input('sector_office_id'));
         }
 
         if($request->input('nickname')) {

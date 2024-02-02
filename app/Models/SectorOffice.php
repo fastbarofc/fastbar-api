@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
 
-class Office extends Model implements AuditableInterface
+class SectorOffice extends Model implements AuditableInterface
 {
     use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable;
 
