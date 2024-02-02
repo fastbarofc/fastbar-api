@@ -96,5 +96,15 @@ class Event extends Model implements AuditableInterface
         return $this->belongsToMany(Client::class, 'client_event')->withPivot(['main']);
     }
 
+    public function eventStatus()
+    {
+        return $this->belongsTo(EventStatus::class);
+    }
+
+    public function eventBudgets()
+    {
+        return $this->hasMany(OfficeBudget::class);
+    }
+
 
 }

@@ -29,6 +29,7 @@ use App\Http\Controllers\OfficeEventController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CollaboratorIncidentController;
+use App\Http\Controllers\OfficeBudgetController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -63,6 +64,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('sectors/{sector}/offices', [SectorController::class, 'offices'])->name('sectors.offices');
 
     Route::resource('sector-offices', SectorOfficeController::class);
+
+    Route::resource('office-budgets', OfficeBudgetController::class);
 
     Route::resource('event-statuses', EventStatusController::class);
 

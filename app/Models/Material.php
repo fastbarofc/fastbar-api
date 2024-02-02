@@ -6,7 +6,8 @@ use App\Traits\Sortable;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use OwenIt\Auditing\Auditable;use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Material extends Model implements AuditableInterface
