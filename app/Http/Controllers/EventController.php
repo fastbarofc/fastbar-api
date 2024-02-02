@@ -94,6 +94,13 @@ class EventController extends Controller
             }
         }
 
+        if (!empty($data['event_gifts'])) {
+            foreach ($data['event_gifts'] as $eventGift) {
+                $eventGift['event_id'] = $event->id;
+                EventGift::create($eventGift);
+            }
+        }
+
         return response()->json(new EventResource($event), 201);
     }
 
