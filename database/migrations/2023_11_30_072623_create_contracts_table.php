@@ -12,8 +12,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignId('event_id')->constrained();
             $table->integer('version')->default(0);
-            $table->json('properties')->nullable();
-            $table->json('properties_diff')->nullable();
+            $table->string('properties')->nullable();
+            $table->string('properties_diff')->nullable();
             $table->timestamp('signed_at')->nullable();
             $table->foreignId('client_id')->constrained();
             $table->string('ip')->nullable();
