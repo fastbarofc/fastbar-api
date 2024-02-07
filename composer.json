@@ -9,6 +9,8 @@
         "cviebrock/eloquent-sluggable": "^10.0",
         "goldspecdigital/laravel-eloquent-uuid": "^10.0",
         "guzzlehttp/guzzle": "^7.2",
+        "intervention/image": "*",
+        "intervention/imagecache": "^2.6",
         "laravel/framework": "^10.10",
         "laravel/passport": "^11.9",
         "laravel/sanctum": "^3.2",
