@@ -1,0 +1,26 @@
+name: deploy
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH Commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ vars.SSH_HOST }}
+          port: ${{ vars.SSH_PORT }}
+          username: ${{ vars.SSH_USER }}
+          key: ${{ vars.SSH_PRIVATE_KEY }}
+          script: |
+            umask 022
+            cd parthenon-system-api
+            git reset --hard
+            git pull origin main
+            /opt/alt/php-fpm82/usr/bin/php /usr/local/bin/composer install
+            /opt/alt/php-fpm82/usr/bin/php artisan migrate --force
+            /opt/alt/php-fpm82/usr/bin/php artisan cache:clear
+            /opt/alt/php-fpm82/usr/bin/php artisan config:clear
+            /opt/alt/php-fpm82/usr/bin/php artisan queue:restart
