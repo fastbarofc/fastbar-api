@@ -79,8 +79,16 @@ class EventController extends Controller
             $event->materials()->sync($data['materials']);
         }
 
+        if (!empty($data['utensils'])) {
+            $event->utensils()->sync($data['utensils']);
+        }
+
         if (!empty($data['office_events'])) {
             $event->officeEvents()->sync($data['office_events']);
+        }
+
+        if (!empty($data['office_budgets'])) {
+            $event->officeBudgets()->sync($data['office_budgets']);
         }
         
         if (!empty($data['clients'])) {

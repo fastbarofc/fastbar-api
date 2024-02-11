@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             ExtraSaleSeeder::class,
             BlockedDateSeeder::class,
             ClientSeeder::class,
+            UtensilSeeder::class,
         ]);
     }
 }
