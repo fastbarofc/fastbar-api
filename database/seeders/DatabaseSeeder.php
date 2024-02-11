@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             BlockedDateSeeder::class,
             ClientSeeder::class,
             UtensilSeeder::class,
+            StockSeeder::class,
         ]);
     }
 }
