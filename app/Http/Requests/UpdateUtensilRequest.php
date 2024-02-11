@@ -35,6 +35,8 @@ class UpdateUtensilRequest extends FormRequest
     {
         return [
             'description.required' => 'O campo descrição é obrigatório.',
+            'description.string' => 'A descrição deve ser uma string.',
+            'description.max' => 'A descrição deve ter no máximo 255 caracteres.',
         ];
     }
 }
