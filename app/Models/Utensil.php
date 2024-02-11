@@ -10,7 +10,7 @@ use OwenIt\Auditing\Auditable;
 use App\Traits\Sortable;
 use Cviebrock\EloquentSluggable\Sluggable;
 
-class Utensil extends Model
+class Utensil extends Model implements AuditableInterface
 {
     use HasFactory, Sluggable, SoftDeletes, Auditable, Sortable;
 
