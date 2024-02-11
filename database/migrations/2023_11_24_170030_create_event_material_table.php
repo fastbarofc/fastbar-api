@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('event_id')->cascadeOnDelete()->constrained();
             $table->foreignId('material_id')->cascadeOnDelete()->constrained();
+            $table->boolean('shown_in_checklist')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });
