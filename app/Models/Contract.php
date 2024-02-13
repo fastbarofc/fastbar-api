@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 
 class Contract extends UuidModel implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Auditable, Sortable;
+    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'event_id',
@@ -32,6 +33,12 @@ class Contract extends UuidModel implements AuditableInterface
     protected static $sortableFields = [
         'event_id',
         'version',
+    ];
+
+    protected static $filterableFields = [
+        'event_id',
+        'version',
+        'client_id'
     ];
 
     public function event()
