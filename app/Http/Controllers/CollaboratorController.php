@@ -28,17 +28,11 @@ class CollaboratorController extends Controller
 
         $query = Collaborator::query();
 
-        if($request->input('sector_id')) {
-            $query->where('sector_id', $request->input('sector_id'));
-        }
-
-        if($request->input('sector_office_id')) {
-            $query->where('sector_office_id', $request->input('sector_office_id'));
-        }
-
-        if($request->input('nickname')) {
-            $nickname = $request->input('nickname');
-            $query->where('nickname', 'LIKE', "%$nickname%");
+        if ($request->input('filter_by')) {
+            $filterableArray = $request->input('filter_by');
+            foreach ($filterableArray as $field => $value) {
+                $query->filterByField($field, $value);
+            }
         }
 
         if($request->input('order_by')) {
@@ -197,12 +191,12 @@ class CollaboratorController extends Controller
         $collaborator->delete();
         return response()->json([], 204);
     }
-}
 
-/* 
-                'name'     => !empty($data['name']) ? $data['name'] : $actualCollaborator->name,
-                'email'    => !empty($data['email']) ? $data['email'] : $actualCollaborator->email,
-                'password' => !empty($data['password']) ? bcrypt($data['password']) : $actualCollaborator->password
-                */
+    public function getImage(Collaborator $collaborator)
+    {
+        $file = File::where('id', $collaborator->file_id)->first();
+        return response()->json($file, 200);
+    }
+}
                 
 
