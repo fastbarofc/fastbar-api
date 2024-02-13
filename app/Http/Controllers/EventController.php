@@ -55,7 +55,8 @@ class EventController extends Controller
                 'per_page' => $events->perPage(),
                 'total' => $events->total(),
             ],
-            'sortable_fields' => Event::sortableFields()
+            'sortable_fields' => Event::sortableFields(),
+            'filterable_fields' => Event::filterableFields()
         ], 200);
     }
 

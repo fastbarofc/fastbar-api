@@ -44,7 +44,8 @@ class OfficeEventController extends Controller
                 'per_page' => $officeEvents->perPage(),
                 'total' => $officeEvents->total(),
             ],
-            'sortable_fields' => OfficeEvent::sortableFields()
+            'sortable_fields' => OfficeEvent::sortableFields(),
+            'filterable_fields' => OfficeEvent::filterableFields()
         ], 200);
     }
 

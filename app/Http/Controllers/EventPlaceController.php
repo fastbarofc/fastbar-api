@@ -45,7 +45,8 @@ class EventPlaceController extends Controller
                 'per_page' => $eventPlaces->perPage(),
                 'total' => $eventPlaces->total(),
             ],
-            'sortable_fields' => EventPlace::sortableFields()
+            'sortable_fields' => EventPlace::sortableFields(),
+            'filterable_fields' => EventPlace::filterableFields()
         ], 200);
     }
 

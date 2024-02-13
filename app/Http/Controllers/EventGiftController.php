@@ -44,7 +44,8 @@ class EventGiftController extends Controller
                 'per_page' => $eventGifts->perPage(),
                 'total' => $eventGifts->total(),
             ],
-            'sortable_fields' => EventGift::sortableFields()
+            'sortable_fields' => EventGift::sortableFields(),
+            'filterable_fields' => EventGift::filterableFields()
         ], 200);
     }
 

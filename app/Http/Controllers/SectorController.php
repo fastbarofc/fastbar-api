@@ -38,7 +38,8 @@ class SectorController extends Controller
 
         return response()->json([
             'data' => SectorResource::collection($sectors),
-            'sortable_fields' => Sector::sortableFields()
+            'sortable_fields' => Sector::sortableFields(),
+            'filterable_fields' => Sector::filterableFields()
         ], 200);
     }
     

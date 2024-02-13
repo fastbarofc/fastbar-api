@@ -50,7 +50,8 @@ class ClientController extends Controller
                 'per_page' => $clients->perPage(),
                 'total' => $clients->total(),
             ],
-            'sortable_fields' => Client::sortableFields()
+            'sortable_fields' => Client::sortableFields(),
+            'filterable_fields' => Client::filterableFields()
         ], 200);
     }
     

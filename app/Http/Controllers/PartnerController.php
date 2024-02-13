@@ -44,7 +44,8 @@ class PartnerController extends Controller
                 'per_page' => $partners->perPage(),
                 'total' => $partners->total(),
             ],
-            'sortable_fields' => Partner::sortableFields()
+            'sortable_fields' => Partner::sortableFields(),
+            'filterable_fields' => Partner::filterableFields()
         ], 200);
     }
 

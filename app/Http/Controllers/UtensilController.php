@@ -44,7 +44,8 @@ class UtensilController extends Controller
                 'per_page' => $utensils->perPage(),
                 'total' => $utensils->total(),
             ],
-            'sortable_fields' => Utensil::sortableFields()
+            'sortable_fields' => Utensil::sortableFields(),
+            'filterable_fields' => Utensil::filterableFields()
         ], 200);
     }
     

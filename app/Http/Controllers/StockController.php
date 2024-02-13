@@ -45,7 +45,8 @@ class StockController extends Controller
                 'per_page' => $stocks->perPage(),
                 'total' => $stocks->total(),
             ],
-            'sortable_fields' => Stock::sortableFields()
+            'sortable_fields' => Stock::sortableFields(),
+            'filterable_fields' => Stock::filterableFields()
         ], 200);
     }
 

@@ -44,7 +44,8 @@ class PaymentMethodController extends Controller
                 'per_page' => $paymentMethods->perPage(),
                 'total' => $paymentMethods->total(),
             ],
-            'sortable_fields' => PaymentMethod::sortableFields()
+            'sortable_fields' => PaymentMethod::sortableFields(),
+            'filterable_fields' => PaymentMethod::filterableFields()
         ], 200);
     }
     

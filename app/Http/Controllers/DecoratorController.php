@@ -44,7 +44,8 @@ class DecoratorController extends Controller
                 'per_page' => $decorators->perPage(),
                 'total' => $decorators->total(),
             ],
-            'sortable_fields' => Decorator::sortableFields()
+            'sortable_fields' => Decorator::sortableFields(),
+            'filterable_fields' => Decorator::filterableFields()
         ], 200);
     }
 

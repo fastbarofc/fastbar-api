@@ -47,7 +47,8 @@ class ContractController extends Controller
                 'per_page' => $contracts->perPage(),
                 'total' => $contracts->total(),
             ],
-            'sortable_fields' => Contract::sortableFields()
+            'sortable_fields' => Contract::sortableFields(),
+            'filterable_fields' => Contract::filterableFields()
         ], 200);
     }
 

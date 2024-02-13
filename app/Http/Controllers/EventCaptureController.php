@@ -44,7 +44,8 @@ class EventCaptureController extends Controller
                 'per_page' => $eventCaptures->perPage(),
                 'total' => $eventCaptures->total(),
             ],
-            'sortable_fields' => EventCapture::sortableFields()
+            'sortable_fields' => EventCapture::sortableFields(),
+            'filterable_fields' => EventCapture::filterableFields()
         ], 200);
     }
 

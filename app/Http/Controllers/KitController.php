@@ -44,7 +44,8 @@ class KitController extends Controller
                 'per_page' => $kits->perPage(),
                 'total' => $kits->total(),
             ],
-            'sortable_fields' => Kit::sortableFields()
+            'sortable_fields' => Kit::sortableFields(),
+            'filterable_fields' => Kit::filterableFields()
         ], 200);
     }
 
