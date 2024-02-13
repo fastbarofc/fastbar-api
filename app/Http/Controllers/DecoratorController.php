@@ -21,6 +21,13 @@ class DecoratorController extends Controller
 
         $query = Decorator::query();
 
+        if ($request->input('filter_by')) {
+            $filterableArray = $request->input('filter_by');
+            foreach ($filterableArray as $field => $value) {
+                $query->filterByField($field, $value);
+            }
+        }
+
         if($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
