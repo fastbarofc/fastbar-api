@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use OwenIt\Auditing\Auditable;
 
 class EventCapture extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable;
+    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
     
     protected $fillable = [
         'name',
@@ -20,6 +21,10 @@ class EventCapture extends Model implements AuditableInterface
     ];
 
     protected static $sortableFields = [
+        'name',
+    ];
+
+    protected static $filterableFields = [
         'name',
     ];
 
