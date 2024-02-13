@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use OwenIt\Auditing\Auditable;
 
 class BlockedDate extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Auditable, Sortable;
+    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'date',
@@ -21,5 +22,10 @@ class BlockedDate extends Model implements AuditableInterface
     protected static $sortableFields = [
         'date',
         'description',
+    ];
+
+    protected static $filterableFields = [
+        'date',
+        'description'
     ];
 }
