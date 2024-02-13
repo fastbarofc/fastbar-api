@@ -44,7 +44,7 @@ class UnitController extends Controller
                 'per_page' => $units->perPage(),
                 'total' => $units->total(),
             ],
-            'soretable_fields' => Unit::sortableFields()
+            'sortable_fields' => Unit::sortableFields()
         ], 200);
     }
 

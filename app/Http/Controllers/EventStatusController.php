@@ -44,7 +44,7 @@ class EventStatusController extends Controller
                 'per_page' => $eventStatuses->perPage(),
                 'total' => $eventStatuses->total(),
             ],
-            'soretable_fields' => EventStatus::sortableFields()
+            'sortable_fields' => EventStatus::sortableFields()
         ], 200);
     }
 

@@ -44,7 +44,7 @@ class QualificationController extends Controller
                 'per_page' => $qualifications->perPage(),
                 'total' => $qualifications->total(),
             ],
-            'soretable_fields' => Qualification::sortableFields()
+            'sortable_fields' => Qualification::sortableFields()
         ], 200);
     }
     

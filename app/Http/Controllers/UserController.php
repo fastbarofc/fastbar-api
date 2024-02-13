@@ -45,7 +45,7 @@ class UserController extends Controller
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
             ],
-            'soretable_fields' => User::sortableFields()
+            'sortable_fields' => User::sortableFields()
         ], 200);
     }
 

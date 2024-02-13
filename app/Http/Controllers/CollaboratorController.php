@@ -51,7 +51,7 @@ class CollaboratorController extends Controller
                 'per_page' => $collaborators->perPage(),
                 'total' => $collaborators->total(),
             ],
-            'soretable_fields' => Collaborator::sortableFields()
+            'sortable_fields' => Collaborator::sortableFields()
         ], 200);
     }
     

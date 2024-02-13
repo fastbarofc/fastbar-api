@@ -45,7 +45,7 @@ class CeremonialController extends Controller
                 'per_page'     => $ceremonials->perPage(),
                 'total'        => $ceremonials->total(),
             ],
-            'soretable_fields' => Ceremonial::sortableFields()
+            'sortable_fields' => Ceremonial::sortableFields()
         ], 200);
     }
 

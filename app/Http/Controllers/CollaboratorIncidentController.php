@@ -45,7 +45,7 @@ class CollaboratorIncidentController extends Controller
                 'per_page' => $collaboratorIncidents->perPage(),
                 'total' => $collaboratorIncidents->total(),
             ],
-            'soretable_fields' => CollaboratorIncident::sortableFields()
+            'sortable_fields' => CollaboratorIncident::sortableFields()
         ], 200);
     }
 

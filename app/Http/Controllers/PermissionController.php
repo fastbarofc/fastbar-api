@@ -37,7 +37,7 @@ class PermissionController extends Controller
                 'per_page' => $permissions->perPage(),
                 'total' => $permissions->total(),
             ],
-            'soretable_fields' => ['name']
+            'sortable_fields' => ['name']
         ], 200);
     }
 

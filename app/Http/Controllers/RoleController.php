@@ -47,7 +47,7 @@ class RoleController extends Controller
                 'per_page' => $roles->perPage(),
                 'total' => $roles->total(),
             ],
-            'soretable_fields' => ['name']
+            'sortable_fields' => ['name']
         ], 200);
     }
 

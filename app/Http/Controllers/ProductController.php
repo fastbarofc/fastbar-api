@@ -44,7 +44,7 @@ class ProductController extends Controller
                 'per_page' => $products->perPage(),
                 'total' => $products->total(),
             ],
-            'soretable_fields' => Product::sortableFields()
+            'sortable_fields' => Product::sortableFields()
         ], 200);
     }
 

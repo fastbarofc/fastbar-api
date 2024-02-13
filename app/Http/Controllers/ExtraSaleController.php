@@ -44,7 +44,7 @@ class ExtraSaleController extends Controller
                 'per_page' => $extraSales->perPage(),
                 'total' => $extraSales->total(),
             ],
-            'soretable_fields' => ExtraSale::sortableFields()
+            'sortable_fields' => ExtraSale::sortableFields()
         ], 200);
     }
 

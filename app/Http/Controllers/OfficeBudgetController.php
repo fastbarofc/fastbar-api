@@ -48,7 +48,7 @@ class OfficeBudgetController extends Controller
                 'per_page' => $officeBudgets->perPage(),
                 'total' => $officeBudgets->total(),
             ],
-            'soretable_fields' => OfficeBudget::sortableFields()
+            'sortable_fields' => OfficeBudget::sortableFields()
         ], 200);
     }
 

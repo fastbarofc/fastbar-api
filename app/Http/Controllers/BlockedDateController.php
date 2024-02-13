@@ -40,7 +40,7 @@ class BlockedDateController extends Controller
                 'per_page' => $blockedDates->perPage(),
                 'total' => $blockedDates->total(),
             ],
-            'soretable_fields' => BlockedDate::sortableFields()
+            'sortable_fields' => BlockedDate::sortableFields()
         ], 200);
     }
     

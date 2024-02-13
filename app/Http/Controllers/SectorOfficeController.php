@@ -36,7 +36,7 @@ class SectorOfficeController extends Controller
 
         return response()->json([
             'data' => SectorOfficeResource::collection($sectorOffices),
-            'soretable_fields' => SectorOffice::sortableFields()
+            'sortable_fields' => SectorOffice::sortableFields()
         ], 200);
     }
     
