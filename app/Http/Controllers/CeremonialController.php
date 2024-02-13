@@ -19,18 +19,34 @@ class CeremonialController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
+
+        $query = Ceremonial::query();
+
+        if ($request->input('filter_by')) {
+            $filterableArray = $request->input('filter_by');
+            foreach ($filterableArray as $field => $value) {
+                $query->filterByField($field, $value);
+            }
+        }
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
         $ceremonials = Ceremonial::paginate($perPage);
 
-            return response()->json([
-                'data'       => CeremonialResource::collection($ceremonials),
-                'pagination' => [
-                    'current_page' => $ceremonials->currentPage(),
-                    'total_pages'  => $ceremonials->lastPage(),
-                    'per_page'     => $ceremonials->perPage(),
-                    'total'        => $ceremonials->total(),
-                ],
-                'soretable_fields' => Ceremonial::sortableFields()
-            ], 200);
+        return response()->json([
+            'data'       => CeremonialResource::collection($ceremonials),
+            'pagination' => [
+                'current_page' => $ceremonials->currentPage(),
+                'total_pages'  => $ceremonials->lastPage(),
+                'per_page'     => $ceremonials->perPage(),
+                'total'        => $ceremonials->total(),
+            ],
+            'soretable_fields' => Ceremonial::sortableFields()
+        ], 200);
     }
 
     public function store(StoreCeremonialRequest $request)
