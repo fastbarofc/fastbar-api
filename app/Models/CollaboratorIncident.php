@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use OwenIt\Auditing\Auditable;
 
 class CollaboratorIncident extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Auditable, Sortable;
+    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'collaborator_id',
@@ -20,6 +21,11 @@ class CollaboratorIncident extends Model implements AuditableInterface
 
     protected static $sortableFields = [
         'description',
+    ];
+
+    protected static $filterableFields = [
+        'description',
+        'collaborator_id'
     ];
     
     public function collaborator() {
