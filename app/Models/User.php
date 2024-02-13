@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
@@ -15,7 +16,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 
 class User extends Authenticatable implements AuditableInterface
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasRoles, Auditable, Sortable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasRoles, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'name',
@@ -25,6 +26,11 @@ class User extends Authenticatable implements AuditableInterface
     ];
 
     protected static $sortableFields = [
+        'name',
+        'email',
+    ];
+
+    protected static $filterableFields = [
         'name',
         'email',
     ];
