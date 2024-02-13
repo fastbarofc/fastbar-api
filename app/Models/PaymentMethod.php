@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use OwenIt\Auditing\Auditable;
 
 class PaymentMethod extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Auditable, Sortable;
+    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'name',
@@ -19,6 +20,10 @@ class PaymentMethod extends Model implements AuditableInterface
     ];
 
     protected static $sortableFields = [
+        'name',
+    ];
+
+    protected static $filterableFields = [
         'name',
     ];
 
