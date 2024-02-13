@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,7 +13,7 @@ use Cviebrock\EloquentSluggable\Sluggable;
 
 class Utensil extends Model implements AuditableInterface
 {
-    use HasFactory, Sluggable, SoftDeletes, Auditable, Sortable;
+    use HasFactory, Sluggable, SoftDeletes, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'description',
@@ -20,6 +21,10 @@ class Utensil extends Model implements AuditableInterface
     ];
 
     protected static $sortableFields = [
+        'description'
+    ];
+
+    protected static $filterableFields = [
         'description'
     ];
 
