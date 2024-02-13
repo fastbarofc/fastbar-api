@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use OwenIt\Auditing\Auditable;
 
 class Product extends Model implements AuditableInterface
 {
-    use HasFactory, HasFactory, SoftDeletes, Sluggable, Auditable, Sortable;
+    use HasFactory, HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'name',
@@ -39,6 +40,17 @@ class Product extends Model implements AuditableInterface
     ];
 
     protected static $sortableFields = [
+        'name',
+        'description',
+        'group',
+        'barcode',
+        'weight',
+        'manufatturer',
+        'value',
+        'supplier',
+    ];
+
+    protected static $filterableFields = [
         'name',
         'description',
         'group',
