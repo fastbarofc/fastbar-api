@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ use OwenIt\Auditing\Auditable;
 
 class EventType extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable;
+    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'name',
@@ -21,8 +22,11 @@ class EventType extends Model implements AuditableInterface
     ];
 
     protected static $sortableFields = [
-        'name',
-        'contract_text',
+        'name'
+    ];
+
+    protected static $filterableFields = [
+        'name'
     ];
 
 
