@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use OwenIt\Auditing\Auditable;
 
 class Client extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Auditable, Sortable;
+    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
         
     const TYPE_FISICAL = 'pf';
     const TYPE_LEGAL = 'pj';
@@ -34,6 +35,14 @@ class Client extends Model implements AuditableInterface
     ];
 
     protected static $sortableFields = [
+        'type',
+        'email',
+        'name',
+        'birth_date',
+        'nickname',
+    ];
+
+    protected static $filterableFields = [
         'type',
         'email',
         'name',

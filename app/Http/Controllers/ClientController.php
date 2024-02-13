@@ -27,24 +27,11 @@ class ClientController extends Controller
 
         $query = Client::query();
 
-        if($request->input('type')) {
-            $query->where('type', $request->input('type'));
-        }
-
-        if($request->input('email')) {
-            $query->where('email', $request->input('email'));
-        }
-
-        if($request->input('name')) {
-            $query->where('name', $request->input('name'));
-        }
-
-        if($request->input('birth_date')) {
-            $query->where('birth_date', $request->input('birth_date'));
-        }
-
-        if($request->input('nickname')) {
-            $query->where('nickname', $request->input('nickname'));
+        if ($request->input('filter_by')) {
+            $filterableArray = $request->input('filter_by');
+            foreach ($filterableArray as $field => $value) {
+                $query->filterByField($field, $value);
+            }
         }
 
         if($request->input('order_by')) {
