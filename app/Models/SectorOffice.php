@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ use OwenIt\Auditing\Auditable;
 
 class SectorOffice extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable;
+    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'sector_id', 
@@ -22,6 +23,12 @@ class SectorOffice extends Model implements AuditableInterface
 
     protected static $sortableFields = [
         'name',
+        'sector_id'
+    ];
+
+    protected static $filterableFields = [
+        'name',
+        'sector_id'
     ];
 
     public function sluggable(): array
