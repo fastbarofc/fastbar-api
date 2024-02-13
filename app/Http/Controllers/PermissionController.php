@@ -11,6 +11,22 @@ class PermissionController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
+
+        $query = Permission::query();
+
+        if ($request->input('filter_by')) {
+            $filterableArray = $request->input('filter_by');
+            foreach ($filterableArray as $field => $value) {
+                $query->where($field, $value);
+            }
+        }
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderBy($sorteableField, $direction);
+        }
+
         $permissions = Permission::paginate($perPage);
 
         return response()->json([
@@ -21,6 +37,7 @@ class PermissionController extends Controller
                 'per_page' => $permissions->perPage(),
                 'total' => $permissions->total(),
             ],
+            'soretable_fields' => ['name']
         ], 200);
     }
 
