@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ use Cviebrock\EloquentSluggable\Sluggable;
 
 class Qualification extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Auditable, Sluggable, Sortable;
+    use HasFactory, SoftDeletes, Auditable, Sluggable, Sortable, Filterable;
 
     protected $fillable = [
         'description',
@@ -20,6 +21,10 @@ class Qualification extends Model implements AuditableInterface
     ];
 
     protected static $sortableFields = [
+        'description',
+    ];
+
+    protected static $filterableFields = [
         'description',
     ];
 
