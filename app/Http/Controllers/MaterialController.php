@@ -44,7 +44,7 @@ class MaterialController extends Controller
                 'per_page' => $materials->perPage(),
                 'total' => $materials->total(),
             ],
-            'soretasortable_fieldsble_fields' => Material::sortableFields()
+            'sortable_fields' => Material::sortableFields()
         ], 200);
     }
 
