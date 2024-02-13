@@ -22,7 +22,7 @@ class CollaboratorResource extends JsonResource
             'phone_2'        => $this->phone_2,
             'address'        => new AddressResource($this->address),
             'sector'         => $this->sector,
-            'office'         => $this->office,
+            'sector_office'  => $this->sectorOffice,
             'has_login'      => $this->has_login,
             'active'         => $this->active,
             'user_id'        => $this->user_id,
