@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Scopes\EventScope;
+use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,7 @@ use OwenIt\Auditing\Auditable;
 
 class Event extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable;
+    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'name',
@@ -38,6 +39,14 @@ class Event extends Model implements AuditableInterface
         'guests',
         'lease',
         'date_time',
+    ];
+
+    protected static $filterableFields = [
+        'name',
+        'guests',
+        'lease',
+        'date_time',
+        'event_status_id'
     ];
 
     public function sluggable(): array
