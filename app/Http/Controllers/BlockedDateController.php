@@ -13,8 +13,6 @@ class BlockedDateController extends Controller
     
     public function index(Request $request)
     {
-        $blockedDates = BlockedDate::all();
-
         $perPage = $request->input('per_page', 10);
 
         $query = BlockedDate::query();
