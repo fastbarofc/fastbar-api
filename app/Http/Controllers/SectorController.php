@@ -19,8 +19,6 @@ class SectorController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
-
         $query = Sector::query();
 
         if($request->input('order_by')) {
@@ -29,16 +27,10 @@ class SectorController extends Controller
             $query->orderByField($sorteableField, $direction);
         }
 
-        $sectors = $query->paginate($perPage);
+        $sectors = $query->get();
 
         return response()->json([
             'data' => SectorResource::collection($sectors),
-            'pagination' => [
-                'current_page' => $sectors->currentPage(),
-                'total_pages' => $sectors->lastPage(),
-                'per_page' => $sectors->perPage(),
-                'total' => $sectors->total(),
-            ],
             'soretable_fields' => Sector::sortableFields()
         ], 200);
     }
