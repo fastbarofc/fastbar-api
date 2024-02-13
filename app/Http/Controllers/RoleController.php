@@ -14,6 +14,29 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
+
+        $query = Role::query();
+
+        if ($request->input('filter_by')) {
+            $filterableArray = $request->input('filter_by');
+            foreach ($filterableArray as $field => $value) {
+                $query->where($field, $value);
+            }
+        }
+
+        if ($request->input('filter_by')) {
+            $filterableArray = $request->input('filter_by');
+            foreach ($filterableArray as $field => $value) {
+                $query->filterByField($field, $value);
+            }
+        }
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderBy($sorteableField, $direction);
+        }
+
         $roles = Role::paginate($perPage);
 
         return response()->json([
@@ -24,6 +47,7 @@ class RoleController extends Controller
                 'per_page' => $roles->perPage(),
                 'total' => $roles->total(),
             ],
+            'soretable_fields' => ['name']
         ], 200);
     }
 
