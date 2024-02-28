@@ -20,6 +20,8 @@ use App\Models\EventType;
 use Illuminate\Http\Request;
 use App\Http\Resources\EventCalendarResource;
 use App\Models\EventStatus;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
@@ -41,7 +43,7 @@ class EventController extends Controller
             }
         }
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -68,6 +70,11 @@ class EventController extends Controller
 
         $query = Event::query()->whereNotIn('event_status_id', $disconsideredStatusId);
 
+        $start = $request->start ? Carbon::parse($request->start)->setHour(0)->setMinute(0)->setSecond(0) : Carbon::now()->startOfWeek(0);
+        $end = $request->end ? Carbon::parse($request->end)->setHour(23)->setMinute(59)->setSecond(59) : Carbon::now()->endOfWeek(0);
+
+        $query->whereDate('date_time', '>=', $start)->whereDate('date_time', '<', $end);
+
         if ($request->input('filter_by')) {
             $filterableArray = $request->input('filter_by');
             foreach ($filterableArray as $field => $value) {
@@ -75,7 +82,7 @@ class EventController extends Controller
             }
         }
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -111,7 +118,7 @@ class EventController extends Controller
             'courtesy_partner'   => !empty($data['courtesy_partner']) ? $data['courtesy_partner'] : null,
             'courtesies'         => !empty($data['courtesies']) ? $data['courtesies'] : null,
         ]);
-        
+
         Event::create($request->all());
 
         if (!empty($data['materials'])) {
@@ -129,7 +136,7 @@ class EventController extends Controller
         if (!empty($data['office_budgets'])) {
             $event->officeBudgets()->sync($data['office_budgets']);
         }
-        
+
         if (!empty($data['clients'])) {
             $event->clients()->sync($data['clients']);
         }
@@ -155,24 +162,24 @@ class EventController extends Controller
     {
         return response()->json(new EventResource($event), 200);
     }
-    
+
     public function update(UpdateEventRequest $request, Event $event)
     {
         $data = $request->all();
 
-        if(!empty($data['materials'])) {
+        if (!empty($data['materials'])) {
             $event->materials()->sync($data['materials']);
         }
 
-        if(!empty($data['office_events'])) {
+        if (!empty($data['office_events'])) {
             $event->officeEvents()->sync($data['office_events']);
         }
-        
-        if(!empty($data['clients'])) {
+
+        if (!empty($data['clients'])) {
             $event->clients()->sync($data['clients']);
         }
-        
-        if(!empty($data['event_kits'])) {
+
+        if (!empty($data['event_kits'])) {
             foreach ($data['event_kits'] as $eventKit) {
                 $eventKit['event_id'] = $event->id;
                 if (!empty($eventKit['id'])) {
@@ -182,11 +189,11 @@ class EventController extends Controller
                 EventKit::create($eventKit);
             }
         }
-        
+
         $event->update($request->all());
         return response()->json(new EventResource($event), 200);
     }
-    
+
     public function destroy(Event $event)
     {
         $event->delete();
@@ -201,7 +208,7 @@ class EventController extends Controller
 
         $query = EventGift::query();
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -230,7 +237,7 @@ class EventController extends Controller
 
         $query = Material::query();
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -248,7 +255,7 @@ class EventController extends Controller
             ],
         ], 200);
     }
-    
+
     public function extraSales(Request $request, Event $event)
     {
         $this->authorize('view', $event);
@@ -257,7 +264,7 @@ class EventController extends Controller
 
         $query = ExtraSale::query();
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -274,7 +281,7 @@ class EventController extends Controller
                 'total' => $extraSales->total(),
             ],
         ], 200);
-    }  
+    }
 
     public function eventKits(Request $request, Event $event)
     {
@@ -284,7 +291,7 @@ class EventController extends Controller
 
         $query = EventKit::query();
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -302,7 +309,7 @@ class EventController extends Controller
             ],
         ], 200);
     }
-    
+
     public function contracts(Request $request, Contract $contract)
     {
         $this->authorize('view', $contract);
@@ -311,7 +318,7 @@ class EventController extends Controller
 
         $query = Contract::query();
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -330,7 +337,7 @@ class EventController extends Controller
         ], 200);
     }
 
-    public function resetContract(Event $event) 
+    public function resetContract(Event $event)
     {
         $this->authorize('resetContract', $event);
 
