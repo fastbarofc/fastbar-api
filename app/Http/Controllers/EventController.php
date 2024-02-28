@@ -18,6 +18,8 @@ use App\Models\EventKit;
 use App\Models\Contract;
 use App\Models\EventType;
 use Illuminate\Http\Request;
+use App\Http\Resources\EventCalendarResource;
+use App\Models\EventStatus;
 
 class EventController extends Controller
 {
@@ -55,6 +57,34 @@ class EventController extends Controller
                 'per_page' => $events->perPage(),
                 'total' => $events->total(),
             ],
+            'sortable_fields' => Event::sortableFields(),
+            'filterable_fields' => Event::filterableFields()
+        ], 200);
+    }
+
+    public function indexCalendar(Request $request)
+    {
+        $disconsideredStatusId = EventStatus::whereIn('slug', ['aberto', 'descartado', 'cancelado'])->get()->pluck('id');
+
+        $query = Event::query()->whereNotIn('event_status_id', $disconsideredStatusId);
+
+        if ($request->input('filter_by')) {
+            $filterableArray = $request->input('filter_by');
+            foreach ($filterableArray as $field => $value) {
+                $query->filterByField($field, $value);
+            }
+        }
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $events = $query->get();
+
+        return response()->json([
+            'data' => EventCalendarResource::collection($events),
             'sortable_fields' => Event::sortableFields(),
             'filterable_fields' => Event::filterableFields()
         ], 200);

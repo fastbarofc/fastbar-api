@@ -81,6 +81,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::resource('event-places', EventPlaceController::class);
 
+    Route::get('events/calendar', [EventController::class, 'indexCalendar'])->name('events.calendar');
     Route::resource('events', EventController::class);
     Route::get('events/{event}/gifts', [EventController::class, 'gifts'])->name('events.gifts');
     Route::get('events/{event}/materials', [EventController::class, 'materials'])->name('events.materials');
