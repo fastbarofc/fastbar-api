@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
 
 class EventCalendarResource extends JsonResource
 {
@@ -17,7 +18,7 @@ class EventCalendarResource extends JsonResource
         return [
             'id'                 => $this->id,
             'name'               => $this->name,
-            'date' => $this->date_time,
+            'date' => Carbon::parse($this->date_time)->format('Y-m-d'),
             'event_place'        => $this->eventPlace->name . ' (' . $this->eventPlace->address->city->name . ' - ' . $this->eventPlace->address->city->state->letter . ')',
             'guests'             => $this->guests,
             'event_status'             => $this->eventStatus->name,

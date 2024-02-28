@@ -34,6 +34,10 @@ class Event extends Model implements AuditableInterface
         'courtesies',
     ];
 
+    protected $casts = [
+        'date_time' => 'datetime:Y-m-d H:i:s',
+    ];
+
     protected static $sortableFields = [
         'name',
         'guests',
