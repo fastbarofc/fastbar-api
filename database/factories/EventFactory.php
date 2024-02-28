@@ -23,7 +23,7 @@ class EventFactory extends Factory
             'lease'=> $this->faker->numberBetween(1000, 10000),
             'guests'=> $this->faker->numberBetween(10, 300),
             'min_guests'=> $this->faker->numberBetween(10, 50),
-            'date_time'=> $this->faker->dateTimeBetween('-1 week', '+1 week'),
+            'date_time'=> $this->faker->dateTimeBetween('-1 years', '+1 years'),
             'value_unit'=> $this->faker->randomNumber(3, true),
             'descont_unit'=> $this->faker->randomNumber(2, true),
         ];
