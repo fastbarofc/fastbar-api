@@ -11,5 +11,9 @@ class EventSeeder extends Seeder
     public function run(): void
     {
         Event::factory(500)->create();
+
+        $event = Event::first();
+
+        $event->clients()->attach(1, ['main' => true]);
     }
 }

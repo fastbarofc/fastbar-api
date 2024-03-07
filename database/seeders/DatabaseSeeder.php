@@ -18,11 +18,11 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             DecoratorSeeder::class,
             KitSeeder::class,
+            ClientSeeder::class,
             EventSeeder::class,
             EventGiftSeeder::class,
             ExtraSaleSeeder::class,
             BlockedDateSeeder::class,
-            ClientSeeder::class,
             UtensilSeeder::class,
             StockSeeder::class,
         ]);

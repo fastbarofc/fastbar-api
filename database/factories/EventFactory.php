@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Client;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\EventType;
 use App\Models\EventPlace;
@@ -17,6 +18,7 @@ class EventFactory extends Factory
 
         return [
             'name'=> $this->faker->company,
+            'client_id' => Client::all()->random()->id,
             'event_type_id'=> $eventType->id,
             'event_place_id'=> $eventPlace->id,
             'event_status_id'=> $eventStatus->id,

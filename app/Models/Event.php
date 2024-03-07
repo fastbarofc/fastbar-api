@@ -19,6 +19,7 @@ class Event extends Model implements AuditableInterface
     protected $fillable = [
         'name',
         'slug',
+        'client_id',
         'event_type_id',
         'event_place_id',
         'event_status_id',
@@ -66,6 +67,11 @@ class Event extends Model implements AuditableInterface
     {
         parent::boot();
         static::addGlobalScope(new EventScope());
+    }
+
+    public function client() 
+    {
+        return $this->belongsTo(Client::class);
     }
 
     public function eventType() 
