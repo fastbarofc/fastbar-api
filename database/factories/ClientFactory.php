@@ -19,7 +19,7 @@ class ClientFactory extends Factory
 
             'cnpj' => $type == 'pj' ? $this->faker->unique()->cnpj() : null,
 
-            'name' => $type == 'pf' ? $this->faker->unique()->jobTitle : null,
+            'name' => $this->faker->name(),
             'cpf' => $type == 'pf' ? $this->faker->unique()->cpf() : null,
         ];
     }
