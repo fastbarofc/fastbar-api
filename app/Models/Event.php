@@ -34,8 +34,8 @@ class Event extends Model implements AuditableInterface
         'discount',
         'discount_unit',
         'contract_body',
-        'courtesy_parthenon',
-        'courtesy_partner',
+        'courtesies_parthenon',
+        'courtesies_partner',
         'courtesies',
     ];
 

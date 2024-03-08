@@ -27,8 +27,8 @@ class EventResource extends JsonResource
             'discount'       => $this->discount,
             'discount_unit'       => $this->discount_unit,
             'contract_body'      => $this->contract_body,
-            'courtesy_parthenon' => $this->courtesy_parthenon,
-            'courtesy_partner'   => $this->courtesy_partner,
+            'courtesies_parthenon' => $this->courtesies_parthenon,
+            'courtesies_partner'   => $this->courtesies_partner,
             'courtesies'         => $this->courtesies,
         ];
     }

@@ -27,8 +27,8 @@ return new class extends Migration
             $table->decimal('discount')->nullable();
             $table->decimal('discount_unit')->nullable();
             $table->longText('contract_body')->nullable();
-            $table->string('courtesy_parthenon')->nullable();
-            $table->string('courtesy_partner')->nullable();
+            $table->string('courtesies_parthenon')->nullable();
+            $table->string('courtesies_partner')->nullable();
             $table->string('courtesies')->nullable();
             $table->timestamps();
             $table->softDeletes();
