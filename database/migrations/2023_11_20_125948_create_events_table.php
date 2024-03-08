@@ -17,10 +17,10 @@ return new class extends Migration
             $table->foreignId('event_type_id')->constrained();
             $table->foreignId('event_place_id')->constrained();
             $table->foreignId('event_status_id')->constrained();
-            $table->foreignId('partner_id')->constrained();
-            $table->foreignId('decorator_id')->constrained();
-            $table->foreignId('event_capture_id')->constrained();
-            $table->foreignId('ceremonial_id')->constrained();
+            $table->foreignId('partner_id')->nullable()->constrained();
+            $table->foreignId('decorator_id')->nullable()->constrained();
+            $table->foreignId('event_capture_id')->nullable()->constrained();
+            $table->foreignId('ceremonial_id')->nullable()->constrained();
             $table->decimal('lease');
             $table->integer('guests');
             $table->integer('min_guests');
