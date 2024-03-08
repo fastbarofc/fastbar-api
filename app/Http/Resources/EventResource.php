@@ -34,6 +34,9 @@ class EventResource extends JsonResource
             'buffet_value'       => $this->buffet_value,
             'total_value'        => $this->total_value,
             'partner_id'         => $this->partner_id,
+            'decorator_id' => $this->decorator_id,
+            'event_capture_id' => $this->event_capture_id,
+            'ceremonial_id' => $this->ceremonial_id,
         ];
     }
 }
