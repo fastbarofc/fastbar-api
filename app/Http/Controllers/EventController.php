@@ -116,7 +116,7 @@ class EventController extends Controller
             'unit_discount'       => !empty($data['unit_discount']) ? $data['unit_discount'] : null,
             'contract_body'      => !empty($data['contract_body']) ? $data['contract_body'] : $eventType->contract_text,
             'parthenon_courtesies' => !empty($data['parthenon_courtesies']) ? $data['parthenon_courtesies'] : null,
-            'courtesies_partner'   => !empty($data['courtesies_partner']) ? $data['courtesies_partner'] : null,
+            'partner_courtesies'   => !empty($data['partner_courtesies']) ? $data['partner_courtesies'] : null,
             'courtesies'         => !empty($data['courtesies']) ? $data['courtesies'] : null,
         ]);
 
