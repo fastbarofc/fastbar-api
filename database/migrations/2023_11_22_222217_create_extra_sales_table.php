@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('slug');
             $table->foreignId('unit_id')->nullable()->cascadeOnDelete()->constrained();
             $table->integer('quantity');
-            $table->string('value_unit');
+            $table->string('unit_value');
             $table->foreignId('event_id')->cascadeOnDelete()->constrained();
             $table->timestamps();
             $table->softDeletes();

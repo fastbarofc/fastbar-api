@@ -20,14 +20,14 @@ class ExtraSale extends Model implements AuditableInterface
         'slug',
         'unit_id',
         'quantity',
-        'value_unit',
+        'unit_value',
         'event_id',
     ];
 
     protected static $sortableFields = [
         'description',
         'quantity',
-        'value_unit',
+        'unit_value',
     ];
 
     protected static $filterableFields = [

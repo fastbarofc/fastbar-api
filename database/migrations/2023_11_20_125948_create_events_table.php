@@ -23,7 +23,7 @@ return new class extends Migration
             $table->dateTime('date_time');
             $table->integer('duration');
             $table->integer('durantion_after')->default(0);
-            $table->decimal('value_unit');
+            $table->decimal('unit_value');
             $table->decimal('discount')->nullable();
             $table->decimal('discount_unit')->nullable();
             $table->longText('contract_body')->nullable();

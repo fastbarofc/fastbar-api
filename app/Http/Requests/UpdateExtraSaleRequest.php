@@ -19,7 +19,7 @@ class UpdateExtraSaleRequest extends FormRequest
             'description' => 'nullable|string|max:255|unique:extra_sales,description,' . $this->route('extra_sale')->id,
             'unit_id'     => 'nullable|numeric|exists:units,id',
             'quantity'    => 'nullable|numeric|min:0',
-            'value_unit'  => 'nullable|string',
+            'unit_value'  => 'nullable|string',
             'event_id'    => 'nullable|numeric|exists:events,id',
         ];
     }
@@ -34,7 +34,7 @@ class UpdateExtraSaleRequest extends FormRequest
             'unit_id.exists'      => 'O campo ID da unidade deve ser uma unidade válida',
             'quantity.numeric'     => 'O campo quantidade deve ser conter apenas números.',
             'quantity.min'         => 'O campo quantidade não pode ser negativo',
-            'value_unit.string'    => 'O campo valor unitário deve ser uma string',
+            'unit_value.string'    => 'O campo valor unitário deve ser uma string',
             'event_id.numeric'      => 'O campo ID do evento deve conter apenas números.',
             'event_id.exists'      => 'O campo ID do evento deve ser um evento válida',
         ];

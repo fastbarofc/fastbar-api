@@ -111,7 +111,7 @@ class EventController extends Controller
             'guests'             => !empty($data['guests']) ? $data['guests'] : null,
             'min_guests'         => !empty($data['min_guests']) ? $data['min_guests'] : null,
             'date_time'          => !empty($data['date_time']) ? $data['date_time'] : null,
-            'value_unit'         => !empty($data['value_unit']) ? $data['value_unit'] : null,
+            'unit_value'         => !empty($data['unit_value']) ? $data['unit_value'] : null,
             'discount'       => !empty($data['discount']) ? $data['discount'] : null,
             'discount_unit'       => !empty($data['discount_unit']) ? $data['discount_unit'] : null,
             'contract_body'      => !empty($data['contract_body']) ? $data['contract_body'] : $eventType->contract_text,

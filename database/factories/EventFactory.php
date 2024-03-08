@@ -30,7 +30,7 @@ class EventFactory extends Factory
             'duration'=> $this->faker->numberBetween(1, 12), 
             'durantion_after'=> $this->faker->numberBetween(1, 12),
             'date_time'=> $this->faker->dateTimeBetween('-1 years', '+1 years'),
-            'value_unit'=> $this->faker->randomNumber(3, true),
+            'unit_value'=> $this->faker->randomNumber(3, true),
             'discount'=> $this->faker->randomNumber(2, true),
             'discount_unit'=> $this->faker->randomNumber(2, true)
         ];

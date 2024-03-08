@@ -30,7 +30,7 @@ class Event extends Model implements AuditableInterface
         'date_time',
         'duration',
         'durantion_after',      
-        'value_unit',
+        'unit_value',
         'discount',
         'discount_unit',
         'contract_body',

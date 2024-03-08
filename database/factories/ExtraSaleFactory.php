@@ -17,7 +17,7 @@ class ExtraSaleFactory extends Factory
             'description' => $this->faker->sentence(3, true),
             'unit_id'     => $unit->id,
             'quantity'    => $this->faker->numberBetween(10, 40),
-            'value_unit'  => $this->faker->numberBetween(10, 300),
+            'unit_value'  => $this->faker->numberBetween(10, 300),
             'event_id'    => $event->id,
         ];
     }
