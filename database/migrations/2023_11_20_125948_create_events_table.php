@@ -26,6 +26,9 @@ return new class extends Migration
             $table->decimal('unit_value');
             $table->decimal('discount')->nullable();
             $table->decimal('unit_discount')->nullable();
+            $table->decimal('unit_insurance')->nullable();
+            $table->decimal('buffet_value')->nullable();
+            $table->decimal('total_value')->nullable();
             $table->longText('contract_body')->nullable();
             $table->string('parthenon_courtesies')->nullable();
             $table->string('partner_courtesies')->nullable();
