@@ -22,6 +22,7 @@ class EventResource extends JsonResource
             'min_guests'         => $this->min_guests,
             'duration'           => $this->duration,
             'date_time'          => $this->date_time,
+            'durantion_after'    => $this->durantion_after,
             'value_unit'         => $this->value_unit,
             'descont_unit'       => $this->descont_unit,
             'contract_body'      => $this->contract_body,

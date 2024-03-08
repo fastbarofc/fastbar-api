@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('min_guests');
             $table->dateTime('date_time');
             $table->integer('duration');
+            $table->integer('durantion_after')->default(0);
             $table->string('value_unit');
             $table->string('descont_unit');
             $table->longText('contract_body')->nullable();

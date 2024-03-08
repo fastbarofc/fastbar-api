@@ -29,6 +29,7 @@ class Event extends Model implements AuditableInterface
         'min_guests',
         'date_time',
         'duration',
+        'durantion_after',      
         'value_unit',
         'descont_unit',
         'contract_body',
