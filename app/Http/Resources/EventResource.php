@@ -33,6 +33,7 @@ class EventResource extends JsonResource
             'unit_insurance'     => $this->unit_insurance,
             'buffet_value'       => $this->buffet_value,
             'total_value'        => $this->total_value,
+            'partner_id'         => $this->partner_id,
         ];
     }
 }
