@@ -16,9 +16,7 @@ class ClientFactory extends Factory
             'how_met'=> $this->faker->words(3, true),
             'email'=> $this->faker->safeEmail(),
             'phone_1'=> $this->faker->numerify('99##-####'),
-
             'cnpj' => $type == 'pj' ? $this->faker->unique()->cnpj() : null,
-
             'name' => $this->faker->name(),
             'cpf' => $type == 'pf' ? $this->faker->unique()->cpf() : null,
         ];

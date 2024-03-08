@@ -20,6 +20,7 @@ class Event extends Model implements AuditableInterface
         'name',
         'slug',
         'client_id',
+        'collaborator_id',
         'event_type_id',
         'event_place_id',
         'event_status_id',
@@ -27,6 +28,7 @@ class Event extends Model implements AuditableInterface
         'guests',
         'min_guests',
         'date_time',
+        'duration',
         'value_unit',
         'descont_unit',
         'contract_body',
@@ -72,6 +74,11 @@ class Event extends Model implements AuditableInterface
     public function client() 
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function collaborator() 
+    {
+        return $this->belongsTo(Collaborator::class);
     }
 
     public function eventType() 

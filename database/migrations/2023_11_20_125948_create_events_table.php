@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('client_id')->constrained();
+            $table->foreignId('collaborator_id')->constrained();
             $table->string('slug');
             $table->foreignId('event_type_id')->constrained();
             $table->foreignId('event_place_id')->constrained();
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->integer('guests');
             $table->integer('min_guests');
             $table->dateTime('date_time');
+            $table->integer('duration');
             $table->string('value_unit');
             $table->string('descont_unit');
             $table->longText('contract_body')->nullable();
