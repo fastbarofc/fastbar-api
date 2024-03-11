@@ -28,7 +28,7 @@ class EventFactory extends Factory
             'guests'=> $this->faker->numberBetween(10, 300),
             'min_guests'=> $this->faker->numberBetween(10, 50),
             'duration'=> $this->faker->numberBetween(1, 12), 
-            'durantion_after'=> $this->faker->numberBetween(1, 12),
+            'duration_after'=> $this->faker->numberBetween(1, 12),
             'date_time'=> $this->faker->dateTimeBetween('-1 years', '+1 years'),
             'unit_value'=> $this->faker->randomNumber(3, true),
             'discount'=> $this->faker->randomNumber(2, true),

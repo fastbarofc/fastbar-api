@@ -26,7 +26,7 @@ return new class extends Migration
             $table->integer('min_guests');
             $table->dateTime('date_time');
             $table->integer('duration');
-            $table->integer('durantion_after')->default(0);
+            $table->integer('duration_after')->default(0);
             $table->decimal('unit_value');
             $table->decimal('discount')->nullable();
             $table->decimal('unit_discount')->nullable();
