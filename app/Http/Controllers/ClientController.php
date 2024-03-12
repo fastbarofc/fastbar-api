@@ -12,6 +12,7 @@ use App\Models\Address;
 use App\Models\Client;
 use App\Models\User;
 use App\Notifications\UserPassword;
+use Illuminate\Support\Facades\Log;
 
 class ClientController extends Controller
 {
@@ -28,7 +29,8 @@ class ClientController extends Controller
         $query = Client::query();
 
         if ($request->input('filter_by')) {
-            $filterableArray = $request->input('filter_by');
+            $filterable = $request->input('filter_by');
+            $filterableArray = json_decode($filterable, true);
             foreach ($filterableArray as $field => $value) {
                 $query->filterByField($field, $value);
             }

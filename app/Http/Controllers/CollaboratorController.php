@@ -29,7 +29,8 @@ class CollaboratorController extends Controller
         $query = Collaborator::query();
 
         if ($request->input('filter_by')) {
-            $filterableArray = $request->input('filter_by');
+            $filterable = $request->input('filter_by');
+            $filterableArray = json_decode($filterable, true);
             foreach ($filterableArray as $field => $value) {
                 $query->filterByField($field, $value);
             }
