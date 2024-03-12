@@ -353,4 +353,11 @@ class EventController extends Controller
             'contract_body' => $eventType->contract_text
         ]);
     }
+
+    public function storeLegalRepresentatives(Request $request, Event $event)
+    {
+        $this->authorize('storeLegalRepresentatives', $event);
+
+        $event->clients()->sync($request->legal_representatives);
+    }
 }
