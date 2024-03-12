@@ -141,6 +141,11 @@ class Event extends Model implements AuditableInterface
         return $this->belongsToMany(Client::class, 'client_event');
     }
 
+    public function getLegalRepresentativesAttribute()
+    {
+        return $this->clients->where('type', 'pf');
+    }
+
     public function eventStatus()
     {
         return $this->belongsTo(EventStatus::class);
