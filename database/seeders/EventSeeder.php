@@ -14,6 +14,6 @@ class EventSeeder extends Seeder
 
         $event = Event::first();
 
-        $event->clients()->attach(1, ['main' => true]);
+        $event->clients()->attach(1);
     }
 }

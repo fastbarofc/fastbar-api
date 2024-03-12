@@ -64,12 +64,6 @@ class ContractController extends Controller
 
         $event = Event::find($data['event_id']);
 
-        $mainClient = $event->clients->where('pivot.main', true)->first();
-
-        if (empty($mainClient->email)) {
-            return response()->json(['message' => 'O cliente principal não possui e-mail cadastrado.'], 400);
-        }
-
         $properties = $event->getAttributes();
 
         $materials = $event->materials;
@@ -77,8 +71,6 @@ class ContractController extends Controller
         $eventGifts = $event->eventGifts;
         $extraSales = $event->extraSales;
         $officeEvents = $event->officeEvents;
-
-        $data['client_id'] = $mainClient->id;
 
         $properties['materials'] = $materials->toArray();
         $properties['event_kits'] = $eventKits->toArray();
@@ -106,12 +98,6 @@ class ContractController extends Controller
         $newData['version'] = Contract::where('event_id', $event->id)->count() + 1;
         $newData['properties'] = [];
         $newData['properties_diff'] = [];
-
-        $mainClient = $event->clients->where('pivot.main', true)->first();
-
-        if (empty($mainClient->email)) {
-            return response()->json(['message' => 'O cliente principal não possui e-mail cadastrado.'], 400);
-        }
 
         $properties = $event->getAttributes();
 
