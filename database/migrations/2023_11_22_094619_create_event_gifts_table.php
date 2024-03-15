@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('event_gifts', function (Blueprint $table) {
             $table->id();
             $table->string('description');
-            $table->string('slug');
             $table->foreignId('event_id')->nullable()->cascadeOnDelete()->constrained();
             $table->integer('quantity');
             $table->timestamps();
