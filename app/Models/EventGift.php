@@ -12,11 +12,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EventGift extends Model implements AuditableInterface
 {
-    use HasFactory, Auditable, Sluggable, SoftDeletes, Sortable, Filterable;
+    use HasFactory, Auditable, SoftDeletes, Sortable, Filterable;
 
     protected $fillable = [
         'description',
-        'slug',
         'event_id',
         'quantity',
     ];

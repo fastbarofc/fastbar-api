@@ -68,4 +68,9 @@ class EventPolicy
     {
         return $user->hasPermissionTo('update-events');
     }
+
+    public function storeLegalRepresentatives(User $user, Event $event): bool
+    {
+        return $user->hasPermissionTo('update-events');
+    }
 }

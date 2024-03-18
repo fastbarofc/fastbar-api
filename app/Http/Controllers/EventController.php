@@ -37,8 +37,11 @@ class EventController extends Controller
         $query = Event::query();
 
         if ($request->input('filter_by')) {
-            $filterableArray = $request->input('filter_by');
-            foreach ($filterableArray as $field => $value) {
+            $filterable = $request->input('filter_by');
+            $filterableArray = json_decode($filterable, true);
+            foreach ($filterableArray as  $filter) {
+                $field = array_keys($filter)[0];
+                $value = $filter[$field];
                 $query->filterByField($field, $value);
             }
         }
@@ -76,8 +79,11 @@ class EventController extends Controller
         $query->whereDate('date_time', '>=', $start)->whereDate('date_time', '<', $end);
 
         if ($request->input('filter_by')) {
-            $filterableArray = $request->input('filter_by');
-            foreach ($filterableArray as $field => $value) {
+            $filterable = $request->input('filter_by');
+            $filterableArray = json_decode($filterable, true);
+            foreach ($filterableArray as  $filter) {
+                $field = array_keys($filter)[0];
+                $value = $filter[$field];
                 $query->filterByField($field, $value);
             }
         }
@@ -100,25 +106,7 @@ class EventController extends Controller
     public function store(StoreEventRequest $request)
     {
         $data = $request->all();
-        $eventType = EventType::find($data['event_type_id']);
-        $event = Event::create([
-            'name'               => !empty($data['name']) ? $data['name'] : null,
-            'slug'               => !empty($data['slug']) ? $data['slug'] : null,
-            'event_type_id'      => !empty($data['event_type_id']) ? $data['event_type_id'] : null,
-            'event_place_id'     => !empty($data['event_place_id']) ? $data['event_place_id'] : null,
-            'event_status_id'    => !empty($data['event_status_id']) ? $data['event_status_id'] : null,
-            'lease'              => !empty($data['lease']) ? $data['lease'] : null,
-            'guests'             => !empty($data['guests']) ? $data['guests'] : null,
-            'min_guests'         => !empty($data['min_guests']) ? $data['min_guests'] : null,
-            'date_time'          => !empty($data['date_time']) ? $data['date_time'] : null,
-            'unit_value'         => !empty($data['unit_value']) ? $data['unit_value'] : null,
-            'discount'       => !empty($data['discount']) ? $data['discount'] : null,
-            'unit_discount'       => !empty($data['unit_discount']) ? $data['unit_discount'] : null,
-            'contract_body'      => !empty($data['contract_body']) ? $data['contract_body'] : $eventType->contract_text,
-            'parthenon_courtesies' => !empty($data['parthenon_courtesies']) ? $data['parthenon_courtesies'] : null,
-            'partner_courtesies'   => !empty($data['partner_courtesies']) ? $data['partner_courtesies'] : null,
-            'courtesies'         => !empty($data['courtesies']) ? $data['courtesies'] : null,
-        ]);
+        $event = Event::create($data);
 
         Event::create($request->all());
 
@@ -138,8 +126,8 @@ class EventController extends Controller
             $event->officeBudgets()->sync($data['office_budgets']);
         }
 
-        if (!empty($data['clients'])) {
-            $event->clients()->sync($data['clients']);
+        if (!empty($data['legal_representatives'])) {
+            $event->clients()->sync($data['legal_representatives']);
         }
 
         if (!empty($data['event_kits'])) {
@@ -346,5 +334,12 @@ class EventController extends Controller
         $event->update([
             'contract_body' => $eventType->contract_text
         ]);
+    }
+
+    public function storeLegalRepresentatives(Request $request, Event $event)
+    {
+        $this->authorize('storeLegalRepresentatives', $event);
+
+        $event->clients()->sync($request->legal_representatives);
     }
 }

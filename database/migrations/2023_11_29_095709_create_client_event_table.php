@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('event_id')->cascadeOnDelete()->constrained();
             $table->foreignId('client_id')->cascadeOnDelete()->constrained();
-            $table->boolean('main');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -68,7 +68,7 @@ class Client extends Model implements AuditableInterface
 
     public function events()
     {
-        return $this->belongsToMany(Event::class, 'client_event')->withPivot(['main']);
+        return $this->belongsToMany(Event::class, 'client_event');
     }    
 
     public function user() {

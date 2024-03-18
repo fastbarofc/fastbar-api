@@ -33,7 +33,7 @@ class Event extends Model implements AuditableInterface
         'min_guests',
         'date_time',
         'duration',
-        'durantion_after',      
+        'duration_after',      
         'unit_value',
         'discount',
         'unit_discount',
@@ -138,7 +138,12 @@ class Event extends Model implements AuditableInterface
 
     public function clients()
     {
-        return $this->belongsToMany(Client::class, 'client_event')->withPivot(['main']);
+        return $this->belongsToMany(Client::class, 'client_event');
+    }
+
+    public function getLegalRepresentativesAttribute()
+    {
+        return $this->clients->where('type', 'pf');
     }
 
     public function eventStatus()
