@@ -121,7 +121,7 @@ class Event extends Model implements AuditableInterface
 
     public function materials()
     {
-        return $this->belongsToMany(Material::class, 'event_material');
+        return $this->belongsToMany(Material::class, 'event_material')->withPivot(['quantity', 'selected']);
     }
 
     public function extraSales() {

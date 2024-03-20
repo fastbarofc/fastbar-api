@@ -13,6 +13,8 @@ return new class extends Migration
             $table->foreignId('event_id')->cascadeOnDelete()->constrained();
             $table->foreignId('material_id')->cascadeOnDelete()->constrained();
             $table->boolean('shown_in_checklist')->default(false);
+            $table->boolean('selected')->nullable();
+            $table->integer('quantity')->default(0);
             $table->timestamps();
             $table->softDeletes();
         });
