@@ -131,12 +131,14 @@ class CollaboratorController extends Controller
 
             $roleAdmin = Role::where('name', 'Admin')->first();
 
-            if ($data['active']) {
-                $user->assignRole($roleAdmin);
+            if (isset($data['active'])) {
+                if ($data['active']) {
+                    $user->assignRole($roleAdmin);
+                } else {
+                    $user->removeRole($roleAdmin);
+                }
             }
-            else {
-                $user->removeRole($roleAdmin);
-            }
+            
         }
 
         if (!empty($data['address']) && !empty($data['address']['street'])) {
