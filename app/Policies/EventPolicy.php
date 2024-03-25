@@ -69,7 +69,12 @@ class EventPolicy
         return $user->hasPermissionTo('update-events');
     }
 
-    public function storeLegalRepresentatives(User $user, Event $event): bool
+    public function attachLegalRepresentatives(User $user, Event $event): bool
+    {
+        return $user->hasPermissionTo('update-events');
+    }
+
+    public function syncMaterials(User $user, Event $event): bool
     {
         return $user->hasPermissionTo('update-events');
     }

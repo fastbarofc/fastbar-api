@@ -336,10 +336,24 @@ class EventController extends Controller
         ]);
     }
 
-    public function storeLegalRepresentatives(Request $request, Event $event)
+    public function attachLegalRepresentatives(Request $request, Event $event)
     {
-        $this->authorize('storeLegalRepresentatives', $event);
-
+        $this->authorize('attachLegalRepresentatives', $event);
         $event->clients()->sync($request->legal_representatives);
+    }
+
+    public function syncMaterials(Event $event, Material $material, Request $request)
+    {
+        $this->authorize('syncMaterials', $event);
+        Log::info($request->all());
+        $relationship = $event->materials()->wherePivot('material_id', $material->id);
+
+        if ($relationship->exists()) {
+            $relationship->updateExistingPivot($material->id, $request->all());
+            return response()->json([], 200);
+        }
+        
+        $event->materials()->attach($material, $request->all());
+        return response()->json([], 201);
     }
 }

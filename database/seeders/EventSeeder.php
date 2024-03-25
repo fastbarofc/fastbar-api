@@ -21,7 +21,9 @@ class EventSeeder extends Seeder
             $legalRepresentativesToEvent = $legalRepresentatives->random(3)->pluck('id');
             $materialsToEvent = $materials->random(3)->pluck('id');
             $event->clients()->attach($legalRepresentativesToEvent);
-            $event->materials()->attach($materialsToEvent, ['quantity' => rand(1, 10), 'selected' => rand(0, 1)]);
+            foreach ($materialsToEvent as $material) {
+                $event->materials()->attach($material, ['quantity' => rand(1, 10), 'selected' => rand(0, 1)]);
+            }
         }
     }
 }

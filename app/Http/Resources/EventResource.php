@@ -44,7 +44,14 @@ class EventResource extends JsonResource
             'ceremonial_id' => $this->ceremonial_id,
             'legal_representatives' => $this->legal_representatives,
             'event_gifts'        => $this->eventGifts,
-            'materials'          => $this->materials,
+            'materials'          => $this->materials->map(function ($material) {
+                return [
+                    'id' => $material->id,
+                    'description' => $material->description,
+                    'quantity' => $material->pivot->quantity,
+                    'selected' => $material->pivot->selected,
+                ];
+            }),
         ];
     }
 }

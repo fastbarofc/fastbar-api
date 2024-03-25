@@ -88,7 +88,10 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('events/{event}/extra-sales', [EventController::class, 'extraSales'])->name('events.extra-sales');
     Route::get('events/{event}/event-kits', [EventController::class, 'eventKits'])->name('events.event-kits');
     Route::get('events/{event}/contracts', [EventController::class, 'resetContract'])->name('events.reset-contract');
-    Route::post('events/{event}/legal-representatives', [EventController::class, 'storeLegalRepresentatives'])->name('events.legal-representatives');
+    
+    Route::post('events/{event}/legal-representatives', [EventController::class, 'attachLegalRepresentatives'])->name('events.legal-representatives');
+    
+    Route::post('events/{event}/materials/{material}', [EventController::class, 'syncMaterials'])->name('events.sync-materials');
 
     Route::resource('partners', PartnerController::class);
 
