@@ -20,6 +20,7 @@ class EventFactory extends Factory
         return [
             'name'=> $this->faker->company,
             'client_id' => Client::all()->random()->id,
+            'invoice_client_id' => Client::all()->random()->id,
             'collaborator_id' => Collaborator::all()->random()->id,
             'event_type_id'=> $eventType->id,
             'event_place_id'=> $eventPlace->id,

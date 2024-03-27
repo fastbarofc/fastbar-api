@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('client_id')->constrained();
+            $table->foreignId('invoice_client_id')->nullable()->constrained('clients');
             $table->foreignId('collaborator_id')->constrained();
             $table->string('slug');
             $table->foreignId('event_type_id')->constrained();

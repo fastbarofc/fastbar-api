@@ -14,6 +14,8 @@ class EventResource extends JsonResource
             'name'               => $this->name,
             'client_id'          => $this->client_id,
             'client'        => $this->client,
+            'invoice_client_id'  => $this->invoice_client_id,
+            'invoice_client'  => $this->invoiceClient,
             'collaborator_id'    => $this->collaborator_id,
             'collaborator'    => $this->collaborator,
             'event_type_id'      => $this->event_type_id,
