@@ -110,34 +110,34 @@ class EventController extends Controller
 
         Event::create($request->all());
 
-        if (!empty($data['materials'])) {
+        if (isset($data['materials'])) {
             $event->materials()->sync($data['materials']);
         }
 
-        if (!empty($data['utensils'])) {
+        if (isset($data['utensils'])) {
             $event->utensils()->sync($data['utensils']);
         }
 
-        if (!empty($data['office_events'])) {
+        if (isset($data['office_events'])) {
             $event->officeEvents()->sync($data['office_events']);
         }
 
-        if (!empty($data['office_budgets'])) {
+        if (isset($data['office_budgets'])) {
             $event->officeBudgets()->sync($data['office_budgets']);
         }
 
-        if (!empty($data['legal_representatives'])) {
+        if (isset($data['legal_representatives'])) {
             $event->clients()->sync($data['legal_representatives']);
         }
 
-        if (!empty($data['event_kits'])) {
+        if (isset($data['event_kits'])) {
             foreach ($data['event_kits'] as $eventKit) {
                 $eventKit['event_id'] = $event->id;
                 EventKit::create($eventKit);
             }
         }
 
-        if (!empty($data['event_gifts'])) {
+        if (isset($data['event_gifts'])) {
             foreach ($data['event_gifts'] as $eventGift) {
                 $eventGift['event_id'] = $event->id;
                 EventGift::create($eventGift);
@@ -156,23 +156,23 @@ class EventController extends Controller
     {
         $data = $request->all();
 
-        if (!empty($data['materials'])) {
+        if (isset($data['materials'])) {
             $event->materials()->sync($data['materials']);
         }
 
-        if (!empty($data['office_events'])) {
+        if (isset($data['office_events'])) {
             $event->officeEvents()->sync($data['office_events']);
         }
 
-        if (!empty($data['clients'])) {
+        if (isset($data['clients'])) {
             $event->clients()->sync($data['clients']);
         }
 
-        if (!empty($data['legal_representatives'])) {
+        if (isset($data['legal_representatives'])) {
             $event->clients()->sync($data['legal_representatives']);
         }
 
-        if (!empty($data['event_kits'])) {
+        if (isset($data['event_kits'])) {
             foreach ($data['event_kits'] as $eventKit) {
                 $eventKit['event_id'] = $event->id;
                 if (!empty($eventKit['id'])) {
