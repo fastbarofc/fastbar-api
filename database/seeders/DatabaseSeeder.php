@@ -20,13 +20,13 @@ class DatabaseSeeder extends Seeder
             DecoratorSeeder::class,
             KitSeeder::class,
             ClientSeeder::class,
+            CeremonialSeeder::class,
             EventSeeder::class,
             EventGiftSeeder::class,
             ExtraSaleSeeder::class,
             BlockedDateSeeder::class,
             UtensilSeeder::class,
             StockSeeder::class,
-            CeremonialSeeder::class,
         ]);
     }
 }
