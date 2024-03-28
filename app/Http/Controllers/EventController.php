@@ -172,7 +172,6 @@ class EventController extends Controller
             $event->clients()->sync($data['legal_representatives']);
         }
 
-
         if (!empty($data['event_kits'])) {
             foreach ($data['event_kits'] as $eventKit) {
                 $eventKit['event_id'] = $event->id;
