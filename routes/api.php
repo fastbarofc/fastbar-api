@@ -30,6 +30,8 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CollaboratorIncidentController;
 use App\Http\Controllers\OfficeBudgetController;
+use App\Http\Controllers\QualificationController;
+use App\Models\Qualification;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -113,4 +115,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('contracts/{contract}/to-sign', [ContractController::class, 'toSign'])->name('contracts.to-sign');
 
     Route::resource('collaborator-incidents', CollaboratorIncidentController::class);
+
+    Route::resource('qualifications', QualificationController::class);
 });
