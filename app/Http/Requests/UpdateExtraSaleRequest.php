@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class UpdateExtraSaleRequest extends FormRequest
 {
     protected $stopOnFirstFailure = true;
-    
+
     public function authorize(): bool
     {
         return true;
@@ -19,7 +19,7 @@ class UpdateExtraSaleRequest extends FormRequest
             'description' => 'nullable|string|max:255|unique:extra_sales,description,' . $this->route('extra_sale')->id,
             'unit_id'     => 'nullable|numeric|exists:units,id',
             'quantity'    => 'nullable|numeric|min:0',
-            'value'  => 'nullable|string',
+            'unit_value'  => 'nullable|numeric|min:0',
             'event_id'    => 'nullable|numeric|exists:events,id',
         ];
     }
@@ -34,7 +34,8 @@ class UpdateExtraSaleRequest extends FormRequest
             'unit_id.exists'      => 'O campo ID da unidade deve ser uma unidade válida',
             'quantity.numeric'     => 'O campo quantidade deve ser conter apenas números.',
             'quantity.min'         => 'O campo quantidade não pode ser negativo',
-            'value.string'    => 'O campo valor unitário deve ser uma string',
+            'unit_value.numeric'     => 'O campo valor unitário deve ser conter apenas números.',
+            'unit_value.min'         => 'O campo valor unitário não pode ser negativo',
             'event_id.numeric'      => 'O campo ID do evento deve conter apenas números.',
             'event_id.exists'      => 'O campo ID do evento deve ser um evento válida',
         ];

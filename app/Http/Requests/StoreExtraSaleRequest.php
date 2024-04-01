@@ -19,7 +19,7 @@ class StoreExtraSaleRequest extends FormRequest
             'description' => 'required|string|max:255|unique:extra_sales,description',
             'unit_id'     => 'nullable|numeric|exists:units,id',
             'quantity'    => 'required|numeric|min:0',
-            'value'  => 'required|string',
+            'unit_value'  => 'required|numeric|min:0',
             'event_id'    => 'required|numeric|exists:events,id',
         ];
     }
@@ -36,8 +36,9 @@ class StoreExtraSaleRequest extends FormRequest
             'quantity.required'    => 'O campo quantidade é obrigatório.',
             'quantity.numeric'     => 'O campo quantidade deve ser conter apenas números.',
             'quantity.min'         => 'O campo quantidade não pode ser negativo',
-            'value.required'  => 'O campo valor unitário é obrigatório',
-            'value.string'    => 'O campo valor unitário deve ser uma string',
+            'unit_value.required'  => 'O campo valor unitário é obrigatório',
+            'unit_value.numeric'     => 'O campo valor unitário deve ser conter apenas números.',
+            'unit_value.min'         => 'O campo valor unitário não pode ser negativo',
             'event_id.required'    => 'O campo ID do evento é obrigatório.',
             'event_id.numeric'     => 'O campo ID do evento deve conter apenas números.',
             'event_id.exists'      => 'O campo ID do evento deve ser um evento válida',
