@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('extra_sales', function (Blueprint $table) {
             $table->id();
             $table->string('description');
-            $table->string('slug');
             $table->foreignId('unit_id')->nullable()->cascadeOnDelete()->constrained();
             $table->integer('quantity');
             $table->string('unit_value');
