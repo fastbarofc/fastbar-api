@@ -30,7 +30,8 @@ class ExtraSale extends Model implements AuditableInterface
 
     protected static $filterableFields = [
         'description',
-        'quantity'
+        'quantity',
+        'event_id',
     ];
 
     public function unit() 
