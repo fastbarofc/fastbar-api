@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 trait  Filterable
 {
@@ -20,11 +21,15 @@ trait  Filterable
   }
 
   public function scopeFilterByField($query, $field, $value)
-    {
-        if ($this->isFieldFilterable($field)) {
-            return $query->where($field, $value);
-        }
-
-        return $query;
+  {
+    if (!$this->isFieldFilterable($field)) {
+      return $query;
     }
+    
+    if (is_array($value)) {
+      return $query->whereIn($field, $value);
+    }
+
+    return $query->where($field, $value);
+  }
 }
