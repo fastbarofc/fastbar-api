@@ -27,6 +27,7 @@ class EventGift extends Model implements AuditableInterface
 
     protected static $filterableFields = [
         'description',
+        'event_id',
         'quantity',
     ];
 
