@@ -13,12 +13,11 @@ use Cviebrock\EloquentSluggable\Sluggable;
 
 class Ceremonial extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
+    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'name',
-        'slug',
-        'accountable',
+        'responsible',
         'email',
         'phone_1',
         'phone_2',
