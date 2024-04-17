@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\LoginAuthRequest;
 use App\Http\Requests\RegisterAuthRequest;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Permission;
 
 class AuthController extends Controller
 {
     public function login(LoginAuthRequest $request)
     {
+
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -29,13 +31,20 @@ class AuthController extends Controller
 
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
 
+        $permissions = [];
+        if ($user->isAdmin()) {
+            $permissions = Permission::pluck('name')->toArray();
+        } 
+        
+
         $response = [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'created_at' => $user->created_at,
             'updated_at' => $user->updated_at,
-            'token' => $token
+            'token' => $token,
+            'permissions' => $permissions
         ];
 
         return response($response, 200);
