@@ -167,4 +167,9 @@ class Event extends Model implements AuditableInterface
         return $this->belongsToMany(Utensil::class, 'event_utensil');
     }
 
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'event_event', 'event_id', 'event_related_id');
+    }
+
 }

@@ -12,7 +12,7 @@ class CeremonialResource extends JsonResource
         return [
             'id'         => $this->id,
             'name'       => $this->name,
-            'accountable' => $this->accountable,
+            'responsible' => $this->responsible,
             'email'      => $this->email,
             'phone_1'    => $this->phone_1,
             'phone_2'    => $this->phone_2,

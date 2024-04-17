@@ -18,6 +18,7 @@ return new class extends Migration
         EventType::create(['name' => 'Formatura']);
         EventType::create(['name' => 'Licitação']);
         EventType::create(['name' => 'Locação de Salão']);
+        EventType::create(['name' => 'Degustação']);
     }
 
     public function down(): void

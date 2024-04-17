@@ -18,7 +18,7 @@ class CeremonialFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'accountable' => $this->faker->name,
+            'responsible' => $this->faker->name,
             'email' => $this->faker->email,
             'phone_1' => $this->faker->phoneNumber,
             'phone_2' => $this->faker->phoneNumber,

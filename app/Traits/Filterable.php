@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 trait  Filterable
 {
@@ -19,12 +20,20 @@ trait  Filterable
     return in_array($field, self::filterableFields());
   }
 
-  public function scopeFilterByField($query, $field, $value)
-    {
-        if ($this->isFieldFilterable($field)) {
-            return $query->where($field, $value);
-        }
-
-        return $query;
+  public function scopeFilterByField($query, $field, $value, $operator = '=')
+  {
+    if (!$this->isFieldFilterable($field)) {
+      return $query;
     }
+    
+    if (is_array($value)) {
+      return $query->whereIn($field, $value);
+    }
+
+    if ($operator == 'like') {
+      return $query->where($field, 'like', "%$value%");
+    }
+
+    return $query->where($field, $value);
+  }
 }
