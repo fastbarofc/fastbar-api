@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlockedDateController;
 use App\Models\City;
 use App\Models\State;
 use App\Http\Controllers\UserController;
@@ -117,4 +118,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('collaborator-incidents', CollaboratorIncidentController::class);
 
     Route::resource('qualifications', QualificationController::class);
+
+    Route::resource('blocked-dates', BlockedDateController::class);
 });
