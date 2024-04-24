@@ -19,7 +19,8 @@ class BreakItemResource extends JsonResource
             'description'    => $this->description,
             'slug'       => $this->slug,
             'value'     => $this->value,
-            'unit_id'   => new UnitResource($this->unit),
+            'unit_id'   => $this->unit_id,
+            'unit_name'    => $this->unit->description, 
         ];
     }
 }
