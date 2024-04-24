@@ -53,7 +53,7 @@ class QualificationController extends Controller
     }
     
     public function store(StoreQualificationRequest $request)
-    {
+    {   dump($request->all());
         $qualification = Qualification::create($request->validated());
         return response()->json(new QualificationResource($qualification), 201);
     }
