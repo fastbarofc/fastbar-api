@@ -20,6 +20,7 @@ class Event extends Model implements AuditableInterface
         'name',
         'slug',
         'client_id',
+        'event_id', 
         'invoice_client_id',
         'collaborator_id',
         'event_type_id',
@@ -59,11 +60,13 @@ class Event extends Model implements AuditableInterface
     ];
 
     protected static $filterableFields = [
+        'id',
         'name',
         'guests',
         'lease',
         'date_time',
-        'event_status_id'
+        'event_status_id',
+        'event_place_id',
     ];
 
     public function sluggable(): array
