@@ -20,7 +20,7 @@ trait  Filterable
     return in_array($field, self::filterableFields());
   }
 
-  public function scopeFilterByField($query, $field, $value, $operator = '=')
+  public function scopeFilterByField($query, $field, $value, $operator = '=', $isDate = false)
   {
     if (!$this->isFieldFilterable($field)) {
       return $query;
@@ -32,6 +32,10 @@ trait  Filterable
 
     if ($operator == 'like') {
       return $query->where($field, 'like', "%$value%");
+    }
+
+    if ($isDate) {
+      return $query->whereDate($field, $operator, $value);
     }
 
     return $query->where($field, $value);

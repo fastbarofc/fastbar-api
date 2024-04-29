@@ -42,7 +42,11 @@ class EventController extends Controller
             foreach ($filterableArray as  $filter) {
                 $field = array_keys($filter)[0];
                 $value = $filter[$field];
-                $query->filterByField($field, $value);
+                $query->filterByField(
+                    field: $field, 
+                    value: $value,
+                    isDate: $field == 'date_time'
+                );
             }
         }
 
