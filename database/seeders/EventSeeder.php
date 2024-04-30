@@ -7,6 +7,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Material;
 use App\Models\Event;
+use App\Models\ExtraSale;
 
 class EventSeeder extends Seeder
 {
@@ -21,6 +22,7 @@ class EventSeeder extends Seeder
             $legalRepresentativesToEvent = $legalRepresentatives->random(3)->pluck('id');
             $materialsToEvent = $materials->random(3)->pluck('id');
             $event->clients()->attach($legalRepresentativesToEvent);
+            ExtraSale::factory(3)->state(['event_id' => $event->id])->create();
             foreach ($materialsToEvent as $material) {
                 $event->materials()->attach($material, ['quantity' => rand(1, 10), 'selected' => rand(0, 1)]);
             }

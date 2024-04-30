@@ -23,7 +23,6 @@ class DatabaseSeeder extends Seeder
             CeremonialSeeder::class,
             EventSeeder::class,
             EventGiftSeeder::class,
-            ExtraSaleSeeder::class,
             BlockedDateSeeder::class,
             UtensilSeeder::class,
             StockSeeder::class,
