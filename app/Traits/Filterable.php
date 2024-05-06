@@ -15,6 +15,11 @@ trait  Filterable
     return !empty(self::$filterableFields) ? self::$filterableFields : [];
   }
 
+  public static function searchableFields()
+  {
+    return !empty(self::$searchableFields) ? self::$searchableFields : [];
+  }
+
   static function isFieldFilterable($field)
   {
     return in_array($field, self::filterableFields());
@@ -22,7 +27,7 @@ trait  Filterable
 
   public function scopeFilterByField($query, $field, $value, $operator = '=', $isDate = false)
   {
-    if (!$this->isFieldFilterable($field)) {
+    if (!$this->isFieldFilterable($field) && $field != 'search') {
       return $query;
     }
     
@@ -36,6 +41,14 @@ trait  Filterable
 
     if ($isDate) {
       return $query->whereDate($field, $operator, $value);
+    }
+
+    if($field == 'search') {
+      return $query->where(function($query) use ($field, $value) {
+        foreach(self::searchableFields() as $searchableField) {
+          $query->orWhere($searchableField, 'like', "%$value%");
+        }
+      });
     }
 
     return $query->where($field, $value);

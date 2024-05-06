@@ -69,6 +69,11 @@ class Event extends Model implements AuditableInterface
         'event_place_id',
     ];
 
+    protected static $searchableFields = [
+        'name',
+        'slug'
+    ];
+
     public function sluggable(): array
     {
         return [
