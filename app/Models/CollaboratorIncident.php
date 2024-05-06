@@ -15,6 +15,7 @@ class CollaboratorIncident extends Model implements AuditableInterface
     use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
     protected $fillable = [
+        'id',
         'collaborator_id',
         'description',
     ];
@@ -24,6 +25,7 @@ class CollaboratorIncident extends Model implements AuditableInterface
     ];
 
     protected static $filterableFields = [
+        'id',
         'description',
         'collaborator_id'
     ];

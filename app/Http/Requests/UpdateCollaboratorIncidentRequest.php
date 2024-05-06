@@ -15,11 +15,16 @@ class UpdateCollaboratorIncidentRequest extends FormRequest
 
     public function rules(): array
     {
+
+    
         return [
-            'collaborator_id' => 'nullable|integer|exists:collaborators,id,' . $this->route('collaborator')->id,
+            'collaborator_id' => 'nullable|integer',
             'description'     => 'nullable|string',
         ];
     }
+    
+    
+    
 
     public function messages()
     {
