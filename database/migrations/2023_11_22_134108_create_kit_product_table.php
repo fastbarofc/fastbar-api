@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('kit_id')->cascadeOnDelete()->constrained();
             $table->foreignId('product_id')->cascadeOnDelete()->constrained();
-            $table->decimal('value');
+            $table->decimal('value')->nullable();
             $table->boolean('optional')->default(false);
             $table->timestamps();
             $table->softDeletes();
