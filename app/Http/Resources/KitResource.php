@@ -16,6 +16,7 @@ class KitResource extends JsonResource
             'themed_table' => $this->themed_table,
             'optional'     => $this->optional,
             'value'        => $this->value,
+            'children'     => $this->children
         ];
     }
 }
