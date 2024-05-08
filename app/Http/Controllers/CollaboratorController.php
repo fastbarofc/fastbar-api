@@ -29,6 +29,7 @@ class CollaboratorController extends Controller
         $query = Collaborator::query();
 
         if ($request->input('filter_by')) {
+            
             $filterable = $request->input('filter_by');
             $filterableArray = json_decode($filterable, true);
             foreach ($filterableArray as  $filter) {
@@ -44,6 +45,7 @@ class CollaboratorController extends Controller
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
         }
+
 
         $collaborators = $query->paginate($perPage);
 
