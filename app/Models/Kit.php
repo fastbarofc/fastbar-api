@@ -26,7 +26,7 @@ class Kit extends Model implements AuditableInterface
 
     protected $casts = [
         'themed_table' => 'boolean',
-        'optional' => 'boolean',  
+        'optional' => 'boolean',
     ];
 
     protected static $sortableFields = [
@@ -57,7 +57,7 @@ class Kit extends Model implements AuditableInterface
         return $this->belongsTo(Kit::class);
     }
 
-    public function kits() 
+    public function kits()
     {
         return $this->hasMany(Kit::class);
     }
@@ -67,33 +67,25 @@ class Kit extends Model implements AuditableInterface
         return $this->belongsToMany(Product::class, 'kit_product')->withPivot(['value', 'optional']);
     }
 
-    public function getChildrenAttribute() 
+    public function getChildrenAttribute()
     {
         $products = $this->products;
         $products->transform(function ($item) {
             $item['kit_id'] = $this->id;
-            $item['type'] = 'product';
             return $item;
         });
         $kits = $this->kits;
-        $kits->transform(function ($item) {
-            $item['type'] = 'kit';
-            return $item;
-        });
         $children = $products->merge($kits);
         return $children->map(function ($item) {
             return [
-                'id' => $item['id'],
-                'kit_id' => $item['kit_id'],
-                'type' => $item['type'],
-                'name' => $item['name'],
-                'themed_table' => $item['themed_table'],
-                'optional' => $item['optional'],
-                'value' => $item['value'],
+                'data' => [
+                    'id' => $item['id'],
+                    'kit_id' => $item['kit_id'],
+                    'name' => $item['name'],
+                    'value' => $item['value']
+                ],
                 'children' => $item['children']
             ];
         });
     }
-
-
 }
