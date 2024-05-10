@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreKitRequest;
 use App\Http\Requests\UpdateKitRequest;
 use App\Http\Resources\KitResource;
+use App\Http\Resources\KitTreeResource;
 use App\Models\Kit;
 use Illuminate\Http\Request;
 
@@ -40,7 +41,7 @@ class KitController extends Controller
         $kits = $query->paginate($perPage);
 
         return response()->json([
-            'data' => KitResource::collection($kits),
+            'data' => KitTreeResource::collection($kits),
             'pagination' => [
                 'current_page' => $kits->currentPage(),
                 'total_pages' => $kits->lastPage(),
