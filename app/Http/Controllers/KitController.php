@@ -38,6 +38,8 @@ class KitController extends Controller
             $query->orderByField($sorteableField, $direction);
         }
 
+        $query->whereNull('kit_id');
+
         $kits = $query->paginate($perPage);
 
         return response()->json([
