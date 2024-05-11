@@ -80,6 +80,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('kits', KitController::class);
 
     Route::resource('products', ProductController::class);
+    Route::post('products/add-to-kit/{product}/{kit}', [ProductController::class, 'addToKit']);
 
     Route::resource('event-types', EventTypeController::class);
 
