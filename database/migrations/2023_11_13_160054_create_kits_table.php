@@ -11,10 +11,9 @@ return new class extends Migration
         Schema::create('kits', function (Blueprint $table) {
             $table->id();
             $table->foreignId('kit_id')->nullable()->cascadeOnDelete()->constrained();
-            $table->string('slug');
             $table->string('name');
-            $table->boolean('themed_table');
-            $table->boolean('optional');
+            $table->boolean('themed_table')->nullable();
+            $table->boolean('optional')->nullable();
             $table->decimal('value', 9, 2)->default(0);
             $table->timestamps();
             $table->softDeletes();

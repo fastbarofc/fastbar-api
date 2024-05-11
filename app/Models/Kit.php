@@ -6,14 +6,13 @@ use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
 
 class Kit extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
+    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'kit_id',
@@ -43,15 +42,6 @@ class Kit extends Model implements AuditableInterface
 
     protected $appends = ['children'];
 
-    public function sluggable(): array
-    {
-        return [
-            'slug' => [
-                'source' => ['name']
-            ]
-        ];
-    }
-
     public function kit()
     {
         return $this->belongsTo(Kit::class);
@@ -72,9 +62,14 @@ class Kit extends Model implements AuditableInterface
         $products = $this->products;
         $products->transform(function ($item) {
             $item['kit_id'] = $this->id;
+            $item['type'] = 'product';
             return $item;
         });
         $kits = $this->kits;
+        $kits->transform(function ($item) {
+            $item['type'] = 'kit';
+            return $item;
+        });
         $children = $products->merge($kits);
         return $children->map(function ($item) {
             return [
@@ -82,7 +77,8 @@ class Kit extends Model implements AuditableInterface
                     'id' => $item['id'],
                     'kit_id' => $item['kit_id'],
                     'name' => $item['name'],
-                    'value' => $item['value']
+                    'value' => $item['value'],
+                    'type' => $item['type']
                 ],
                 'children' => $item['children']
             ];

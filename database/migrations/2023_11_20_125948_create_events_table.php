@@ -15,7 +15,6 @@ return new class extends Migration
             $table->foreignId('invoice_client_id')->nullable()->constrained('clients');
             $table->foreignId('event_id')->nullable()->constrained();
             $table->foreignId('collaborator_id')->constrained();
-            $table->string('slug');
             $table->foreignId('event_type_id')->constrained();
             $table->foreignId('event_place_id')->constrained();
             $table->foreignId('event_status_id')->constrained();

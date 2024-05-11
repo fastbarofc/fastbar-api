@@ -7,14 +7,13 @@ use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
 
 class Event extends Model implements AuditableInterface
 {
-    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
+    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'name',
@@ -73,15 +72,6 @@ class Event extends Model implements AuditableInterface
         'name',
         'slug'
     ];
-
-    public function sluggable(): array
-    {
-        return [
-            'slug' => [
-                'source' => ['name']
-            ]
-        ];
-    }
 
     protected static function boot()
     {
