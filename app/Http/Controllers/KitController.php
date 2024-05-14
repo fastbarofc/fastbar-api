@@ -17,8 +17,7 @@ class KitController extends Controller
     }
 
     public function index(Request $request)
-    {
-        $perPage = $request->input('per_page', 10);
+    {   
 
         $query = Kit::query();
 
@@ -40,16 +39,10 @@ class KitController extends Controller
 
         $query->whereNull('kit_id');
 
-        $kits = $query->paginate($perPage);
-
+        $kits = $query->get();
+        
         return response()->json([
             'data' => KitTreeResource::collection($kits),
-            'pagination' => [
-                'current_page' => $kits->currentPage(),
-                'total_pages' => $kits->lastPage(),
-                'per_page' => $kits->perPage(),
-                'total' => $kits->total(),
-            ],
             'sortable_fields' => Kit::sortableFields(),
             'filterable_fields' => Kit::filterableFields()
         ], 200);
@@ -76,5 +69,11 @@ class KitController extends Controller
     {
         $kit->delete();
         return response()->json([], 204);
+    }
+
+    public function children(Kit $kit)
+    {
+        $children = $kit->children;
+        return response()->json($children, 200);
     }
 }
