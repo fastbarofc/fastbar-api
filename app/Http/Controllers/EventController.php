@@ -366,4 +366,11 @@ class EventController extends Controller
         $event->materials()->attach($material, $request->all());
         return response()->json([], 201);
     }
+
+    public function getEventKits(Event $event)
+    {
+        $query = EventKit::query();
+        $query->where('event_id', $event->id)->whereNull('event_kit_id')->get();
+        return response()->json(EventKitResource::collection($event->eventKits), 200);
+    }
 }

@@ -17,6 +17,7 @@ use App\Http\Controllers\EventStatusController;
 use App\Http\Controllers\DecoratorController;
 use App\Http\Controllers\EventCaptureController;
 use App\Http\Controllers\KitController;
+use App\Http\Controllers\EventKitController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\EventTypeController;
 use App\Http\Controllers\EventPlaceController;
@@ -79,6 +80,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::resource('kits', KitController::class);
     Route::get('kits/{kit}/children', [KitController::class, 'children'])->name('kits.children');
+
+    Route::get('event-kits', [EventKitController::class, 'index']);
+    Route::get('event-kits/{kit}/children', [EventKitController::class, 'children'])->name('kits.children');
 
     Route::resource('products', ProductController::class);
     Route::post('products/add-to-kit/{product}/{kit}', [ProductController::class, 'addToKit']);
