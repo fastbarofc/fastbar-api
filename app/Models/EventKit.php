@@ -28,6 +28,7 @@ class EventKit extends Model implements AuditableInterface
 
     protected $casts = [
         'optional' => 'boolean',
+        'themed_table' => 'boolean',
     ];
 
     protected static $sortableFields = [

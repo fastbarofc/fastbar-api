@@ -17,6 +17,7 @@ class EventKitTreeResource extends JsonResource
                 'themed_table' => $this->themed_table,
                 'optional'     => $this->optional,
                 'value'        => $this->value,
+                'observation'  => $this->observation,
             ],
             'children'     => !empty($this->children[0]) ? [[]] : []
         ];
