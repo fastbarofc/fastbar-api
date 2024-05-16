@@ -81,7 +81,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('kits', KitController::class);
     Route::get('kits/{kit}/children', [KitController::class, 'children'])->name('kits.children');
 
-    Route::get('event-kits', [EventKitController::class, 'index']);
+    Route::resource('event-kits', EventKitController::class);
     Route::get('event-kits/{kit}/children', [EventKitController::class, 'children'])->name('kits.children');
 
     Route::resource('products', ProductController::class);

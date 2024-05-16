@@ -7,6 +7,7 @@ use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
 
@@ -50,9 +51,14 @@ class EventKit extends Model implements AuditableInterface
         return $this->belongsTo(Kit::class);
     }
 
+    public function eventKit()
+    {
+        return $this->belongsTo(EventKit::class);
+    }
+
     public function eventKits()
     {
-        return $this->hasMany(EventKit::class);
+        return $this->hasMany(EventKit::class, 'event_kit_id');
     }
 
     public function products()
@@ -63,17 +69,37 @@ class EventKit extends Model implements AuditableInterface
     public function getChildrenAttribute($getChild = true)
     {
         $products = $this->products;
-        $products->transform(function ($item) {
-            $item['event_kit_id'] = $this->id;
-            $item['type'] = 'product';
-            return $item;
-        });
-        $kits = $this->kits;
-        $kits->transform(function ($item) {
-            $item['type'] = 'kit';
-            return $item;
-        });
-        $children = $products->merge($kits);
+        $kits = $this->eventKits;
+
+        if (!$products && !$kits) {
+            return [];
+        }
+
+        if ($products) {
+            $products->transform(function ($item) {
+                $item['event_kit_id'] = $this->id;
+                $item['type'] = 'product';
+                return $item;
+            });
+        }
+
+        if ($kits) {
+            $kits->transform(function ($item) {
+                $item['type'] = 'kit';
+                return $item;
+            });
+        }
+
+        if ($products->first()) {
+            $children = $products->merge($kits);
+        } else {
+            $children = $kits;
+        }
+
+        if (!$children) {
+            return [];
+        }
+
         return $children->map(function ($item) use ($getChild) {
             return [
                 'data' => [
@@ -83,7 +109,7 @@ class EventKit extends Model implements AuditableInterface
                     'value' => $item['value'],
                     'type' => $item['type']
                 ],
-                'children' => $getChild ? $item['children'] : ($item['children'] ? [[]] : [])
+                'children' => $getChild ? $item['children'] : (!empty($item['children']) &&  !empty($item['children'][0]) ? [[]] : [])
             ];
         });
     }

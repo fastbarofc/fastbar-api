@@ -60,17 +60,37 @@ class Kit extends Model implements AuditableInterface
     public function getChildrenAttribute($getChild = true)
     {
         $products = $this->products;
-        $products->transform(function ($item) {
-            $item['kit_id'] = $this->id;
-            $item['type'] = 'product';
-            return $item;
-        });
         $kits = $this->kits;
-        $kits->transform(function ($item) {
-            $item['type'] = 'kit';
-            return $item;
-        });
-        $children = $products->merge($kits);
+        
+        if (!$products && !$kits) {
+            return [];
+        }
+
+        if ($products) {
+            $products->transform(function ($item) {
+                $item['event_kit_id'] = $this->id;
+                $item['type'] = 'product';
+                return $item;
+            });
+        }
+
+        if ($kits) {
+            $kits->transform(function ($item) {
+                $item['type'] = 'kit';
+                return $item;
+            });
+        }
+
+        if ($products->first()) {
+            $children = $products->merge($kits);
+        } else {
+            $children = $kits;
+        }
+
+        if (!$children) {
+            return [];
+        }
+
         return $children->map(function ($item) use ($getChild) {
             return [
                 'data' => [
@@ -80,7 +100,7 @@ class Kit extends Model implements AuditableInterface
                     'value' => $item['value'],
                     'type' => $item['type']
                 ],
-                'children' => $getChild ? $item['children'] : ($item['children'] ? [[]] : [])
+                'children' => $getChild ? $item['children'] : (!empty($item['children']) &&  !empty($item['children'][0]) ? [[]] : [])
             ];
         });
     }

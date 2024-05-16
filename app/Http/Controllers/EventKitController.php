@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreKitRequest;
-use App\Http\Requests\UpdateKitRequest;
-use App\Http\Resources\KitResource;
-use App\Http\Resources\KitTreeResource;
+use App\Http\Resources\EventKitTreeResource;
 use App\Models\EventKit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EventKitController extends Controller
 {
@@ -40,11 +38,10 @@ class EventKitController extends Controller
         $query->whereNull('event_kit_id');
 
         $eventKits = $query->get();
+
         
         return response()->json([
-            'data' => KitTreeResource::collection($eventKits),
-            'sortable_fields' => EventKit::sortableFields(),
-            'filterable_fields' => EventKit::filterableFields()
+            'data' => EventKitTreeResource::collection($eventKits),
         ], 200);
     }
 
@@ -52,5 +49,28 @@ class EventKitController extends Controller
     {
         $children = $kit->children;
         return response()->json($children, 200);
+    }
+
+    public function store(Request $request)
+    {
+        $eventKit = EventKit::create($request->all());
+        return response()->json(new EventKitTreeResource($eventKit), 201);
+    }
+
+    public function show(EventKit $eventKit)
+    {
+        return response()->json(new EventKitTreeResource($eventKit), 200);
+    }
+
+    public function update(Request $request, EventKit $eventKit)
+    {
+        $eventKit->update($request->all());
+        return response()->json(new EventKitTreeResource($eventKit), 200);
+    }
+
+    public function destroy(EventKit $eventKit)
+    {
+        $eventKit->delete();
+        return response()->json([], 204);
     }
 }

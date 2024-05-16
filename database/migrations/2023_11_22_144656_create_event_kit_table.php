@@ -15,8 +15,8 @@ return new class extends Migration
             $table->string('name');
             $table->decimal('value')->nullable();
             $table->string('themed_table')->nullable();
-            $table->integer('ordination');
-            $table->string('observation');
+            $table->integer('ordination')->nullable();
+            $table->string('observation')->nullable();
             $table->boolean('optional')->default(false);
             $table->timestamps();
             $table->softDeletes();
