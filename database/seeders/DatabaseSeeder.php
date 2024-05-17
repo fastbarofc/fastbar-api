@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             UtensilSeeder::class,
             StockSeeder::class,
             ProductGroupSeeder::class,
+            EventKitSeeder::class,
         ]);
     }
 }
