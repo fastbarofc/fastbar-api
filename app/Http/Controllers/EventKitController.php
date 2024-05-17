@@ -17,7 +17,7 @@ class EventKitController extends Controller
     public function index(Request $request)
     {   
 
-        $query = EventKit::query();
+        $query = EventKit::query()->where('event_id', $request->input('event_id'));
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
