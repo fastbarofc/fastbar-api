@@ -13,7 +13,6 @@ class ProductFactory extends Factory
 
         return [
             'name'              => $this->faker->unique()->word,
-            'description'       => $this->faker->words(3, true),
             'unit_id'           => $unit->id,
             'value'             => $this->faker->randomFloat(2, 20, 3000),
             'marketable'        => $this->faker->boolean,

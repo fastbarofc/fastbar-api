@@ -32,6 +32,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CollaboratorIncidentController;
 use App\Http\Controllers\OfficeBudgetController;
+use App\Http\Controllers\ProductGroupController;
 use App\Http\Controllers\QualificationController;
 use App\Models\Qualification;
 
@@ -52,7 +53,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     });
 });
 
-Route::group(['middleware' => ['auth:api', 'admin']], function () {
+#Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('users', UserController::class)->except(['store']);
     Route::post('users/{user}/sync-roles', [UserController::class, 'syncRoles'])->name('users.sync-roles');
     Route::post('users/{user}/sync-permissions', [UserController::class, 'syncPermissions'])->name('users.sync-permissions');
@@ -125,4 +126,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('blocked-dates', BlockedDateController::class);
 
     Route::resource('break-items', BreakItemController::class);
-});
+
+    Route::resource('product-groups', ProductGroupController::class);
+
+    Route::get('product-get-photos/{product}/', [ProductController::class, 'getFilePath'])->name('products.get-photo');
+#});

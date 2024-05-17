@@ -95,7 +95,7 @@ class CollaboratorController extends Controller
 
         if ($request->hasFile('photo')) {
             $photo = $request->file('photo');
-            $file = FileService::upload($photo, 'collaborator');
+            $file = FileService::upload($photo, 'product');
             $collaborator->update(['file_id' => $file->id]);
         }
 

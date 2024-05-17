@@ -17,13 +17,11 @@ class Product extends Model implements AuditableInterface
 
     protected $fillable = [
         'name',
-        'slug',
-        'description',
         'group',
         'barcode',
         'unit_id',
         'weight',
-        'manufatturer',
+        'manufacturer',
         'value',
         'supplier',
         'marketable',
@@ -31,6 +29,8 @@ class Product extends Model implements AuditableInterface
         'display_checklist',
         'own_production',
         'recipe_yield',
+        'product_group_id',
+        'file_id'
     ];
 
     protected $casts = [
@@ -41,22 +41,20 @@ class Product extends Model implements AuditableInterface
 
     protected static $sortableFields = [
         'name',
-        'description',
         'group',
         'barcode',
         'weight',
-        'manufatturer',
+        'manufacturer',
         'value',
         'supplier',
     ];
 
     protected static $filterableFields = [
         'name',
-        'description',
         'group',
         'barcode',
         'weight',
-        'manufatturer',
+        'manufacturer',
         'value',
         'supplier',
     ];
@@ -83,5 +81,20 @@ class Product extends Model implements AuditableInterface
     public function eventKits()
     {
         return $this->belongsToMany(EventKit::class, 'event_kit_product')->withPivot(['event_id', 'value', 'ordination', 'optional', 'average consumption ', 'quantity', 'comments ']);
+    }
+
+    public function productGroup()
+    {
+        return $this->belongsTo(ProductGroup::class);
+    }
+
+    public function file()
+    {
+        return $this->belongsTo(File::class);
+    }
+
+    public function getPhotoAttribute()
+    {
+        return $this->file?->path;
     }
 }

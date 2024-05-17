@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             BlockedDateSeeder::class,
             UtensilSeeder::class,
             StockSeeder::class,
+            ProductGroupSeeder::class,
         ]);
     }
 }
