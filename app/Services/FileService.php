@@ -6,6 +6,8 @@ use App\Models\File;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Facades\Image;
+
 
 
 class FileService
@@ -23,13 +25,13 @@ class FileService
         $filePath = "/{$path}/";
         $fileName = uniqid('', false) . '.png';
 
-        @list($type, $fileData) = explode(':', $fileData);
-        @list(, $fileData) = explode(';', $fileData);
+        @list($type, $fileData) = explode(';', $fileData);
+        @list(, $fileData) = explode(',', $fileData);
         
         if ($fileData !== '' && Storage::disk('public')->put($filePath . $fileName, base64_decode($fileData))) {
-            if (!empty($item->$column)) {
+            /* if (!empty($item->$column)) {
                 Storage::disk('public')->delete(self::clearStoragePath($item->$column));
-            }
+            } */
 
             $file = File::create([
                 'name'      => $fileName,
@@ -37,7 +39,7 @@ class FileService
                 'extension' => 'png',
             ]);
 
-            $item->update([$column => '/storage' . $filePath . $fileName]);
+           // $item->update([$column => '/storage' . $filePath . $fileName]);
 
             return $file;
         }

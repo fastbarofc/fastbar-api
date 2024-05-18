@@ -72,63 +72,29 @@ class ProductController extends Controller
         return response()->json(new ProductResource($product), 201);
     }
 
-
-private function getImageExtensionFromBase64($base64String)
-{
-    // Obtenha os primeiros bytes da string base64
-    $data = explode(',', $base64String)[0];
-
-    // Remova o cabeçalho "data:image/png;base64," e obtenha o tipo do arquivo
-    $mime = str_replace('data:image/', '', $data);
-
-    // Converte o tipo do arquivo para a extensão correspondente
-    switch ($mime) {
-        case 'jpeg':
-        case 'jpg':
-            return 'jpg';
-        case 'png':
-            return 'png';
-        case 'gif':
-            return 'gif';
-        default:
-            return null; // Extensão desconhecida
-    }
-}
-
-    
-
-    
-    
-
     public function show(Product $product)
     {
         return response()->json(new ProductResource($product), 200);
     }
 
     public function update(UpdateProductRequest $request, Product $product)
-    {
-        $productData = $request->all();
+{
+    $productData = $request->except('photo');
 
-        $product->update($productData);
+    $product->update($productData);
 
-        if (isset($productData['photo']) && !empty($productData['photo'])) {
-            // Decodifica a string base64 para obter os dados binários da imagem
-            $imageData = base64_decode($productData['photo']);
-    
-            // Salva a imagem em um diretório temporário
-            $tempImagePath = sys_get_temp_dir() . '/' . uniqid() . '.png';
-            file_put_contents($tempImagePath, $imageData);
-    
-            // Faz o upload da imagem usando o FileService
-            $file = FileService::upload($tempImagePath, 'products');
-    
+    if ($request->has('photo') && !empty($request->photo)) {
+        try {
+            $file = FileService::saveImage($product, 'file_id', 'products', $request->photo);
             $product->update(['file_id' => $file->id]);
-    
-            // Remove o campo 'photo' dos dados do produto, pois não é mais necessário
-            unset($productData['photo']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         }
-        return response()->json(new ProductResource($product), 200);
     }
+
+    return response()->json(new ProductResource($product), 200);
+}
+
 
     public function destroy(Product $product)
     {
@@ -148,10 +114,12 @@ private function getImageExtensionFromBase64($base64String)
     $file = File::find($fileId);
 
     if ($file) {
-        return response()->json(['photo_path' => $file->path]);
+        $photoUrl = asset('storage/' . $file->path); // Gera a URL completa da imagem
+        return response()->json(['photo_path' => $photoUrl]);
     } else {
         return response()->json(['photo_path' => null]);
     }
 }
+
 
 }
