@@ -14,6 +14,7 @@ class ProductResource extends JsonResource
             'name'=> $this->name,
             'slug'=> $this->slug,
             'file_id'=> $this->file_id,
+            'file_path' => $this->file ? $this->file->path : null,
             'product_group_id'=> $this->product_group_id,
             'barcode'=> $this->barcode,
             'unit_id'=> $this->unit_id,

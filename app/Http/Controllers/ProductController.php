@@ -10,12 +10,13 @@ use App\Models\Product;
 use App\Models\Kit;
 use Illuminate\Http\Request;
 use App\Services\FileService;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
     public function __construct()
     {
-        #$this->authorizeResource(ProductController::class, 'product');
+        $this->authorizeResource(ProductController::class, 'product');
     }
 
     public function index(Request $request)
@@ -58,11 +59,12 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         $productData = $request->all();
+        dd($productData);
         $product = Product::create($productData);
     
         if ($request->has('photo') && !empty($request->photo)) {
             try {
-                $file = FileService::saveImage($product, 'file_id', 'products', $request->photo);
+                $file = FileService::saveImage('products', $request->photo);
                 $product->update(['file_id' => $file->id]);
             } catch (\Exception $e) {
                 return response()->json(['error' => $e->getMessage()], 400);
@@ -79,21 +81,40 @@ class ProductController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product)
 {
+
     $productData = $request->except('photo');
 
-    $product->update($productData);
+    if ($request->filled('photo')) {
+        $photoUrl = $request->photo;
 
-    if ($request->has('photo') && !empty($request->photo)) {
+        $photoPath = parse_url($photoUrl, PHP_URL_PATH);
+        $normalizedPhotoPath = str_replace('/storage//', '/', $photoPath);
+
+        if (!isset($product->file_id) || $normalizedPhotoPath !== $product->file->path) {
         try {
-            $file = FileService::saveImage($product, 'file_id', 'products', $request->photo);
-            $product->update(['file_id' => $file->id]);
+            $file = FileService::saveImage('products', $request->photo);
+            $productData['file_id'] = $file->id;
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
+        }
+    } else {
+
+
+        if ($product->file_id) {
+            Storage::disk('public')->delete($product->file->path);
+
+            $product->file->delete();
+
+            $productData['file_id'] = null;
+        }
     }
+
+    $product->update($productData);
 
     return response()->json(new ProductResource($product), 200);
 }
+
 
 
     public function destroy(Product $product)
