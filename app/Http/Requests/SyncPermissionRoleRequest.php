@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SyncPermissionUserRequest extends FormRequest
+class SyncPermissionRoleRequest extends FormRequest
 {
     protected $stopOnFirstFailure = true;
 
