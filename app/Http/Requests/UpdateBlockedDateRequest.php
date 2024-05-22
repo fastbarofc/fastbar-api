@@ -15,8 +15,10 @@ class UpdateBlockedDateRequest extends FormRequest
 
     public function rules(): array
     {
+
+        $blockedDate = $this->route('blocked_date'); 
         return [
-            'date'        => 'nullable|date|unique:blocked_dates,date,' . $this->blockedDate->id,
+            'date'        => 'nullable|date|unique:blocked_dates,date,' . ($blockedDate ? $blockedDate->id : 'NULL'),
             'description' => 'nullable|string|max:255'
         ];
     }
