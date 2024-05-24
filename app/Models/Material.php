@@ -31,6 +31,10 @@ class Material extends Model implements AuditableInterface
         'quantity',
     ];
 
+    protected static $searchableFields = [
+        'description',
+    ];
+
     public function sluggable(): array
     {
         return [

@@ -17,7 +17,6 @@ class Product extends Model implements AuditableInterface
 
     protected $fillable = [
         'name',
-        'group',
         'barcode',
         'unit_id',
         'weight',
@@ -41,7 +40,7 @@ class Product extends Model implements AuditableInterface
 
     protected static $sortableFields = [
         'name',
-        'group',
+        'product_group_id',
         'barcode',
         'weight',
         'manufacturer',
@@ -51,12 +50,17 @@ class Product extends Model implements AuditableInterface
 
     protected static $filterableFields = [
         'name',
-        'group',
+        'product_group_id',
         'barcode',
         'weight',
         'manufacturer',
         'value',
         'supplier',
+        'unit_id'
+    ];
+
+    protected static $searchableFields = [
+        'name',
     ];
 
     public function sluggable(): array

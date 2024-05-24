@@ -25,15 +25,19 @@ class BreakItem extends Model implements AuditableInterface
 
 
     protected static $sortableFields = [
-        'name',
+        'description',
         'unit_id',
         'value',
     ];
 
     protected static $filterableFields = [
-        'name',
+        'description',
         'unit_id',
         'value',
+    ];
+
+    protected static $searchableFields = [
+        'description',
     ];
 
     public function sluggable(): array

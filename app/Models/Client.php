@@ -51,6 +51,12 @@ class Client extends Model implements AuditableInterface
         'nickname',
     ];
 
+    protected static $searchableFields = [
+        'name',
+        'email',
+        'nickname',
+    ];
+
     protected static function boot()
     {
         parent::boot();

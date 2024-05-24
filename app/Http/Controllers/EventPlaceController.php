@@ -28,7 +28,12 @@ class EventPlaceController extends Controller
             foreach ($filterableArray as  $filter) {
                 $field = array_keys($filter)[0];
                 $value = $filter[$field];
-                $query->filterByField($field, $value);
+                $operator = $field == 'name' || $field == 'responsible' || $field == 'email' ? 'like' : '=';
+                $query->filterByField(
+                    field: $field,
+                    value: $operator == 'like' ? "%$value%" : $value,
+                    operator: $operator
+                );
             }
         }
 

@@ -99,7 +99,7 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
-        //$this->registerPermissions();    
+        $this->registerPermissions();    
 
         Gate::before(function ($user, $ability) {
             if ($user->isAdmin()) {

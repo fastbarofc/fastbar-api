@@ -17,7 +17,6 @@ class Event extends Model implements AuditableInterface
 
     protected $fillable = [
         'name',
-        'slug',
         'client_id',
         'event_id', 
         'invoice_client_id',
@@ -70,7 +69,6 @@ class Event extends Model implements AuditableInterface
 
     protected static $searchableFields = [
         'name',
-        'slug'
     ];
 
     protected static function boot()

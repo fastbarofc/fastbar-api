@@ -34,6 +34,14 @@ class Partner extends Model implements AuditableInterface
         'email',
     ];
 
+    protected static $searchableFields = [
+        'name',
+        'responsible',
+        'email'
+    ];
+
+
+
     protected static function boot()
     {
         parent::boot();

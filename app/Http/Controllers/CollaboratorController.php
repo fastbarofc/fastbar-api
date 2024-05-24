@@ -29,33 +29,35 @@ class CollaboratorController extends Controller
         $query = Collaborator::query();
 
         if ($request->input('filter_by')) {
-            
             $filterable = $request->input('filter_by');
             $filterableArray = json_decode($filterable, true);
             foreach ($filterableArray as  $filter) {
                 $field = array_keys($filter)[0];
                 $value = $filter[$field];
-                $operator = $field == 'name' ? 'like' : '=';
-                $query->filterByField($field, $value, $operator);
+                $operator = $field == 'name' || $field == 'nickname' ? 'like' : '=';
+                $query->filterByField(
+                    field: $field, 
+                    value: $operator == 'like' ? "%$value%" : $value,
+                    operator: $operator,
+                );
             }
         }
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
         }
 
-
-        $collaborators = $query->paginate($perPage);
+        $events = $query->paginate($perPage);
 
         return response()->json([
-            'data' => CollaboratorResource::collection($collaborators),
+            'data' => CollaboratorResource::collection($events),
             'pagination' => [
-                'current_page' => $collaborators->currentPage(),
-                'total_pages' => $collaborators->lastPage(),
-                'per_page' => $collaborators->perPage(),
-                'total' => $collaborators->total(),
+                'current_page' => $events->currentPage(),
+                'total_pages' => $events->lastPage(),
+                'per_page' => $events->perPage(),
+                'total' => $events->total(),
             ],
             'sortable_fields' => Collaborator::sortableFields(),
             'filterable_fields' => Collaborator::filterableFields()
@@ -93,11 +95,11 @@ class CollaboratorController extends Controller
             ]);
         }
 
-        if ($request->hasFile('photo')) {
+        /* if ($request->hasFile('photo')) {
             $photo = $request->file('photo');
             $file = FileService::upload($photo, 'product');
             $collaborator->update(['file_id' => $file->id]);
-        }
+        } */
 
         $qualifications = Qualification::all();
 
@@ -166,7 +168,7 @@ class CollaboratorController extends Controller
             );        
         }
 
-        if ($request->hasFile('photo')) {
+       /*  if ($request->hasFile('photo')) {
             if ($collaborator->file_id) {
                 $actualPhoto = File::where('id', $collaborator->file_id)->first();
                 FileService::delete($actualPhoto);
@@ -175,7 +177,7 @@ class CollaboratorController extends Controller
             $photo = $request->file('photo'); 
             $photo = FileService::upload($photo, 'collaborator');
             $collaborator->update(['file_id' => $photo->id]);
-        }
+        } */
 
         $qualifications = Qualification::all();
 
