@@ -17,7 +17,6 @@ class Kit extends Model implements AuditableInterface
     protected $fillable = [
         'kit_id',
         'name',
-        'slug',
         'themed_table',
         'optional',
         'value'
