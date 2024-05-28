@@ -79,6 +79,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::resource('event-captures', EventCaptureController::class);
 
+    Route::get('kits/tree', [KitController::class, 'indexTree'])->name('kits.tree');
     Route::resource('kits', KitController::class);
     Route::get('kits/{kit}/children', [KitController::class, 'children'])->name('kits.children');
 
