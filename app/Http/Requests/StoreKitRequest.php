@@ -18,8 +18,6 @@ class StoreKitRequest extends FormRequest
         return [
             'kit_id'       => 'nullable|numeric',
             'name'         => 'required|string|max:255|unique:kits',
-            'themed_table' => 'required|boolean',
-            'optional'     => 'required|boolean',
             'value'        => 'required|numeric|min:0',
         ];
     }
@@ -32,8 +30,6 @@ class StoreKitRequest extends FormRequest
             'name.string'           => 'O campo nome deve ser um texto.',
             'name.max'              => 'O campo nome deve ter no máximo 255 caracteres.',
             'name.unique'           => 'O nome informado já está em uso.',
-            'themed_table.required' => 'O campo mesa temática é obrigatório.',
-            'optional.required'     => 'O campo kit opcional é obrigatório.',
             'value.required'        => 'O campo valor é obrigatório.',
             'value.numeric'         => 'O valor precisa ser um número',
             'value.min'             => 'O valor n"ao pode ser negativo',
