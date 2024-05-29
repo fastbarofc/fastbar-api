@@ -61,7 +61,9 @@ class OfficeBudgetController extends Controller
      */
     public function store(StoreOfficeBudgetRequest $request)
     {
-        $officeBudget = OfficeBudget::create($request->all());
+        $data = $request->all();
+        $data['slug'] = slug($data['name']);
+        $officeBudget = OfficeBudget::create($data);
         return response()->json(new OfficeBudgetResource($officeBudget), 201);
     }
 
@@ -78,7 +80,9 @@ class OfficeBudgetController extends Controller
      */
     public function update(UpdateOfficeBudgetRequest $request, OfficeBudget $officeBudget)
     {
-        $officeBudget->update($request->all());
+        $data = $request->all();
+        $data['slug'] = slug($data['name']);
+        $officeBudget->update($data);
         return response()->json(new OfficeBudgetResource($officeBudget), 200);
     }
 

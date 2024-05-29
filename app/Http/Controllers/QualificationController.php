@@ -53,8 +53,10 @@ class QualificationController extends Controller
     }
     
     public function store(StoreQualificationRequest $request)
-    {   dump($request->all());
-        $qualification = Qualification::create($request->validated());
+    {   
+        $data = $request->all();
+        $data['slug'] = slug($data['description']);
+        $qualification = Qualification::create($data);
         return response()->json(new QualificationResource($qualification), 201);
     }
     
@@ -65,7 +67,9 @@ class QualificationController extends Controller
     
     public function update(UpdateQualificationRequest $request, Qualification $qualification)
     {
-        $qualification->update($request->validated());
+        $data = $request->all();
+        $data['slug'] = slug($data['description']);
+        $qualification->update($data);
         return response()->json(new QualificationResource($qualification));
     }
     
