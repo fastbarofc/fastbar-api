@@ -13,8 +13,6 @@ class KitResource extends JsonResource
             'id'           => $this->id,
             'kit_id'       => $this->kit_id,
             'name'         => $this->name,
-            'themed_table' => $this->themed_table,
-            'optional'     => $this->optional,
             'value'        => $this->value
         ];
     }

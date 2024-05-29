@@ -128,9 +128,15 @@ class ProductController extends Controller
         return response()->json([], 204);
     }
 
-    public function addToKit(Product $product, Kit $kit)
+    public function addToKit(Request $request)
     {
-        $kit->products()->attach($product->id);
+        $newKit = Kit::find($request->new_kit['id']);
+        $oldKit = Kit::find($request->old_kit['id']);
+        $product = Product::find($request->product['id']);
+
+        $newKit->products()->attach($product->id);
+        $oldKit->products()->detach($product->id);
+
         return response()->json([], 201);
     }
 
