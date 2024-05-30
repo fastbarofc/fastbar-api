@@ -13,6 +13,7 @@ use App\Models\Address;
 use App\Services\FileService;
 use App\Models\Qualification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CollaboratorController extends Controller
 {
@@ -95,11 +96,14 @@ class CollaboratorController extends Controller
             ]);
         }
 
-        /* if ($request->hasFile('photo')) {
-            $photo = $request->file('photo');
-            $file = FileService::upload($photo, 'product');
-            $collaborator->update(['file_id' => $file->id]);
-        } */
+        if ($request->has('photo') && !empty($request->photo)) {
+            try {
+                $file = FileService::saveImage('collaborators', $request->photo);
+                $collaborator->update(['file_id' => $file->id]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 400);
+            }
+        }
 
         $qualifications = Qualification::all();
 
@@ -123,8 +127,34 @@ class CollaboratorController extends Controller
     
     public function update(UpdateCollaboratorRequest $request, Collaborator $collaborator)
     {
-        $data = $request->all();
+        $data = $request->except('photo');
         $collaborator->update($data);
+
+        if ($request->filled('photo')) {
+            $photoUrl = $request->photo;
+    
+            $photoPath = parse_url($photoUrl, PHP_URL_PATH);
+            $normalizedPhotoPath = str_replace('/storage//', '/', $photoPath);
+    
+            if (!isset($collaborator->file_id) || $normalizedPhotoPath !== $collaborator->file->path) {
+            try {
+                $file = FileService::saveImage('collaborators', $request->photo);
+                $collaborator->update(['file_id' => $file->id]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 400);
+            }
+            }
+        } else {
+    
+    
+            if ($collaborator->file_id) {
+                Storage::disk('public')->delete($collaborator->file->path);
+    
+                $collaborator->file->delete();
+    
+                $collaborator['file_id'] = null;
+            }
+        }
 
         if (!empty($data['has_login'])) {
             $user = User::updateOrCreate(['id' => $collaborator->user_id], [
@@ -203,11 +233,18 @@ class CollaboratorController extends Controller
         return response()->json([], 204);
     }
 
-    public function getImage(Collaborator $collaborator)
-    {
-        $file = File::where('id', $collaborator->file_id)->first();
-        return response()->json($file, 200);
+    public function getFilePath(Collaborator $collaborator)
+{
+    $fileId = $collaborator->file_id;
+    $file = File::find($fileId);
+
+    if ($file) {
+        $photoUrl = asset('storage/' . $file->path); 
+        return response()->json(['photo_path' => $photoUrl]);
+    } else {
+        return response()->json(['photo_path' => null]);
     }
+}
 }
                 
 
