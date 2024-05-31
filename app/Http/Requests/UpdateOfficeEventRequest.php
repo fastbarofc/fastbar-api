@@ -23,7 +23,7 @@ class UpdateOfficeEventRequest extends FormRequest
         ];
     }
 
-    public function messaghes(): array
+    public function messages(): array
     {
         return [
             'description.string'  => 'O campo descrição deve ser uma string.',

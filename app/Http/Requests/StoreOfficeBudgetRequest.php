@@ -22,7 +22,15 @@ class StoreOfficeBudgetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255|unique:office_events,description',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'O nome e obrigatório',
+            'name.unique' => 'O nome informado já está em uso',
         ];
     }
 }
