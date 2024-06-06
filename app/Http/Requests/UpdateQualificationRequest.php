@@ -19,4 +19,14 @@ class UpdateQualificationRequest extends FormRequest
             'description'      => 'nullable|string|max:255|unique:qualifications,description,' . $this->qualification->id,
         ];
     }
+
+
+    public function messages(): array
+    {
+        return [
+            'description.string'  => 'O campo descrição deve ser uma string.',
+            'description.max'     => 'O campo descrição deve ter no maximo 255 caracteres.',
+            'description.unique'  => 'O nome informado já está em uso.',
+        ];
+    }
 }

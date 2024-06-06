@@ -19,4 +19,14 @@ class StoreQualificationRequest extends FormRequest
             'description'      => 'required|string|max:255|unique:qualifications',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'description.required' => 'O campo descrição é obrigatório.',
+            'description.string'   => 'O campo descrição deve ser uma string.',
+            'description.max'      => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.unique'   => 'Essa descrição já está em uso.',
+        ];
+    }
 }

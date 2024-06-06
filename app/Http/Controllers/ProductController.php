@@ -65,7 +65,6 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         $productData = $request->all();
-        dd($productData);
         $product = Product::create($productData);
     
         if ($request->has('photo') && !empty($request->photo)) {
@@ -157,7 +156,7 @@ class ProductController extends Controller
     $file = File::find($fileId);
 
     if ($file) {
-        $photoUrl = asset('storage/' . $file->path); // Gera a URL completa da imagem
+        $photoUrl = asset('storage/' . $file->path); 
         return response()->json(['photo_path' => $photoUrl]);
     } else {
         return response()->json(['photo_path' => null]);

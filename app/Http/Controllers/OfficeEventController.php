@@ -59,7 +59,11 @@ class OfficeEventController extends Controller
 
     public function store(StoreOfficeEventRequest $request)
     {
-        $officeEvent = OfficeEvent::create($request->all());
+        try{
+            $officeEvent = OfficeEvent::create($request->all());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
         return response()->json(new OfficeEventResource($officeEvent), 201);
     }
 
@@ -70,7 +74,11 @@ class OfficeEventController extends Controller
 
     public function update(UpdateOfficeEventRequest $request, OfficeEvent $officeEvent)
     {
-        $officeEvent->update($request->all());
+        try{
+          $officeEvent->update($request->all());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
         return response()->json(new OfficeEventResource($officeEvent), 200);
     }
 

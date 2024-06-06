@@ -13,6 +13,7 @@ class FileService
   public static function saveImage($path, $fileData)
 {
 
+
     $filePath = "/{$path}/";
     $fileName = uniqid('', false) . '.png';
 

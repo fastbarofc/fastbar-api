@@ -137,4 +137,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('product-groups', ProductGroupController::class);
 
     Route::get('product-get-photos/{product}/', [ProductController::class, 'getFilePath'])->name('products.get-photo');
+
+    Route::get('collaborator-get-photos/{collaborator}/', [CollaboratorController::class, 'getFilePath'])->name('collaborators.get-photo');
 });

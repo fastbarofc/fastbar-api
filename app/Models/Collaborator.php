@@ -120,3 +120,4 @@ class Collaborator extends Model implements AuditableInterface
         return $this->hasMany(CollaboratorIncident::class);
     }
 }
+

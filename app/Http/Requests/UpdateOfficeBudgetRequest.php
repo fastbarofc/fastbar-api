@@ -22,7 +22,17 @@ class UpdateOfficeBudgetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'nullable|string|max:255|unique:office_events,description,' . $this->route('office_budget')->id,
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.unique' => 'O nome informado já está em uso',
+            'name.max' => 'O campo nome deve ter no maximo 255 caracteres',
+            'name.string' => 'O campo nome deve ser uma string',
+
         ];
     }
 }
