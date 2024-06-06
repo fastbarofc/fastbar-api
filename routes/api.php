@@ -83,11 +83,13 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('kits', KitController::class);
     Route::get('kits/{kit}/children', [KitController::class, 'children'])->name('kits.children');
 
+    Route::get('event-kits/tree', [EventKitController::class, 'indexTree'])->name('event-kits.tree');
     Route::resource('event-kits', EventKitController::class);
-    Route::get('event-kits/{kit}/children', [EventKitController::class, 'children'])->name('kits.children');
+    Route::get('event-kits/{kit}/children', [EventKitController::class, 'children'])->name('event-kits.children');
 
     Route::resource('products', ProductController::class);
     Route::post('products/add-to-kit', [ProductController::class, 'addToKit']);
+    Route::post('products/add-to-event-kit', [ProductController::class, 'addToEventKit']);
 
     Route::resource('event-types', EventTypeController::class);
 
