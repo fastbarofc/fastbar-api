@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\EventKit;
 use App\Models\File;
 use App\Models\Product;
 use App\Models\Kit;
@@ -137,6 +138,16 @@ class ProductController extends Controller
         $oldKit->products()->detach($product->id);
 
         return response()->json([], 201);
+    }
+
+    public function addToEventKit(Request $request)
+    {        
+        $newEventKit = EventKit::find($request->new_event_kit['id']);
+        $oldEventKit = EventKit::find($request->old_event_kit['id']);
+        $product = Product::find($request->product['id']);
+        $newEventKit->products()->attach($product->id);
+        $oldEventKit->products()->detach($product->id);
+
     }
 
     public function getFilePath(Product $product)

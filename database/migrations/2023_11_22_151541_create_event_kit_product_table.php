@@ -10,16 +10,15 @@ return new class extends Migration
     {
         Schema::create('event_kit_product', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('event_kit_id')->cascadeOnDelete()->constrained();
-            $table->foreignId('product_id')->cascadeOnDelete()->constrained();
-            $table->foreignId('event_id')->cascadeOnDelete()->constrained();
-            $table->decimal('value');
-            $table->integer('ordination');
-            $table->boolean('optional')->default(false);
-            $table->string('unit');
-            $table->decimal('average consumption',9 ,2);
-            $table->integer('quantity');
-            $table->longText('comments');
+            $table->foreignId('event_kit_id')->constrained();
+            $table->foreignId('product_id')->constrained();
+            $table->decimal('value')->nullable();
+            $table->integer('ordination')->nullable();
+            $table->boolean('optional')->default(false)->nullable();
+            $table->string('unit')->nullable();
+            $table->decimal('average consumption',9 ,2)->nullable();
+            $table->integer('quantity')->nullable();
+            $table->longText('comments')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

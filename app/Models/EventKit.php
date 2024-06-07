@@ -45,8 +45,6 @@ class EventKit extends Model implements AuditableInterface
         'value',
     ];
 
-    protected $appends = ['children'];
-
     public function event()
     {
         return $this->belongsTo(Kit::class);
@@ -64,7 +62,12 @@ class EventKit extends Model implements AuditableInterface
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'event_kit_product')->withPivot(['event_id', 'value', 'ordination', 'optional', 'average consumption ', 'quantity', 'comments ']);
+        return $this->belongsToMany(Product::class, 'event_kit_product')->withPivot(['value', 'ordination', 'optional', 'average consumption ', 'quantity', 'comments ']);
+    }
+
+    public function getHasChildrenAttribute()
+    {
+        return $this->products->isNotEmpty() || $this->eventKits->isNotEmpty();
     }
 
     public function getChildrenAttribute($getChild = true)

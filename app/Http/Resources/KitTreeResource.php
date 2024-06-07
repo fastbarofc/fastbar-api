@@ -18,7 +18,8 @@ class KitTreeResource extends JsonResource
                 'optional'     => $this->optional,
                 'value'        => $this->value,                
             ],
-            'children'     => !empty($this->children) ? [[]] : []
+            'children'     => !empty($this->has_children) ? [[]] : [],
+            'model'        => 'kit'
         ];
     }
 }

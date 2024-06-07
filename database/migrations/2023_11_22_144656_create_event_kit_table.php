@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('event_id')->cascadeOnDelete()->constrained();
             $table->string('name');
             $table->decimal('value')->nullable();
-            $table->string('themed_table')->nullable();
+            $table->string('themed_table')->default(false);
             $table->integer('ordination')->nullable();
             $table->string('observation')->nullable();
             $table->boolean('optional')->default(false);

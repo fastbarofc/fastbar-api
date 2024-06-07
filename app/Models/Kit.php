@@ -39,8 +39,6 @@ class Kit extends Model implements AuditableInterface
         'value',
     ];
 
-    protected $appends = ['children'];
-
     public function kit()
     {
         return $this->belongsTo(Kit::class);
@@ -54,6 +52,11 @@ class Kit extends Model implements AuditableInterface
     public function products()
     {
         return $this->belongsToMany(Product::class, 'kit_product')->withPivot(['value', 'optional']);
+    }
+
+    public function getHasChildrenAttribute()
+    {
+        return $this->products->isNotEmpty() || $this->kits->isNotEmpty();
     }
 
     public function getChildrenAttribute($getChild = true)

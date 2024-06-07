@@ -18,7 +18,7 @@ class KitController extends Controller
 
     public function index(Request $request)
     {   
-        $query = Kit::query();
+        $query = Kit::query()->whereNull('kit_id');
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -36,8 +36,6 @@ class KitController extends Controller
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
         }
-
-        $query->whereNull('kit_id');
 
         $kits = $query->get();
         
