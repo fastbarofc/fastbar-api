@@ -18,7 +18,6 @@ class StoreClientRequest extends FormRequest
     {
         $data = [
             'type'         => 'required|string|in:pf,pj',
-            'how_met'      => 'nullable|string|max:255',
             'email'        => 'required_if:has_login,true|nullable|email|unique:clients,email',
             'phone_1'      => 'required|string|max:20',
             'phone_2'      => 'nullable|string|max:20',
@@ -45,8 +44,6 @@ class StoreClientRequest extends FormRequest
         return [
             'type.string'         => 'O campo tipo deve ser uma string.',
             'type.in'             => 'O tipo informado de ser PF ou PJ.',
-            'how_met.string'      => 'O campo como conheceu deve ser uma string.',
-            'how_met.max'         => 'O campo como conheceu deve ter no máximo 255 caracteres.',
             'email.email'         => 'O campo e-mail deve ser um e-mail válido.',
             'email.unique'        => 'Esse E-mail já está cadastrado.',
             'phone_1.required'    => 'O campo telefone 1 é obrigatório.',

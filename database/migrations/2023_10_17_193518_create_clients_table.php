@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
-            $table->string('how_met')->nullable();
+            $table->foreignId('how_did_you_hear_id')->nullable()->constrained();
             $table->string('type');
             $table->string('email')->nullable();
             $table->string('phone_1');
