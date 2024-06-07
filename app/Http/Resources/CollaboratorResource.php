@@ -37,6 +37,8 @@ class CollaboratorResource extends JsonResource
                     'points'      => $qualification->pivot->points ?? '0',
                 ];
             }),
+            'bank_details' => BankDetailsResource::collection($this->bankDetails),
+
         ];
 
         return $data;
