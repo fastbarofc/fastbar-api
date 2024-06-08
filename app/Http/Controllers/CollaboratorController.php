@@ -10,6 +10,9 @@ use App\Models\Collaborator;
 use App\Models\User;
 use App\Models\File;
 use App\Models\Address;
+use App\Models\BankDetail;
+use App\Models\DataBank;
+use App\Models\PixKey;
 use App\Services\FileService;
 use App\Models\Qualification;
 use Illuminate\Http\Request;
@@ -117,6 +120,33 @@ class CollaboratorController extends Controller
             }
         }
 
+        if (!empty($data['bank_details'])) {
+            foreach ($data['bank_details'] as $bankData) {
+                $bank = BankDetail::updateOrCreate(
+                    ['collaborator_id' => $collaborator->id],
+                    [
+                        'bank_name' => $bankData['bank_name'],
+                        'agency' => $bankData['agency'],
+                        'account' => $bankData['account'],
+                        'status' => $bankData['status'],
+                    ]
+                );
+        
+                if (!empty($bankData['pix_keys'])) {
+                    foreach ($bankData['pix_keys'] as $pixKey) {
+                        PixKey::updateOrCreate(
+                            ['bank_detail_id' => $bank->id],
+                            [
+                                'type' => $pixKey['pix_type'],
+                                'key' => $pixKey['pix_key']
+                            ]
+                        );
+                    }
+                }
+            }
+        }
+        
+
         return response()->json(new CollaboratorResource($collaborator), 201);
     }
     
@@ -127,6 +157,7 @@ class CollaboratorController extends Controller
     
     public function update(UpdateCollaboratorRequest $request, Collaborator $collaborator)
     {
+
         $data = $request->except('photo');
         $collaborator->update($data);
 
@@ -198,17 +229,6 @@ class CollaboratorController extends Controller
             );        
         }
 
-       /*  if ($request->hasFile('photo')) {
-            if ($collaborator->file_id) {
-                $actualPhoto = File::where('id', $collaborator->file_id)->first();
-                FileService::delete($actualPhoto);
-                $actualPhoto->delete();
-            }
-            $photo = $request->file('photo'); 
-            $photo = FileService::upload($photo, 'collaborator');
-            $collaborator->update(['file_id' => $photo->id]);
-        } */
-
         $qualifications = Qualification::all();
 
         foreach ($qualifications as $qualification) {
@@ -221,6 +241,62 @@ class CollaboratorController extends Controller
             }
         }
 
+        if (!empty($data['bank_details'])) {
+            foreach ($data['bank_details'] as $bankData) {
+                if (isset($bankData['id'])) {
+                $bank = BankDetail::updateOrCreate(
+                    ['id' => $bankData['id'], 'collaborator_id' => $collaborator->id],
+                    [
+                        'bank_name' => $bankData['bank_name'],
+                        'agency' => $bankData['agency'],
+                        'account' => $bankData['account'],
+                        'status' => $bankData['status'],
+                    ]
+                );
+        
+                if (!empty($bankData['pix_keys'])) {
+                    foreach ($bankData['pix_keys'] as $pixKey) {
+                        if (isset($pixKey['id'])) {
+                        PixKey::updateOrCreate(
+                            ['id' => $pixKey['id'], 'bank_detail_id' => $bank->id],
+                            [
+                                'type' => $pixKey['pix_type'],
+                                'key' => $pixKey['pix_key']
+                            ]
+                        );
+                    }
+                }
+                }
+            } else {
+                $bank = BankDetail::create([
+                    'collaborator_id' => $collaborator->id,
+                    'bank_name' => $bankData['bank_name'],
+                    'agency' => $bankData['agency'],
+                    'account' => $bankData['account'],
+                    'status' => $bankData['status'],
+                ]);
+
+                if (!empty($bankData['pix_keys'])) {
+                    foreach ($bankData['pix_keys'] as $pixKey) {
+                        PixKey::create([
+                            'bank_detail_id' => $bank->id,
+                            'type' => $pixKey['pix_type'],
+                            'key' => $pixKey['pix_key']
+                        ]);
+                    }
+                }
+            }
+        }
+        }
+
+        if (!empty($data['removed_bank_detail_ids'])) {
+            BankDetail::whereIn('id', $data['removed_bank_detail_ids'])->delete();
+        }
+    
+        if (!empty($data['removed_pix_key_ids'])) {
+            PixKey::whereIn('id', $data['removed_pix_key_ids'])->delete();
+        }
+        
         return response()->json(new CollaboratorResource($collaborator), 200);
     }
     

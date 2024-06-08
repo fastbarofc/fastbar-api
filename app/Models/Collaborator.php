@@ -30,6 +30,8 @@ class Collaborator extends Model implements AuditableInterface
         'active',
         'user_id',
         'file_id',
+
+
     ];
 
     protected $casts = [
@@ -118,6 +120,12 @@ class Collaborator extends Model implements AuditableInterface
     public function collaboratorIncidadent()
     {
         return $this->hasMany(CollaboratorIncident::class);
+    }
+
+
+    public function bankDetails()
+    {
+        return $this->hasMany(BankDetail::class);
     }
 }
 
