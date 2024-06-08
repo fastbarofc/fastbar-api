@@ -32,6 +32,7 @@ use App\Http\Controllers\OfficeEventController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CollaboratorIncidentController;
+use App\Http\Controllers\EventNoteController;
 use App\Http\Controllers\OfficeBudgetController;
 use App\Http\Controllers\ProductGroupController;
 use App\Http\Controllers\QualificationController;
@@ -110,6 +111,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('events/{event}/legal-representatives', [EventController::class, 'attachLegalRepresentatives'])->name('events.legal-representatives');
     
     Route::post('events/{event}/materials/{material}', [EventController::class, 'syncMaterials'])->name('events.sync-materials');
+
+    Route::resource('event-notes', EventNoteController::class);
 
     Route::resource('partners', PartnerController::class);
 

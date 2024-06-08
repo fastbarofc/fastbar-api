@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Traits\Filterable;
 use App\Traits\Sortable;
-use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use OwenIt\Auditing\Auditable;use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
@@ -30,13 +29,4 @@ class EventGift extends Model implements AuditableInterface
         'event_id',
         'quantity',
     ];
-
-    public function sluggable(): array
-    {
-        return [
-            'slug' => [
-                'source' => ['description']
-            ]
-        ];
-    }
 }
