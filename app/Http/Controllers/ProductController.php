@@ -128,7 +128,7 @@ class ProductController extends Controller
         return response()->json([], 204);
     }
 
-    public function addToKit(Request $request)
+    public function moveToKit(Request $request)
     {
         $newKit = Kit::find($request->new_kit['id']);
         $oldKit = Kit::find($request->old_kit['id']);
@@ -140,7 +140,7 @@ class ProductController extends Controller
         return response()->json([], 201);
     }
 
-    public function addToEventKit(Request $request)
+    public function moveToEventKit(Request $request)
     {        
         $newEventKit = EventKit::find($request->new_event_kit['id']);
         $oldEventKit = EventKit::find($request->old_event_kit['id']);
@@ -148,6 +148,30 @@ class ProductController extends Controller
         $newEventKit->products()->attach($product->id);
         $oldEventKit->products()->detach($product->id);
 
+    }
+
+    public function attachToEventKit(Request $request)
+    {
+        $eventKit = EventKit::find($request->event_kit_id);
+        $eventKit->products()->attach($request->product_id);
+    }
+
+    public function attachToKit(Request $request)
+    {
+        $kit = Kit::find($request->kit_id);
+        $kit->products()->attach($request->product_id);
+    }
+
+    public function detachFromEventKit(Request $request)
+    {
+        $eventKit = EventKit::find($request->event_kit_id);
+        $eventKit->products()->detach($request->product_id);
+    }
+
+    public function detachFromKit(Request $request)
+    {
+        $kit = Kit::find($request->kit_id);
+        $kit->products()->detach($request->product_id);
     }
 
     public function getFilePath(Product $product)

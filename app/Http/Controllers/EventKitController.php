@@ -29,7 +29,8 @@ class EventKitController extends Controller
             foreach ($filterableArray as  $filter) {
                 $field = array_keys($filter)[0];
                 $value = $filter[$field];
-                $query->filterByField($field, $value);
+                $operator = $field == 'name' ? 'like' : '=';
+                $query->filterByField($field, $value, $operator);
             }
         }
 
@@ -53,9 +54,6 @@ class EventKitController extends Controller
 
     public function indexTree(Request $request)
     {
-
-        Log::debug('indexTree', $request->all());
-
         $query = EventKit::query()->whereNull('event_kit_id')->where('event_id', $request->input('event_id'));
 
         if ($request->input('filter_by')) {
