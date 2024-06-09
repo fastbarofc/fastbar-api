@@ -19,7 +19,7 @@ class EventNoteController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = EventNote::query();
+        $query = EventNote::query()->where('event_id', $request->event_id);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -35,6 +35,8 @@ class EventNoteController extends Controller
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
+        } else {
+            $query->orderBy('created_at', 'desc');
         }
 
         $eventNotes = $query->paginate($perPage);
