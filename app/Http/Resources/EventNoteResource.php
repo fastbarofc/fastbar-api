@@ -20,6 +20,8 @@ class EventNoteResource extends JsonResource
             'collaborator_id' => $this->collaborator_id,
             'checklist' => $this->checklist,
             'event_id' => $this->event_id,
+            'created_at' => $this->created_at->format('d/m/Y H:i:s'),
+            'collaborator' => $this->collaborator,
         ];
     }
 }
