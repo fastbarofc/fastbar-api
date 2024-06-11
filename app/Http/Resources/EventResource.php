@@ -37,7 +37,6 @@ class EventResource extends JsonResource
             'contract_body'      => $this->contract_body,
             'parthenon_courtesies' => $this->parthenon_courtesies,
             'partner_courtesies'   => $this->partner_courtesies,
-            'courtesies'         => $this->courtesies,
             'unit_insurance'     => $this->unit_insurance,
             'buffet_value'       => $this->buffet_value,
             'total_value'        => $this->total_value,
