@@ -59,6 +59,7 @@ class Collaborator extends Model implements AuditableInterface
     protected static $searchableFields = [
         'name',
         'nickname',
+        'email',
     ];
 
     protected static function boot()
