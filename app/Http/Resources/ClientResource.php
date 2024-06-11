@@ -12,7 +12,7 @@ class ClientResource extends JsonResource
     {
         return [
             'id'         => $this->id,
-            'how_met'    => $this->how_met,
+            'how_did_you_hear_id' => $this->how_did_you_hear_id,
             'type'       => $this->type,
             'email'     => $this->email,
             'phone_1'    => $this->phone_1,

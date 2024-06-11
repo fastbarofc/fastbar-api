@@ -18,7 +18,7 @@ class Client extends Model implements AuditableInterface
     const TYPE_LEGAL = 'pj';
 
     	protected $fillable = [
-        'how_met',
+        'how_did_you_hear_id',
         'type',
         'email',
         'phone_1',
@@ -80,5 +80,10 @@ class Client extends Model implements AuditableInterface
 
     public function user() {
         return $this->belongsTo(User::class);
+    }
+
+    public function how_did_you_hear()
+    {
+        return $this->belongsTo(HowDidYouHear::class);
     }
 }

@@ -21,7 +21,6 @@ class UpdateClientRequest extends FormRequest
 
         $data = [
             'type'         => 'nullable|string|in:pf,pj',
-            'how_met'      => 'nullable|string|max:255',
             'email'        => [
                 'required_if:has_login,true', 
                 'email',
@@ -51,8 +50,6 @@ class UpdateClientRequest extends FormRequest
         return [
             'type.string'             => 'O campo tipo deve ser uma string.',
             'type.in'                 => 'O tipo informado de ser PF ou PJ.',
-            'how_met.string'          => 'O campo como conheceu deve ser uma string.',
-            'how_met.max'             => 'O campo como conheceu deve ter no máximo 255 caracteres.',
             'email.email'             => 'O campo e-mail deve ser um e-mail válido.',
             'email.unique'            => 'Esse E-mail já está cadastrado.',
             'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
