@@ -73,6 +73,12 @@ class EventController extends Controller
         ], 200);
     }
 
+    public function getLegalRepresentatives(Event $event)
+    {
+        $this->authorize('getLegalRepresentatives', $event);
+        return response()->json($event->legal_representatives, 200);
+    }
+
     public function indexCalendar(Request $request)
     {
         $disconsideredStatusId = EventStatus::whereIn('slug', ['aberto', 'descartado', 'cancelado'])->get()->pluck('id');
