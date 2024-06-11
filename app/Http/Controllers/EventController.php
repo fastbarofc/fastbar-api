@@ -19,7 +19,14 @@ use App\Models\Contract;
 use App\Models\EventType;
 use Illuminate\Http\Request;
 use App\Http\Resources\EventCalendarResource;
+use App\Models\Ceremonial;
+use App\Models\Client;
+use App\Models\Collaborator;
+use App\Models\Decorator;
+use App\Models\EventCapture;
+use App\Models\EventPlace;
 use App\Models\EventStatus;
+use App\Models\Partner;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -44,7 +51,7 @@ class EventController extends Controller
                 $value = $filter[$field];
                 $operator = $field == 'name' ? 'like' : '=';
                 $query->filterByField(
-                    field: $field, 
+                    field: $field,
                     value: $value,
                     operator: $operator,
                     isDate: $field == 'date_time'
@@ -203,6 +210,44 @@ class EventController extends Controller
     {
         $event->delete();
         return response()->json([], 204);
+    }
+
+    public function getFormData(Event $event)
+    {
+        $eventCaptures = EventCapture::all();
+        $eventTypes = EventType::all();
+        $partners = Partner::all();
+        $decorators = Decorator::all();
+        $ceremonials = Ceremonial::all();
+        $eventStatuses = EventStatus::all();
+        $eventPlaces = EventPlace::all();
+
+        $clients = [];
+        $invoiceClients = [];
+        $collaborators = [];
+        $events = [];
+
+        if ($event) {
+            $clients = Client::where('id', $event->client_id)->get();
+            Log::debug('event', [$event]);
+            $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
+            $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
+            $events = Event::where('id', $event->event_id)->get();
+        }
+
+        return response()->json([
+            'event_captures' => $eventCaptures,
+            'event_types' => $eventTypes,
+            'partners' => $partners,
+            'decorators' => $decorators,
+            'ceremonials' => $ceremonials,
+            'event_statuses' => $eventStatuses,
+            'event_places' => $eventPlaces,
+            'clients' => $clients,
+            'invoice_clients' => $invoiceClients,
+            'collaborators' => $collaborators,
+            'events' => $events,
+        ], 200);
     }
 
     public function gifts(Request $request, Event $event)
@@ -368,7 +413,7 @@ class EventController extends Controller
             $relationship->updateExistingPivot($material->id, $request->all());
             return response()->json([], 200);
         }
-        
+
         $event->materials()->attach($material, $request->all());
         return response()->json([], 201);
     }
