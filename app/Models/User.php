@@ -59,4 +59,8 @@ class User extends Authenticatable implements AuditableInterface
     public function isAdmin() {
         return $this->hasRole('Admin');
     }
+
+    public function collaborator() {
+        return $this->hasOne(Collaborator::class);
+    }
 }

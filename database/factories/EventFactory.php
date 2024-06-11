@@ -46,7 +46,6 @@ class EventFactory extends Factory
             'contract_body' => $this->faker->text,
             'parthenon_courtesies' => $this->faker->randomNumber(2, true),
             'partner_courtesies' => $this->faker->randomNumber(2, true),
-            'courtesies' => $this->faker->randomNumber(2, true),
             'unit_insurance' => $this->faker->randomNumber(2, true),
             'buffet_value' => $this->faker->randomNumber(3, true),
         ];

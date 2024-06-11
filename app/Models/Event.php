@@ -40,7 +40,6 @@ class Event extends Model implements AuditableInterface
         'contract_body',
         'parthenon_courtesies',
         'partner_courtesies',
-        'courtesies',
         'unit_insurance',
         'buffet_value',
         'total_value',
@@ -166,6 +165,11 @@ class Event extends Model implements AuditableInterface
     public function events()
     {
         return $this->belongsToMany(Event::class, 'event_event', 'event_id', 'event_related_id');
+    }
+
+    public function eventNotes()
+    {
+        return $this->hasMany(EventNote::class);
     }
 
 }

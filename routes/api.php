@@ -33,6 +33,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CollaboratorIncidentController;
 use App\Http\Controllers\HowDidYouHearController;
+use App\Http\Controllers\EventNoteController;
 use App\Http\Controllers\OfficeBudgetController;
 use App\Http\Controllers\ProductGroupController;
 use App\Http\Controllers\QualificationController;
@@ -89,8 +90,12 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('event-kits/{kit}/children', [EventKitController::class, 'children'])->name('event-kits.children');
 
     Route::resource('products', ProductController::class);
-    Route::post('products/add-to-kit', [ProductController::class, 'addToKit']);
-    Route::post('products/add-to-event-kit', [ProductController::class, 'addToEventKit']);
+    Route::post('products/move-to-kit', [ProductController::class, 'moveToKit']);
+    Route::post('products/move-to-event-kit', [ProductController::class, 'moveToEventKit']);
+    Route::post('products/attach-to-event-kit', [ProductController::class, 'attachToEventKit']);
+    Route::post('products/detach-from-event-kit', [ProductController::class, 'detachFromEventKit']);
+    Route::post('products/attach-to-kit', [ProductController::class, 'attachToKit']);
+    Route::post('products/detach-from-kit', [ProductController::class, 'detachFromKit']);
 
     Route::resource('event-types', EventTypeController::class);
 
@@ -107,6 +112,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('events/{event}/legal-representatives', [EventController::class, 'attachLegalRepresentatives'])->name('events.legal-representatives');
     
     Route::post('events/{event}/materials/{material}', [EventController::class, 'syncMaterials'])->name('events.sync-materials');
+
+    Route::resource('event-notes', EventNoteController::class);
 
     Route::resource('partners', PartnerController::class);
 
