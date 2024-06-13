@@ -28,7 +28,6 @@ use App\Models\EventPlace;
 use App\Models\EventStatus;
 use App\Models\Partner;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
@@ -229,7 +228,6 @@ class EventController extends Controller
 
         if ($event) {
             $clients = Client::where('id', $event->client_id)->get();
-            Log::debug('event', [$event]);
             $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
             $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
             $events = Event::where('id', $event->event_id)->get();
@@ -406,7 +404,6 @@ class EventController extends Controller
     public function syncMaterials(Event $event, Material $material, Request $request)
     {
         $this->authorize('syncMaterials', $event);
-        Log::info($request->all());
         $relationship = $event->materials()->wherePivot('material_id', $material->id);
 
         if ($relationship->exists()) {
