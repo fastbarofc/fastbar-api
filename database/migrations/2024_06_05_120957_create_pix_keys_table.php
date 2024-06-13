@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('pix_keys', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('bank_detail_id')->constrained('bank_details')->onDelete('cascade')->nullable();
+            $table->foreignId('collaborator_id')->constrained('collaborators')->onDelete('cascade')->nullable();
             $table->string('type')->nullable(); 
             $table->string('key')->nullable();
             $table->timestamps();

@@ -131,18 +131,18 @@ class CollaboratorController extends Controller
                         'status' => $bankData['status'],
                     ]
                 );
-        
-                if (!empty($bankData['pix_keys'])) {
-                    foreach ($bankData['pix_keys'] as $pixKey) {
-                        PixKey::updateOrCreate(
-                            ['bank_detail_id' => $bank->id],
-                            [
-                                'type' => $pixKey['pix_type'],
-                                'key' => $pixKey['pix_key']
-                            ]
-                        );
-                    }
-                }
+            }
+        }
+
+        if (!empty($data['pix_keys'])) {
+            foreach ($data['pix_keys'] as $pixKey) {
+                PixKey::updateOrCreate(
+                    ['collaborator_id' => $collaborator->id],
+                    [
+                        'type' => $pixKey['pix_type'],
+                        'key' => $pixKey['pix_key']
+                    ]
+                );
             }
         }
         
@@ -244,53 +244,49 @@ class CollaboratorController extends Controller
         if (!empty($data['bank_details'])) {
             foreach ($data['bank_details'] as $bankData) {
                 if (isset($bankData['id'])) {
-                $bank = BankDetail::updateOrCreate(
-                    ['id' => $bankData['id'], 'collaborator_id' => $collaborator->id],
-                    [
+                    $bank = BankDetail::updateOrCreate(
+                        ['id' => $bankData['id'], 'collaborator_id' => $collaborator->id],
+                        [
+                            'bank_name' => $bankData['bank_name'],
+                            'agency' => $bankData['agency'],
+                            'account' => $bankData['account'],
+                            'status' => $bankData['status'],
+                        ]
+                    );
+                } else {
+                    $bank = BankDetail::create([
+                        'collaborator_id' => $collaborator->id,
                         'bank_name' => $bankData['bank_name'],
                         'agency' => $bankData['agency'],
                         'account' => $bankData['account'],
                         'status' => $bankData['status'],
-                    ]
-                );
-        
-                if (!empty($bankData['pix_keys'])) {
-                    foreach ($bankData['pix_keys'] as $pixKey) {
-                        if (isset($pixKey['id'])) {
-                        PixKey::updateOrCreate(
-                            ['id' => $pixKey['id'], 'bank_detail_id' => $bank->id],
-                            [
-                                'type' => $pixKey['pix_type'],
-                                'key' => $pixKey['pix_key']
-                            ]
-                        );
-                    }
-                }
-                }
-            } else {
-                $bank = BankDetail::create([
-                    'collaborator_id' => $collaborator->id,
-                    'bank_name' => $bankData['bank_name'],
-                    'agency' => $bankData['agency'],
-                    'account' => $bankData['account'],
-                    'status' => $bankData['status'],
-                ]);
-
-                if (!empty($bankData['pix_keys'])) {
-                    foreach ($bankData['pix_keys'] as $pixKey) {
-                        PixKey::create([
-                            'bank_detail_id' => $bank->id,
-                            'type' => $pixKey['pix_type'],
-                            'key' => $pixKey['pix_key']
-                        ]);
-                    }
+                    ]);
                 }
             }
         }
-        }
-
+    
         if (!empty($data['removed_bank_detail_ids'])) {
             BankDetail::whereIn('id', $data['removed_bank_detail_ids'])->delete();
+        }
+    
+        if (!empty($data['pix_keys'])) {
+            foreach ($data['pix_keys'] as $pixKey) {
+                if (isset($pixKey['id'])) {
+                    PixKey::updateOrCreate(
+                        ['id' => $pixKey['id'], 'collaborator_id' => $collaborator->id],
+                        [
+                            'type' => $pixKey['pix_type'],
+                            'key' => $pixKey['pix_key']
+                        ]
+                    );
+                } else {
+                    PixKey::create([
+                        'collaborator_id' => $collaborator->id,
+                        'type' => $pixKey['pix_type'],
+                        'key' => $pixKey['pix_key']
+                    ]);
+                }
+            }
         }
     
         if (!empty($data['removed_pix_key_ids'])) {

@@ -128,5 +128,10 @@ class Collaborator extends Model implements AuditableInterface
     {
         return $this->hasMany(BankDetail::class);
     }
+
+    public function pixKey()
+    {
+        return $this->hasMany(PixKey::class);
+    }
 }
 
