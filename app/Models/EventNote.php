@@ -23,7 +23,9 @@ class EventNote extends Model implements AuditableInterface
     ];
 
     protected static $sortableFields = [
-        'collaborator_id'
+        'collaborator_id',
+        'created_at',
+        'updated_at'
     ];
 
     protected static $filterableFields = [
