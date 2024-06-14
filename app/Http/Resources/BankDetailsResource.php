@@ -20,7 +20,6 @@ class BankDetailsResource extends JsonResource
             'agency' => $this->agency,
             'account' => $this->account,
             'status' => $this->status,
-            'pix_keys' => PixKeyResource::collection($this->pixKey),
         ];
     }
 }

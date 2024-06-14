@@ -19,9 +19,6 @@ class BankDetail extends Model
         return $this->belongsTo(Collaborator::class);
     }
 
-    public function pixKey()
-    {
-        return $this->hasMany(PixKey::class);
-    }
+    
 
 }

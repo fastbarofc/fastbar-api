@@ -10,9 +10,9 @@ class PixKey extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['bank_detail_id', 'type', 'key'];
+    protected $fillable = ['collaborator_id', 'type', 'key'];
 
-    public function BankDetails()
+    public function collaborator()
     {
         return $this->belongsTo(BankDetail::class);
     }
