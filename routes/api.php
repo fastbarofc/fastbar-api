@@ -132,6 +132,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('office-events', OfficeEventController::class);
 
     Route::resource('clients', ClientController::class);
+    Route::get('clients/{client}/events', [ClientController::class, 'clientEvents'])->name('clients.events');
+    
 
     Route::resource('contracts', ContractController::class);
     Route::post('contracts/{contract}/to-sign', [ContractController::class, 'toSign'])->name('contracts.to-sign');
