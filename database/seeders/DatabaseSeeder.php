@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             ProductGroupSeeder::class,
             EventKitSeeder::class,
             EventNoteSeeder::class,
+            EventBatchSeeder::class,
         ]);
     }
 }
