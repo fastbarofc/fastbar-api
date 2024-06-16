@@ -6,10 +6,12 @@ use Illuminate\Support\Str;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use App\Http\Resources\ClientResource;
+use App\Http\Resources\EventResource;
 use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use App\Models\Address;
 use App\Models\Client;
+use App\Models\Event;
 use App\Models\User;
 use App\Notifications\UserPassword;
 use Illuminate\Support\Facades\Log;
@@ -163,4 +165,51 @@ class ClientController extends Controller
         $client->delete();
         return response()->json([], 204);
     }
+
+    public function clientEvents(Request $request, $clientId)
+{
+    $perPage = $request->input('per_page', 10);
+
+    $client = Client::findOrFail($clientId);
+
+    $query = $client->events()->getQuery(); 
+
+    if ($request->has('filter_by')) {
+        $filterable = json_decode($request->input('filter_by'), true);
+
+        foreach ($filterable as $filter) {
+            $field = array_key_first($filter);
+            $value = $filter[$field];
+            $operator = in_array($field, ['name']) ? 'like' : '=';
+
+            if ($field == 'search') {
+                $query->where(function ($subQuery) use ($value) {
+                    foreach (Event::searchableFields() as $searchableField) {
+                        $subQuery->orWhere($searchableField, 'like', "%$value%");
+                    }
+                });
+            } else {
+                $query->filterByField($field, $value, $operator);
+            }
+        }
+    }
+
+    if ($request->has('order_by')) {
+        $orderBy = $request->input('order_by');
+        $direction = $request->input('direction', 'asc');
+
+        $query->orderBy($orderBy, $direction);
+    }
+
+    $events = $query->paginate($perPage);
+
+    return response()->json([
+        'data' => EventResource::collection($events),                
+        'sortable_fields' => Event::sortableFields(),
+        'filterable_fields' => Event::filterableFields()
+    ], 200);
+}
+
+
+
 }
