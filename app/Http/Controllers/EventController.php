@@ -23,11 +23,13 @@ use App\Models\Ceremonial;
 use App\Models\Client;
 use App\Models\Collaborator;
 use App\Models\Decorator;
+use App\Models\EventBatch;
 use App\Models\EventCapture;
 use App\Models\EventPlace;
 use App\Models\EventStatus;
 use App\Models\Partner;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
@@ -128,38 +130,31 @@ class EventController extends Controller
 
         Event::create($request->all());
 
-        if (isset($data['materials'])) {
+        if(!empty($data['event_batches'])) {
+            foreach ($data['event_batches'] as $eventBatch) {
+                $eventBatch['event_id'] = $event->id;
+                EventBatch::create($eventBatch);
+            }
+        }
+
+        if (!empty($data['materials'])) {
             $event->materials()->sync($data['materials']);
         }
 
-        if (isset($data['utensils'])) {
+        if (!empty($data['utensils'])) {
             $event->utensils()->sync($data['utensils']);
         }
 
-        if (isset($data['office_events'])) {
+        if (!empty($data['office_events'])) {
             $event->officeEvents()->sync($data['office_events']);
         }
 
-        if (isset($data['office_budgets'])) {
+        if (!empty($data['office_budgets'])) {
             $event->officeBudgets()->sync($data['office_budgets']);
         }
 
-        if (isset($data['legal_representatives'])) {
+        if (!empty($data['legal_representatives'])) {
             $event->clients()->sync($data['legal_representatives']);
-        }
-
-        if (isset($data['event_kits'])) {
-            foreach ($data['event_kits'] as $eventKit) {
-                $eventKit['event_id'] = $event->id;
-                EventKit::create($eventKit);
-            }
-        }
-
-        if (isset($data['event_gifts'])) {
-            foreach ($data['event_gifts'] as $eventGift) {
-                $eventGift['event_id'] = $event->id;
-                EventGift::create($eventGift);
-            }
         }
 
         return response()->json(new EventResource($event), 201);
@@ -174,31 +169,31 @@ class EventController extends Controller
     {
         $data = $request->all();
 
-        if (isset($data['materials'])) {
+        if(!empty($data['event_batches'])) {
+            foreach ($data['event_batches'] as $batch) {
+                $batch['event_id'] = $event->id;
+                if (!empty($batch['id'])) {
+                    EventBatch::find($batch['id'])->update($batch);
+                    continue;
+                }
+                EventBatch::create($batch);
+            }
+        }
+
+        if (!empty($data['materials'])) {
             $event->materials()->sync($data['materials']);
         }
 
-        if (isset($data['office_events'])) {
+        if (!empty($data['office_events'])) {
             $event->officeEvents()->sync($data['office_events']);
         }
 
-        if (isset($data['clients'])) {
+        if (!empty($data['clients'])) {
             $event->clients()->sync($data['clients']);
         }
 
-        if (isset($data['legal_representatives'])) {
+        if (!empty($data['legal_representatives'])) {
             $event->clients()->sync($data['legal_representatives']);
-        }
-
-        if (isset($data['event_kits'])) {
-            foreach ($data['event_kits'] as $eventKit) {
-                $eventKit['event_id'] = $event->id;
-                if (!empty($eventKit['id'])) {
-                    EventKit::find($eventKit['id'])->update($eventKit);
-                    continue;
-                }
-                EventKit::create($eventKit);
-            }
         }
 
         $event->update($request->all());
