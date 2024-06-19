@@ -13,7 +13,7 @@ class PartnerFactory extends Factory
             'name'        => $this->faker->company,
             'responsible' => $this->faker->name,
             'email'       => $this->faker->safeEmail,
-            'phone_1'     => $this->faker->numerify('99##-####'),
+            'phone_1'     => $this->faker->numerify('##99#######'),
         ];
     }
 }
