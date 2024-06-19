@@ -12,7 +12,7 @@ class EventPlaceFactory extends Factory
             'name'        => $this->faker->unique()->streetName,
             'responsible' => $this->faker->name,
             'description' => $this->faker->country,
-            'phone_1'     => $this->faker->numerify('99##-####'),
+            'phone_1'     => $this->faker->numerify('##99#######'),
             'email'       => $this->faker->safeEmail,
         ];
     }

@@ -14,7 +14,7 @@ class ClientFactory extends Factory
         return [
             'type'=> $type,
             'email'=> $this->faker->safeEmail(),
-            'phone_1'=> $this->faker->numerify('99##-####'),
+            'phone_1'=> $this->faker->numerify('##99#######'),
             'cnpj' => $type == 'pj' ? $this->faker->unique()->cnpj() : null,
             'name' => $this->faker->name(),
             'cpf' => $type == 'pf' ? $this->faker->unique()->cpf() : null,

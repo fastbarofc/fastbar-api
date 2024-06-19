@@ -11,7 +11,7 @@ class DecoratorFactory extends Factory
         return [
             'name'    => $this->faker->name,
             'email'   => $this->faker->safeEmail,
-            'phone_1' => $this->faker->numerify('99##-####'),
+            'phone_1' => $this->faker->numerify('##99#######'),
         ];
     }
 }
