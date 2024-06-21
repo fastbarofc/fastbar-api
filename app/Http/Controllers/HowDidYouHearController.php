@@ -10,6 +10,12 @@ use App\Models\HowDidYouHear;
 
 class HowDidYouHearController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->authorizeResource(HowDidYouHearController::class, 'howDidYouHear');
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
@@ -40,44 +46,44 @@ class HowDidYouHearController extends Controller
             $query->orderBy($sorteableField, $direction);
         }
 
-        $how_you_did_hear = HowDidYouHear::paginate($perPage);
+        $howDidYouHear = HowDidYouHear::paginate($perPage);
 
         return response()->json([
-            'data' => HowDidYouHearResource::collection($how_you_did_hear),
+            'data' => HowDidYouHearResource::collection($howDidYouHear),
             'pagination' => [
-                'current_page' => $how_you_did_hear->currentPage(),
-                'total_pages' => $how_you_did_hear->lastPage(),
-                'per_page' => $how_you_did_hear->perPage(),
-                'total' => $how_you_did_hear->total(),
+                'current_page' => $howDidYouHear->currentPage(),
+                'total_pages' => $howDidYouHear->lastPage(),
+                'per_page' => $howDidYouHear->perPage(),
+                'total' => $howDidYouHear->total(),
             ],
             'sortable_fields' => ['name'],
             'filterable_fields' => ['name'],
         ], 200);
     }
 
-    public function show(HowDidYouHear $how_you_did_hear)
+    public function show(HowDidYouHear $howDidYouHear)
     {
-        return response()->json(new HowDidYouHearResource($how_you_did_hear), 200);
+        return response()->json(new HowDidYouHearResource($howDidYouHear), 200);
     }
 
     public function store(StoreHowDidYouHearRequest $request)
     {
         $data = $request->all();
-        $how_you_did_hear = HowDidYouHear::create($data);
-        return response()->json(new HowDidYouHearResource($how_you_did_hear), 201);
+        $howDidYouHear = HowDidYouHear::create($data);
+        return response()->json(new HowDidYouHearResource($howDidYouHear), 201);
     }
 
-    public function update(UpdateHowDidYouHearRequest $request, HowDidYouHear $how_you_did_hear)
+    public function update(UpdateHowDidYouHearRequest $request, HowDidYouHear $howDidYouHear)
     {
         $data = $request->all();
         $data['slug'] = slug($data['name']);
-        $how_you_did_hear->update($data);
-        return response()->json(new HowDidYouHearResource($how_you_did_hear), 200);
+        $howDidYouHear->update($data);
+        return response()->json(new HowDidYouHearResource($howDidYouHear), 200);
     }
 
-    public function destroy(HowDidYouHear $how_you_did_hear)
+    public function destroy(HowDidYouHear $howDidYouHear)
     {
-        $how_you_did_hear->delete();
+        $howDidYouHear->delete();
         return response([], 204);
     }
 

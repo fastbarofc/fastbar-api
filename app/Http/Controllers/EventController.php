@@ -22,11 +22,13 @@ use App\Http\Resources\EventCalendarResource;
 use App\Models\Ceremonial;
 use App\Models\Client;
 use App\Models\Collaborator;
+use App\Models\CompetingCompany;
 use App\Models\Decorator;
 use App\Models\EventBatch;
 use App\Models\EventCapture;
 use App\Models\EventPlace;
 use App\Models\EventStatus;
+use App\Models\LostReason;
 use App\Models\Partner;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -196,6 +198,9 @@ class EventController extends Controller
             $event->clients()->sync($data['legal_representatives']);
         }
 
+        $event->competing_company_id = $data['competing_company_id'] ?? null;
+        $event->lost_reason_id = $data['lost_reason_id'] ?? null;
+
         $event->update($request->all());
         return response()->json(new EventResource($event), 200);
     }
@@ -215,6 +220,8 @@ class EventController extends Controller
         $ceremonials = Ceremonial::all();
         $eventStatuses = EventStatus::all();
         $eventPlaces = EventPlace::all();
+        $competingCompany = CompetingCompany::all();
+        $lostReason = LostReason::all();
 
         $clients = [];
         $invoiceClients = [];
@@ -240,6 +247,8 @@ class EventController extends Controller
             'invoice_clients' => $invoiceClients,
             'collaborators' => $collaborators,
             'events' => $events,
+            'competing_companies' => $competingCompany,
+            'lost_reasons' => $lostReason
         ], 200);
     }
 

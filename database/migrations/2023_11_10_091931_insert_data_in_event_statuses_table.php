@@ -18,6 +18,7 @@ return new class extends Migration
         EventStatus::create(['name' => 'Descartado']);
         EventStatus::create(['name' => 'Cancelado']);
         EventStatus::create(['name' => 'Pandemia']);
+        EventStatus::create(['name' => 'Fechou com o Concorrente']);
     }
 
     public function down(): void

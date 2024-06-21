@@ -37,6 +37,8 @@ return new class extends Migration
             $table->longText('contract_body')->nullable();
             $table->string('parthenon_courtesies')->nullable();
             $table->string('partner_courtesies')->nullable();
+            $table->foreignId('competing_company_id')->nullable()->constrained();
+            $table->foreignId('lost_reason_id')->nullable()->constrained();
             $table->timestamps();
             $table->softDeletes();
         });
