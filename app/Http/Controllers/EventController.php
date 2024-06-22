@@ -28,6 +28,7 @@ use App\Models\EventBatch;
 use App\Models\EventCapture;
 use App\Models\EventPlace;
 use App\Models\EventStatus;
+use App\Models\EventStatusHistory;
 use App\Models\LostReason;
 use App\Models\Partner;
 use Carbon\Carbon;
@@ -159,6 +160,8 @@ class EventController extends Controller
             $event->clients()->sync($data['legal_representatives']);
         }
 
+        EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
+
         return response()->json(new EventResource($event), 201);
     }
 
@@ -200,6 +203,10 @@ class EventController extends Controller
 
         $event->competing_company_id = $data['competing_company_id'] ?? null;
         $event->lost_reason_id = $data['lost_reason_id'] ?? null;
+
+        if($event->event_status_id != $data['event_status_id']) {
+            EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
+        }
 
         $event->update($request->all());
         return response()->json(new EventResource($event), 200);

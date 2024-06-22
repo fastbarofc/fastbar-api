@@ -13,7 +13,7 @@ class EventStatusHistory extends Model implements AuditableInterface
     use HasFactory,  SoftDeletes, Auditable;
 
     protected $fillable = [
-        'event_id', 
+        'event_id',
         'event_status_id',
         'collaborator_id',
     ];
