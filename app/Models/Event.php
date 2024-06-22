@@ -176,4 +176,9 @@ class Event extends Model implements AuditableInterface
     {
         return $this->hasMany(EventBatch::class);
     }
+
+    public function eventStatusHistory()
+    {
+        return $this->hasMany(EventStatusHistory::class);
+    }
 }

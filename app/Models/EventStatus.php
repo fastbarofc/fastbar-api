@@ -37,4 +37,9 @@ class EventStatus extends Model implements AuditableInterface
         ];
     }
 
+    public function eventStatusHistory()
+    {
+        return $this->hasMany(EventStatusHistory::class);
+    }
+
 }
