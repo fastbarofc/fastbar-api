@@ -32,9 +32,11 @@ use App\Http\Controllers\OfficeEventController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CollaboratorIncidentController;
+use App\Http\Controllers\CompetingCompanyController;
 use App\Http\Controllers\HowDidYouHearController;
 use App\Http\Controllers\EventNoteController;
 use App\Http\Controllers\EventBatchController;
+use App\Http\Controllers\LostReasonController;
 use App\Http\Controllers\OfficeBudgetController;
 use App\Http\Controllers\ProductGroupController;
 use App\Http\Controllers\QualificationController;
@@ -152,6 +154,10 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('product-groups', ProductGroupController::class);
 
     Route::resource('how-did-you-hears', HowDidYouHearController::class);
+
+    Route::resource('competing-companies', CompetingCompanyController::class);
+
+    Route::resource('lost-reasons', LostReasonController::class);
 
     Route::get('product-get-photos/{product}/', [ProductController::class, 'getFilePath'])->name('products.get-photo');
 
