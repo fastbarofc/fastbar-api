@@ -12,8 +12,7 @@ class KitResource extends JsonResource
         return [
             'id'           => $this->id,
             'kit_id'       => $this->kit_id,
-            'name'         => $this->name,
-            'value'        => $this->value
+            'name'         => $this->name
         ];
     }
 }

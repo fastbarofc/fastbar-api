@@ -72,7 +72,6 @@ class StoreCollaboratorRequest extends FormRequest
             'sector_id.exists'       => 'O campo setor deve ser um setor válido.',
             'sector_office_id.required'     => 'O campo cargo é obrigatório.',
             'sector_office_id.exists'       => 'O campo cargo deve ser um cargo válido.',
-            'has_login.required'     => 'O campo login é obrigatório.',
             'has_login.boolean'      => 'O campo possui login deve ser um booleano.',
             'active.required'        => 'O campo ativo é obrigatório.',
             'active.boolean'         => 'O campo ativo deve ser um booleano.',
