@@ -102,4 +102,35 @@ class OfficeBudgetController extends Controller
         $officeBudget->delete();
         return response()->json([], 204);
     }
+
+    public function attachCollaborators(Request $request, OfficeBudget $officeBudget)
+    {
+        $collaboratorIds = $request->input('collaborators');
+        $eventId = $request->input('eventId');
+    
+        $officeBudget->collaborators()->detach();
+    
+        foreach ($collaboratorIds as $collaboratorId) {
+            $officeBudget->collaborators()->attach($collaboratorId, ['event_id' => $eventId]);
+        }
+    
+        return response()->json(['message' => 'Collaborators synced to office budget'], 200);
+    }
+
+    public function detachCollaborator(Request $request, $officeBudgetId)
+    {
+        $collaboratorId = $request->input('collaborator_id');
+        $eventId = $request->input('event_id');
+
+        $officeBudget = OfficeBudget::findOrFail($officeBudgetId);
+        $officeBudget->collaborators()->detach($collaboratorId, ['event_id' => $eventId]);
+
+        return response()->json(['message' => 'Collaborator detached successfully'], 200);
+    }
+    
+
+    public function getCollaborators(OfficeBudget $officeBudget)
+    {
+        return response()->json($officeBudget->collaborators);
+    }
 }

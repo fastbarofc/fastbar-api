@@ -43,4 +43,6 @@ class ExtraSale extends Model implements AuditableInterface
     {
         return $this->belongsTo(Event::class);
     }
+
+    
 }

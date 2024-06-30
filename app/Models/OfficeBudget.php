@@ -40,4 +40,9 @@ class OfficeBudget extends Model implements AuditableInterface
     {
         return $this->belongsTo(Event::class);
     }
+
+    public function collaborators()
+    {
+        return $this->belongsToMany(Collaborator::class, 'budget_office_collaborators');
+    }
 }

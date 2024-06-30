@@ -6,6 +6,7 @@ use App\Http\Requests\StoreBreakItemRequest;
 use App\Http\Requests\UpdateBreakItemRequest;
 use App\Http\Resources\BreakItemResource;
 use App\Models\BreakItem;
+use App\Models\Event;
 use Illuminate\Http\Request;
 
 class BreakItemController extends Controller
@@ -76,4 +77,37 @@ class BreakItemController extends Controller
         $breakItem->delete();
         return response()->json(null, 204);
     }
+
+    public function attachBreakItemsToEvent(Request $request, $eventId)
+{
+    $event = Event::findOrFail($eventId);
+    $breakItems = $request->input('breakItems', []);
+
+    foreach ($breakItems as $breakItem) {
+        $event->breakItems()->syncWithoutDetaching([
+            $breakItem['id'] => [
+                'quantity' => $breakItem['quantity'],
+                'value' => $breakItem['value'],
+                'unit_id' => $breakItem['unit_id']
+            ]
+        ]);
+    }
+
+    return response()->json(['message' => 'Itens de quebra associados ao evento com sucesso']);
+}
+
+public function detachBreakItemFromEvent($eventId, $breakItemId)
+{
+    $event = Event::findOrFail($eventId);
+    $event->breakItems()->detach($breakItemId);
+
+    return response()->json(['message' => 'Item de quebra desassociado do evento com sucesso']);
+}
+
+public function getEventBreakItems($eventId)
+{
+    $event = Event::with('breakItems')->findOrFail($eventId);
+    return response()->json($event->breakItems);
+}
+
 }

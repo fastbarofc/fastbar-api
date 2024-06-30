@@ -74,4 +74,6 @@ class ExtraSaleController extends Controller
         $extraSale->delete();
         return response()->json([], 204);
     }
+
+    
 }

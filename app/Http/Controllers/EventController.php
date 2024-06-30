@@ -342,6 +342,25 @@ class EventController extends Controller
         ], 200);
     }
 
+    public function updateExtraSales(Request $request, Event $event)
+    {
+        $this->authorize('update', $event);
+
+        $extraSales = $request->input('extraSales', []);
+
+        foreach ($extraSales as $extraSaleData) {
+            $extraSale = ExtraSale::find($extraSaleData['id']);
+
+            if ($extraSale && $extraSale->event_id == $event->id) {
+                $extraSale->quantity = $extraSaleData['quantity'];
+                $extraSale->unit_value = $extraSaleData['unit_value'];
+                $extraSale->save();
+            }
+        }
+
+        return response()->json(['message' => 'Vendas extras atualizadas com sucesso'], 200);
+    }
+
     public function eventKits(Request $request, Event $event)
     {
         $this->authorize('view', $event);

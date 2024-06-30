@@ -52,4 +52,10 @@ class BreakItem extends Model implements AuditableInterface
     public function unit() {
         return $this->belongsTo(Unit::class);
     }
+
+    public function events() 
+    {
+        return $this->belongsToMany(Event::class, 'event_break_item')->withPivot('quantity', 'value', 'unit_id');
+
+    }
 }

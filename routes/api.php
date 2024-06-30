@@ -77,6 +77,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('sector-offices', SectorOfficeController::class);
 
     Route::resource('office-budgets', OfficeBudgetController::class);
+    Route::post('office-budgets/{officeBudget}/attach-collaborators', [OfficeBudgetController::class, 'attachCollaborators'])->name('office-budgets.attach-collaborators');
+    Route::post('office-budgets/{officeBudgetId}/detach-collaborator', [OfficeBudgetController::class, 'detachCollaborator'])->name('office-budgets.detach-collaborators');
+    Route::get('office-budgets/{officeBudget}/collaborators', [OfficeBudgetController::class, 'getCollaborators']);
 
     Route::resource('event-statuses', EventStatusController::class);
 
@@ -110,6 +113,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('events/{event}/gifts', [EventController::class, 'gifts'])->name('events.gifts');
     Route::get('events/{event}/materials', [EventController::class, 'materials'])->name('events.materials');
     Route::get('events/{event}/extra-sales', [EventController::class, 'extraSales'])->name('events.extra-sales');
+    Route::put('events/{event}/extra-sales', [EventController::class, 'updateExtraSales'])->name('events.update-extra-sales');
     Route::get('events/{event}/event-kits', [EventController::class, 'eventKits'])->name('events.event-kits');
     Route::get('events/{event}/contracts', [EventController::class, 'resetContract'])->name('events.reset-contract');
     
@@ -136,6 +140,10 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::resource('office-events', OfficeEventController::class);
 
+    Route::post('office-events/{officeEvent}/attach-collaborators', [OfficeEventController::class, 'attachCollaborators'])->name('office-events.attach-collaborators');
+    Route::post('office-events/{officeEventId}/detach-collaborator', [OfficeEventController::class, 'detachCollaborator'])->name('office-events.detach-collaborators');
+    Route::get('office-events/{officeEvent}/collaborators', [OfficeEventController::class, 'getCollaborators']);
+
     Route::resource('clients', ClientController::class);
     Route::get('clients/{client}/events', [ClientController::class, 'clientEvents'])->name('clients.events');
     
@@ -150,6 +158,10 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('blocked-dates', BlockedDateController::class);
 
     Route::resource('break-items', BreakItemController::class);
+    Route::post('events/{event}/break-items/attach', [BreakItemController::class, 'attachBreakItemsToEvent']);
+    Route::post('events/{event}/break-items/detach/{breakItem}', [BreakItemController::class, 'detachBreakItemFromEvent']);
+    Route::get('events/{event}/break-items', [BreakItemController::class, 'getEventBreakItems']);
+
 
     Route::resource('product-groups', ProductGroupController::class);
 

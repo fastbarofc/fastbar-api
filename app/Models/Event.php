@@ -183,4 +183,10 @@ class Event extends Model implements AuditableInterface
     {
         return $this->hasMany(EventStatusHistory::class);
     }
+
+    public function breakItems() 
+    {
+        return $this->belongsToMany(BreakItem::class, 'event_break_item')->withPivot('quantity', 'value', 'unit_id');
+
+    }
 }
