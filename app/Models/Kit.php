@@ -17,26 +17,14 @@ class Kit extends Model implements AuditableInterface
     protected $fillable = [
         'kit_id',
         'name',
-        'themed_table',
-        'optional',
-        'value'
-    ];
-
-    protected $casts = [
-        'themed_table' => 'boolean',
-        'optional' => 'boolean',
     ];
 
     protected static $sortableFields = [
         'name',
-        'themed_table',
-        'value',
     ];
 
     protected static $filterableFields = [
         'name',
-        'themed_table',
-        'value',
     ];
 
     public function kit()
@@ -99,7 +87,6 @@ class Kit extends Model implements AuditableInterface
                     'id' => $item['id'],
                     'kit_id' => $item['kit_id'],
                     'name' => $item['name'],
-                    'value' => $item['value'],
                     'type' => $item['type']
                 ],
                 'children' => $getChild ? $item['children'] : (!empty($item['children']) &&  !empty($item['children'][0]) ? [[]] : [])

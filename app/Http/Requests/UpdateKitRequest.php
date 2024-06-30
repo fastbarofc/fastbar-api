@@ -18,9 +18,6 @@ class UpdateKitRequest extends FormRequest
         return [
             'kit_id'          => 'nullable|numeric',
             'name'         => 'nullable|string|max:255|unique:kits,name,' . $this->route('kit')->id,
-            'themed_table' => 'nullable|boolean',
-            'optional'     => 'nullable|boolean',
-            'value'        => 'nullable|numeric|min:0',
         ];
     }
 
@@ -31,8 +28,6 @@ class UpdateKitRequest extends FormRequest
             'name.string'           => 'O campo nome deve ser um texto.',
             'name.max'              => 'O campo nome deve ter no máximo 255 caracteres.',
             'name.unique'           => 'O nome informado já está em uso.',
-            'value.numeric'         => 'O valor precisa ser um número',
-            'value.min'             => 'O valor não pode ser negativo',
         ];
     }
 }
