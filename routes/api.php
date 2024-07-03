@@ -36,6 +36,7 @@ use App\Http\Controllers\CompetingCompanyController;
 use App\Http\Controllers\HowDidYouHearController;
 use App\Http\Controllers\EventNoteController;
 use App\Http\Controllers\EventBatchController;
+use App\Http\Controllers\FailureController;
 use App\Http\Controllers\LostReasonController;
 use App\Http\Controllers\OfficeBudgetController;
 use App\Http\Controllers\ProductGroupController;
@@ -174,4 +175,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('product-get-photos/{product}/', [ProductController::class, 'getFilePath'])->name('products.get-photo');
 
     Route::get('collaborator-get-photos/{collaborator}/', [CollaboratorController::class, 'getFilePath'])->name('collaborators.get-photo');
+
+    Route::resource('failures', FailureController::class);
+    Route::get('events/{event}/failures', [EventController::class, 'getEventFailures']);
+    Route::post('events/{event}/failures', [EventController::class, 'attachFailure']);
+    Route::delete('events/{event}/failures/{failure}', [EventController::class, 'detachFailure']);
 });

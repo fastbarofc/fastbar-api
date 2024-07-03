@@ -29,6 +29,7 @@ use App\Models\EventCapture;
 use App\Models\EventPlace;
 use App\Models\EventStatus;
 use App\Models\EventStatusHistory;
+use App\Models\Failure;
 use App\Models\LostReason;
 use App\Models\Partner;
 use Carbon\Carbon;
@@ -450,5 +451,34 @@ class EventController extends Controller
         $query = EventKit::query();
         $query->where('event_id', $event->id)->whereNull('event_kit_id')->get();
         return response()->json(EventKitResource::collection($event->eventKits), 200);
+    }
+
+
+    public function getEventFailures(Event $event)
+{
+    $id = $event->id;
+    $failures = Failure::all();
+    $eventFailures = Event::find($id)->failures()->get();
+
+    $failures = $failures->map(function($failure) use ($eventFailures) {
+        $eventFailure = $eventFailures->firstWhere('id', $failure->id);
+        $failure->deduct = $eventFailure ? $eventFailure->pivot->deduct : false;
+        return $failure;
+    });
+
+    return response()->json($failures);
+}
+
+
+    public function attachFailure(Request $request, Event $event)
+    {
+        $event->failures()->attach($request->failure_id, ['deduct' => $request->deduct]);
+        return response()->json(['message' => 'Failure attached to event successfully'], 201);
+    }
+
+    public function detachFailure(Event $event, Failure $failure)
+    {
+        $event->failures()->detach($failure->id);
+        return response()->json(['message' => 'Failure detached from event successfully'], 200);
     }
 }
