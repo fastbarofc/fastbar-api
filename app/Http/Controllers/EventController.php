@@ -85,6 +85,9 @@ class EventController extends Controller
         ], 200);
     }
 
+
+
+
     public function getLegalRepresentatives(Event $event)
     {
         $this->authorize('getLegalRepresentatives', $event);
@@ -227,7 +230,7 @@ class EventController extends Controller
         $decorators = Decorator::all();
         $ceremonials = Ceremonial::all();
         $eventStatuses = EventStatus::all();
-        $eventPlaces = EventPlace::all();
+        $eventPlaces = EventPlace::with(['address.city', 'address.state'])->get();
         $competingCompany = CompetingCompany::all();
         $lostReason = LostReason::all();
 
