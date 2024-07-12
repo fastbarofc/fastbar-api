@@ -21,6 +21,7 @@ class OfficeEvent extends Model implements AuditableInterface
         'daily',
         'coordinator',
         'date',
+        'event_id'
     ];
 
     protected $casts = [
@@ -53,5 +54,10 @@ class OfficeEvent extends Model implements AuditableInterface
     public function events()
     {
         return $this->belongsToMany(Event::class, 'event_office_event')->withPivot(['quantity']);
+    }
+
+    public function collaborators()
+    {
+        return $this->belongsToMany(Collaborator::class, 'event_office_collaborators');
     }
 }

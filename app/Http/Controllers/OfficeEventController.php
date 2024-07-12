@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreOfficeEventRequest;
 use App\Http\Requests\UpdateOfficeEventRequest;
 use App\Http\Resources\OfficeEventResource;
+use App\Models\Collaborator;
 use App\Models\OfficeEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class OfficeEventController extends Controller
 {
@@ -86,5 +88,36 @@ class OfficeEventController extends Controller
     {
         $officeEvent->delete();
         return response()->json([], 204);
+    }
+
+    public function attachCollaborators(Request $request, OfficeEvent $officeEvent)
+    {
+        $collaboratorIds = $request->input('collaborators');
+        $eventId = $request->input('eventId');
+    
+        $officeEvent->collaborators()->detach();
+    
+        foreach ($collaboratorIds as $collaboratorId) {
+            $officeEvent->collaborators()->attach($collaboratorId, ['event_id' => $eventId]);
+        }
+    
+        return response()->json(['message' => 'Collaborators synced to office event'], 200);
+    }
+
+    public function detachCollaborator(Request $request, $officeEventId)
+    {
+        $collaboratorId = $request->input('collaborator_id');
+        $eventId = $request->input('event_id');
+
+        $officeEvent = OfficeEvent::findOrFail($officeEventId);
+        $officeEvent->collaborators()->detach($collaboratorId, ['event_id' => $eventId]);
+
+        return response()->json(['message' => 'Collaborator detached successfully'], 200);
+    }
+    
+
+    public function getCollaborators(OfficeEvent $officeEvent)
+    {
+        return response()->json($officeEvent->collaborators);
     }
 }

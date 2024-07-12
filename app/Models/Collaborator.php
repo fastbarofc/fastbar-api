@@ -133,5 +133,15 @@ class Collaborator extends Model implements AuditableInterface
     {
         return $this->hasMany(PixKey::class);
     }
+
+    public function officeEvents()
+    {
+        return $this->belongsToMany(OfficeEvent::class, 'event_office_collaborators');
+    }
+
+    public function officeBudgets()
+    {
+        return $this->belongsToMany(OfficeEvent::class, 'budget_office_collaborators');
+    }
 }
 

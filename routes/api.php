@@ -36,6 +36,7 @@ use App\Http\Controllers\CompetingCompanyController;
 use App\Http\Controllers\HowDidYouHearController;
 use App\Http\Controllers\EventNoteController;
 use App\Http\Controllers\EventBatchController;
+use App\Http\Controllers\FailureController;
 use App\Http\Controllers\LostReasonController;
 use App\Http\Controllers\OfficeBudgetController;
 use App\Http\Controllers\ProductGroupController;
@@ -77,6 +78,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('sector-offices', SectorOfficeController::class);
 
     Route::resource('office-budgets', OfficeBudgetController::class);
+    Route::post('office-budgets/{officeBudget}/attach-collaborators', [OfficeBudgetController::class, 'attachCollaborators'])->name('office-budgets.attach-collaborators');
+    Route::post('office-budgets/{officeBudgetId}/detach-collaborator', [OfficeBudgetController::class, 'detachCollaborator'])->name('office-budgets.detach-collaborators');
+    Route::get('office-budgets/{officeBudget}/collaborators', [OfficeBudgetController::class, 'getCollaborators']);
 
     Route::resource('event-statuses', EventStatusController::class);
 
@@ -110,6 +114,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('events/{event}/gifts', [EventController::class, 'gifts'])->name('events.gifts');
     Route::get('events/{event}/materials', [EventController::class, 'materials'])->name('events.materials');
     Route::get('events/{event}/extra-sales', [EventController::class, 'extraSales'])->name('events.extra-sales');
+    Route::put('events/{event}/extra-sales', [EventController::class, 'updateExtraSales'])->name('events.update-extra-sales');
     Route::get('events/{event}/event-kits', [EventController::class, 'eventKits'])->name('events.event-kits');
     Route::get('events/{event}/contracts', [EventController::class, 'resetContract'])->name('events.reset-contract');
     
@@ -136,6 +141,10 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::resource('office-events', OfficeEventController::class);
 
+    Route::post('office-events/{officeEvent}/attach-collaborators', [OfficeEventController::class, 'attachCollaborators'])->name('office-events.attach-collaborators');
+    Route::post('office-events/{officeEventId}/detach-collaborator', [OfficeEventController::class, 'detachCollaborator'])->name('office-events.detach-collaborators');
+    Route::get('office-events/{officeEvent}/collaborators', [OfficeEventController::class, 'getCollaborators']);
+
     Route::resource('clients', ClientController::class);
     Route::get('clients/{client}/events', [ClientController::class, 'clientEvents'])->name('clients.events');
     
@@ -150,6 +159,10 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('blocked-dates', BlockedDateController::class);
 
     Route::resource('break-items', BreakItemController::class);
+    Route::post('events/{event}/break-items/attach', [BreakItemController::class, 'attachBreakItemsToEvent']);
+    Route::post('events/{event}/break-items/detach/{breakItem}', [BreakItemController::class, 'detachBreakItemFromEvent']);
+    Route::get('events/{event}/break-items', [BreakItemController::class, 'getEventBreakItems']);
+
 
     Route::resource('product-groups', ProductGroupController::class);
 
@@ -162,4 +175,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('product-get-photos/{product}/', [ProductController::class, 'getFilePath'])->name('products.get-photo');
 
     Route::get('collaborator-get-photos/{collaborator}/', [CollaboratorController::class, 'getFilePath'])->name('collaborators.get-photo');
+
+    Route::resource('failures', FailureController::class);
+    Route::get('events/{event}/failures', [EventController::class, 'getEventFailures']);
+    Route::post('events/{event}/failures', [EventController::class, 'attachFailure']);
+    Route::delete('events/{event}/failures/{failure}', [EventController::class, 'detachFailure']);
 });
