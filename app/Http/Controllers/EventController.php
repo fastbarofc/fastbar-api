@@ -186,7 +186,15 @@ class EventController extends Controller
         }
 
         if (!empty($data['materials'])) {
-            $event->materials()->sync($data['materials']);
+            $materialsData = collect($data['materials'])->map(function ($material) {
+                return [
+                    'material_id' => $material['id'],
+                    'selected' => $material['selected'] === '-1' ? null : $material['selected'],
+                    'quantity' => $material['quantity'],
+                ];
+            });
+            Log::debug($materialsData);
+            $event->materials()->sync($materialsData);
         }
 
         if (!empty($data['office_events'])) {
