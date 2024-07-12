@@ -141,7 +141,15 @@ class EventController extends Controller
         }
 
         if (!empty($data['materials'])) {
-            $event->materials()->sync($data['materials']);
+            $materialsArray = collect($data['materials'])->mapWithKeys(function ($material) {
+                return [
+                    $material['id'] => [
+                        'selected' => $material['selected'] === '-1' ? null : $material['selected'],
+                        'quantity' => $material['quantity'],
+                    ]
+                ];
+            })->toArray();
+            $event->materials()->sync($materialsArray);
         }
 
         if (!empty($data['utensils'])) {
@@ -186,15 +194,15 @@ class EventController extends Controller
         }
 
         if (!empty($data['materials'])) {
-            $materialsData = collect($data['materials'])->map(function ($material) {
+            $materialsArray = collect($data['materials'])->mapWithKeys(function ($material) {
                 return [
-                    'material_id' => $material['id'],
-                    'selected' => $material['selected'] === '-1' ? null : $material['selected'],
-                    'quantity' => $material['quantity'],
+                    $material['id'] => [
+                        'selected' => $material['selected'] === '-1' ? null : $material['selected'],
+                        'quantity' => $material['quantity'],
+                    ]
                 ];
-            });
-            Log::debug($materialsData);
-            $event->materials()->sync($materialsData);
+            })->toArray();
+            $event->materials()->sync($materialsArray);
         }
 
         if (!empty($data['office_events'])) {
@@ -298,28 +306,17 @@ class EventController extends Controller
     public function materials(Request $request, Event $event)
     {
         $this->authorize('view', $event);
+        $materials = Material::all();
 
-        $perPage = $request->input('per_page', 10);
-        $materialIds = $event->materials->pluck('id');
-
-        $query = Material::query();
-
-        if ($request->input('order_by')) {
-            $sorteableField = $request->input('order_by');
-            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderByField($sorteableField, $direction);
-        }
-
-        $materials = $query->where('id', $materialIds[0])->paginate($perPage);
+        $materials = $materials->map(function ($material) use ($event) {
+            $materialEvent = $event->materials->where('id', $material->id)->first();
+            $material->selected = $materialEvent ? ($materialEvent->pivot->selected === null ? '-1' : $materialEvent->pivot->selected) : null;
+            $material->quantity = $materialEvent ? $materialEvent->pivot->quantity : 0;
+            return $material;
+        });
 
         return response()->json([
-            'data' => MaterialResource::collection($materials),
-            'pagination' => [
-                'current_page' => $materials->currentPage(),
-                'total_pages' => $materials->lastPage(),
-                'per_page' => $materials->perPage(),
-                'total' => $materials->total(),
-            ],
+            'data' => $materials
         ], 200);
     }
 

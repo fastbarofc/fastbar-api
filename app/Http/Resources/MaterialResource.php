@@ -12,7 +12,7 @@ class MaterialResource extends JsonResource
         return [
             'id'          => $this->id,
             'description' => $this->description,
-            'quantity'      => $this->quantity,
+            'quantity'      => $this->quantity
         ];
     }
 }
