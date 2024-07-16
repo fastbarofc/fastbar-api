@@ -16,6 +16,8 @@ use App\Models\PixKey;
 use App\Services\FileService;
 use App\Models\Qualification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class CollaboratorController extends Controller
@@ -139,8 +141,8 @@ class CollaboratorController extends Controller
                 PixKey::updateOrCreate(
                     ['collaborator_id' => $collaborator->id],
                     [
-                        'type' => $pixKey['pix_type'],
-                        'key' => $pixKey['pix_key']
+                        'type' => $pixKey['type'],
+                        'key' => $pixKey['key']
                     ]
                 );
             }
@@ -160,43 +162,47 @@ class CollaboratorController extends Controller
 
         $data = $request->except('photo');
         $collaborator->update($data);
-
+    
         if ($request->filled('photo')) {
             $photoUrl = $request->photo;
-    
             $photoPath = parse_url($photoUrl, PHP_URL_PATH);
             $normalizedPhotoPath = str_replace('/storage//', '/', $photoPath);
     
             if (!isset($collaborator->file_id) || $normalizedPhotoPath !== $collaborator->file->path) {
-            try {
-                $file = FileService::saveImage('collaborators', $request->photo);
-                $collaborator->update(['file_id' => $file->id]);
-            } catch (\Exception $e) {
-                return response()->json(['error' => $e->getMessage()], 400);
-            }
+                try {
+                    $file = FileService::saveImage('collaborators', $request->photo);
+                    $collaborator->update(['file_id' => $file->id]);
+                } catch (\Exception $e) {
+                    return response()->json(['error' => $e->getMessage()], 400);
+                }
             }
         } else {
-    
-    
             if ($collaborator->file_id) {
                 Storage::disk('public')->delete($collaborator->file->path);
-    
                 $collaborator->file->delete();
-    
                 $collaborator['file_id'] = null;
             }
         }
-
+    
         if (!empty($data['has_login'])) {
-            $user = User::updateOrCreate(['id' => $collaborator->user_id], [
-                'name'     => $data['name'],
-                'email'    => $data['email'],
-                'password' => bcrypt($data['password'])
-            ]);
+            $userData = [
+                'name' => $data['name'],
+            ];
+    
+            
+            if ($data['email'] !== $collaborator->email) {
+                $userData['email'] = $data['email'];
+            }
+
+            if (!empty($data['password']) && !Hash::check($data['password'], $collaborator->user->password)) {
+                $userData['password'] = bcrypt($data['password']);
+            }
+    
+            $user = User::updateOrCreate(['id' => $collaborator->user_id], $userData);
             $collaborator->update(['user_id' => $user->id]);
-
+    
             $roleAdmin = Role::where('name', 'Admin')->first();
-
+    
             if (isset($data['active'])) {
                 if ($data['active']) {
                     $user->assignRole($roleAdmin);
@@ -204,43 +210,42 @@ class CollaboratorController extends Controller
                     $user->removeRole($roleAdmin);
                 }
             }
-            
         }
-
+    
         if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];
             Address::updateOrCreate(
                 [
-                    'addressable_id'      => $collaborator->id,
-                    'addressable_type'    => Collaborator::class
-                ], 
+                    'addressable_id' => $collaborator->id,
+                    'addressable_type' => Collaborator::class
+                ],
                 [
-                    'addressable_id'      => $collaborator->id,
-                    'addressable_type'    => Collaborator::class,
-                    'street'             => $address['street'],
-                    'district'             => $address['district'],
-                    'complement'             => $address['complement'],
-                    'city_id'             => $address['city_id'],
-                    'state_id'             => $address['state_id'],
-                    'number'             => $address['number'],
-                    'zip_code'             => $address['zip_code'],
-                    'reference'             => $address['reference'],
+                    'addressable_id' => $collaborator->id,
+                    'addressable_type' => Collaborator::class,
+                    'street' => $address['street'],
+                    'district' => $address['district'],
+                    'complement' => $address['complement'],
+                    'city_id' => $address['city_id'],
+                    'state_id' => $address['state_id'],
+                    'number' => $address['number'],
+                    'zip_code' => $address['zip_code'],
+                    'reference' => $address['reference'],
                 ]
-            );        
+            );
         }
-
+    
         $qualifications = Qualification::all();
-
+    
         foreach ($qualifications as $qualification) {
             $collaborator->qualifications()->sync([$qualification->id => ['points' => 0]]);
         }
-
+    
         if (!empty($data['qualifications'])) {
             foreach ($data['qualifications'] as $qualification) {
                 $collaborator->qualifications()->syncWithoutDetaching([$qualification['id'] => ['points' => $qualification['points']]]);
             }
         }
-
+    
         if (!empty($data['bank_details'])) {
             foreach ($data['bank_details'] as $bankData) {
                 if (isset($bankData['id'])) {
@@ -275,15 +280,15 @@ class CollaboratorController extends Controller
                     PixKey::updateOrCreate(
                         ['id' => $pixKey['id'], 'collaborator_id' => $collaborator->id],
                         [
-                            'type' => $pixKey['pix_type'],
-                            'key' => $pixKey['pix_key']
+                            'type' => $pixKey['type'],
+                            'key' => $pixKey['key']
                         ]
                     );
                 } else {
                     PixKey::create([
                         'collaborator_id' => $collaborator->id,
-                        'type' => $pixKey['pix_type'],
-                        'key' => $pixKey['pix_key']
+                        'type' => $pixKey['type'],
+                        'key' => $pixKey['key']
                     ]);
                 }
             }
@@ -292,9 +297,10 @@ class CollaboratorController extends Controller
         if (!empty($data['removed_pix_key_ids'])) {
             PixKey::whereIn('id', $data['removed_pix_key_ids'])->delete();
         }
-        
+    
         return response()->json(new CollaboratorResource($collaborator), 200);
     }
+    
     
     public function destroy(Collaborator $collaborator)
     {
