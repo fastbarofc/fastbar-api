@@ -16,15 +16,16 @@ class Failure extends Model implements AuditableInterface
 
     protected $fillable = ['description', 'percentage'];
 
-    public static function sortableFields()
-    {
-        return ['description', 'percentage'];
-    }
 
-    public static function filterableFields()
-    {
-        return ['description', 'percentage'];
-    }
+    protected static $sortableFields = [
+        'description',
+        'percentage'
+    ];
+
+    protected static $filterableFields = [
+        'description',
+        'percentage'
+    ];
 
     public function events()
     {

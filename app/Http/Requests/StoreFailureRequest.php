@@ -26,4 +26,16 @@ class StoreFailureRequest extends FormRequest
             'percentage' => 'required|numeric|between:0,100',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'description.required' => 'O campo descrição é obrigatório',
+            'description.string' => 'O campo descrição deve ser uma string',
+            'description.max' => 'O campo descrição deve ter no máximo 255 caracteres',
+            'percentage.required' => 'O campo porcentagem é obrigatório',
+            'percentage.numeric' => 'O campo porcentagem deve ser um valor numérico',
+            'percentage.between' => 'O campo porcentagem deve estar entre 0 e 100',
+        ];
+    }
 }

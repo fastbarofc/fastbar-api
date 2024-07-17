@@ -22,7 +22,15 @@ class UpdateHowDidYouHearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'string|max:255',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.string' => 'Name must be a string',
+            'name.max' => 'Name must be less than 255 characters',
         ];
     }
 }

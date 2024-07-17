@@ -26,4 +26,14 @@ class UpdateFailureRequest extends FormRequest
             'percentage' => 'numeric|between:0,100',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'description.max' => 'O campo descrição deve ter no maximo 255 caracteres.',
+            'percentage.between' => 'O campo porcentagem deve estar entre 0 e 100',
+            'percentage.numeric' => 'O campo porcentagem deve ser um valor numérico',
+            'description.string' => 'O campo descrição deve ser uma string',
+        ];
+    }
 }

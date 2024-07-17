@@ -22,7 +22,15 @@ class UpdateCompetingCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'string|max:255',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.string'   => 'O nome da empresa deve ser uma string',
+            'name.max'      => 'O nome da empresa deve ter no maximo 255 caracteres',
         ];
     }
 }

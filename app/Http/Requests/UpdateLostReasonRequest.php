@@ -22,7 +22,15 @@ class UpdateLostReasonRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'string', 'max:255',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.string'   => 'Nome deve ser uma string.',
+            'name.max'      => 'Nome deve ter no maximo 255 caracteres.'
         ];
     }
 }

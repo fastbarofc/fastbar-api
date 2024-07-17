@@ -22,7 +22,16 @@ class StoreHowDidYouHearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'O nome é obrigatório',
+            'name.string' => 'O nome deve ser uma string',
+            'name.max' => 'O nome deve ter no máximo 255 caracteres',
         ];
     }
 }

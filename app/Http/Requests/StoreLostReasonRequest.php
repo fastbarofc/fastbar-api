@@ -22,7 +22,16 @@ class StoreLostReasonRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'O nome é obrigatório',
+            'name.string'   => 'Nome deve ser uma string.',
+            'name.max'      => 'Nome deve ter no maximo 255 caracteres.'
         ];
     }
 }
