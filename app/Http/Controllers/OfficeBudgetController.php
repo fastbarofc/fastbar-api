@@ -129,8 +129,22 @@ class OfficeBudgetController extends Controller
     }
     
 
-    public function getCollaborators(OfficeBudget $officeBudget)
-    {
-        return response()->json($officeBudget->collaborators);
-    }
+public function getOfficeBudgetsWithCollaboratorsForEvent($eventId)
+{
+    $officeBudgets = OfficeBudget::with(['collaborators' => function ($query) use ($eventId) {
+        $query->where('budget_office_collaborators.event_id', $eventId);
+    }])
+    ->get()
+    ->each(function ($officeBudget) use ($eventId) {
+        $officeBudget->collaborators = $officeBudget->collaborators->filter(function ($collaborator) use ($eventId) {
+            return $collaborator->pivot->event_id == $eventId;
+        })->values();
+    });
+
+    return response()->json($officeBudgets);
+}
+
+
+
+
 }

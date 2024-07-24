@@ -16,6 +16,7 @@ class ExtraSaleResource extends JsonResource
             'quantity'    => $this->quantity,
             'unit_value'  => $this->unit_value,
             'event_id'    => $this->event_id,
+            'unit_name'    => $this->unit->description,
         ];
     }
 }

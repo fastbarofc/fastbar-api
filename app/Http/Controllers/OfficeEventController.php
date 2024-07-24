@@ -116,8 +116,18 @@ class OfficeEventController extends Controller
     }
     
 
-    public function getCollaborators(OfficeEvent $officeEvent)
-    {
-        return response()->json($officeEvent->collaborators);
-    }
+    public function getOfficeEventsWithCollaboratorsForEvent($eventId)
+{
+    $officeEvents = OfficeEvent::with(['collaborators' => function ($query) use ($eventId) {
+        $query->where('event_office_collaborators.event_id', $eventId);
+    }])
+    ->get()
+    ->each(function ($officeEvent) use ($eventId) {
+        $officeEvent->collaborators = $officeEvent->collaborators->filter(function ($collaborator) use ($eventId) {
+            return $collaborator->pivot->event_id == $eventId;
+        })->values();
+    });
+
+    return response()->json($officeEvents);
+}
 }
