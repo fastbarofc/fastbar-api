@@ -54,7 +54,7 @@ class PaymentMethodController extends Controller
     
     public function store(StorePaymentMethodRequest $request)
     {
-        $paymentMethod = PaymentMethod::create($request->validated());
+        $paymentMethod = PaymentMethod::create($request->all());
         return response()->json(new PaymentMethodResource($paymentMethod), 201);
     }
     
@@ -65,7 +65,7 @@ class PaymentMethodController extends Controller
     
     public function update(UpdatePaymentMethodRequest $request, PaymentMethod $paymentMethod)
     {
-        $paymentMethod->update($request->validated());
+        $paymentMethod->update($request->all());
         return response()->json(new PaymentMethodResource($paymentMethod));
     }
     
