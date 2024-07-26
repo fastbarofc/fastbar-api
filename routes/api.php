@@ -39,6 +39,7 @@ use App\Http\Controllers\EventBatchController;
 use App\Http\Controllers\FailureController;
 use App\Http\Controllers\LostReasonController;
 use App\Http\Controllers\OfficeBudgetController;
+use App\Http\Controllers\ParthenonBankAccountController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductGroupController;
 use App\Http\Controllers\QualificationController;
@@ -184,4 +185,5 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::delete('events/{event}/failures/{failure}', [EventController::class, 'detachFailure']);
 
     Route::resource('payment-methods', PaymentMethodController::class);
+    Route::resource('parthenon-bank-accounts', ParthenonBankAccountController::class);
 });
