@@ -57,6 +57,13 @@ class EventResource extends JsonResource
                     'selected' => $material->pivot->selected,
                 ];
             }),
+            'office_events' => $this->officeEvents->map(function ($officeEvent) {
+                return [
+                    'id' => $officeEvent->id,
+                    'description' => $officeEvent->description,
+                    'quantity' => $officeEvent->pivot->quantity,
+                ];
+            }),
         ];
     }
 }

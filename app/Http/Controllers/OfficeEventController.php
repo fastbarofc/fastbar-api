@@ -31,14 +31,14 @@ class OfficeEventController extends Controller
                 $value = $filter[$field];
                 $operator = $field == 'description' ? 'like' : '=';
                 $query->filterByField(
-                    field: $field, 
+                    field: $field,
                     value: $value,
                     operator: $operator,
                 );
             }
         }
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -61,7 +61,7 @@ class OfficeEventController extends Controller
 
     public function store(StoreOfficeEventRequest $request)
     {
-        try{
+        try {
             $officeEvent = OfficeEvent::create($request->all());
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
@@ -76,8 +76,8 @@ class OfficeEventController extends Controller
 
     public function update(UpdateOfficeEventRequest $request, OfficeEvent $officeEvent)
     {
-        try{
-          $officeEvent->update($request->all());
+        try {
+            $officeEvent->update($request->all());
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
@@ -94,13 +94,13 @@ class OfficeEventController extends Controller
     {
         $collaboratorIds = $request->input('collaborators');
         $eventId = $request->input('eventId');
-    
+
         $officeEvent->collaborators()->detach();
-    
+
         foreach ($collaboratorIds as $collaboratorId) {
             $officeEvent->collaborators()->attach($collaboratorId, ['event_id' => $eventId]);
         }
-    
+
         return response()->json(['message' => 'Collaborators synced to office event'], 200);
     }
 
@@ -114,20 +114,4 @@ class OfficeEventController extends Controller
 
         return response()->json(['message' => 'Collaborator detached successfully'], 200);
     }
-    
-
-    public function getOfficeEventsWithCollaboratorsForEvent($eventId)
-{
-    $officeEvents = OfficeEvent::with(['collaborators' => function ($query) use ($eventId) {
-        $query->where('event_office_collaborators.event_id', $eventId);
-    }])
-    ->get()
-    ->each(function ($officeEvent) use ($eventId) {
-        $officeEvent->collaborators = $officeEvent->collaborators->filter(function ($collaborator) use ($eventId) {
-            return $collaborator->pivot->event_id == $eventId;
-        })->values();
-    });
-
-    return response()->json($officeEvents);
-}
 }

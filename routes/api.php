@@ -81,7 +81,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('office-budgets', OfficeBudgetController::class);
     Route::post('office-budgets/{officeBudget}/attach-collaborators', [OfficeBudgetController::class, 'attachCollaborators'])->name('office-budgets.attach-collaborators');
     Route::post('office-budgets/{officeBudgetId}/detach-collaborator', [OfficeBudgetController::class, 'detachCollaborator'])->name('office-budgets.detach-collaborators');
-    Route::get('events/{eventId}/office-budgets/collaborators', [OfficeBudgetController::class, 'getOfficeBudgetsWithCollaboratorsForEvent']);
 
 
     Route::resource('event-statuses', EventStatusController::class);
@@ -119,6 +118,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::put('events/{event}/extra-sales', [EventController::class, 'updateExtraSales'])->name('events.update-extra-sales');
     Route::get('events/{event}/event-kits', [EventController::class, 'eventKits'])->name('events.event-kits');
     Route::get('events/{event}/contracts', [EventController::class, 'resetContract'])->name('events.reset-contract');
+    Route::get('events/{event}/office-events', [EventController::class, 'officeEvents'])->name('events.office-events');
+    Route::get('events/{event}/office-events/collaborators', [EventController::class, 'getOfficeEventsWithCollaboratorsForEvent']);
+    Route::get('events/{eventId}/office-budgets/collaborators', [EventController::class, 'getOfficeBudgetsWithCollaboratorsForEvent']);
     
     Route::post('events/{event}/legal-representatives', [EventController::class, 'attachLegalRepresentatives'])->name('events.attach-legal-representatives');
     Route::get('events/{event}/legal-representatives', [EventController::class, 'getLegalRepresentatives'])->name('events.legal-representatives');
@@ -145,7 +147,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::post('office-events/{officeEvent}/attach-collaborators', [OfficeEventController::class, 'attachCollaborators'])->name('office-events.attach-collaborators');
     Route::post('office-events/{officeEventId}/detach-collaborator', [OfficeEventController::class, 'detachCollaborator'])->name('office-events.detach-collaborators');
-    Route::get('events/{eventId}/office-events/collaborators', [OfficeEventController::class, 'getOfficeEventsWithCollaboratorsForEvent']);
 
     Route::resource('clients', ClientController::class);
     Route::get('clients/{client}/events', [ClientController::class, 'clientEvents'])->name('clients.events');

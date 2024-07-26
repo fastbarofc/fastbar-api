@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('event_id')->cascadeOnDelete()->constrained();
             $table->foreignId('office_event_id')->cascadeOnDelete()->constrained();
-            $table->decimal('quantity');
+            $table->integer('quantity');
             $table->timestamps();
             $table->softDeletes();
         });

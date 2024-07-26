@@ -35,7 +35,7 @@ class OfficeBudgetController extends Controller
             }
         }
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -61,7 +61,7 @@ class OfficeBudgetController extends Controller
      */
     public function store(StoreOfficeBudgetRequest $request)
     {
-        try{
+        try {
             $data = $request->all();
             $data['slug'] = slug($data['name']);
             $officeBudget = OfficeBudget::create($data);
@@ -84,7 +84,7 @@ class OfficeBudgetController extends Controller
      */
     public function update(UpdateOfficeBudgetRequest $request, OfficeBudget $officeBudget)
     {
-        try{
+        try {
             $data = $request->all();
             $data['slug'] = slug($data['name']);
             $officeBudget->update($data);
@@ -107,13 +107,13 @@ class OfficeBudgetController extends Controller
     {
         $collaboratorIds = $request->input('collaborators');
         $eventId = $request->input('eventId');
-    
+
         $officeBudget->collaborators()->detach();
-    
+
         foreach ($collaboratorIds as $collaboratorId) {
             $officeBudget->collaborators()->attach($collaboratorId, ['event_id' => $eventId]);
         }
-    
+
         return response()->json(['message' => 'Collaborators synced to office budget'], 200);
     }
 
@@ -127,24 +127,4 @@ class OfficeBudgetController extends Controller
 
         return response()->json(['message' => 'Collaborator detached successfully'], 200);
     }
-    
-
-public function getOfficeBudgetsWithCollaboratorsForEvent($eventId)
-{
-    $officeBudgets = OfficeBudget::with(['collaborators' => function ($query) use ($eventId) {
-        $query->where('budget_office_collaborators.event_id', $eventId);
-    }])
-    ->get()
-    ->each(function ($officeBudget) use ($eventId) {
-        $officeBudget->collaborators = $officeBudget->collaborators->filter(function ($collaborator) use ($eventId) {
-            return $collaborator->pivot->event_id == $eventId;
-        })->values();
-    });
-
-    return response()->json($officeBudgets);
-}
-
-
-
-
 }

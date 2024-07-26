@@ -31,6 +31,8 @@ use App\Models\EventStatus;
 use App\Models\EventStatusHistory;
 use App\Models\Failure;
 use App\Models\LostReason;
+use App\Models\OfficeBudget;
+use App\Models\OfficeEvent;
 use App\Models\Partner;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -85,9 +87,6 @@ class EventController extends Controller
         ], 200);
     }
 
-
-
-
     public function getLegalRepresentatives(Event $event)
     {
         $this->authorize('getLegalRepresentatives', $event);
@@ -137,7 +136,7 @@ class EventController extends Controller
 
         Event::create($request->all());
 
-        if(!empty($data['event_batches'])) {
+        if (!empty($data['event_batches'])) {
             foreach ($data['event_batches'] as $eventBatch) {
                 $eventBatch['event_id'] = $event->id;
                 EventBatch::create($eventBatch);
@@ -161,7 +160,14 @@ class EventController extends Controller
         }
 
         if (!empty($data['office_events'])) {
-            $event->officeEvents()->sync($data['office_events']);
+            $officeArray = collect($data['office_events'])->mapWithKeys(function ($office) {
+                return [
+                    $office['id'] => [
+                        'quantity' => $office['quantity'],
+                    ]
+                ];
+            })->toArray();
+            $event->officeEvents()->sync($officeArray);
         }
 
         if (!empty($data['office_budgets'])) {
@@ -186,7 +192,7 @@ class EventController extends Controller
     {
         $data = $request->all();
 
-        if(!empty($data['event_batches'])) {
+        if (!empty($data['event_batches'])) {
             foreach ($data['event_batches'] as $batch) {
                 $batch['event_id'] = $event->id;
                 if (!empty($batch['id'])) {
@@ -207,10 +213,17 @@ class EventController extends Controller
                 ];
             })->toArray();
             $event->materials()->sync($materialsArray);
-        }
+        }        
 
         if (!empty($data['office_events'])) {
-            $event->officeEvents()->sync($data['office_events']);
+            $officeArray = collect($data['office_events'])->mapWithKeys(function ($office) {
+                return [
+                    $office['id'] => [
+                        'quantity' => $office['quantity'],
+                    ]
+                ];
+            })->toArray();
+            $event->officeEvents()->sync($officeArray);
         }
 
         if (!empty($data['clients'])) {
@@ -224,7 +237,7 @@ class EventController extends Controller
         $event->competing_company_id = $data['competing_company_id'] ?? null;
         $event->lost_reason_id = $data['lost_reason_id'] ?? null;
 
-        if($event->event_status_id != $data['event_status_id']) {
+        if ($event->event_status_id != $data['event_status_id']) {
             EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
         }
 
@@ -351,6 +364,36 @@ class EventController extends Controller
         ], 200);
     }
 
+    public function getOfficeEventsWithCollaboratorsForEvent(Event $event)
+    {
+        $officeEvents = OfficeEvent::with(['collaborators' => function ($query) use ($event) {
+            $query->where('event_office_collaborators.event_id', $event->id);
+        }])
+            ->get()
+            ->each(function ($officeEvent) use ($event) {
+                $officeEvent->collaborators = $officeEvent->collaborators->filter(function ($collaborator) use ($event) {
+                    return $collaborator->pivot->event_id == $event->id;
+                })->values();
+            });
+
+        return response()->json($officeEvents);
+    }
+
+    public function getOfficeBudgetsWithCollaboratorsForEvent($event)
+    {
+        $officeBudgets = OfficeBudget::with(['collaborators' => function ($query) use ($event) {
+            $query->where('budget_office_collaborators.event_id', $event->id);
+        }])
+        ->get()
+        ->each(function ($officeBudget) use ($event) {
+            $officeBudget->collaborators = $officeBudget->collaborators->filter(function ($collaborator) use ($event) {
+                return $collaborator->pivot->event_id == $event->id;
+            })->values();
+        });
+    
+        return response()->json($officeBudgets);
+    }
+
     public function updateExtraSales(Request $request, Event $event)
     {
         $this->authorize('update', $event);
@@ -454,28 +497,36 @@ class EventController extends Controller
         return response()->json([], 201);
     }
 
-    public function getEventKits(Event $event)
+    public function officeEvents(Event $event)
     {
-        $query = EventKit::query();
-        $query->where('event_id', $event->id)->whereNull('event_kit_id')->get();
-        return response()->json(EventKitResource::collection($event->eventKits), 200);
+        $this->authorize('view', $event);
+        $officeEvents = OfficeEvent::all();
+
+        $officeEvents = $officeEvents->map(function ($officeEvent) use ($event) {
+            $eventOfficeEvent = $event->officeEvents->where('id', $officeEvent->id)->first();
+            $officeEvent->quantity = $eventOfficeEvent ? $eventOfficeEvent->pivot->quantity : 0;
+            return $officeEvent;
+        });
+
+        return response()->json([
+            'data' => $officeEvents
+        ], 200);
     }
 
-
     public function getEventFailures(Event $event)
-{
-    $id = $event->id;
-    $failures = Failure::all();
-    $eventFailures = Event::find($id)->failures()->get();
+    {
+        $id = $event->id;
+        $failures = Failure::all();
+        $eventFailures = Event::find($id)->failures()->get();
 
-    $failures = $failures->map(function($failure) use ($eventFailures) {
-        $eventFailure = $eventFailures->firstWhere('id', $failure->id);
-        $failure->deduct = $eventFailure ? $eventFailure->pivot->deduct : false;
-        return $failure;
-    });
+        $failures = $failures->map(function ($failure) use ($eventFailures) {
+            $eventFailure = $eventFailures->firstWhere('id', $failure->id);
+            $failure->deduct = $eventFailure ? $eventFailure->pivot->deduct : false;
+            return $failure;
+        });
 
-    return response()->json($failures);
-}
+        return response()->json($failures);
+    }
 
 
     public function attachFailure(Request $request, Event $event)

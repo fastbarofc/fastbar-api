@@ -32,7 +32,6 @@ class UpdateEventRequest extends FormRequest
             'partner_courtesies'   => 'nullable|numeric|min:0',
             'materials'          => 'nullable|array',
             'office_events'      => 'nullable|array',
-            'office_events.*'    => 'nullable|exists:office_events,id',
             'legal_representatives'            => 'nullable|array',
             'legal_representatives.*'          => 'nullable|exists:clients,id',
         ];
@@ -61,7 +60,6 @@ class UpdateEventRequest extends FormRequest
             'parthenon_courtesies.min'     => 'O campo cortesias parthenon não pode ser negativo',
             'partner_courtesies.numeric'   => 'O campo cortesias parceiro deve conter apenas números',
             'partner_courtesies.min'       => 'O campo cortesias parceiro não pode ser negativo',
-            'office_events.*.exists'    => 'O campo ID função do evento deve ser um ID válido.',
             'legal_representatives.*.exists'          => 'O campo ID do representante legal deve ser um ID válido.',
         ];
     }
