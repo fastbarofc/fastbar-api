@@ -55,14 +55,12 @@ class EventPaymentController extends Controller
     public function store(StoreEventPaymentRequest $request)
     {
         $eventPayment = EventPayment::create($request->all());
-        // Carregar os relacionamentos necessários
         $eventPayment->load(['event', 'parthenonBankAccount']);
         return response()->json(new EventPaymentResource($eventPayment), 201);
     }
 
     public function show(EventPayment $eventPayment)
     {
-        // Carregar os relacionamentos necessários
         $eventPayment->load(['event', 'parthenonBankAccount']);
         return response()->json(new EventPaymentResource($eventPayment), 200);
     }
@@ -70,7 +68,6 @@ class EventPaymentController extends Controller
     public function update(UpdateEventPaymentRequest $request, EventPayment $eventPayment)
     {
         $eventPayment->update($request->all());
-        // Recarregar os relacionamentos necessários após a atualização
         $eventPayment->load(['event', 'parthenonBankAccount']);
         return response()->json(new EventPaymentResource($eventPayment), 200);
     }
