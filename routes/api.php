@@ -36,6 +36,7 @@ use App\Http\Controllers\CompetingCompanyController;
 use App\Http\Controllers\HowDidYouHearController;
 use App\Http\Controllers\EventNoteController;
 use App\Http\Controllers\EventBatchController;
+use App\Http\Controllers\EventPaymentController;
 use App\Http\Controllers\FailureController;
 use App\Http\Controllers\LostReasonController;
 use App\Http\Controllers\OfficeBudgetController;
@@ -187,4 +188,5 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::resource('payment-methods', PaymentMethodController::class);
     Route::resource('parthenon-bank-accounts', ParthenonBankAccountController::class);
+    Route::resource('event-payments', EventPaymentController::class);
 });
