@@ -26,7 +26,7 @@ class Collaborator extends Model implements AuditableInterface
         'phone_2',
         'sector_id',
         'sector_office_id',
-        'has_login',
+        //'has_login',
         'active',
         'user_id',
         'file_id',

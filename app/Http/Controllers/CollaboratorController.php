@@ -72,9 +72,14 @@ class CollaboratorController extends Controller
     
     public function store(StoreCollaboratorRequest $request)
     {
+        
         $data = $request->all();
-
+        
         $collaborator = Collaborator::create($data);
+
+        if($data['has_login'] === null) {
+            $data['has_login'] = false;
+        }
 
         if (!empty($data['has_login'])) {
             $data['password'] = bcrypt($data['password']);
