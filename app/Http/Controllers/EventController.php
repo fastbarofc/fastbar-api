@@ -87,9 +87,9 @@ class EventController extends Controller
         ], 200);
     }
 
-    public function getLegalRepresentatives(Event $event)
+    public function legalRepresentatives(Event $event)
     {
-        $this->authorize('getLegalRepresentatives', $event);
+        $this->authorize('legalRepresentatives', $event);
         return response()->json($event->legal_representatives, 200);
     }
 
@@ -193,6 +193,12 @@ class EventController extends Controller
         $data = $request->all();
 
         if (!empty($data['event_batches'])) {
+            $batchesIds = collect($data['event_batches']);
+            $batchesIds = $batchesIds->where('id', '!=', null)->pluck('id')->toArray();
+            $batchesToDelete = $event->eventBatches->whereNotIn('id', $batchesIds);
+            foreach ($batchesToDelete as $batch) {
+                $batch->delete();
+            }
             foreach ($data['event_batches'] as $batch) {
                 $batch['event_id'] = $event->id;
                 if (!empty($batch['id'])) {
@@ -208,7 +214,7 @@ class EventController extends Controller
                 return [
                     $material['id'] => [
                         'selected' => $material['selected'] === '-1' ? null : $material['selected'],
-                        'quantity' => $material['quantity'],
+                        'quantity' => !empty($material['quantity']) ? $material['quantity'] : 0
                     ]
                 ];
             })->toArray();
@@ -228,6 +234,23 @@ class EventController extends Controller
 
         if (!empty($data['clients'])) {
             $event->clients()->sync($data['clients']);
+        }
+
+        if (!empty($data['extra_sales'])) {
+            foreach ($data['extra_sales'] as $extraSale) {
+                $extraSalesIds = collect($data['extra_sales'])->pluck('id')->toArray();
+                $saleToDelete = $event->extraSales->whereNotIn('id', $extraSalesIds);
+                foreach ($saleToDelete as $sale) {
+                    $sale->delete();
+                }
+                $extraSaleModel = ExtraSale::find($extraSale['id']);
+                if ($extraSaleModel) {
+                    $extraSaleModel->update($extraSale);
+                    continue;
+                }
+                $extraSale['event_id'] = $event->id;
+                ExtraSale::create($extraSale);
+            }
         }
 
         if (!empty($data['legal_representatives'])) {

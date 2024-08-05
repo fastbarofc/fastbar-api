@@ -124,7 +124,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('events/{eventId}/office-budgets/collaborators', [EventController::class, 'getOfficeBudgetsWithCollaboratorsForEvent']);
     
     Route::post('events/{event}/legal-representatives', [EventController::class, 'attachLegalRepresentatives'])->name('events.attach-legal-representatives');
-    Route::get('events/{event}/legal-representatives', [EventController::class, 'getLegalRepresentatives'])->name('events.legal-representatives');
+    Route::get('events/{event}/legal-representatives', [EventController::class, 'legalRepresentatives'])->name('events.legal-representatives');
     
     Route::post('events/{event}/materials/{material}', [EventController::class, 'syncMaterials'])->name('events.sync-materials');
 

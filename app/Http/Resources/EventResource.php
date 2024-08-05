@@ -2,6 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Models\EventKit;
+use App\Models\Material;
+use App\Models\OfficeEvent;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,6 +12,7 @@ class EventResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $eventKits = EventKit::whereNull('event_kit_id')->where('event_id', $this->id)->get();
         return [
             'id'                 => $this->id,
             'name'               => $this->name,
@@ -26,10 +30,8 @@ class EventResource extends JsonResource
             'event_status_id'    => $this->event_status_id,
             'status'             => $this->eventStatus,
             'lease'              => $this->lease,
-            'guests'             => $this->guests,
-            'min_guests'         => $this->min_guests,
             'duration'           => $this->duration,
-            'date_time'          => $this->date_time->format('Y-m-d\TH:i'),
+            'date_time'          => $this->date_time?->format('Y-m-d\TH:i'),
             'duration_after'    => $this->duration_after,
             'unit_value'         => $this->unit_value,
             'discount'       => $this->discount,
@@ -49,21 +51,26 @@ class EventResource extends JsonResource
             'event_gifts'        => $this->eventGifts,
             'competing_company_id' => $this->competing_company_id,
             'lost_reason_id' => $this->lost_reason_id,
-            'materials'          => $this->materials->map(function ($material) {
+            'materials' => Material::all()->map(function ($material) {
+                $materialEvent = $this->materials->where('id', $material->id)->first();
                 return [
                     'id' => $material->id,
                     'description' => $material->description,
-                    'quantity' => $material->pivot->quantity,
-                    'selected' => $material->pivot->selected,
+                    'quantity' => $materialEvent ? $materialEvent->pivot->quantity : 0,
+                    'selected' => $materialEvent ? ($materialEvent->pivot->selected === null ? '-1' : $materialEvent->pivot->selected) : null,
                 ];
             }),
-            'office_events' => $this->officeEvents->map(function ($officeEvent) {
+            'office_events' => OfficeEvent::all()->map(function ($officeEvent) {
+                $eventOfficeEvent = $this->officeEvents->where('id', $officeEvent->id)->first();
                 return [
                     'id' => $officeEvent->id,
                     'description' => $officeEvent->description,
-                    'quantity' => $officeEvent->pivot->quantity,
+                    'quantity' => $eventOfficeEvent ? $eventOfficeEvent->pivot->quantity : 0,
                 ];
             }),
+            'extra_sales' => $this->extraSales,
+            'event_batches' => $this->eventBatches,
+            'event_notes' => EventNoteResource::collection($this->eventNotes),
         ];
     }
 }

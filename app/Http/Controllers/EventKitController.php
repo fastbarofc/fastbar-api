@@ -99,7 +99,8 @@ class EventKitController extends Controller
         }
         $product = Product::find($data['id']);
         $product->eventKits()->attach($data['event_kit_id']);
-        return response()->json($product, 201);
+        $product->type = 'product';
+        return response()->json(['data' => $product], 201);
     }
 
     public function transformKitToEventKit($kit, $eventKit)
