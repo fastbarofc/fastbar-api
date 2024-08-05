@@ -26,6 +26,7 @@ use App\Models\CompetingCompany;
 use App\Models\Decorator;
 use App\Models\EventBatch;
 use App\Models\EventCapture;
+use App\Models\EventNote;
 use App\Models\EventPlace;
 use App\Models\EventStatus;
 use App\Models\EventStatusHistory;
@@ -148,7 +149,7 @@ class EventController extends Controller
                 return [
                     $material['id'] => [
                         'selected' => $material['selected'] === '-1' ? null : $material['selected'],
-                        'quantity' => $material['quantity'],
+                        'quantity' => !empty($material['quantity']) ? $material['quantity'] : 0
                     ]
                 ];
             })->toArray();
@@ -163,11 +164,46 @@ class EventController extends Controller
             $officeArray = collect($data['office_events'])->mapWithKeys(function ($office) {
                 return [
                     $office['id'] => [
-                        'quantity' => $office['quantity'],
+                        'quantity' => !empty($office['quantity']) ? $office['quantity'] : 0
                     ]
                 ];
             })->toArray();
             $event->officeEvents()->sync($officeArray);
+        }
+
+        if (!empty($data['extra_sales'])) {
+            foreach ($data['extra_sales'] as $extraSale) {
+                $extraSalesIds = collect($data['extra_sales'])->pluck('id')->toArray();
+                $saleToDelete = $event->extraSales->whereNotIn('id', $extraSalesIds);
+                foreach ($saleToDelete as $sale) {
+                    $sale->delete();
+                }
+                $extraSaleModel = ExtraSale::find($extraSale['id']);
+                if ($extraSaleModel) {
+                    $extraSaleModel->update($extraSale);
+                    continue;
+                }
+                $extraSale['event_id'] = $event->id;
+                ExtraSale::create($extraSale);
+            }
+        }
+
+        if (!empty($data['event_notes'])) {
+            foreach ($data['event_notes'] as $eventNote) {
+                $eventNotesIds = collect($data['event_notes'])->pluck('id')->toArray();
+                $eventNotesToDelete = $event->eventNotes->whereNotIn('id', $eventNotesIds);
+                foreach ($eventNotesToDelete as $eventNote) {
+                    $eventNote->delete();
+                }
+                $eventNoteModel = EventNote::find($eventNote['id']);
+                if ($eventNoteModel) {
+                    $eventNoteModel->update($eventNote);
+                    continue;
+                }
+                $eventNote['event_id'] = $event->id;
+                $eventNote['collaborator_id'] = auth()->user()->collaborator->id;
+                EventNote::create($eventNote);
+            }
         }
 
         if (!empty($data['office_budgets'])) {
@@ -225,7 +261,7 @@ class EventController extends Controller
             $officeArray = collect($data['office_events'])->mapWithKeys(function ($office) {
                 return [
                     $office['id'] => [
-                        'quantity' => $office['quantity'],
+                        'quantity' => !empty($office['quantity']) ? $office['quantity'] : 0
                     ]
                 ];
             })->toArray();
@@ -250,6 +286,24 @@ class EventController extends Controller
                 }
                 $extraSale['event_id'] = $event->id;
                 ExtraSale::create($extraSale);
+            }
+        }
+
+        if (!empty($data['event_notes'])) {
+            foreach ($data['event_notes'] as $eventNote) {
+                $eventNotesIds = collect($data['event_notes'])->pluck('id')->toArray();
+                $eventNotesToDelete = $event->eventNotes->whereNotIn('id', $eventNotesIds);
+                foreach ($eventNotesToDelete as $eventNote) {
+                    $eventNote->delete();
+                }
+                $eventNoteModel = EventNote::find($eventNote['id']);
+                if ($eventNoteModel) {
+                    $eventNoteModel->update($eventNote);
+                    continue;
+                }
+                $eventNote['event_id'] = $event->id;
+                $eventNote['collaborator_id'] = auth()->user()->collaborator->id;
+                EventNote::create($eventNote);
             }
         }
 

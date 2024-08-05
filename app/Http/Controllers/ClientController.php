@@ -33,9 +33,8 @@ class ClientController extends Controller
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
             $filterableArray = json_decode($filterable, true);
-            foreach ($filterableArray as  $filter) {
-                $field = array_keys($filter)[0];
-                $value = $filter[$field];
+            $filterableArray = $filterableArray[0];
+            foreach ($filterableArray as  $field => $value) {
                 $operator = $field == 'name' || $field == 'nickname' || $field == 'email' ? 'like' : '=';
                 $query->filterByField(
                     field: $field,
@@ -45,7 +44,7 @@ class ClientController extends Controller
             }
         }
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -54,7 +53,7 @@ class ClientController extends Controller
         $clients = $query->paginate($perPage);
 
         return response()->json([
-            'data' => ClientResource::collection($clients),                
+            'data' => ClientResource::collection($clients),
             'pagination' => [
                 'current_page' => $clients->currentPage(),
                 'total_pages' => $clients->lastPage(),
@@ -65,7 +64,7 @@ class ClientController extends Controller
             'filterable_fields' => Client::filterableFields()
         ], 200);
     }
-    
+
     public function store(StoreClientRequest $request)
     {
         $data = $request->all();
@@ -81,41 +80,40 @@ class ClientController extends Controller
                 'email'    => $client->email,
                 'password' => bcrypt($randomPassword),
             ];
-    
+
             $user = User::create($userData);
             $client->update(['user_id' => $user->id]);
-    
+
             $roleClient = Role::where('name', 'Client')->first();
             $user->assignRole($roleClient);
 
             $user->notify(new UserPassword($randomPassword));
-
         }
 
         if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];
             Address::create([
-               'addressable_id'      => $client->id,
-               'addressable_type'    => Client::class,
-               'street'             => $address['street'],
-               'district'             => $address['district'],
-               'complement'             => $address['complement'],
-               'city_id'             => $address['city_id'],
-               'state_id'             => $address['state_id'],
-               'number'             => $address['number'],
-               'zip_code'             => $address['zip_code'],
-               'reference'             => $address['reference'],
+                'addressable_id'      => $client->id,
+                'addressable_type'    => Client::class,
+                'street'             => $address['street'],
+                'district'             => $address['district'],
+                'complement'             => $address['complement'],
+                'city_id'             => $address['city_id'],
+                'state_id'             => $address['state_id'],
+                'number'             => $address['number'],
+                'zip_code'             => $address['zip_code'],
+                'reference'             => $address['reference'],
             ]);
         }
 
         return response()->json(new ClientResource($client), 201);
     }
-    
+
     public function show(Client $client)
     {
         return response()->json(new ClientResource($client), 200);
     }
-    
+
     public function update(UpdateClientRequest $request, Client $client)
     {
         $data = $request->all();
@@ -127,7 +125,7 @@ class ClientController extends Controller
                 [
                     'addressable_id'      => $client->id,
                     'addressable_type'    => Client::class
-                ], 
+                ],
                 [
                     'addressable_id'      => $client->id,
                     'addressable_type'    => Client::class,
@@ -140,7 +138,7 @@ class ClientController extends Controller
                     'zip_code'             => $address['zip_code'],
                     'reference'             => $address['reference'],
                 ]
-            );        
+            );
         }
 
         if (!empty($data['has_login'])) {
@@ -148,7 +146,7 @@ class ClientController extends Controller
                 'name'     => $client->name,
                 'email'    => $client->email,
             ];
-    
+
             $user = User::updateOrCreate(
                 [
                     'id' => $client->user_id
@@ -159,7 +157,7 @@ class ClientController extends Controller
 
         return response()->json(new ClientResource($client), 200);
     }
-    
+
     public function destroy(Client $client)
     {
         $client->delete();
@@ -167,49 +165,46 @@ class ClientController extends Controller
     }
 
     public function clientEvents(Request $request, $clientId)
-{
-    $perPage = $request->input('per_page', 10);
+    {
+        $perPage = $request->input('per_page', 10);
 
-    $client = Client::findOrFail($clientId);
+        $client = Client::findOrFail($clientId);
 
-    $query = $client->events()->getQuery(); 
+        $query = $client->events()->getQuery();
 
-    if ($request->has('filter_by')) {
-        $filterable = json_decode($request->input('filter_by'), true);
+        if ($request->has('filter_by')) {
+            $filterable = json_decode($request->input('filter_by'), true);
 
-        foreach ($filterable as $filter) {
-            $field = array_key_first($filter);
-            $value = $filter[$field];
-            $operator = in_array($field, ['name']) ? 'like' : '=';
+            foreach ($filterable as $filter) {
+                $field = array_key_first($filter);
+                $value = $filter[$field];
+                $operator = in_array($field, ['name']) ? 'like' : '=';
 
-            if ($field == 'search') {
-                $query->where(function ($subQuery) use ($value) {
-                    foreach (Event::searchableFields() as $searchableField) {
-                        $subQuery->orWhere($searchableField, 'like', "%$value%");
-                    }
-                });
-            } else {
-                $query->filterByField($field, $value, $operator);
+                if ($field == 'search') {
+                    $query->where(function ($subQuery) use ($value) {
+                        foreach (Event::searchableFields() as $searchableField) {
+                            $subQuery->orWhere($searchableField, 'like', "%$value%");
+                        }
+                    });
+                } else {
+                    $query->filterByField($field, $value, $operator);
+                }
             }
         }
+
+        if ($request->has('order_by')) {
+            $orderBy = $request->input('order_by');
+            $direction = $request->input('direction', 'asc');
+
+            $query->orderBy($orderBy, $direction);
+        }
+
+        $events = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => EventResource::collection($events),
+            'sortable_fields' => Event::sortableFields(),
+            'filterable_fields' => Event::filterableFields()
+        ], 200);
     }
-
-    if ($request->has('order_by')) {
-        $orderBy = $request->input('order_by');
-        $direction = $request->input('direction', 'asc');
-
-        $query->orderBy($orderBy, $direction);
-    }
-
-    $events = $query->paginate($perPage);
-
-    return response()->json([
-        'data' => EventResource::collection($events),                
-        'sortable_fields' => Event::sortableFields(),
-        'filterable_fields' => Event::filterableFields()
-    ], 200);
-}
-
-
-
 }
