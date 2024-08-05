@@ -40,20 +40,20 @@ class SectorController extends Controller
     }
 
     if ($perPage != 0) {
-        $events = $query->paginate($perPage);
+        $sectors = $query->paginate($perPage);
         $pagination = [
-            'current_page' => $events->currentPage(),
-            'total_pages' => $events->lastPage(),
-            'per_page' => $events->perPage(),
-            'total' => $events->total(),
+            'current_page' => $sectors->currentPage(),
+            'total_pages' => $sectors->lastPage(),
+            'per_page' => $sectors->perPage(),
+            'total' => $sectors->total(),
         ];
     } else {
-        $events = $query->get();
+        $sectors = $query->get();
         $pagination = null;
     }
 
     return response()->json([
-        'data' => SectorResource::collection($events),
+        'data' => SectorResource::collection($sectors),
         'pagination' => $pagination,
         'sortable_fields' => Sector::sortableFields(),
         'filterable_fields' => Sector::filterableFields()

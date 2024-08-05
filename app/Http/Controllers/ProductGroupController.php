@@ -37,16 +37,22 @@ class ProductGroupController extends Controller
             $query->orderByField($sorteableField, $direction);
         }
 
-        $productGroups = $query->paginate($perPage);
-
-        return response()->json([
-            'data' => ProductGroupResource::collection($productGroups),
-            'pagination' => [
+        if ($perPage != 0) {
+            $productGroups = $query->paginate($perPage);
+            $pagination = [
                 'current_page' => $productGroups->currentPage(),
                 'total_pages' => $productGroups->lastPage(),
                 'per_page' => $productGroups->perPage(),
                 'total' => $productGroups->total(),
-            ],
+            ];
+        } else {
+            $productGroups = $query->get();
+            $pagination = null;
+        }
+
+        return response()->json([
+            'data' => ProductGroupResource::collection($productGroups),
+            'pagination' => $pagination,
             'sortable_fields' => ProductGroup::sortableFields(),
             'filterable_fields' => ProductGroup::filterableFields()
         ], 200);

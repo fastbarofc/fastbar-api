@@ -37,16 +37,22 @@ class UnitController extends Controller
             $query->orderByField($sorteableField, $direction);
         }
 
-        $units = $query->paginate($perPage);
-
-        return response()->json([
-            'data' => UnitResource::collection($units),
-            'pagination' => [
+        if ($perPage != 0) {
+            $units = $query->paginate($perPage);
+            $pagination = [
                 'current_page' => $units->currentPage(),
                 'total_pages' => $units->lastPage(),
                 'per_page' => $units->perPage(),
                 'total' => $units->total(),
-            ],
+            ];
+        } else {
+            $units = $query->get();
+            $pagination = null;
+        }
+
+        return response()->json([
+            'data' => UnitResource::collection($units),
+            'pagination' => $pagination,
             'sortable_fields' => Unit::sortableFields(),
             'filterable_fields' => Unit::filterableFields()
         ], 200);

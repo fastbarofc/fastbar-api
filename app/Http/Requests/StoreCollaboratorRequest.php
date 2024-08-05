@@ -29,7 +29,7 @@ class StoreCollaboratorRequest extends FormRequest
             'phone_2'    => 'nullable|string|max:20',
             'sector_id'  => 'required|exists:sectors,id',
             'sector_office_id'  => 'required|exists:sector_offices,id',
-            'has_login'  => 'boolean',
+            'has_login'  => 'nullable|boolean',
             'active'     => 'boolean',
             'user_id'    => 'nullable|exists:users,id'
         ];

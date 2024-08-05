@@ -113,14 +113,13 @@ class ProductController extends Controller
 
             $productData['file_id'] = null;
         }
+        
     }
 
     $product->update($productData);
 
     return response()->json(new ProductResource($product), 200);
 }
-
-
 
     public function destroy(Product $product)
     {
