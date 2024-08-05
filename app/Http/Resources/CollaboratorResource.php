@@ -29,12 +29,19 @@ class CollaboratorResource extends JsonResource
             'active'         => $this->active,
             'user_id'        => $this->user_id,
             'file_id'=> $this->file_id,
-            'file_path' => $this->file ? $this->file->path : null,
+            'file_path'      => $this->file ? asset('storage/' . $this->file->path) : null,
             'qualifications' => $this->qualifications->map(function ($qualification) {
                 return [
                     'id'          => $qualification->id,
                     'description' => $qualification->description,
                     'points'      => $qualification->pivot->points ?? '0',
+                ];
+            }),
+            'incidents' => $this->collaboratorIncidents->map(function ($incident) {
+                return [
+                    'id'          => $incident->id,
+                    'description' => $incident->description,
+                    'collaborator_id'      => $this->id
                 ];
             }),
             'bank_details' => BankDetailResource::collection($this->bankDetails),

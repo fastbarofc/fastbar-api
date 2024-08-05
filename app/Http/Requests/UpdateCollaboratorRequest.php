@@ -50,14 +50,14 @@ class UpdateCollaboratorRequest extends FormRequest
             'user_id'    => 'nullable|exists:users,id',
         ];
 
-        if ($this->request->get('has_login')) {
+        /* if ($this->request->get('has_login')) {
             $data['password'] = 'nullable|string|min:8';
             $data['email']    = [
                 'nullable',
                 'email',
                 Rule::unique('collaborators', 'email')->ignore($collaboratorId),
             ];
-        }
+        } */
 
         if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
             $this->validateAddress($this->request->all()['address']);

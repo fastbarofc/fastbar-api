@@ -16,6 +16,8 @@ class StoreCollaboratorRequest extends FormRequest
 
     public function rules(): array
     {
+
+        
         $data = [
             'name'       => 'required|string|max:255',
             'nickname'   => 'nullable|string|max:255',
@@ -27,15 +29,16 @@ class StoreCollaboratorRequest extends FormRequest
             'phone_2'    => 'nullable|string|max:20',
             'sector_id'  => 'required|exists:sectors,id',
             'sector_office_id'  => 'required|exists:sector_offices,id',
-            'has_login'  => 'boolean',
+            'has_login'  => 'nullable|boolean',
             'active'     => 'boolean',
             'user_id'    => 'nullable|exists:users,id'
         ];
+        
 
-        if ($this->request->get('has_login')) {
+         if ($this->request->get('has_login')) {
             $data['password'] = 'required|string|min:8';
             $data['email']    = 'required|email|unique:users,email';
-        }
+        } 
 
         if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
             $this->validateAddress($this->request->all()['address']);
