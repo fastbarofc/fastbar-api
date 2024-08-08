@@ -17,17 +17,7 @@ class EventPaymentResource extends JsonResource
         $event = $this->event;
         return [
             'id' => $this->id,
-            'guests' => $event->guests,
-            'courtesies' => $event->courtesies ?? 0, 
-            'unit_value' => $event->unit_value,
-            'unit_discount' => $event->unit_discount,
-            'discount' => $event->discount,
-            'increase' => 0, 
-            'lease' => $event->lease,
-            'unit_insurance' => $event->unit_insurance,
-            'total' => $event->total_value,
             'value' => $this->value,
-            'balance' => $event->total_value - $this->value,
             'parthenon_bank_account' => [
                 'id' => $this->parthenonBankAccount->id,
                 'bank_name' => $this->parthenonBankAccount->bank_name,
@@ -39,11 +29,6 @@ class EventPaymentResource extends JsonResource
             ],
             'date' => $this->date,
             'parthenon_courtesies' => $this->parthenon_courtesies,
-            'partner_courtesies' => $this->partner_courtesies,
-            'buffet_value' => $this->buffet_value,
-            'total_value' => $this->total_value,
-            'min_guests' => $this->min_guests,
-            'duration' => $this->duration,
             'comment' => $this->comment,
             'event_id' => $event->id,
         ];
