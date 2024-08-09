@@ -441,35 +441,36 @@ class EventController extends Controller
         ], 200);
     }
 
-    public function getOfficeEventsWithCollaboratorsForEvent(Event $event)
+    public function getOfficeEventsWithCollaboratorsForEvent($eventId)
     {
-        $officeEvents = OfficeEvent::with(['collaborators' => function ($query) use ($event) {
-            $query->where('event_office_collaborators.event_id', $event->id);
+        $officeEvents = OfficeEvent::with(['collaborators' => function ($query) use ($eventId) {
+            $query->where('event_office_collaborators.event_id', $eventId);
         }])
             ->get()
-            ->each(function ($officeEvent) use ($event) {
-                $officeEvent->collaborators = $officeEvent->collaborators->filter(function ($collaborator) use ($event) {
-                    return $collaborator->pivot->event_id == $event->id;
+            ->each(function ($officeEvent) use ($eventId) {
+                $officeEvent->collaborators = $officeEvent->collaborators->filter(function ($collaborator) use ($eventId) {
+                    return $collaborator->pivot->event_id == $eventId;
                 })->values();
             });
 
         return response()->json($officeEvents);
     }
 
-    public function getOfficeBudgetsWithCollaboratorsForEvent($event)
-    {
-        $officeBudgets = OfficeBudget::with(['collaborators' => function ($query) use ($event) {
-            $query->where('budget_office_collaborators.event_id', $event->id);
-        }])
-        ->get()
-        ->each(function ($officeBudget) use ($event) {
-            $officeBudget->collaborators = $officeBudget->collaborators->filter(function ($collaborator) use ($event) {
-                return $collaborator->pivot->event_id == $event->id;
-            })->values();
-        });
-    
-        return response()->json($officeBudgets);
-    }
+    public function getOfficeBudgetsWithCollaboratorsForEvent($eventId)
+{
+    $officeBudgets = OfficeBudget::with(['collaborators' => function ($query) use ($eventId) {
+        $query->where('budget_office_collaborators.event_id', $eventId);
+    }])
+    ->get()
+    ->each(function ($officeBudget) use ($eventId) {
+        $officeBudget->collaborators = $officeBudget->collaborators->filter(function ($collaborator) use ($eventId) {
+            return $collaborator->pivot->event_id == $eventId;
+        })->values();
+    });
+
+    return response()->json($officeBudgets);
+}
+
 
     public function updateExtraSales(Request $request, Event $event)
     {
