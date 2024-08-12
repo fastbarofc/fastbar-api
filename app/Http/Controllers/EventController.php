@@ -339,8 +339,13 @@ class EventController extends Controller
         $eventPlaces = EventPlace::with(['address.city', 'address.state'])->get();
         $competingCompany = CompetingCompany::all();
         $lostReason = LostReason::all();
+        $collaborators = Collaborator::all();
+        $clients = Client::all();
+        $invoiceClients = Client::all();
+        $events = Event::all();
 
-        $clients = [];
+
+        /* $clients = [];
         $invoiceClients = [];
         $collaborators = [];
         $events = [];
@@ -350,7 +355,7 @@ class EventController extends Controller
             $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
             $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
             $events = Event::where('id', $event->event_id)->get();
-        }
+        } */
 
         return response()->json([
             'event_captures' => $eventCaptures,
