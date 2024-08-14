@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('ordination')->nullable();
             $table->string('observation')->nullable();
             $table->boolean('optional')->default(false);
+            $table->boolean('checklist')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

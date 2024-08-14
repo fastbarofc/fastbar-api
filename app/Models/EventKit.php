@@ -24,11 +24,13 @@ class EventKit extends Model implements AuditableInterface
         'ordination',
         'observation',
         'optional',
+        'checklist',
     ];
 
     protected $casts = [
         'optional' => 'boolean',
         'themed_table' => 'boolean',
+        'checklist' => 'boolean',
     ];
 
     protected static $sortableFields = [
