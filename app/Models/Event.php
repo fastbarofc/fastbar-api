@@ -36,8 +36,6 @@ class Event extends Model implements AuditableInterface
         'parthenon_courtesies',
         'partner_courtesies',
         'unit_insurance',
-        'buffet_value',
-        'total_value',
         'competing_company_id',
         'lost_reason_id',
     ];

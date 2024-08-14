@@ -33,7 +33,6 @@ class EventFactory extends Factory
             'duration' => $this->faker->numberBetween(1, 12),
             'duration_after' => $this->faker->numberBetween(1, 12),
             'date_time' => $this->faker->dateTimeBetween('-1 years', '+1 years'),
-            'total_value' => $this->faker->randomNumber(3, true),
             'partner_id' => Partner::all()->random()->id,
             'decorator_id' => Decorator::all()->random()->id,
             'event_capture_id' => EventCapture::all()->random()->id,
@@ -42,7 +41,6 @@ class EventFactory extends Factory
             'parthenon_courtesies' => $this->faker->randomNumber(2, true),
             'partner_courtesies' => $this->faker->randomNumber(2, true),
             'unit_insurance' => $this->faker->randomNumber(2, true),
-            'buffet_value' => $this->faker->randomNumber(3, true),
         ];
     }
 }
