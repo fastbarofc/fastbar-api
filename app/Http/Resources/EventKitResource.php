@@ -14,6 +14,7 @@ class EventKitResource extends JsonResource
             'name'         => $this->name,
             'value'        => $this->value,
             'themed_table' => $this->themed_table,
+            'checklist'    => $this->checklist,
             'ordination'   => $this->ordination,
             'optional'     => $this->optional,
             'products'     => $this->products,

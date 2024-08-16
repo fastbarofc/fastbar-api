@@ -15,6 +15,7 @@ class KitTreeResource extends JsonResource
                 'kit_id'       => $this->kit_id,
                 'name'         => $this->name,
                 'themed_table' => $this->themed_table,
+                'checklist'    => $this->checklist,
                 'optional'     => $this->optional,
                 'value'        => $this->value,                
             ],

@@ -92,6 +92,7 @@ class EventKitController extends Controller
         $data = $request->all();
         $data['themed_table'] = false;
         $data['optional'] = false;
+        $data['checklist'] = false;
         if (empty($data['type']) || $data['type'] != 'product') {
             $eventKit = EventKit::create($data);
             $this->transformKitToEventKit($kit, $eventKit);
@@ -117,6 +118,7 @@ class EventKitController extends Controller
                 $data['event_id'] = $eventKit->event_id;
                 $data['event_kit_id'] = $eventKit->id;
                 $data['themed_table'] = false;
+                $data['checklist'] = false;
                 $data['optional'] = false;
                 $newEventKit = EventKit::create($data);
                 $newKit = Kit::find($child['data']['id']);

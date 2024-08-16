@@ -13,6 +13,7 @@ class EventKitFactory extends Factory
             'name'=> $this->faker->words(2, true),
             'event_id'=> Event::all()->random()->id,
             'themed_table'=> $this->faker->boolean,
+            'checklist'=> $this->faker->boolean,
             'optional'=> $this->faker->boolean,
             'value'=> $this->faker->randomFloat(2, 20, 1500),
         ];

@@ -15,6 +15,7 @@ class EventKitTreeResource extends JsonResource
                 'event_kit_id'       => $this->event_kit_id,
                 'name'         => $this->name,
                 'themed_table' => $this->themed_table,
+                'checklist'    => $this->checklist,
                 'optional'     => $this->optional,
                 'value'        => $this->value,
                 'observation'  => $this->observation,
