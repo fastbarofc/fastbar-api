@@ -12,7 +12,7 @@ class CollaboratorSeeder extends Seeder
 {
     public function run(): void
     {
-        $collaborators = Collaborator::factory(10)->create();
+        $collaborators = Collaborator::factory(30)->create();
 
         $qualifications = Qualification::all();
 

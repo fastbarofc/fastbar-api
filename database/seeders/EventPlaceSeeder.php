@@ -10,6 +10,6 @@ class EventPlaceSeeder extends Seeder
 {
     public function run(): void
     {
-        EventPlace::factory(10)->hasAddress()->create();
+        EventPlace::factory(50)->hasAddress()->create();
     }
 }
