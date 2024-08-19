@@ -5,6 +5,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 use App\Models\EventNote;
+use App\Models\OfficeBudget;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -31,6 +32,17 @@ class DatabaseSeeder extends Seeder
             EventKitSeeder::class,
             EventNoteSeeder::class,
             EventBatchSeeder::class,
+            BreakItemSeeder::class,
+            HowDidYouHearSeeder::class,
+            CompetingCompanySeeder::class,
+            LostReasonSeeder::class,
+            ParthenonBankAccountSeeder::class,
+            FailureSeeder::class,
+            PaymentMethodSeeder::class,
+            OfficeBudgetSeeder::class,
+            EventPaymentSeeder::class,
+
+
         ]);
     }
 }
