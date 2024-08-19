@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
             FailureSeeder::class,
             PaymentMethodSeeder::class,
             OfficeBudgetSeeder::class,
+            EventPaymentSeeder::class,
 
 
         ]);

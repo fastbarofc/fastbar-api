@@ -18,7 +18,7 @@ class ParthenonBankAccountFactory extends Factory
     {
         return [
             'bank_name'      => $this->faker->company,
-            'account_number' => $this->faker->bankAccountNumber,
+            'account_number' => $this->faker->randomNumber(8, true),
         ];
     }
 }
