@@ -45,6 +45,7 @@ class EventResource extends JsonResource
             'total_value'        => $this->total_value,
             'partner_id'         => $this->partner_id,
             'decorator_id' => $this->decorator_id,
+            'is_draft' => $this->is_draft,
             'event_capture_id' => $this->event_capture_id,
             'ceremonial_id' => $this->ceremonial_id,
             'legal_representatives' => $this->legal_representatives->pluck('id')->toArray(),

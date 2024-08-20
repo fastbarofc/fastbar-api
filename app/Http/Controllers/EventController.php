@@ -49,7 +49,7 @@ class EventController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = Event::query();
+        $query = Event::where('is_draft', false);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -135,7 +135,9 @@ class EventController extends Controller
         $data = $request->all();
         $event = Event::create($data);
 
-        Event::create($request->all());
+        if ($request->is_draft) {
+            return response()->json(new EventResource($event), 201);
+        }
 
         if (!empty($data['event_batches'])) {
             foreach ($data['event_batches'] as $eventBatch) {
@@ -311,14 +313,16 @@ class EventController extends Controller
             $event->clients()->sync($data['legal_representatives']);
         }
 
-        $event->competing_company_id = $data['competing_company_id'] ?? null;
-        $event->lost_reason_id = $data['lost_reason_id'] ?? null;
+        $data['competing_company_id'] = $data['competing_company_id'] ?? null;
+        $data['lost_reason_id'] = $data['lost_reason_id'] ?? null;
+        $data['is_draft'] = false;
+
+        $event->update($data);
 
         if ($event->event_status_id != $data['event_status_id']) {
             EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
         }
 
-        $event->update($request->all());
         return response()->json(new EventResource($event), 200);
     }
 

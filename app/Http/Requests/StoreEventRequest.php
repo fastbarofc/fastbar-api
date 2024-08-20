@@ -17,8 +17,8 @@ class StoreEventRequest extends FormRequest
     public function rules(): array
     {
         $data = [
-            'name'               => 'required|string|max:255',
-            'event_type_id'      => 'required|exists:event_types,id',
+            'name'               => 'nullable|string|max:255',
+            'event_type_id'      => 'nullable|exists:event_types,id',
             'event_place_id'     => 'nullable|exists:event_places,id',
             'lease'              => 'nullable|numeric|min:0',
             'date_time'          => 'nullable|date|after:now',

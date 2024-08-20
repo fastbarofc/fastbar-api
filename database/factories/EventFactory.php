@@ -41,6 +41,7 @@ class EventFactory extends Factory
             'parthenon_courtesies' => $this->faker->randomNumber(2, true),
             'partner_courtesies' => $this->faker->randomNumber(2, true),
             'unit_insurance' => $this->faker->randomNumber(2, true),
+            'is_draft' => false,
         ];
     }
 }
