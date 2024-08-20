@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\OfficeBudget;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +13,6 @@ class OfficeBudgetSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        OfficeBudget::factory(15)->create(); 
     }
 }
