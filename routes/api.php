@@ -189,4 +189,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('payment-methods', PaymentMethodController::class);
     Route::resource('parthenon-bank-accounts', ParthenonBankAccountController::class);
     Route::resource('event-payments', EventPaymentController::class);
+
+    Route::post('/events/generate-pdf', [EventController::class, 'generatePdf']);
+
 });
