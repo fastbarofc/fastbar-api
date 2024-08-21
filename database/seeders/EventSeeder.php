@@ -13,7 +13,7 @@ class EventSeeder extends Seeder
 {
     public function run(): void
     {
-        $events = Event::factory(3)->create();
+        $events = Event::factory(200)->create();
 
         $legalRepresentatives = Client::where('type', Client::TYPE_FISICAL)->get();
         $materials = Material::all();
