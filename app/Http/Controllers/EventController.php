@@ -36,7 +36,7 @@ use App\Models\OfficeBudget;
 use App\Models\OfficeEvent;
 use App\Models\Partner;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use mikehaertl\wkhtmlto\Pdf;
 
 class EventController extends Controller
 {
@@ -622,5 +622,37 @@ class EventController extends Controller
     {
         $event->failures()->detach($failure->id);
         return response()->json(['message' => 'Failure detached from event successfully'], 200);
+    }
+
+    public function generatePdf(Request $request)
+    {
+        $pdfName = $request->input('name', 'documento');
+        $pdfFileName = $pdfName . '.pdf';
+
+        $htmlContent = "
+            <html>
+            <head>
+                <meta charset='UTF-8'>
+            </head>
+            <body>
+                <h1>{$pdfName}</h1>
+                <p>PDF de teste</p>
+            </body>
+            </html>";
+
+        $pdf = new Pdf(['binary' => '/usr/bin/wkhtmltopdf']);
+        $pdf->addPage($htmlContent);
+
+        $pdfPath = storage_path('app/public/' . $pdfFileName);
+
+        if (!$pdf->saveAs($pdfPath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        if (file_exists($pdfPath)) {
+            return response()->download($pdfPath)->deleteFileAfterSend(true);
+        } else {
+            return response()->json(['error' => 'Falha ao gerar o PDF'], 500);
+        }
     }
 }
