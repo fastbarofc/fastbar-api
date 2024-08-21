@@ -33,19 +33,18 @@ class ClientController extends Controller
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
             if ($filterable && $filterable !== '[]') {
-            $filterableArray = json_decode($filterable, true);
-            Log::info($filterableArray);
-            $filterableArray = $filterableArray[0];
-            foreach ($filterableArray as  $field => $value) {
-                $operator = $field == 'name' || $field == 'nickname' || $field == 'email' ? 'like' : '=';
-                $query->filterByField(
-                    field: $field,
-                    value: $operator == 'like' ? "%$value%" : $value,
-                    operator: $operator
-                );
+                $filterableArray = json_decode($filterable, true);
+                $filterableArray = $filterableArray[0];
+                foreach ($filterableArray as  $field => $value) {
+                    $operator = $field == 'name' || $field == 'nickname' || $field == 'email' ? 'like' : '=';
+                    $query->filterByField(
+                        field: $field,
+                        value: $operator == 'like' ? "%$value%" : $value,
+                        operator: $operator
+                    );
+                }
             }
         }
-    }
 
         if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
