@@ -53,17 +53,18 @@ class EventController extends Controller
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
-            $filterableArray = json_decode($filterable, true);
-            foreach ($filterableArray as  $filter) {
-                $field = array_keys($filter)[0];
-                $value = $filter[$field];
-                $operator = $field == 'name' ? 'like' : '=';
-                $query->filterByField(
-                    field: $field,
-                    value: $value,
-                    operator: $operator,
-                    isDate: $field == 'date_time'
-                );
+            if ($filterable && $filterable !== '[]') {
+                $filterableArray = json_decode($filterable, true);
+                $filterableArray = $filterableArray[0];
+                foreach ($filterableArray as  $field => $value) {
+                    $operator = $field == 'name' ? 'like' : '=';
+                    $query->filterByField(
+                        field: $field,
+                        value: $value,
+                        operator: $operator,
+                        isDate: $field == 'date_time'
+                    );
+                }
             }
         }
 
@@ -257,7 +258,7 @@ class EventController extends Controller
                 ];
             })->toArray();
             $event->materials()->sync($materialsArray);
-        }        
+        }
 
         if (!empty($data['office_events'])) {
             $officeArray = collect($data['office_events'])->mapWithKeys(function ($office) {
@@ -360,7 +361,7 @@ class EventController extends Controller
         return response()->json([
             'event_captures' => $eventCaptures,
             'event_types' => $eventTypes,
-            'partners' => $partners,    
+            'partners' => $partners,
             'decorators' => $decorators,
             'ceremonials' => $ceremonials,
             'event_statuses' => $eventStatuses,
@@ -462,19 +463,19 @@ class EventController extends Controller
     }
 
     public function getOfficeBudgetsWithCollaboratorsForEvent($eventId)
-{
-    $officeBudgets = OfficeBudget::with(['collaborators' => function ($query) use ($eventId) {
-        $query->where('budget_office_collaborators.event_id', $eventId);
-    }])
-    ->get()
-    ->each(function ($officeBudget) use ($eventId) {
-        $officeBudget->collaborators = $officeBudget->collaborators->filter(function ($collaborator) use ($eventId) {
-            return $collaborator->pivot->event_id == $eventId;
-        })->values();
-    });
+    {
+        $officeBudgets = OfficeBudget::with(['collaborators' => function ($query) use ($eventId) {
+            $query->where('budget_office_collaborators.event_id', $eventId);
+        }])
+            ->get()
+            ->each(function ($officeBudget) use ($eventId) {
+                $officeBudget->collaborators = $officeBudget->collaborators->filter(function ($collaborator) use ($eventId) {
+                    return $collaborator->pivot->event_id == $eventId;
+                })->values();
+            });
 
-    return response()->json($officeBudgets);
-}
+        return response()->json($officeBudgets);
+    }
 
 
     public function updateExtraSales(Request $request, Event $event)
