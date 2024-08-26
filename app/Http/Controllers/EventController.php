@@ -36,7 +36,9 @@ use App\Models\OfficeBudget;
 use App\Models\OfficeEvent;
 use App\Models\Partner;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
+use Illuminate\Support\Str;
 
 class EventController extends Controller
 {
@@ -626,34 +628,60 @@ class EventController extends Controller
     }
 
     public function generatePdf(Request $request)
-    {
-        $pdfName = $request->input('name', 'documento');
-        $pdfFileName = $pdfName . '.pdf';
+{
+    $item = $request->input('item'); 
+    $pdf = new Pdf();
 
-        $htmlContent = "
-            <html>
-            <head>
-                <meta charset='UTF-8'>
-            </head>
-            <body>
-                <h1>{$pdfName}</h1>
-                <p>PDF de teste</p>
-            </body>
-            </html>";
+    $slug = Str::slug($item, '-');
 
-        $pdf = new Pdf(['binary' => '/usr/bin/wkhtmltopdf']);
-        $pdf->addPage($htmlContent);
-
-        $pdfPath = storage_path('app/public/' . $pdfFileName);
-
-        if (!$pdf->saveAs($pdfPath)) {
-            return response()->json(['error' => $pdf->getError()], 500);
-        }
-
-        if (file_exists($pdfPath)) {
-            return response()->download($pdfPath)->deleteFileAfterSend(true);
-        } else {
-            return response()->json(['error' => 'Falha ao gerar o PDF'], 500);
-        }
+    switch ($item) {
+        case 'Resumo':
+            $html = view("/pdfs/summary-pdf")->render();
+            break;
+        case 'Orçamento':
+            $html = view("/pdfs/budget-pdf")->render();
+            break;
+        case 'Orçamento Timbrado':
+            $html = view("/pdfs/letterhead-budget-pdf")->render();
+            break;
+        case 'Contrato de Buffet':
+            $html = view("/pdfs/buffet-contract-pdf")->render();
+            break;
+        case 'Contrato de Locação':
+            $html = view("/pdfs/lease-contract-pdf")->render();
+            break;
+        case 'Cardápio':
+            $html = view("/pdfs/menu-pdf")->render();
+            break;
+        case 'Colaboradores':
+            $html = view("/pdfs/collaborators-pdf")->render();
+            break;
+        case 'Fechamento':
+            $html = view("/pdfs/closure-pdf")->render();
+            break;
+        case 'Check List Evento':
+            $html = view("/pdfs/event-checklist-pdf")->render();
+            break;
+        case 'Check List de Itens do Evento':
+            $html = view("/pdfs/event-items-checklist-pdf")->render();
+            break;
+        default:
+            return response()->json(['error' => 'View não encontrada para o item especificado'], 400);
     }
+    
+
+    $pdf->addPage($html);
+
+    $fileName = $slug . '.pdf';
+    $filePath = storage_path("app/public/pdfs/{$fileName}");
+
+    if (!$pdf->saveAs($filePath)) {
+        return response()->json(['error' => $pdf->getError()], 500);
+    }
+
+    $pdfUrl = asset("storage/pdfs/{$fileName}");
+    return response()->json(['pdf_url' => $pdfUrl]);
+}
+
+
 }
