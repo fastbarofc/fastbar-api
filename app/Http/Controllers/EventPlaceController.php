@@ -24,16 +24,17 @@ class EventPlaceController extends Controller
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
-            $filterableArray = json_decode($filterable, true);
-            foreach ($filterableArray as  $filter) {
-                $field = array_keys($filter)[0];
-                $value = $filter[$field];
-                $operator = $field == 'name' || $field == 'responsible' || $field == 'email' ? 'like' : '=';
-                $query->filterByField(
-                    field: $field,
-                    value: $operator == 'like' ? "%$value%" : $value,
-                    operator: $operator
-                );
+            if ($filterable && $filterable !== '[]') {
+                $filterableArray = json_decode($filterable, true);
+                $filterableArray = $filterableArray[0];
+                foreach ($filterableArray as  $field => $value) {
+                    $operator = $field == 'name' || $field == 'responsible' || $field == 'email' ? 'like' : '=';
+                    $query->filterByField(
+                        field: $field,
+                        value: $operator == 'like' ? "%$value%" : $value,
+                        operator: $operator
+                    );
+                }
             }
         }
 
