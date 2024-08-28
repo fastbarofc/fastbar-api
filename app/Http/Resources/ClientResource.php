@@ -23,6 +23,7 @@ class ClientResource extends JsonResource
             'cpf'      => $this->cpf,
             'rg'      => $this->rg,
             'cnpj'     => $this->cnpj,
+            'opening_date' => $this->opening_date,
             'ie'    => $this->ie,
             'im'   => $this->im,
             'user_id'   => new UserResource($this->user),

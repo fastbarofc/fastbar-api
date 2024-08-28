@@ -119,6 +119,7 @@ class ClientController extends Controller
     public function update(UpdateClientRequest $request, Client $client)
     {
         $data = $request->all();
+        Log::info("message", ['request' => $request->all()]);
         $client->update($data);
 
         if (!empty($data['address']) && !empty($data['address']['street'])) {
@@ -148,6 +149,10 @@ class ClientController extends Controller
                 'name'     => $client->name,
                 'email'    => $client->email,
             ];
+
+            if (!empty($data['password'])) {
+                $userData['password'] = bcrypt($data['password']);
+            }
 
             $user = User::updateOrCreate(
                 [

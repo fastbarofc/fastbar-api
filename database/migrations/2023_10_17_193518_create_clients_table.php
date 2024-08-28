@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('cpf')->nullable();
             $table->string('rg')->nullable();
             $table->string('cnpj')->nullable();
+            $table->date('opening_date')->nullable();
             $table->string('ie')->nullable();
             $table->string('im')->nullable();
             $table->foreignId('user_id')->nullable()->constrained();

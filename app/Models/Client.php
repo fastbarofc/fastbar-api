@@ -29,6 +29,7 @@ class Client extends Model implements AuditableInterface
         'cpf',
         'rg',
         'cnpj',
+        'opening_date',
         'ie',
         'im',
         'user_id'
