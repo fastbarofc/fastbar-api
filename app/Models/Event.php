@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Scopes\EventScope;
 use App\Traits\Filterable;
 use App\Traits\Sortable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -47,16 +48,20 @@ class Event extends Model implements AuditableInterface
 
     protected static $sortableFields = [
         'name',
-        'guests',
-        'lease',
+        'client_id',
+        'event_place_id',
         'date_time',
+        'email',
+        'id'
     ];
 
     protected static $filterableFields = [
         'id',
         'name',
-        'guests',
-        'lease',
+        'client_id',
+        'collaborator_id',
+        'event_type_id',
+        'email',
         'date_time',
         'event_status_id',
         'event_place_id',
@@ -65,6 +70,24 @@ class Event extends Model implements AuditableInterface
     protected static $searchableFields = [
         'name',
     ];
+
+    public function scopeOrderByRelation(Builder $query, $relation, $field, $direction = 'asc')
+{
+    $relatedModel = $this->{$relation}()->getRelated();
+    
+    $relatedTable = $relatedModel->getTable();
+
+    $foreignKey = $this->{$relation}()->getForeignKeyName();
+
+
+    $query->select("{$this->getTable()}.*")
+          ->leftJoin("{$relatedTable}", "{$relatedTable}.id", '=', "{$this->getTable()}.{$foreignKey}")
+          ->orderBy("{$relatedTable}.{$field}", $direction);
+
+    return $query->groupBy("{$this->getTable()}.id");
+}
+
+
 
     protected static function boot()
     {

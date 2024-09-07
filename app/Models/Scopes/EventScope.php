@@ -26,4 +26,5 @@ class EventScope implements Scope
             $query->where('clients.id', $client->id);
         });
     }
+
 }
