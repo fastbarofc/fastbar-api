@@ -27,6 +27,7 @@ return new class extends Migration
             $table->integer('duration')->nullable();
             $table->integer('duration_after')->nullable()->default(0);
             $table->decimal('unit_insurance')->nullable();
+            $table->decimal('total_value')->nullable();
             $table->longText('contract_body')->nullable();
             $table->string('parthenon_courtesies')->nullable();
             $table->string('partner_courtesies')->nullable();

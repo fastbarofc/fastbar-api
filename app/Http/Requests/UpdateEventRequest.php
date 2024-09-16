@@ -25,6 +25,7 @@ class UpdateEventRequest extends FormRequest
             'contract_body'      => 'nullable',
             'parthenon_courtesies' => 'nullable|numeric|min:0',
             'partner_courtesies'   => 'nullable|numeric|min:0',
+            'total_value'   => 'nullable|numeric|min:0',
             'materials'          => 'nullable|array',
             'office_events'      => 'nullable|array',
             'legal_representatives'            => 'nullable|array',
@@ -46,6 +47,8 @@ class UpdateEventRequest extends FormRequest
             'parthenon_courtesies.min'     => 'O campo cortesias parthenon não pode ser negativo',
             'partner_courtesies.numeric'   => 'O campo cortesias parceiro deve conter apenas números',
             'partner_courtesies.min'       => 'O campo cortesias parceiro não pode ser negativo',
+            'total_value.numeric' => 'O campo valor total deve ser um número',
+            'total_value.min'     => 'O campo valor total não pode ser negativo',
             'legal_representatives.*.exists'          => 'O campo ID do representante legal deve ser um ID válido.',
         ];
     }
