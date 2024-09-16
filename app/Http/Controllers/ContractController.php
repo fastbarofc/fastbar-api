@@ -8,6 +8,7 @@ use App\Http\Resources\ContractResource;
 use App\Models\Contract;
 use Illuminate\Http\Request;
 use App\Models\Event;
+use mikehaertl\wkhtmlto\Pdf;
 
 class ContractController extends Controller
 {
@@ -82,6 +83,40 @@ class ContractController extends Controller
 
         $contract = Contract::create($data);
         return response()->json(new ContractResource($contract), 201);
+    }
+
+    public function generate(Event $event)
+    {
+        /*
+        $contractExists = Contract::where('event_id', $event->id)->exists();
+
+        if ($contractExists) {
+
+        } */
+
+        $pdf = new Pdf();
+        $html = view("/pdfs/contract-pdf")->render();
+        $pdf->addPage($html);
+        $fileName = $event->id . '.pdf';
+        $filePath = storage_path("app/public/pdfs/{$event->id}");
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
+    public function generateFirstContract(Event $event)
+    {
+        $data = [];
+        $data['version'] = 1;
+        $data['properties_diff'] = [];
+
+        $properties = $event->toArray();
+        $data['properties'] = $properties;
+
+
     }
 
     public function show(Contract $contract)
