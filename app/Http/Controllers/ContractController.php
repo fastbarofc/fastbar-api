@@ -8,6 +8,7 @@ use App\Http\Resources\ContractResource;
 use App\Models\Contract;
 use Illuminate\Http\Request;
 use App\Models\Event;
+use Illuminate\Support\Facades\File;
 use mikehaertl\wkhtmlto\Pdf;
 
 class ContractController extends Controller
@@ -100,10 +101,17 @@ class ContractController extends Controller
         $fileName = $event->id . '.pdf';
         $filePath = storage_path("app/public/pdfs/{$event->id}");
 
-        if (!$pdf->saveAs($filePath)) {
+        if (!File::exists($filePath)) {
+            File::makeDirectory($filePath, 0755, true);
+        }
+
+        $fullFilePath = "{$filePath}/{$fileName}";
+
+        if (!$pdf->saveAs($fullFilePath)) {
             return response()->json(['error' => $pdf->getError()], 500);
         }
-        $pdfUrl = asset("storage/pdfs/{$fileName}");
+
+        $pdfUrl = asset("storage/pdfs/{$event->id}/{$fileName}");
         return response()->json(['pdf_url' => $pdfUrl]);
     }
 
