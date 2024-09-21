@@ -40,7 +40,14 @@ class Event extends Model implements AuditableInterface
         'competing_company_id',
         'lost_reason_id',
         'is_draft',
-        'total_value'
+        'total_value',
+        'buffet_value',
+        'event_guests',
+        'present_guests',
+        'guest_unit_value',
+        'excess_unit_value',
+        'discount',
+        'unit_discount',
     ];
 
     protected $casts = [
