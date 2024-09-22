@@ -29,7 +29,7 @@ class StoreEventRequest extends FormRequest
             'event_guests' => 'nullable|numeric|min:0',
             'present_guests' => 'nullable|numeric|min:0',
             'guest_unit_value' => 'nullable|numeric|min:0',
-            'guest_unit_value' => 'nullable|numeric|min:0',
+            'excess_unit_value' => 'nullable|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'unit_discount' => 'nullable|numeric|min:0',
             'materials'          => 'nullable|array',
