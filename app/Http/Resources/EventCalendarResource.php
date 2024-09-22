@@ -22,6 +22,7 @@ class EventCalendarResource extends JsonResource
             'event_place'        => $this->eventPlace->name . ' (' . $this->eventPlace->address->city->name . ' - ' . $this->eventPlace->address->city->state->letter . ')',
             'guests'             => $this->guests,
             'event_status'             => $this->eventStatus->name,
+            'updated_at'         => $this->updated_at,
         ];
     }
 }
