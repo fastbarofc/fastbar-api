@@ -23,6 +23,13 @@ return new class extends Migration
             $table->foreignId('event_capture_id')->nullable()->constrained();
             $table->foreignId('ceremonial_id')->nullable()->constrained();
             $table->decimal('lease')->nullable();
+            $table->decimal('buffet_value')->nullable();
+            $table->integer('event_guests')->nullable();
+            $table->integer('present_guests')->nullable();
+            $table->decimal('guest_unit_value')->nullable();
+            $table->decimal('excess_unit_value')->nullable();
+            $table->decimal('discount')->nullable();
+            $table->decimal('unit_discount')->nullable();
             $table->dateTime('date_time')->nullable();
             $table->integer('duration')->nullable();
             $table->integer('duration_after')->nullable()->default(0);
