@@ -8,42 +8,14 @@
 
     <style>
 
-        @page {
-        size: A4;
-        margin: 0;
-        }
-
         body {
             font-family: 'Lato', sans-serif;
-            margin: 50px 50px;
+            margin: 50px 100px;
             color: #333;
-            margin: 0;
         }
 
         .section {
             margin-bottom: 20px;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .table th, .table td {
-            border: 1px solid #aa8534;
-            padding: 10px;
-            text-align: left;
-        }
-
-        .table th {
-            background-color: #f2f2f2;
-        }
-
-        .total {
-            font-weight: bold;
-            font-size: 1.2em;
-            margin-top: 20px;
         }
 
         .logo-title {
@@ -74,7 +46,7 @@
             width: 100%;
             border-radius: 3px;
             background-color: #f2f2f2;
-            padding: 10px;
+            padding: 0px;
             margin-top: 20px;
             display: flex;
             flex-wrap: wrap;
