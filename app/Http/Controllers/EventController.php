@@ -636,12 +636,16 @@ class EventController extends Controller
 
     public function generateBudget(Event $event)
     {
-        $pdf = new Pdf();
+        $pdf = new Pdf();    
+
         $date = Carbon::now()->format('d/m/Y');
         $client = $event->client;
         $place = $event->eventPlace;
-        $html = view("/pdfs/budget-pdf", compact(['event', 'date', 'client', 'place']))->render();
+        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
+
+        $html = view("/pdfs/budget-pdf", compact(['event', 'date', 'client', 'place', 'kits']))->render();
         $pdf->addPage($html);
+
 
         $fileName = 'orcamento-' . $event->id . '.pdf';
         $directoryPath = storage_path('app/public/pdfs');
