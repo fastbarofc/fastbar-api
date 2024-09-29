@@ -36,6 +36,7 @@ use App\Models\OfficeBudget;
 use App\Models\OfficeEvent;
 use App\Models\Partner;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Str;
@@ -633,10 +634,36 @@ class EventController extends Controller
         return response()->json(['message' => 'Failure detached from event successfully'], 200);
     }
 
+    public function generateBudget(Event $event)
+    {
+        $pdf = new Pdf();
+        $date = Carbon::now()->format('d/m/Y');
+        Log::info($date );
+        $html = view("/pdfs/budget-pdf", compact(['event', 'date']))->render();
+        $pdf->addPage($html);
+
+        $fileName = 'orcamento-' . $event->id . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true); 
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
     public function generatePdf(Request $request)
     {
         $item = $request->input('item');
         $pdf = new Pdf();
+        
 
         $slug = Str::slug($item, '-');
 
@@ -645,7 +672,7 @@ class EventController extends Controller
                 $html = view("/pdfs/summary-pdf")->render();
                 break;
             case 'Orçamento':
-                $html = view("/pdfs/budget-pdf")->render();
+                $html = view("/pdfs/budget-pdf", compact(['test' => 'dfg']))->render();
                 break;
             case 'Orçamento Timbrado':
                 $html = view("/pdfs/letterhead-budget-pdf")->render();
@@ -679,7 +706,13 @@ class EventController extends Controller
         $pdf->addPage($html);
 
         $fileName = $slug . '.pdf';
-        $filePath = storage_path("app/public/pdfs/{$fileName}");
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true); 
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
 
         if (!$pdf->saveAs($filePath)) {
             return response()->json(['error' => $pdf->getError()], 500);

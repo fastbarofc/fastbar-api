@@ -118,7 +118,7 @@
 </head>
 <body>
     <div style="display: flex; align-items: center; justify-content: space-between">
-        <p>13/09/2024</p>
+        <p> @php $date @endphp</p>
         <p class="bg-gold">ID: 1529</p>
     </div>
     <div class="logo-title">
