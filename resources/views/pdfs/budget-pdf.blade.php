@@ -112,8 +112,8 @@
 
 <body>
     <div style="display: flex; align-items: center; justify-content: space-between">
-        <p> @php $date @endphp</p>
-        <p class="bg-gold">ID: 1529</p>
+        <p> {{ $date }}</p>
+        <p class="bg-gold">ID: {{ $event->id }} </p>
     </div>
     <div class="logo-title">
         <h2 style="margin: 0px; padding: 0px">PROPOSTA CASA PARTHENON</h2>
@@ -124,27 +124,27 @@
     <table class="event-section">
         <tr class="event-row">
             <td>Evento:</td>
-            <td>Baile OAB</td>
+            <td>{{ $event->name }}</td>
             <td>Contato:</td>
-            <td>31 9 9898 9099</td>
+            <td>{{ $client->phone_1 }}</td>
         </tr>
         <tr class="event-row">
             <td>Data:</td>
-            <td>09/09/2025</td>
+            <td>{{ Carbon\Carbon::parse($event->date_time)->format('d/m/Y') }}</td>
             <td>Local:</td>
-            <td>Sítio OAB, Viçosa - MG</td>
+            <td>{{ $place->name }}</td>
         </tr>
         <tr class="event-row">
             <td>Horário:</td>
-            <td>22h00 às 06h00 (08 horas de duração)</td>
-            <td>Horário:</td>
-            <td>22:00hs</td>
+            <td>{{ Carbon\Carbon::parse($event->date_time)->format('H:i') }}</td>
+            <td>Duração (h):</td>
+            <td>{{ $event->duration }}</td>
         </tr>
         <tr class="event-row">
             <td>Cliente:</td>
-            <td>ZeniteEventos</td>
+            <td>{{ $client->name }}</td>
             <td>N° Convidados:</td>
-            <td>900</td>
+            <td>{{ $event->event_guests }}</td>
         </tr>
     </table>
 

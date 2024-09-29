@@ -638,15 +638,16 @@ class EventController extends Controller
     {
         $pdf = new Pdf();
         $date = Carbon::now()->format('d/m/Y');
-        Log::info($date );
-        $html = view("/pdfs/budget-pdf", compact(['event', 'date']))->render();
+        $client = $event->client;
+        $place = $event->eventPlace;
+        $html = view("/pdfs/budget-pdf", compact(['event', 'date', 'client', 'place']))->render();
         $pdf->addPage($html);
 
         $fileName = 'orcamento-' . $event->id . '.pdf';
         $directoryPath = storage_path('app/public/pdfs');
 
         if (!File::exists($directoryPath)) {
-            File::makeDirectory($directoryPath, 0755, true); 
+            File::makeDirectory($directoryPath, 0755, true);
         }
 
         $filePath = "{$directoryPath}/{$fileName}";
@@ -663,7 +664,7 @@ class EventController extends Controller
     {
         $item = $request->input('item');
         $pdf = new Pdf();
-        
+
 
         $slug = Str::slug($item, '-');
 
@@ -709,7 +710,7 @@ class EventController extends Controller
         $directoryPath = storage_path('app/public/pdfs');
 
         if (!File::exists($directoryPath)) {
-            File::makeDirectory($directoryPath, 0755, true); 
+            File::makeDirectory($directoryPath, 0755, true);
         }
 
         $filePath = "{$directoryPath}/{$fileName}";
