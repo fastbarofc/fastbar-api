@@ -161,6 +161,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::resource('collaborator-incidents', CollaboratorIncidentController::class);
 
+    Route::put('/collaborator/{collaborator}/qualifications', [CollaboratorController::class, 'updateQualifications']);
+
     Route::resource('qualifications', QualificationController::class);
 
     Route::resource('blocked-dates', BlockedDateController::class);

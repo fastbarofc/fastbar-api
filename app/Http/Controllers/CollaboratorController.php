@@ -116,18 +116,6 @@ class CollaboratorController extends Controller
             }
         }
 
-        $qualifications = Qualification::all();
-
-        foreach ($qualifications as $qualification) {
-            $collaborator->qualifications()->attach($qualification->id, ['points' => 0]);
-        }
-
-        if (!empty($data['qualifications'])) {
-            foreach ($data['qualifications'] as $qualification) {
-                $collaborator->qualifications()->syncWithoutDetaching([$qualification['id'] => ['points' => $qualification['points']]]);
-            }
-        }
-
         if (!empty($data['bank_details'])) {
             foreach ($data['bank_details'] as $bankData) {
                 $bank = BankDetail::updateOrCreate(
@@ -240,18 +228,6 @@ class CollaboratorController extends Controller
             );
         }
 
-        $qualifications = Qualification::all();
-
-        foreach ($qualifications as $qualification) {
-            $collaborator->qualifications()->sync([$qualification->id => ['points' => 0]]);
-        }
-
-        if (!empty($data['qualifications'])) {
-            foreach ($data['qualifications'] as $qualification) {
-                $collaborator->qualifications()->syncWithoutDetaching([$qualification['id'] => ['points' => $qualification['points']]]);
-            }
-        }
-
         if (!empty($data['bank_details'])) {
             foreach ($data['bank_details'] as $bankData) {
                 if (isset($bankData['id'])) {
@@ -316,4 +292,18 @@ class CollaboratorController extends Controller
         $collaborator->delete();
         return response()->json([], 204);
     }
+
+    public function updateQualifications(Request $request, Collaborator $collaborator)
+    {
+        if (!empty($request->qualifications)) {
+            foreach ($request->qualifications as $qualification) {
+                $collaborator->qualifications()->syncWithoutDetaching([$qualification['id'] => ['points' => $qualification['points']]]);
+            }
+        }
+
+        return response()->json(['message' => 'Qualificações atualizadas com sucesso!']);
+    }
+
+
+
 }
