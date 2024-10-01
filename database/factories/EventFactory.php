@@ -46,6 +46,7 @@ class EventFactory extends Factory
             'guest_unit_value' => $this->faker->randomNumber(3, true),
             'discount' => $this->faker->randomNumber(4, true),
             'unit_discount' => $this->faker->randomNumber(2, true),
+            'min_guests' => $this->faker->numberBetween(10, 50),
         ];
     }
 }

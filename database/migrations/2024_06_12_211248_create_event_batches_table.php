@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('event_id')->constrained()->onDelete('cascade');
             $table->decimal('unit_value');
             $table->integer('guests');
-            $table->integer('min_guests');
             $table->timestamps();
             $table->softDeletes();
         });

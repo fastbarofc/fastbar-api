@@ -19,7 +19,6 @@ class UpdateEventBatchRequest extends FormRequest
             'event_id' => 'nullable|exists:events,id',
             'unit_value' => 'nullable|numeric|min:0',
             'guests' => 'nullable|numeric',
-            'min_guests' => 'nullable|numeric|min:1',
         ];
 
         return $data;
@@ -32,8 +31,6 @@ class UpdateEventBatchRequest extends FormRequest
             'unit_value.numeric' => 'O campo valor unitário deve ser um número',
             'unit_value.min' => 'O campo valor unitário não pode ser negativo',
             'guests.numeric' => 'O campo convidados deve conter apenas números',
-            'min_guests.numeric' => 'O campo convidados mínimos deve conter apenas números',
-            'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
         ];
     }
 }
