@@ -48,6 +48,7 @@ class Event extends Model implements AuditableInterface
         'excess_unit_value',
         'discount',
         'unit_discount',
+        'min_guests',
     ];
 
     protected $casts = [

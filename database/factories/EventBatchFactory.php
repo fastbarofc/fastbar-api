@@ -13,7 +13,6 @@ class EventBatchFactory extends Factory
         return [
             'unit_value' => $this->faker->randomNumber(3, true),
             'guests' => $this->faker->numberBetween(10, 300),
-            'min_guests' => $this->faker->numberBetween(10, 50),
         ];
     }
 }

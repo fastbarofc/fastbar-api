@@ -19,7 +19,6 @@ class StoreEventBatchRequest extends FormRequest
             'event_id' => 'required|exists:events,id',
             'unit_value' => 'required|numeric|min:0',
             'guests' => 'required|numeric',
-            'min_guests' => 'required|numeric|min:1',
             'discount' => 'nullable|numeric|min:0',
             'unit_discount' => 'nullable|numeric|min:0',
         ];
@@ -41,9 +40,6 @@ class StoreEventBatchRequest extends FormRequest
             'unit_discount.min' => 'O campo desconto unitário não pode ser negativo',
             'guests.required' => 'O campo convidados é obrigatório',
             'guests.numeric' => 'O campo convidados deve conter apenas números',
-            'min_guests.required' => 'O campo convidados mínimos é obrigatório',
-            'min_guests.numeric' => 'O campo convidados mínimos deve conter apenas números',
-            'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
         ];
     }
 }
