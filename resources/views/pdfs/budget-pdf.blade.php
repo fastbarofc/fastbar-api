@@ -274,7 +274,7 @@
             </div>
         </div>
     </div>
-    <hr class="hr-strong">q
+    <hr class="hr-strong">
     <div class="footer">
         <div class="parthenon-info">
             <div class="footer-item">
