@@ -664,6 +664,42 @@ class EventController extends Controller
         return response()->json(['pdf_url' => $pdfUrl]);
     }
 
+    public function generateSummary(Event $event)
+    {
+        $pdf = new Pdf();
+
+        $responsibles = $event->clients->pluck('name')->implode(', ');
+
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+        foreach($event->eventBatches as $eventBatch) {
+            $totalGuests += $eventBatch->guests;
+        }
+
+        $selectedMaterials = $event->materials->filter(function ($material) {
+            return $material->pivot->selected == true;
+        });
+
+        $html = view("/pdfs/summary-pdf", compact(['event', 'totalGuests', 'selectedMaterials', 'responsibles']))->render();
+        $pdf->addPage($html);
+
+
+        $fileName = 'sumario-' . $event->id . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
     public function generatePdf(Request $request)
     {
         $item = $request->input('item');
