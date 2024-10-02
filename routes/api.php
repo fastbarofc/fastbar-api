@@ -198,4 +198,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::post('/events/generate-budget/{event}', [EventController::class, 'generateBudget']);
 
+    Route::post('/events/event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
+    
 });
