@@ -664,6 +664,35 @@ class EventController extends Controller
         return response()->json(['pdf_url' => $pdfUrl]);
     }
 
+    public function generateClosure(Event $event)
+    {
+        $pdf = new Pdf();    
+
+        $client = $event->client;
+        $place = $event->eventPlace;
+        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
+
+        $html = view("/pdfs/closure-pdf", compact(['event', 'client', 'place', 'kits']))->render();
+        $pdf->addPage($html);
+
+
+        $fileName = 'fechamento-' . $event->id . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
     public function generatePdf(Request $request)
     {
         $item = $request->input('item');
