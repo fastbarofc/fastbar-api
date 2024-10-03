@@ -239,6 +239,8 @@ class EventController extends Controller
     {
         $data = $request->all();
 
+        Log::info("message", ['data' => $data]);
+
         if (!empty($data['event_batches'])) {
             $batchesIds = collect($data['event_batches']);
             $batchesIds = $batchesIds->where('id', '!=', null)->pluck('id')->toArray();
@@ -318,10 +320,35 @@ class EventController extends Controller
             }
         }
 
+        if (!empty($data['related_events']) || !empty($data['events_with_tastings'])) {
+            if (!empty($data['related_events'])) {
+                $relatedTastingEvents = $data['related_events'];
+            
+                $event->tastings()->sync($relatedTastingEvents);
+            
+                foreach ($relatedTastingEvents as $tastingEventId) {
+                    $tastingEvent = Event::find($tastingEventId);
+                    $tastingEvent->eventsWithTastings()->syncWithoutDetaching([$event->id]);
+                }
+            }
+            if (!empty($data['events_with_tastings'])) {
+                $eventsWithTastings = $data['events_with_tastings'];
+                
+                $event->eventsWithTastings()->sync($eventsWithTastings);
+            
+                foreach ($eventsWithTastings as $mainEventId) {
+                    $mainEvent = Event::find($mainEventId);
+                    
+                    $mainEvent->tastings()->syncWithoutDetaching([$event->id]);
+                }
+            }
+        }
+        
+
         if (!empty($data['legal_representatives'])) {
             $event->clients()->sync($data['legal_representatives']);
         }
-
+        
         $data['competing_company_id'] = $data['competing_company_id'] ?? null;
         $data['lost_reason_id'] = $data['lost_reason_id'] ?? null;
         $data['is_draft'] = false;
@@ -352,18 +379,21 @@ class EventController extends Controller
         $eventPlaces = EventPlace::with(['address.city', 'address.state'])->get();
         $competingCompany = CompetingCompany::all();
         $lostReason = LostReason::all();
+        $events = Event::all();
 
 
         $clients = [];
         $invoiceClients = [];
         $collaborators = [];
-        $events = [];
+        $relatedEvents = [];
 
         if ($event) {
             $clients = Client::where('id', $event->client_id)->get();
             $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
             $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
-            $events = Event::where('id', $event->event_id)->get();
+            $relatedEvents = $event->tastings()->pluck('events.id');
+            $hasTasting = $event->tastings()->exists();
+            $eventsWithTastings = $event->eventsWithTastings()->pluck('events.id');
         }
 
         return response()->json([
@@ -379,7 +409,10 @@ class EventController extends Controller
             'collaborators' => $collaborators,
             'events' => $events,
             'competing_companies' => $competingCompany,
-            'lost_reasons' => $lostReason
+            'lost_reasons' => $lostReason,
+            'related_events' => $relatedEvents,
+            'has_tasting' => $hasTasting,
+            'events_with_tastings' => $eventsWithTastings
         ], 200);
     }
 
@@ -688,6 +721,16 @@ class EventController extends Controller
     $pdfUrl = asset("storage/pdfs/{$fileName}");
     return response()->json(['pdf_url' => $pdfUrl]);
 }
+
+public function clearRelatedEvents($eventId)
+{
+    $event = Event::findOrFail($eventId);
+    $event->tastings()->detach();
+    $event->eventsWithTastings()->detach();
+    return response()->json(['message' => 'Eventos relacionados removidos com sucesso.']);
+}
+
+
 
 
 }

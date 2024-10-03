@@ -196,4 +196,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::post('/events/generate-pdf', [EventController::class, 'generatePdf']);
 
+    Route::delete('/events/{event}/related-events', [EventController::class, 'clearRelatedEvents']);
+
 });

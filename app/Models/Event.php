@@ -220,4 +220,16 @@ class Event extends Model implements AuditableInterface
         return $this->belongsToMany(Failure::class, 'event_failure')->withPivot('deduct');
 
     }
+
+    public function tastings()
+    {
+        return $this->belongsToMany(Event::class, 'event_tasting', 'event_id', 'tasting_event_id');
+    }
+
+    public function eventsWithTastings()
+    {
+        return $this->belongsToMany(Event::class, 'event_tasting', 'tasting_event_id', 'event_id');
+    }
+
+
 }
