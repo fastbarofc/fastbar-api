@@ -55,6 +55,7 @@ class EventResource extends JsonResource
             'event_gifts'        => $this->eventGifts,
             'competing_company_id' => $this->competing_company_id,
             'lost_reason_id' => $this->lost_reason_id,
+            'min_guests' => $this->min_guests,
             'materials' => Material::all()->map(function ($material) {
                 $materialEvent = $this->materials->where('id', $material->id)->first();
                 return [

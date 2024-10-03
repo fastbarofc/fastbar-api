@@ -18,7 +18,6 @@ class EventBatch extends Model implements AuditableInterface
         'event_id',
         'unit_value',
         'guests',
-        'min_guests',
     ];
 
     protected static $sortableFields = [
