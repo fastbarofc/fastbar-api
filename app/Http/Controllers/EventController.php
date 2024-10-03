@@ -759,21 +759,7 @@ class EventController extends Controller
         $pdfUrl = asset("storage/pdfs/{$fileName}");
         return response()->json(['pdf_url' => $pdfUrl]);
     }
-<<<<<<< HEAD
     
-
-    $pdf->addPage($html);
-
-    $fileName = $slug . '.pdf';
-    $filePath = storage_path("app/public/pdfs/{$fileName}");
-
-    if (!$pdf->saveAs($filePath)) {
-        return response()->json(['error' => $pdf->getError()], 500);
-    }
-
-    $pdfUrl = asset("storage/pdfs/{$fileName}");
-    return response()->json(['pdf_url' => $pdfUrl]);
-}
 
 public function clearRelatedEvents($eventId)
 {
@@ -784,8 +770,4 @@ public function clearRelatedEvents($eventId)
 }
 
 
-
-
-=======
->>>>>>> 5555d7c41af8c77764f12c524be3474d1297e0d7
 }
