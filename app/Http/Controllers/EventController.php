@@ -668,11 +668,17 @@ class EventController extends Controller
     {
         $pdf = new Pdf();    
 
-        $client = $event->client;
         $place = $event->eventPlace;
-        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
 
-        $html = view("/pdfs/closure-pdf", compact(['event', 'client', 'place', 'kits']))->render();
+        $responsibles = $event->clients->pluck('name')->implode(', ');
+
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+
+        foreach($event->eventBatches as $eventBatch) { 
+            $totalGuests += $eventBatch->guests;
+        }
+
+        $html = view("/pdfs/closure-pdf", compact(['event', 'place', 'responsibles', 'totalGuests']))->render();
         $pdf->addPage($html);
 
 

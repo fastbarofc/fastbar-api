@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orçamento - Buffet</title>
+    <title>Fechamento - Buffet</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Lato&display=swap" rel="stylesheet">
 
     <style>
@@ -50,7 +50,7 @@
             <td><span class="text-bold">DATA:</span> {{ $event->date_time->format('d/m/Y') }}</td>
         </tr>
         <tr>
-            <td><span class="text-bold">RESPONSÁVEL:</span> TENHO QUE COLOCAR ALGUNS</td>
+            <td><span class="text-bold">RESPONSÁVEL:</span> {{ $responsibles }}</td>
             <td><span class="text-bold">HORÁRIO:</span> {{ $event->date_time->format('H:i') }} h</td>
         </tr>
         <tr>
@@ -58,7 +58,7 @@
             <td><span class="text-bold">DURAÇÃO:</span> {{ $event->duration }} h</td>
         </tr>
         <tr>
-            <td><span class="text-bold">CONVIDADOS:</span> FAZER SOMATORIO</td>
+            <td><span class="text-bold">CONVIDADOS:</span> {{ $totalGuests }}</td>
             <td><span class="text-bold">CORTESIAS:</span> {{ $event->parthenon_courtesies + $event->partner_courtesies }} </td>
         </tr>
     </table>
