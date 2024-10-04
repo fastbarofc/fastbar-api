@@ -668,12 +668,18 @@ class EventController extends Controller
     {
         $pdf = new Pdf();    
 
-        $date = Carbon::now()->format('d/m/Y');
         $client = $event->client;
         $place = $event->eventPlace;
-        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
 
-        $html = view("/pdfs/event-checklist-pdf", compact(['event', 'date', 'client', 'place', 'kits']))->render();
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+
+        foreach($event->eventBatches as $eventbatch) {
+            $totalGuests += $eventbatch->guests;
+        }
+
+        $eventResponsibleNames = implode(', ', $event->clients->pluck('name')->toArray());
+
+        $html = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames']))->render();
         $pdf->addPage($html);
 
 

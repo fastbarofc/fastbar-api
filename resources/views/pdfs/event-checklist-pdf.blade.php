@@ -89,22 +89,22 @@
             <td><span class="text-bold">HORÁRIO DO
                     DURAÇÃO:</span>&nbsp;{{ $event->date_time->format('H:i') }}h</td>
             <td><span class="text-bold">DURAÇÃO:</span>&nbsp;{{ $event->duration }}h</td>
-            <td><span class="text-bold">PÓS EVENTO:</span>&nbsp;{{ $event->duration_after }}</td>
+            <td><span class="text-bold">PÓS EVENTO:</span>&nbsp;{{ $event->duration_after }}h</td>
             <td><span class="text-bold">Nº TOTAL DE
-                    CONVIDADOS:</span>&nbsp;preciso olhar se tem esse valor</td>
+                    CONVIDADOS:</span>&nbsp;{{ $totalGuests }}</td>
         </tr>
         <tr>
             <td colspan="2"><span class="text-bold">CLIENTE:</span>&nbsp;{{ $event->client->name }}</td>
-            <td><span class="text-bold">RESP. CONTRATO:</span>&nbsp;DUVIDA</td>
+            <td><span class="text-bold">RESP. CONTRATO:</span>&nbsp;{{ $eventResponsibleNames }}</td>
             <td><span class="text-bold">TELEFONE:</span>&nbsp;{{ $event->client->phone_1 }}</td>
         </tr>
         <tr>
-            <td colspan="2"><span class="text-bold">LOCAL:</span>&nbsp;{{ $event->eventPlace->name }}</td>
-            <td><span class="text-bold">RESP. LOCAL:</span>&nbsp;{{ $event->eventPlace->responsible }}</td>
-            <td><span class="text-bold">TELEFONE:</span>&nbsp;{{ $event->eventPlace->phone_1 }}</td>
+            <td colspan="2"><span class="text-bold">LOCAL:</span>&nbsp;{{ $place->name }}</td>
+            <td><span class="text-bold">RESP. LOCAL:</span>&nbsp;{{ $place->responsible }}</td>
+            <td><span class="text-bold">TELEFONE:</span>&nbsp;{{ $place->phone_1 }}</td>
         </tr>
         <tr>
-            <td colspan="4"><span class="text-bold">ENDEREÇO:</span>&nbsp;{{ $event->eventPlace->address->street }},&nbsp;{{ $event->eventPlace->address->number }},&nbsp;{{ $event->eventPlace->address->city->name }},&nbsp;{{ $event->eventPlace->address->state->letter }}</td>
+            <td colspan="4"><span class="text-bold">ENDEREÇO:</span>&nbsp;{{ $place->address->street }},&nbsp;{{ $place->address->number }},&nbsp;{{ $place->address->city->name }},&nbsp;{{ $place->address->state->letter }}</td>
         </tr>
         <tr>
             <td colspan="2"><span class="text-bold">DECORADOR(A):</span>&nbsp;{{ $event->decorator->name }}</td>
