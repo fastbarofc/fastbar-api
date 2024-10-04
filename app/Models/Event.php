@@ -124,6 +124,11 @@ class Event extends Model implements AuditableInterface
         return $this->belongsTo(Decorator::class);
     }
 
+    public function ceremonial() 
+    {
+        return $this->belongsTo(Ceremonial::class);
+    }
+
     public function collaborator() 
     {
         return $this->belongsTo(Collaborator::class);

@@ -697,6 +697,42 @@ class EventController extends Controller
         return response()->json(['pdf_url' => $pdfUrl]);
     }
 
+    public function generateEventChecklist(Event $event)
+    {
+        $pdf = new Pdf();    
+
+        $client = $event->client;
+        $place = $event->eventPlace;
+
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+
+        foreach($event->eventBatches as $eventbatch) {
+            $totalGuests += $eventbatch->guests;
+        }
+
+        $eventResponsibleNames = implode(', ', $event->clients->pluck('name')->toArray());
+
+        $html = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames']))->render();
+        $pdf->addPage($html);
+
+
+        $fileName = 'checklist-event-' . $event->id . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
     public function generatePdf(Request $request)
     {
         $item = $request->input('item');

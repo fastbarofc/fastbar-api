@@ -199,4 +199,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::delete('/events/{event}/related-events', [EventController::class, 'clearRelatedEvents']);
     Route::post('/events/generate-budget/{event}', [EventController::class, 'generateBudget']);
 
+    Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
+    
 });
