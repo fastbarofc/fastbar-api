@@ -64,38 +64,33 @@
     </table>
 
     <table>
-        <tr>
-            <td><span class="text-bold">LOCAÇÃO:</span></td>
-            <td>R$ {{ $event->lease }}</td>
-        </tr>
-        <tr>
-            <td><span class="text-bold">BUFFET:</span></td>
-            <td>R$ {{ $event->buffet_value }}</td>
-        </tr>
-        <!--saber como calcular daqui para baixo-->
-        <tr>
-            <td><span class="text-bold">ACRÉSCIMO:</span></td>
-            <td>R$ {{ $event->lease }}</td>
-        </tr>
-        <tr>
-            <td><span class="text-bold">VENDAS EXTRAS:</span></td>
-            <td>R$ {{ $event->lease }}</td>
-        </tr>
-        <tr>
-            <td><span class="text-bold">QUEBRAS:</span></td>
-            <td>R$ {{ $event->lease }}</td>
-        </tr>
-        <tr>
-            <td><span class="text-bold">TOTAL:</span></td>
-            <td>R$ {{ $event->lease }}</td>
-        </tr>
+    <tr>
+    <td><span class="text-bold">LOCAÇÃO:</span></td>
+        <td>R$ {{ number_format($event->lease, 2, ',', '.') }}</td>
+    </tr>
+    <tr>
+        <td><span class="text-bold">BUFFET:</span></td>
+        <td>R$ {{ number_format($event->buffet_value, 2, ',', '.') }}</td>
+    </tr>
+    <tr>
+        <td><span class="text-bold">ACRÉSCIMO:</span></td>
+        <td>R$</td>
+    </tr>
+    <tr>
+        <td><span class="text-bold">VENDAS EXTRAS:</span></td>
+        <td>R$ {{ number_format($extraSaleTotal, 2, ',', '.') }}</td>
+    </tr>
+    <tr>
+        <td><span class="text-bold">TOTAL:</span></td>
+        <td>R$ {{ number_format($extraSaleTotal + $event->buffet_value + $event->lease, 2, ',', '.') }}</td>
+    </tr>
         <tr>
             <td><span class="text-bold">TOTAL PAGO:</span></td>
-            <td>R$ {{ $event->lease }}</td>
+            <td>R$</td>
         </tr>
         <tr>
             <td><span class="text-bold">TOTAL A PAGAR:</span></td>
-            <td>R$ {{ $event->lease }}</td>
+            <td>R$</td>
         </tr>
     </table>
 

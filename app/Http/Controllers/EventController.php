@@ -677,8 +677,14 @@ class EventController extends Controller
         foreach($event->eventBatches as $eventBatch) { 
             $totalGuests += $eventBatch->guests;
         }
+        
+        $extraSaleTotal = 0;
+        foreach($event->extraSales as $extraSale) {
+            $extraSaleTotal += $extraSale->quantity * $extraSale->unit_value;
+        }
 
-        $html = view("/pdfs/closure-pdf", compact(['event', 'place', 'responsibles', 'totalGuests']))->render();
+
+        $html = view("/pdfs/closure-pdf", compact(['event', 'place', 'responsibles', 'totalGuests', 'extraSaleTotal']))->render();
         $pdf->addPage($html);
 
 
