@@ -716,7 +716,48 @@ class EventController extends Controller
         $pdf->addPage($html);
 
 
-        $fileName = 'checklist-event-' . $event->id . '.pdf';
+        $fileName = 'checklist-evento-' . $event->id . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
+    public function generateClosure(Event $event)
+    {
+        $pdf = new Pdf();    
+
+        $place = $event->eventPlace;
+
+        $responsibles = $event->clients->pluck('name')->implode(', ');
+
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+
+        foreach($event->eventBatches as $eventBatch) { 
+            $totalGuests += $eventBatch->guests;
+        }
+        
+        $extraSaleTotal = 0;
+        foreach($event->extraSales as $extraSale) {
+            $extraSaleTotal += $extraSale->quantity * $extraSale->unit_value;
+        }
+
+
+        $html = view("/pdfs/closure-pdf", compact(['event', 'place', 'responsibles', 'totalGuests', 'extraSaleTotal']))->render();
+        $pdf->addPage($html);
+
+
+        $fileName = 'fechamento-' . $event->id . '.pdf';
         $directoryPath = storage_path('app/public/pdfs');
 
         if (!File::exists($directoryPath)) {

@@ -201,4 +201,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
     
+    Route::post('/events/generate-closure/{event}', [EventController::class, 'generateClosure']);
+
 });
