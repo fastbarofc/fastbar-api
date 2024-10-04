@@ -147,13 +147,13 @@
         </tr>
         <tr class="event-row">
             <td>Data:</td>
-            <td>{{ Carbon\Carbon::parse($event->date_time)->format('d/m/Y') }}</td>
+            <td>{{ $event->date_time->format('d/m/Y') }}</td>
             <td>Local:</td>
             <td>{{ $place->name }}</td>
         </tr>
         <tr class="event-row">
             <td>Horário:</td>
-            <td>{{ Carbon\Carbon::parse($event->date_time)->format('H:i') }}</td>
+            <td>{{ $event->date_time->format('H:i') }} h</td>
             <td>Duração (h):</td>
             <td>{{ $event->duration }}</td>
         </tr>
@@ -161,7 +161,7 @@
             <td>Cliente:</td>
             <td>{{ $client->name }}</td>
             <td>N° Convidados:</td>
-            <td>{{ $event->event_guests }}</td>
+            <td>{{ $totalGuests }}</td>
         </tr>
     </table>
 

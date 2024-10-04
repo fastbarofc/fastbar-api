@@ -643,7 +643,12 @@ class EventController extends Controller
         $place = $event->eventPlace;
         $kits = $event->eventKits()->whereNull('event_kit_id')->get();
 
-        $html = view("/pdfs/budget-pdf", compact(['event', 'date', 'client', 'place', 'kits']))->render();
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+        foreach($event->eventBatches as $eventBatch) {
+            $totalGuests += $eventBatch->guests;
+        }
+
+        $html = view("/pdfs/budget-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'totalGuests']))->render();
         $pdf->addPage($html);
 
 
@@ -670,6 +675,8 @@ class EventController extends Controller
 
         $responsibles = $event->clients->pluck('name')->implode(', ');
 
+        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
+
         $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
         foreach($event->eventBatches as $eventBatch) {
             $totalGuests += $eventBatch->guests;
@@ -679,7 +686,7 @@ class EventController extends Controller
             return $material->pivot->selected == true;
         });
 
-        $html = view("/pdfs/summary-pdf", compact(['event', 'totalGuests', 'selectedMaterials', 'responsibles']))->render();
+        $html = view("/pdfs/summary-pdf", compact(['event', 'totalGuests', 'selectedMaterials', 'responsibles', 'kits']))->render();
         $pdf->addPage($html);
 
 

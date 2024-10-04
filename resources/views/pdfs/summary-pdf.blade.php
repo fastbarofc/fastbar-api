@@ -64,12 +64,15 @@
     <div>
         <h3>CARDÁPIO:</h3>
         <ul>
-            <li>exemplo1
-            <ul>
-                <li>exemplo2</li>
-                <li>exemplo3</li>
-            </ul>
-            </li>
+            @foreach($kits as $kit)
+                <li>{{ $kit->name }}
+                    <ul>
+                        @foreach($kit->children as $child)
+                            <li>{{ $child['data']['name'] }}</li>
+                        @endforeach
+                    </ul>
+                </li>
+            @endforeach
         </ul>
     </div>
     <table>
