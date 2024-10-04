@@ -676,7 +676,12 @@ class EventController extends Controller
         $place = $event->eventPlace;
         $kits = $event->eventKits()->whereNull('event_kit_id')->get();
 
-        $html = view("/pdfs/budget-pdf", compact(['event', 'date', 'client', 'place', 'kits']))->render();
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+        foreach($event->eventBatches as $eventBatch) {
+            $totalGuests += $eventBatch->guests;
+        }
+
+        $html = view("/pdfs/budget-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'totalGuests']))->render();
         $pdf->addPage($html);
 
 
@@ -758,6 +763,44 @@ class EventController extends Controller
 
 
         $fileName = 'fechamento-' . $event->id . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
+    public function generateSummary(Event $event)
+    {
+        $pdf = new Pdf();
+
+        $responsibles = $event->clients->pluck('name')->implode(', ');
+
+        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
+
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+        foreach($event->eventBatches as $eventBatch) {
+            $totalGuests += $eventBatch->guests;
+        }
+
+        $selectedMaterials = $event->materials->filter(function ($material) {
+            return $material->pivot->selected == true;
+        });
+
+        $html = view("/pdfs/summary-pdf", compact(['event', 'totalGuests', 'selectedMaterials', 'responsibles', 'kits']))->render();
+        $pdf->addPage($html);
+
+
+        $fileName = 'resumo-' . $event->id . '.pdf';
         $directoryPath = storage_path('app/public/pdfs');
 
         if (!File::exists($directoryPath)) {
