@@ -41,7 +41,7 @@ return new class extends Migration
             $table->boolean('is_draft')->default(true)->nullable();
             $table->foreignId('competing_company_id')->nullable()->constrained();
             $table->foreignId('lost_reason_id')->nullable()->constrained();
-            $table->integer('min_guests');
+            $table->integer('min_guests')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
