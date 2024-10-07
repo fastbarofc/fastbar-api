@@ -62,19 +62,36 @@
         <p><span class="text-bold">NÚMERO DE CONVIDADOS:</span> {{ $totalGuests }}</p>
     </div>
     <div>
-        <h3>CARDÁPIO:</h3>
-        <ul>
-            @foreach($kits as $kit)
-                <li>{{ $kit->name }}
+    <h3>CARDÁPIO:</h3>
+    <ul>
+    @foreach($kits as $kit)
+        <li style="margin-bottom: 5px;">{{ $kit->name }}
+            <ul>
+            @foreach($kit->children as $child)
+            <li style="margin-bottom: 5px;">{{ $child['data']['name'] }}
+                @if(!empty($child['children']))
                     <ul>
-                        @foreach($kit->children as $child)
-                            <li>{{ $child['data']['name'] }}</li>
+                        @php
+                            $kitLevel2 = App\Models\EventKit::find($child['data']['id']);
+                            $childrenKitLevel2 = $kitLevel2->children;
+                        @endphp
+                        @if(!empty($childrenKitLevel2))
+                        @foreach($childrenKitLevel2 as $product)
+                        @if ($loop->index % 2 == 0)
+                        <li style="margin-bottom: 5px;">{{ $product['data']['name'] }}</li>
+                        @endif
                         @endforeach
+                        @endif
                     </ul>
+                    @endif
                 </li>
             @endforeach
-        </ul>
-    </div>
+            </ul>
+        </li>
+    @endforeach
+    </ul>
+</div>
+
     <table>
         <tr>
             <td><span class="text-bold">Material</span></td>
