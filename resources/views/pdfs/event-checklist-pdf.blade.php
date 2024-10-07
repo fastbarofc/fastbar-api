@@ -159,6 +159,16 @@
             <td> <span class="text-bold">Pontos / Metragem Total / Responsável pelos
                     Aparadores</span></td>
         </tr>
+        @foreach ($themedTables as $themedTable)
+        <tr>
+            <td>
+                {{ $themedTable->name }}
+            </td>
+            <td>
+                XXXX
+            </td>
+        </tr>
+        @endforeach
     </table>
 
     <table>

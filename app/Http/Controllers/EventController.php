@@ -709,6 +709,8 @@ class EventController extends Controller
         $client = $event->client;
         $place = $event->eventPlace;
 
+        $themedTables = $event->eventKits()->where('checklist', true)->where('themed_table', true)->get();
+
         $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
 
         foreach($event->eventBatches as $eventbatch) {
@@ -717,7 +719,7 @@ class EventController extends Controller
 
         $eventResponsibleNames = implode(', ', $event->clients->pluck('name')->toArray());
 
-        $html = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames']))->render();
+        $html = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames', 'themedTables']))->render();
         $pdf->addPage($html);
 
 
