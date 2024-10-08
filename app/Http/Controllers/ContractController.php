@@ -88,18 +88,11 @@ class ContractController extends Controller
 
     public function generate(Event $event)
     {
-        /*
-        $contractExists = Contract::where('event_id', $event->id)->exists();
-
-        if ($contractExists) {
-
-        } */
-
         $pdf = new Pdf();
         $html = view("/pdfs/contract-pdf")->render();
         $pdf->addPage($html);
         $fileName = $event->id . '.pdf';
-        $filePath = storage_path("app/public/pdfs/{$event->id}");
+        $filePath = storage_path("app/public/pdfs");
 
         if (!File::exists($filePath)) {
             File::makeDirectory($filePath, 0755, true);
@@ -111,7 +104,7 @@ class ContractController extends Controller
             return response()->json(['error' => $pdf->getError()], 500);
         }
 
-        $pdfUrl = asset("storage/pdfs/{$event->id}/{$fileName}");
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
         return response()->json(['pdf_url' => $pdfUrl]);
     }
 
