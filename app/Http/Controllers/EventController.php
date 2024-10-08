@@ -36,6 +36,7 @@ use App\Models\OfficeBudget;
 use App\Models\OfficeEvent;
 use App\Models\Partner;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Str;
@@ -73,7 +74,7 @@ class EventController extends Controller
         if ($request->input('order_by')) {
             $sortField = $request->input('order_by');
             $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
-    
+
             if (str_contains($sortField, '.')) {
                 [$relation, $field] = explode('.', $sortField);
                 $query->whereHas($relation)->with($relation)->orderByRelation($relation, $field, $direction);
@@ -239,6 +240,8 @@ class EventController extends Controller
     {
         $data = $request->all();
 
+        Log::info("message", ['data' => $data]);
+
         if (!empty($data['event_batches'])) {
             $batchesIds = collect($data['event_batches']);
             $batchesIds = $batchesIds->where('id', '!=', null)->pluck('id')->toArray();
@@ -318,10 +321,35 @@ class EventController extends Controller
             }
         }
 
+        if (!empty($data['related_events']) || !empty($data['events_with_tastings'])) {
+            if (!empty($data['related_events'])) {
+                $relatedTastingEvents = $data['related_events'];
+            
+                $event->tastings()->sync($relatedTastingEvents);
+            
+                foreach ($relatedTastingEvents as $tastingEventId) {
+                    $tastingEvent = Event::find($tastingEventId);
+                    $tastingEvent->eventsWithTastings()->syncWithoutDetaching([$event->id]);
+                }
+            }
+            if (!empty($data['events_with_tastings'])) {
+                $eventsWithTastings = $data['events_with_tastings'];
+                
+                $event->eventsWithTastings()->sync($eventsWithTastings);
+            
+                foreach ($eventsWithTastings as $mainEventId) {
+                    $mainEvent = Event::find($mainEventId);
+                    
+                    $mainEvent->tastings()->syncWithoutDetaching([$event->id]);
+                }
+            }
+        }
+        
+
         if (!empty($data['legal_representatives'])) {
             $event->clients()->sync($data['legal_representatives']);
         }
-
+        
         $data['competing_company_id'] = $data['competing_company_id'] ?? null;
         $data['lost_reason_id'] = $data['lost_reason_id'] ?? null;
         $data['is_draft'] = false;
@@ -352,18 +380,21 @@ class EventController extends Controller
         $eventPlaces = EventPlace::with(['address.city', 'address.state'])->get();
         $competingCompany = CompetingCompany::all();
         $lostReason = LostReason::all();
+        $events = Event::all();
 
 
         $clients = [];
         $invoiceClients = [];
         $collaborators = [];
-        $events = [];
+        $relatedEvents = [];
 
         if ($event) {
             $clients = Client::where('id', $event->client_id)->get();
             $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
             $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
-            $events = Event::where('id', $event->event_id)->get();
+            $relatedEvents = $event->tastings()->pluck('events.id');
+            $hasTasting = $event->tastings()->exists();
+            $eventsWithTastings = $event->eventsWithTastings()->pluck('events.id');
         }
 
         return response()->json([
@@ -379,7 +410,10 @@ class EventController extends Controller
             'collaborators' => $collaborators,
             'events' => $events,
             'competing_companies' => $competingCompany,
-            'lost_reasons' => $lostReason
+            'lost_reasons' => $lostReason,
+            'related_events' => $relatedEvents,
+            'has_tasting' => $hasTasting,
+            'events_with_tastings' => $eventsWithTastings
         ], 200);
     }
 
@@ -633,60 +667,228 @@ class EventController extends Controller
         return response()->json(['message' => 'Failure detached from event successfully'], 200);
     }
 
+    public function generateBudget(Event $event)
+    {
+        $pdf = new Pdf();    
+
+        $date = Carbon::now()->format('d/m/Y');
+        $client = $event->client;
+        $place = $event->eventPlace;
+        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
+
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+        foreach($event->eventBatches as $eventBatch) {
+            $totalGuests += $eventBatch->guests;
+        }
+
+        $html = view("/pdfs/budget-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'totalGuests']))->render();
+        $pdf->addPage($html);
+
+
+        $fileName = 'orcamento-' . $event->id . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
+    public function generateEventChecklist(Event $event)
+    {
+        $pdf = new Pdf();    
+
+        $client = $event->client;
+        $place = $event->eventPlace;
+
+        $themedTables = $event->eventKits()->where('checklist', true)->where('themed_table', true)->get();
+
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+
+        foreach($event->eventBatches as $eventbatch) {
+            $totalGuests += $eventbatch->guests;
+        }
+
+        $eventResponsibleNames = implode(', ', $event->clients->pluck('name')->toArray());
+
+        $html = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames', 'themedTables']))->render();
+        $pdf->addPage($html);
+
+
+        $fileName = 'checklist-evento-' . $event->id . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
+    public function generateClosure(Event $event)
+    {
+        $pdf = new Pdf();    
+
+        $place = $event->eventPlace;
+
+        $responsibles = $event->clients->pluck('name')->implode(', ');
+
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+
+        foreach($event->eventBatches as $eventBatch) { 
+            $totalGuests += $eventBatch->guests;
+        }
+        
+        $extraSaleTotal = 0;
+        foreach($event->extraSales as $extraSale) {
+            $extraSaleTotal += $extraSale->quantity * $extraSale->unit_value;
+        }
+
+
+        $html = view("/pdfs/closure-pdf", compact(['event', 'place', 'responsibles', 'totalGuests', 'extraSaleTotal']))->render();
+        $pdf->addPage($html);
+
+
+        $fileName = 'fechamento-' . $event->id . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
+    public function generateSummary(Event $event)
+    {
+        $pdf = new Pdf();
+
+        $responsibles = $event->clients->pluck('name')->implode(', ');
+
+        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
+
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+        foreach($event->eventBatches as $eventBatch) {
+            $totalGuests += $eventBatch->guests;
+        }
+
+        $selectedMaterials = $event->materials->filter(function ($material) {
+            return $material->pivot->selected == true;
+        });
+
+        $html = view("/pdfs/summary-pdf", compact(['event', 'totalGuests', 'selectedMaterials', 'responsibles', 'kits']))->render();
+        $pdf->addPage($html);
+
+
+        $fileName = 'resumo-' . $event->id . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
     public function generatePdf(Request $request)
-{
-    $item = $request->input('item'); 
-    $pdf = new Pdf();
+    {
+        $item = $request->input('item');
+        $pdf = new Pdf();
 
-    $slug = Str::slug($item, '-');
 
-    switch ($item) {
-        case 'Resumo':
-            $html = view("/pdfs/summary-pdf")->render();
-            break;
-        case 'Orçamento':
-            $html = view("/pdfs/budget-pdf")->render();
-            break;
-        case 'Orçamento Timbrado':
-            $html = view("/pdfs/letterhead-budget-pdf")->render();
-            break;
-        case 'Contrato de Buffet':
-            $html = view("/pdfs/buffet-contract-pdf")->render();
-            break;
-        case 'Contrato de Locação':
-            $html = view("/pdfs/lease-contract-pdf")->render();
-            break;
-        case 'Cardápio':
-            $html = view("/pdfs/menu-pdf")->render();
-            break;
-        case 'Colaboradores':
-            $html = view("/pdfs/collaborators-pdf")->render();
-            break;
-        case 'Fechamento':
-            $html = view("/pdfs/closure-pdf")->render();
-            break;
-        case 'Check List Evento':
-            $html = view("/pdfs/event-checklist-pdf")->render();
-            break;
-        case 'Check List de Itens do Evento':
-            $html = view("/pdfs/event-items-checklist-pdf")->render();
-            break;
-        default:
-            return response()->json(['error' => 'View não encontrada para o item especificado'], 400);
+        $slug = Str::slug($item, '-');
+
+        switch ($item) {
+            case 'Resumo':
+                $html = view("/pdfs/summary-pdf")->render();
+                break;
+            case 'Orçamento':
+                $html = view("/pdfs/budget-pdf", compact(['test' => 'dfg']))->render();
+                break;
+            case 'Orçamento Timbrado':
+                $html = view("/pdfs/letterhead-budget-pdf")->render();
+                break;
+            case 'Contrato de Buffet':
+                $html = view("/pdfs/buffet-contract-pdf")->render();
+                break;
+            case 'Contrato de Locação':
+                $html = view("/pdfs/lease-contract-pdf")->render();
+                break;
+            case 'Cardápio':
+                $html = view("/pdfs/menu-pdf")->render();
+                break;
+            case 'Colaboradores':
+                $html = view("/pdfs/collaborators-pdf")->render();
+                break;
+            case 'Fechamento':
+                $html = view("/pdfs/closure-pdf")->render();
+                break;
+            case 'Check List Evento':
+                $html = view("/pdfs/event-checklist-pdf")->render();
+                break;
+            case 'Check List de Itens do Evento':
+                $html = view("/pdfs/event-items-checklist-pdf")->render();
+                break;
+            default:
+                return response()->json(['error' => 'View não encontrada para o item especificado'], 400);
+        }
+
+
+        $pdf->addPage($html);
+
+        $fileName = $slug . '.pdf';
+        $directoryPath = storage_path('app/public/pdfs');
+
+        if (!File::exists($directoryPath)) {
+            File::makeDirectory($directoryPath, 0755, true);
+        }
+
+        $filePath = "{$directoryPath}/{$fileName}";
+
+        if (!$pdf->saveAs($filePath)) {
+            return response()->json(['error' => $pdf->getError()], 500);
+        }
+
+        $pdfUrl = asset("storage/pdfs/{$fileName}");
+        return response()->json(['pdf_url' => $pdfUrl]);
     }
     
 
-    $pdf->addPage($html);
-
-    $fileName = $slug . '.pdf';
-    $filePath = storage_path("app/public/pdfs/{$fileName}");
-
-    if (!$pdf->saveAs($filePath)) {
-        return response()->json(['error' => $pdf->getError()], 500);
-    }
-
-    $pdfUrl = asset("storage/pdfs/{$fileName}");
-    return response()->json(['pdf_url' => $pdfUrl]);
+public function clearRelatedEvents($eventId)
+{
+    $event = Event::findOrFail($eventId);
+    $event->tastings()->detach();
+    $event->eventsWithTastings()->detach();
+    return response()->json(['message' => 'Eventos relacionados removidos com sucesso.']);
 }
 
 

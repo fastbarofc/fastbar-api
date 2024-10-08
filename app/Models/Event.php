@@ -40,6 +40,15 @@ class Event extends Model implements AuditableInterface
         'competing_company_id',
         'lost_reason_id',
         'is_draft',
+        'total_value',
+        'buffet_value',
+        'event_guests',
+        'present_guests',
+        'guest_unit_value',
+        'excess_unit_value',
+        'discount',
+        'unit_discount',
+        'min_guests',
     ];
 
     protected $casts = [
@@ -113,6 +122,11 @@ class Event extends Model implements AuditableInterface
     public function decorator() 
     {
         return $this->belongsTo(Decorator::class);
+    }
+
+    public function ceremonial() 
+    {
+        return $this->belongsTo(Ceremonial::class);
     }
 
     public function collaborator() 
@@ -212,4 +226,16 @@ class Event extends Model implements AuditableInterface
         return $this->belongsToMany(Failure::class, 'event_failure')->withPivot('deduct');
 
     }
+
+    public function tastings()
+    {
+        return $this->belongsToMany(Event::class, 'event_tasting', 'event_id', 'tasting_event_id');
+    }
+
+    public function eventsWithTastings()
+    {
+        return $this->belongsToMany(Event::class, 'event_tasting', 'tasting_event_id', 'event_id');
+    }
+
+
 }

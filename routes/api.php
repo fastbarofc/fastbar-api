@@ -162,6 +162,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::resource('collaborator-incidents', CollaboratorIncidentController::class);
 
+    Route::put('/collaborator/{collaborator}/qualifications', [CollaboratorController::class, 'updateQualifications']);
+
     Route::resource('qualifications', QualificationController::class);
 
     Route::resource('blocked-dates', BlockedDateController::class);
@@ -195,4 +197,13 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::post('/events/generate-pdf', [EventController::class, 'generatePdf']);
 
+    Route::delete('/events/{event}/related-events', [EventController::class, 'clearRelatedEvents']);
+    
+    Route::post('/events/generate-budget/{event}', [EventController::class, 'generateBudget']);
+
+    Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
+    
+    Route::post('/events/generate-closure/{event}', [EventController::class, 'generateClosure']);
+
+    Route::post('/events/generate-summary/{event}', [EventController::class, 'generateSummary']);
 });

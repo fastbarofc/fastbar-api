@@ -13,10 +13,7 @@ class EventBatchResource extends JsonResource
             'id' => $this->id,
             'event_id' => $this->event_id,
             'unit_value' => $this->unit_value,
-            'discount' => $this->discount,
-            'unit_discount' => $this->unit_discount,
             'guests' => $this->guests,
-            'min_guests' => $this->min_guests,
             'created_at' => $this->created_at->format('d/m/Y H:i:s'),
         ];
     }

@@ -17,10 +17,7 @@ class EventBatch extends Model implements AuditableInterface
     protected $fillable = [
         'event_id',
         'unit_value',
-        'discount',
-        'unit_discount',
         'guests',
-        'min_guests',
     ];
 
     protected static $sortableFields = [

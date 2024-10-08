@@ -25,10 +25,18 @@ class UpdateEventRequest extends FormRequest
             'contract_body'      => 'nullable',
             'parthenon_courtesies' => 'nullable|numeric|min:0',
             'partner_courtesies'   => 'nullable|numeric|min:0',
+            'total_value'   => 'nullable|numeric|min:0',
+            'event_guests' => 'nullable|numeric|min:0',
+            'present_guests' => 'nullable|numeric|min:0',
+            'guest_unit_value' => 'nullable|numeric|min:0',
+            'excess_unit_value' => 'nullable|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0',
+            'unit_discount' => 'nullable|numeric|min:0',
             'materials'          => 'nullable|array',
             'office_events'      => 'nullable|array',
             'legal_representatives'            => 'nullable|array',
             'legal_representatives.*'          => 'nullable|exists:clients,id',
+            'min_guests' => 'nullable|numeric|min:1',
         ];
     }
 
@@ -46,7 +54,19 @@ class UpdateEventRequest extends FormRequest
             'parthenon_courtesies.min'     => 'O campo cortesias parthenon não pode ser negativo',
             'partner_courtesies.numeric'   => 'O campo cortesias parceiro deve conter apenas números',
             'partner_courtesies.min'       => 'O campo cortesias parceiro não pode ser negativo',
+            'total_value.numeric' => 'O campo valor total deve ser um número',
+            'total_value.min'     => 'O campo valor total não pode ser negativo',
+            'event_guests.numeric' => 'O campo convidados deve ser um número',
+            'event_guests.min'     => 'O campo convidados não pode ser negativo',
+            'present_guests.numeric' => 'O campo convidados presentes deve ser um número',
+            'present_guests.min'     => 'O campo convidados presentes não pode ser negativo',
+            'guest_unit_value.numeric' => 'O campo valor unitário deve ser um número',
+            'guest_unit_value.min' => 'O campo valor unitário não pode ser negativo',
+            'excess_unit_value.numeric' => 'O campo valor unitário excedente deve ser um número',
+            'excess_unit_value.min' => 'O campo valor unitário excedente não pode ser negativo',
             'legal_representatives.*.exists'          => 'O campo ID do representante legal deve ser um ID válido.',
+            'min_guests.numeric' => 'O campo convidados mínimos deve conter apenas números',
+            'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
         ];
     }
 }

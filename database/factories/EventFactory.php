@@ -42,6 +42,13 @@ class EventFactory extends Factory
             'partner_courtesies' => $this->faker->randomNumber(2, true),
             'unit_insurance' => $this->faker->randomNumber(2, true),
             'is_draft' => false,
+            'event_guests' => $this->faker->numberBetween(10, 300),
+            'guest_unit_value' => $this->faker->randomNumber(3, true),
+            'discount' => $this->faker->randomNumber(4, true),
+            'unit_discount' => $this->faker->randomNumber(2, true),
+            'min_guests' => $this->faker->numberBetween(10, 50),
+            'present_guests' => $this->faker->numberBetween(10, 50),
+            'excess_unit_value' => $this->faker->numberBetween(10, 50),
         ];
     }
 }
