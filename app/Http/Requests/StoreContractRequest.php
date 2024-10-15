@@ -16,15 +16,15 @@ class StoreContractRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'event_id' => 'required|exists:events,id'
+            'id' => 'required|exists:events,id'
         ];
     }
 
     public function messages() 
     {
         return [
-            'event_id.required' => 'O campo ID do evento é obrigatório.',
-            'event_id.exists' => 'O ID evento deve ser um ID válido',
+            'id.required' => 'O campo ID do evento é obrigatório.',
+            'id.exists' => 'O ID evento deve ser um ID válido',
         ];
     }
 }
