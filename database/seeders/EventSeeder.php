@@ -23,8 +23,12 @@ class EventSeeder extends Seeder
             $materialsToEvent = $materials->random(3)->pluck('id');
             $event->clients()->attach($legalRepresentativesToEvent);
             ExtraSale::factory(3)->state(['event_id' => $event->id])->create();
-            foreach ($materialsToEvent as $material) {
-                $event->materials()->attach($material, ['quantity' => rand(1, 10), 'selected' => rand(0, 1)]);
+            foreach ($materials as $material) {
+                if ($materialsToEvent->contains($material->id)) {
+                    $event->materials()->attach($material, ['quantity' => rand(1, 10), 'selected' => 1]);
+                    continue;
+                }
+                $event->materials()->attach($material, ['quantity' => 0, 'selected' => 0]);
             }
         }
     }
