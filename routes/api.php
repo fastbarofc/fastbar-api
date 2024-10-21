@@ -67,6 +67,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('users', UserController::class)->except(['store']);
     Route::post('users/{user}/sync-roles', [UserController::class, 'syncRoles'])->name('users.sync-roles');
     Route::post('users/{user}/sync-permissions', [UserController::class, 'syncPermissions'])->name('users.sync-permissions');
+    Route::get('users/{user}/client', [UserController::class, 'getClientIdbyUserId'])->name('users.client');
 
     Route::resource('collaborators', CollaboratorController::class);
 

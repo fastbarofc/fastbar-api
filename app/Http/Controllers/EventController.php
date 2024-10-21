@@ -240,8 +240,6 @@ class EventController extends Controller
     {
         $data = $request->all();
 
-        Log::info("message", ['data' => $data]);
-
         if (!empty($data['event_batches'])) {
             $batchesIds = collect($data['event_batches']);
             $batchesIds = $batchesIds->where('id', '!=', null)->pluck('id')->toArray();
