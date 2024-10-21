@@ -42,6 +42,7 @@ class Event extends Model implements AuditableInterface
         'is_draft',
         'total_value',
         'buffet_value',
+        'sub_total',
         'event_guests',
         'present_guests',
         'guest_unit_value',

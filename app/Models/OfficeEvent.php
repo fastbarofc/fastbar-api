@@ -21,7 +21,6 @@ class OfficeEvent extends Model implements AuditableInterface
         'daily',
         'coordinator',
         'date',
-        'event_id'
     ];
 
     protected $casts = [

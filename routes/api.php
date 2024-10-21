@@ -157,7 +157,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::resource('contracts', ContractController::class);
     
-    Route::post ('contracts/generate/{event}', [ContractController::class, 'generate'])->name('contracts.generate-pdf');
+    Route::post ('contracts/generate/{event}', [ContractController::class, 'storeGenerate'])->name('contracts.generate-pdf');
     
     Route::post('contracts/{contract}/to-sign', [ContractController::class, 'toSign'])->name('contracts.to-sign');
 

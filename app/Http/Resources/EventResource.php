@@ -39,6 +39,7 @@ class EventResource extends JsonResource
             'courtesies'         => $this->courtesies,
             'unit_insurance'     => $this->unit_insurance,
             'buffet_value'       => $this->buffet_value,
+            'sub_total'         => $this->sub_total,
             'event_guests'       => $this->event_guests,
             'present_guests'       => $this->present_guests,
             'guest_unit_value'         => $this->guest_unit_value,

@@ -8,8 +8,12 @@ use App\Http\Resources\ContractResource;
 use App\Models\Contract;
 use Illuminate\Http\Request;
 use App\Models\Event;
+use App\Models\EventKit;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
+use Illuminate\Support\Arr;
 
 class ContractController extends Controller
 {
@@ -56,42 +60,105 @@ class ContractController extends Controller
             'filterable_fields' => Contract::filterableFields()
         ], 200);
     }
-
+    
     public function store(StoreContractRequest $request)
     {
         $data = $request->all();
-        $data['version'] = Contract::where('event_id', $data['event_id'])->count();
+        $event = Event::find($data['id']);
+        $collaborators = $event->officeEvents()->wherePivot('quantity', '>', 0)->withPivot('quantity')->get();
+        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
+        $selectedMaterials = $event->materials->filter(function ($material) {
+            return $material->pivot->selected == true;
+        });
+
+        $data['version'] = Contract::where('event_id', $data['id'])->count() + 1;
         $data['properties'] = [];
-        $data['properties_diff'] = [];
+        $data['event_id'] = $data['id'];
+        $data['client_id'] = $event->client_id;
+        
+        $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date_time', 'duration', 'lease', 'buffet_value']);
+        
+        $properties['materials'] = [];
+        $properties['collaborators'] = [];
+        $properties['event_kits'] = [];
 
-        $event = Event::find($data['event_id']);
+        $properties['client'] = $event->client
+            ->select('id', 'name', 'phone_1')
+            ->first()
+            ->toArray();
 
-        $properties = $event->getAttributes();
+        $properties['place'] = $event->eventPlace
+            ->select('id', 'name')
+            ->first()
+            ->toArray();
 
-        $materials = $event->materials;
-        $eventKits = $event->eventKits;
-        $eventGifts = $event->eventGifts;
-        $extraSales = $event->extraSales;
-        $officeEvents = $event->officeEvents;
-
-        $properties['materials'] = $materials->toArray();
-        $properties['event_kits'] = $eventKits->toArray();
-        $properties['event_gifts'] = $eventGifts->toArray();
-        $properties['extra_sales'] = $extraSales->toArray();
-        $properties['office_events'] = $officeEvents->toArray();
-
+        $properties['batches'] = $event->eventBatches()
+            ->select('id', 'unit_value', 'guests')
+            ->get()
+            ->toArray();
+        
+        foreach ($selectedMaterials as $material) {
+            $properties['materials'][] = [
+                'id' => $material->id,
+                'name' => ucfirst($material->description),
+                'quantity' => $material->quantity,
+            ];
+        }
+        
+        foreach ($collaborators as $collaborator) {
+            $properties['collaborators'][] = [
+                'id' => $collaborator->id,
+                'name' => $collaborator->description,
+                'quantity' => $collaborator->pivot->quantity
+            ];
+        }
+        
+        foreach ($kits as $kit) {
+            $properties['event_kits'][$kit->name] = [];
+            foreach ($kit->children as $child) {
+                $properties['event_kits'][$kit->name][] = [
+                    $child['data']['name'],
+                ];
+                if (!empty($child['children'])) {
+                    $kitLevel2 = EventKit::find($child['data']['id']);
+                    $childrenKitLevel2 = $kitLevel2->children;
+                    if(!empty($childrenKitLevel2)) {
+                        foreach ($childrenKitLevel2 as $product) {
+                            $productName = is_array($product['data']['name']) ? reset($product['data']['name']) : $product['data']['name'];
+                            $properties['event_kits'][$kit->name][$child['data']['name']][] = $productName;
+                        }
+                    }
+                }
+            }
+        }
+        
         $data['properties'] = $properties;
-
+        $data['properties_diff'] = $this->calculatePropertiesDiff($data);
+        
         $contract = Contract::create($data);
-        return response()->json(new ContractResource($contract), 201);
-    }
-
-    public function generate(Event $event)
-    {
+        
+        if (!$contract) {
+            return response()->json(['error' => 'Contract creation failed'], 500);
+        }
+        
+        
         $pdf = new Pdf();
-        $html = view("/pdfs/contract-pdf")->render();
+        $fileName = 'contrato-evento-' . $event->id . '.pdf';
+        
+        $date = $contract->created_at->format('d/m/Y');
+        $client = $contract->properties['client'];
+        $place = $contract->properties['place'];
+        
+        $kits = $properties['event_kits'];
+        $batches = $contract->properties['batches'];
+        
+        $collaborators = $contract->properties['collaborators'];
+        $materials = $contract->properties['materials'];
+        $event = $contract->properties;
+
+
+        $html = view("/pdfs/contract-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'materials', 'batches', 'collaborators']))->render();
         $pdf->addPage($html);
-        $fileName = $event->id . '.pdf';
         $filePath = storage_path("app/public/pdfs");
 
         if (!File::exists($filePath)) {
@@ -106,6 +173,54 @@ class ContractController extends Controller
 
         $pdfUrl = asset("storage/pdfs/{$fileName}");
         return response()->json(['pdf_url' => $pdfUrl]);
+    }
+
+    private function calculatePropertiesDiff(array $data)
+    {
+        $properties_diff = [];
+
+        if ($data['version'] > 1) {
+            $lastContract = Contract::where('event_id', $data['id'])->orderBy('version', 'desc')->first();
+
+            $newProperties = $data['properties'];
+            $oldProperties = $lastContract->properties;
+
+            $newProperties = $this->sortArrayRecursively($newProperties);
+            $oldProperties = $this->sortArrayRecursively($oldProperties);
+
+            $addedProperties = array_diff_key($newProperties, $oldProperties);
+            $removedProperties = array_diff_key($oldProperties, $newProperties);
+            $modifiedProperties = [];
+
+            foreach ($oldProperties as $key => $value) {
+                if (array_key_exists($key, $newProperties) && $newProperties[$key] !== $value) {
+                    $modifiedProperties[$key] = [
+                        'old' => $value,
+                        'new' => $newProperties[$key],
+                    ];
+                }
+            }
+
+            $properties_diff = [
+                'added' => $addedProperties,
+                'removed' => $removedProperties,
+                'modified' => $modifiedProperties,
+            ];
+        }
+
+        return $properties_diff;
+    }
+
+    private function sortArrayRecursively(array $array)
+    {
+        foreach ($array as $key => &$value) {
+            if (is_array($value)) {
+                $value = $this->sortArrayRecursively($value);
+            }
+        }
+
+        ksort($array);
+        return $array;
     }
 
     public function generateFirstContract(Event $event)
