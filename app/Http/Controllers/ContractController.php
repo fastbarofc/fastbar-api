@@ -9,6 +9,7 @@ use App\Models\Contract;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\EventKit;
+use App\Services\FileService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -143,7 +144,7 @@ class ContractController extends Controller
         
         
         $pdf = new Pdf();
-        $fileName = 'contrato-evento-' . $event->id . '.pdf';
+        $fileName = 'contrato-evento-' . $event->id;
         
         $date = $contract->created_at->format('d/m/Y');
         $client = $contract->properties['client'];
@@ -157,22 +158,14 @@ class ContractController extends Controller
         $event = $contract->properties;
 
 
-        $html = view("/pdfs/contract-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'materials', 'batches', 'collaborators']))->render();
-        $pdf->addPage($html);
-        $filePath = storage_path("app/public/pdfs");
-
-        if (!File::exists($filePath)) {
-            File::makeDirectory($filePath, 0755, true);
+        $viewContent = view("/pdfs/contract-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'materials', 'batches', 'collaborators']));
+        
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        $fullFilePath = "{$filePath}/{$fileName}";
-
-        if (!$pdf->saveAs($fullFilePath)) {
-            return response()->json(['error' => $pdf->getError()], 500);
-        }
-
-        $pdfUrl = asset("storage/pdfs/{$fileName}");
-        return response()->json(['pdf_url' => $pdfUrl]);
     }
 
     private function calculatePropertiesDiff(array $data)
@@ -221,18 +214,6 @@ class ContractController extends Controller
 
         ksort($array);
         return $array;
-    }
-
-    public function generateFirstContract(Event $event)
-    {
-        $data = [];
-        $data['version'] = 1;
-        $data['properties_diff'] = [];
-
-        $properties = $event->toArray();
-        $data['properties'] = $properties;
-
-
     }
 
     public function show(Contract $contract)

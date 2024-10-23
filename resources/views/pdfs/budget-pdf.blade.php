@@ -58,9 +58,9 @@
         }
 
         .table-container {
-            padding: 3px; /* Padding em volta da tabela */
-            background-color: #f2f2f2; /* Cor de fundo do contêiner */
-            margin-top: 20px; /* Espaçamento acima do contêiner */
+            padding: 3px;
+            background-color: #f2f2f2;
+            margin-top: 20px;
         }
 
         .event-section {
@@ -191,56 +191,50 @@
             @foreach($kit->children as $child)
             <div style="margin-top: 15px;">
                 @if(!empty($child['children']))
-                <h3 style="font-weight: normal;">&nbsp; &nbsp; &nbsp; {{ $child['data']['name'] }}</h3>
-                <hr style="margin-top: 0px !important;">
-                <div style="display: flex; justify-content: space-between;">
-                    <div style="flex: 0 0 48%; margin-right: 2%;">
-                        <ul>
-                            @php
-                            $kitLevel2 = App\Models\EventKit::find($child['data']['id']);
-                            $childrenKitLevel2 = $kitLevel2->children;
-                            @endphp
+                    <h3 style="font-weight: normal;">&nbsp; &nbsp; &nbsp; {{ $child['data']['name'] }}</h3>
+                    <hr style="margin-top: 0px !important;">
+                    <div style="width: 100%; display: table;">
+                        <div style="display: table-row;">
+                            <div style="display: table-cell; width: 48%; padding-right: 2%;">
+                                <ul>
+                                    @php
+                                    $kitLevel2 = App\Models\EventKit::find($child['data']['id']);
+                                    $childrenKitLevel2 = $kitLevel2->children;
+                                    @endphp
 
-                            @if(!empty($childrenKitLevel2))
+                                    @if(!empty($childrenKitLevel2))
+                                        @foreach($childrenKitLevel2 as $product)
+                                            @if ($loop->index % 2 == 0)
+                                            <li>{{ $product['data']['name'] }}</li>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                </ul>
+                            </div>
+                            <div style="display: table-cell; width: 48%;">
+                                <ul>
+                                    @php
+                                    $kitLevel2 = App\Models\EventKit::find($child['data']['id']);
+                                    $childrenKitLevel2 = $kitLevel2->children;
+                                    @endphp
 
-                            @foreach($childrenKitLevel2 as $product)
-                            @if ($loop->index % 2 == 0)
-                            <li>{{ $product['data']['name'] }}</li>
-                            @endif
-                            @endforeach
-
-                            @endif
-                        </ul>
+                                    @if(!empty($childrenKitLevel2))
+                                        @foreach($childrenKitLevel2 as $product)
+                                            @if ($loop->index % 2 == 1)
+                                            <li>{{ $product['data']['name'] }}</li>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <div style="flex: 0 0 48%;">
-                        <ul>
-                            @if(!empty($child['children']))
-
-                            @php
-                            $kitLevel2 = App\Models\EventKit::find($child['data']['id']);
-                            $childrenKitLevel2 = $kitLevel2->children;
-                            @endphp
-
-                            @if(!empty($childrenKitLevel2))
-
-                            @foreach($childrenKitLevel2 as $product)
-                            @if ($loop->index % 2 == 1)
-                            <li>{{ $product['data']['name'] }}</li>
-                            @endif
-                            @endforeach
-
-                            @endif
-
-                            @endif
-                        </ul>
-                    </div>
-                </div>
                 @else
-                <ul>
-                    <li>
-                        {{ $child['data']['name'] }}
-                    </li>
-                </ul>
+                    <ul>
+                        <li>
+                            {{ $child['data']['name'] }}
+                        </li>
+                    </ul>
                 @endif
             </div>
             @endforeach
