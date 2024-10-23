@@ -10,7 +10,7 @@
         body {
             margin-left: 50px;
             margin-right: 50px;
-            padding-top: 25px;
+            padding-top: 50px;
             color: #333;
         }
 
@@ -173,7 +173,7 @@
             </tr>
         </table>
     </div>
-    <div class="event-text">
+    <div class="event-text" style="page-break-inside: avoid;">
         <p>
             O Casa Parthenon traz um novo conceito de culinária para festas e eventos, unindo tradição e inovação.
             Cada prato, dos clássicos reinventados às novas criações, é uma celebração da alta culinária e a
@@ -183,7 +183,7 @@
             A seguir descubra as possibilidades e novidades da nossa cozinha e viva uma experiência única. Preparese para uma jornada gastronômica incomparável.
         </p>
     </div>
-    <div class="kits">
+    <div class="kits" style="page-break-inside: avoid;">
         @foreach($kits as $kit)
         <div style="margin-bottom: 15px;">
             <h2 style="font-weight: normal; margin-bottom: 0px;">{{ $kit->name }}</h2>
@@ -253,7 +253,7 @@
         </div>
     </div>
     <hr class="hr-strong" style="padding: 0px; margin: 0px;">
-    <div class="terms" style="padding-top: 30px; padding-bottom: 30px;">
+    <div class="terms" style="padding-top: 30px; padding-bottom: 30px; page-break-inside: avoid;">
         <div class="terms-title" style="overflow: hidden;">
             <p style="float: left; width: 30%; padding: 0px; margin: 0px; text-align: left;">OBSERVAÇÕES:</p>
             <p style="float: left; width: 30%; padding: 0px; margin: 0px; text-align: left;">RESPONSABILIDADES:</p>

@@ -21,8 +21,8 @@
         }
 
         .header {
-            display: flex;
-            justify-content: center;
+            width: 100%;
+            text-align: center;
         }
 
         table {
@@ -63,7 +63,7 @@
         </tr>
     </table>
 
-    <table>
+    <table style="margin-top: 50px;">
     <tr>
     <td><span class="text-bold">LOCAÇÃO:</span></td>
         <td>R$ {{ number_format($event->lease, 2, ',', '.') }}</td>
@@ -94,21 +94,23 @@
         </tr>
     </table>
 
-    <span class="text-bold" style="margin-bottom: 50px;" >PAGAMENTOS:</span>
-    <table>
-        <tr>
-            <td><span class="text-bold">Data</span></td>
-            <td><span class="text-bold">Valor</span></td>
-            <td><span class="text-bold">Forma</span></td>
-            <td><span class="text-bold">Observações</span></td>
-        </tr>
-        <tr>
-            <td><span class="text-bold">Total</span></td>
-            <td><span class="text-bold">Resultado total aqui</span></td>
-            <td></td>
-            <td></td>
-        </tr>
-    </table>
+    <div style="margin-top: 50px;">
+        <span class="text-bold" >PAGAMENTOS:</span>
+        <table>
+            <tr>
+                <td><span class="text-bold">Data</span></td>
+                <td><span class="text-bold">Valor</span></td>
+                <td><span class="text-bold">Forma</span></td>
+                <td><span class="text-bold">Observações</span></td>
+            </tr>
+            <tr>
+                <td><span class="text-bold">Total</span></td>
+                <td><span class="text-bold">Resultado total aqui</span></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
 </body>
 
 </html>
