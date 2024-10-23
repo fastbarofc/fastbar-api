@@ -8,6 +8,7 @@ use App\Http\Resources\UserResource;
 use App\Http\Requests\SyncRoleUserRequest;
 use App\Http\Requests\SyncPermissionUserRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -86,4 +87,16 @@ class UserController extends Controller
         $user->syncPermissions($request->permissions);
         return new UserResource($user);
     }
+
+    public function getClientIdByUserId($id)
+{
+    $user = User::find($id);
+
+    if ($user && $user->client) {
+        return $user->client->id;
+    }
+
+    return null; 
+}
+
 }

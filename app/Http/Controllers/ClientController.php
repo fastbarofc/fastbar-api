@@ -119,7 +119,6 @@ class ClientController extends Controller
     public function update(UpdateClientRequest $request, Client $client)
     {
         $data = $request->all();
-        Log::info("message", ['request' => $request->all()]);
         $client->update($data);
 
         if (!empty($data['address']) && !empty($data['address']['street'])) {

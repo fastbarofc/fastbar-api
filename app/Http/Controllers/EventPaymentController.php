@@ -20,8 +20,6 @@ class EventPaymentController extends Controller
 {
     $perPage = $request->input('per_page', 10);
 
-    Log::info("message", ['request' => $request->all()]);
-
     $query = EventPayment::query();
 
     if ($request->input('eventId')) {
@@ -46,8 +44,6 @@ class EventPaymentController extends Controller
     }
 
     $eventPayments = $query->with(['event', 'parthenonBankAccount'])->paginate($perPage);
-
-    Log::info("message", ['eventPayments' => $eventPayments]);
 
     return response()->json([
         'data' => EventPaymentResource::collection($eventPayments),
