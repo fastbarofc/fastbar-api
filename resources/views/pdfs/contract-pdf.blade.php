@@ -10,9 +10,8 @@
     <style>
         body {
             font-family: 'Lato', sans-serif;
-            margin-left: 100px;
-            margin-right: 100px;
-            margin-top: 0;
+            margin-left: 50px;
+            margin-right: 50px;
             color: #333;
         }
 
@@ -21,9 +20,9 @@
         }
 
         .logo-title {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: table;
+            width: 100%;
+            text-align: center;
         }
 
         h2,
@@ -158,7 +157,7 @@
         <tr class="event-row">
             <td>Cliente:</td>
             <td>{{ $client['name'] }}</td>
-            <td>N° Convidados:</td>
+            <td style="white-space: nowrap;">N° Convidados:</td>
             <td>nao tem esse numero asda sdasd as</td>
         </tr>
     </table>
@@ -198,15 +197,15 @@
                 <ul>
                     @foreach ($children as $childKey => $child)
                     @if (is_array($child))
-                    <li>{{ $child[0] }}</li>
+                        <li>{{ $child[0] }}</li>
                     @else
-                    <li>{{ $childKey }}
-                        <ul>
-                            @foreach ($child as $product)
-                            <li>{{ $product }}</li>
-                            @endforeach
-                        </ul>
-                    </li>
+                        <li>{{ $childKey }}
+                            <ul>
+                                @foreach ($child as $product)
+                                <li>{{ $product }}</li>
+                                @endforeach
+                            </ul>
+                        </li>
                     @endif
                     @endforeach
                 </ul>
