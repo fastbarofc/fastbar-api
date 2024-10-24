@@ -61,13 +61,11 @@ class ContractController extends Controller
             'filterable_fields' => Contract::filterableFields()
         ], 200);
     }
-    
+
     public function store(StoreContractRequest $request)
     {
         $data = $request->all();
         $event = Event::find($data['id']);
-        $collaborators = $event->officeEvents()->wherePivot('quantity', '>', 0)->withPivot('quantity')->get();
-        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
         $selectedMaterials = $event->materials->filter(function ($material) {
             return $material->pivot->selected == true;
         });
@@ -76,9 +74,9 @@ class ContractController extends Controller
         $data['properties'] = [];
         $data['event_id'] = $data['id'];
         $data['client_id'] = $event->client_id;
-        
+
         $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date_time', 'duration', 'lease', 'buffet_value']);
-        
+
         $properties['materials'] = [];
         $properties['collaborators'] = [];
         $properties['event_kits'] = [];
@@ -97,7 +95,7 @@ class ContractController extends Controller
             ->select('id', 'unit_value', 'guests')
             ->get()
             ->toArray();
-        
+
         foreach ($selectedMaterials as $material) {
             $properties['materials'][] = [
                 'id' => $material->id,
@@ -105,61 +103,36 @@ class ContractController extends Controller
                 'quantity' => $material->quantity,
             ];
         }
-        
-        foreach ($collaborators as $collaborator) {
-            $properties['collaborators'][] = [
-                'id' => $collaborator->id,
-                'name' => $collaborator->description,
-                'quantity' => $collaborator->pivot->quantity
-            ];
-        }
-        
-        foreach ($kits as $kit) {
-            $properties['event_kits'][$kit->name] = [];
-            foreach ($kit->children as $child) {
-                $properties['event_kits'][$kit->name][] = [
-                    $child['data']['name'],
-                ];
-                if (!empty($child['children'])) {
-                    $kitLevel2 = EventKit::find($child['data']['id']);
-                    $childrenKitLevel2 = $kitLevel2->children;
-                    if(!empty($childrenKitLevel2)) {
-                        foreach ($childrenKitLevel2 as $product) {
-                            $productName = is_array($product['data']['name']) ? reset($product['data']['name']) : $product['data']['name'];
-                            $properties['event_kits'][$kit->name][$child['data']['name']][] = $productName;
-                        }
-                    }
-                }
-            }
-        }
-        
+
+        $properties['collaborators'] = $this->getContractCollaborators($event);
+        $properties['event_kits'] = $this->getContractKits($event);
+
         $data['properties'] = $properties;
         $data['properties_diff'] = $this->calculatePropertiesDiff($data);
-        
+
         $contract = Contract::create($data);
-        
+
         if (!$contract) {
             return response()->json(['error' => 'Contract creation failed'], 500);
         }
-        
-        
+
+
         $pdf = new Pdf();
         $fileName = 'contrato-evento-' . $event->id;
-        
+
         $date = $contract->created_at->format('d/m/Y');
         $client = $contract->properties['client'];
         $place = $contract->properties['place'];
-        
-        $kits = $properties['event_kits'];
+
         $batches = $contract->properties['batches'];
-        
+
         $collaborators = $contract->properties['collaborators'];
         $materials = $contract->properties['materials'];
         $event = $contract->properties;
 
 
-        $viewContent = view("/pdfs/contract-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'materials', 'batches', 'collaborators']));
-        
+        $viewContent = view("/pdfs/contract-pdf", compact(['event', 'date', 'client', 'place', 'contract', 'materials', 'batches', 'collaborators']));
+
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
@@ -167,6 +140,76 @@ class ContractController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function getContractCollaborators(Event $event)
+    {
+        $collaborators = $event->officeEvents()->wherePivot('quantity', '>', 0)->withPivot('quantity')->get();
+
+        $contractCollaborators = [];
+
+        foreach ($collaborators as $collaborator) {
+            $contractCollaborators[] = [
+                'id' => $collaborator->id,
+                'name' => $collaborator->description,
+                'quantity' => $collaborator->pivot->quantity
+            ];
+        }
+
+        return $contractCollaborators;
+    }
+
+    public function getContractKits(Event $event)
+    {
+        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
+
+        $contractKits = [];
+
+        foreach ($kits as $kit) {
+            $kitData = [
+                'id' => $kit->id,
+                'name' => $kit->name,
+                'type' => 'kit',
+                'children' => []
+            ];
+
+            foreach ($kit->children as $child) {
+                $kitData['children'][] = $this->processKitChildren($child);
+            }
+
+            $contractKits[] = $kitData;
+        }
+
+        return $contractKits;
+    }
+
+    public function processKitChildren($kit)
+    {
+        if (empty($kit)) {
+            return [];
+        }
+
+        if (!empty($kit['children'])) {
+            $kit = EventKit::find($kit['data']['id']);
+
+            $result = [
+                'id' => $kit->id,
+                'name' => $kit->name,
+                'type' => 'kit',
+                'children' => $kit->children->map(function ($child) {
+                    return $this->processKitChildren($child);
+                })->toArray()
+            ];
+
+            return $result;
+        }
+
+        return [
+            'id' => $kit['data']['id'],
+            'name' => $kit['data']['name'],
+            'type' => 'product',
+        ];
+    }
+
 
     private function calculatePropertiesDiff(array $data)
     {

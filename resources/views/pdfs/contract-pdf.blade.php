@@ -190,47 +190,58 @@
         <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus</p>
     </div>
 
+    <h4>Os itens contratados são:</h4>
+
+    <p><span class="text-bold">Itens de Buffet:</span></p>
+
     <div class="event-section">
         <ul>
-            @foreach ($kits as $kitName => $children)
-            <li>{{ $kitName }}
+            @foreach ($contract['properties']['event_kits'] as $key => $kit)
+            <li>
+                {{ $kit['name'] }}
+                @if(!empty($kit['children'][0]))
                 <ul>
-                    @foreach ($children as $childKey => $child)
-                    @if (is_array($child))
-                        <li>{{ $child[0] }}</li>
-                    @else
-                        <li>{{ $childKey }}
-                            <ul>
-                                @foreach ($child as $product)
-                                <li>{{ $product }}</li>
-                                @endforeach
-                            </ul>
-                        </li>
-                    @endif
+                    @foreach ($kit['children'] as $key1 => $child)
+                    <li>
+                        {{ $child['name'] }}
+                        @if(!empty($child['children'][0]))
+                        <ul>
+                            @foreach ($child['children'] as $key2 => $child2)
+                            <li>
+                                {{ $child2['name'] }}
+                            </li>
+                            @endforeach
+                        </ul>
+                        @endif
+                    </li>
                     @endforeach
                 </ul>
+                @endif
             </li>
             @endforeach
         </ul>
     </div>
 
     <div class="event-section">
-        <p><span class="text-bold">Materiais:</span><br>
+        <p>
+            <span class="text-bold">Materiais:</span>
+            <br>
+            <br>
             @foreach ($materials as $material)
-            <span>{{ $material['name'] }}</span>: <span>{{ $material['quantity'] }}</span>{{ $loop->remaining == 1 ? ' e' : (!$loop->last ? ',' : '.') }}
+            <span>{{ $material['name'] }}: {{ $material['quantity'] }}</span><br>
             @endforeach
         </p>
     </div>
 
     <div class="event-section">
-        <p><span class="text-bold">Valores:</span> <br>
+        <p><span class="text-bold">Valores:</span> <br><br>
             <span>Locação R$ {{ number_format(floatval($event['lease'] ?? 0), 2, ',', '.') }}</span>.
             <span>Buffet R$ {{ number_format(floatval($event['buffet_value'] ?? 0), 2, ',', '.') }}</span>.
         </p>
     </div>
 
     <div class="event-section">
-        <p><span class="text-bold">Lotes:</span> <br>
+        <p><span class="text-bold">Lotes:</span> <br><br>
             @foreach ($batches as $batch)
             <span>Lote {{ $loop->index + 1 }}: Valor unitário: R$ {{ number_format(floatval($batch['unit_value'] ?? 0), 2, ',', '.') }} Convidados: {{ number_format(floatval($batch['guests'] ?? 0), 0, ',', '.') }} Total: R$ {{ number_format(floatval($batch['unit_value'] ?? 0) * ($batch['guests'] ?? 0), 2, ',', '.') }}</span><br>
             @endforeach
@@ -238,7 +249,7 @@
     </div>
 
     <div class="event-section">
-        <p><span class="text-bold">Colaboradores:</span> <br>
+        <p><span class="text-bold">Colaboradores:</span> <br><br>
             @foreach ($collaborators as $collaborator)
             <span>{{ $collaborator['name'] }} {{ $collaborator['quantity'] }}</span><br>
             @endforeach
