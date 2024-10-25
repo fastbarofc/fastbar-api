@@ -130,7 +130,7 @@
 
 <body>
     <div style="display: flex; align-items: center; justify-content: space-between">
-        <p> {{ $date }}</p>
+        <p> {{ $contract->created_at->format('d/m/Y') }}</p>
     </div>
     <div class="logo-title">
         <h2>CONTRATO</h2>
@@ -138,27 +138,27 @@
     <table class="event-section">
         <tr class="event-row">
             <td>Evento:</td>
-            <td>{{ $event['name'] }}</td>
+            <td>{{ $contract->properties['name'] }}</td>
             <td>Contato:</td>
-            <td>{{ $client['phone_1'] }}</td>
+            <td>{{ $contract->properties['client']['phone_1'] }}</td>
         </tr>
         <tr class="event-row">
             <td>Data:</td>
-            <td>{{ \Carbon\Carbon::parse($event['date_time'])->format('d/m/Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($contract->properties['date_time'])->format('d/m/Y') }}</td>
             <td>Local:</td>
-            <td>{{ $place['name'] }}</td>
+            <td>{{ $contract->properties['place']['name'] }}</td>
         </tr>
         <tr class="event-row">
             <td>Horário:</td>
-            <td>{{ \Carbon\Carbon::parse($event['date_time'])->format('H:i') }} h</td>
+            <td>{{ \Carbon\Carbon::parse($contract->properties['date_time'])->format('H:i') }} h</td>
             <td>Duração (h):</td>
-            <td>{{ $event['duration'] }} h</td>
+            <td>{{ $contract->properties['duration'] }} h</td>
         </tr>
         <tr class="event-row">
             <td>Cliente:</td>
-            <td>{{ $client['name'] }}</td>
+            <td>{{ $contract->properties['client']['name'] }}</td>
             <td style="white-space: nowrap;">N° Convidados:</td>
-            <td>nao tem esse numero asda sdasd as</td>
+            <td> TODO </td>
         </tr>
     </table>
 
@@ -223,37 +223,48 @@
     </div>
 
     <div class="event-section">
-        <p>
-            <span class="text-bold">Materiais:</span>
-            <br>
-            <br>
-            @foreach ($materials as $material)
-            <span>{{ $material['name'] }}: {{ $material['quantity'] }}</span><br>
+        <span class="text-bold">Materiais:</span>
+        <br><br>
+        <ul>
+            @foreach ($contract['properties']['materials'] as $material)
+            <li>{{ $material['name'] }} (Qtd: {{ $material['quantity'] }})</li>
             @endforeach
-        </p>
+        </ul>
     </div>
 
     <div class="event-section">
-        <p><span class="text-bold">Valores:</span> <br><br>
-            <span>Locação R$ {{ number_format(floatval($event['lease'] ?? 0), 2, ',', '.') }}</span>.
-            <span>Buffet R$ {{ number_format(floatval($event['buffet_value'] ?? 0), 2, ',', '.') }}</span>.
-        </p>
+        <span class="text-bold">Valores:</span>
+        <br><br>
+        Locação: R$ {{ number_format(floatval($contract->properties['lease'] ?? 0), 2, ',', '.') }}</br>
+        Buffet: R$ {{ number_format(floatval($contract->properties['buffet_value'] ?? 0), 2, ',', '.') }}.
+
     </div>
 
     <div class="event-section">
-        <p><span class="text-bold">Lotes:</span> <br><br>
-            @foreach ($batches as $batch)
-            <span>Lote {{ $loop->index + 1 }}: Valor unitário: R$ {{ number_format(floatval($batch['unit_value'] ?? 0), 2, ',', '.') }} Convidados: {{ number_format(floatval($batch['guests'] ?? 0), 0, ',', '.') }} Total: R$ {{ number_format(floatval($batch['unit_value'] ?? 0) * ($batch['guests'] ?? 0), 2, ',', '.') }}</span><br>
+        <span class="text-bold">Lotes:</span>
+        <br><br>
+        <ul>
+            @foreach ($contract->properties['batches'] as $batch)
+            <li>Lote {{ $loop->index + 1 }}:
+                <ul>
+                    <li>Valor unitário: R$ {{ number_format(floatval($batch['unit_value'] ?? 0), 2, ',', '.') }} </li>
+                    <li>Convidados: {{ number_format(floatval($batch['guests'] ?? 0), 0, ',', '.') }} </li>
+                    <li>Total: R$ {{ number_format(floatval($batch['unit_value'] ?? 0) * ($batch['guests'] ?? 0), 2, ',', '.') }} </li>
+                </ul>
+            </li>
             @endforeach
-        </p>
+        </ul>
     </div>
 
     <div class="event-section">
-        <p><span class="text-bold">Colaboradores:</span> <br><br>
-            @foreach ($collaborators as $collaborator)
-            <span>{{ $collaborator['name'] }} {{ $collaborator['quantity'] }}</span><br>
+        <span class="text-bold">Colaboradores:</span>
+        <br><br>
+        <ul>
+            @foreach ($contract->properties['collaborators'] as $collaborator)
+            <li>{{ $collaborator['name'] }} (Qtd: {{ $collaborator['quantity'] }})</li>
             @endforeach
-        </p>
+        </ul>
+
     </div>
 </body>
 

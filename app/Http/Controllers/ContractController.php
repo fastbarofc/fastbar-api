@@ -64,22 +64,18 @@ class ContractController extends Controller
 
     public function store(StoreContractRequest $request)
     {
-        $data = $request->all();
-        $event = Event::find($data['id']);
-        $selectedMaterials = $event->materials->filter(function ($material) {
-            return $material->pivot->selected == true;
-        });
+        $event = Event::find($request->id);
 
-        $data['version'] = Contract::where('event_id', $data['id'])->count() + 1;
-        $data['properties'] = [];
-        $data['event_id'] = $data['id'];
+        $data = [];
+
+        $data['id'] = $event->id;
+        $data['version'] = Contract::where('event_id', $request->id)->count() + 1;
+        $data['event_id'] = $request->id;
         $data['client_id'] = $event->client_id;
+        
+        $data['properties'] = [];
 
         $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date_time', 'duration', 'lease', 'buffet_value']);
-
-        $properties['materials'] = [];
-        $properties['collaborators'] = [];
-        $properties['event_kits'] = [];
 
         $properties['client'] = $event->client
             ->select('id', 'name', 'phone_1')
@@ -96,14 +92,7 @@ class ContractController extends Controller
             ->get()
             ->toArray();
 
-        foreach ($selectedMaterials as $material) {
-            $properties['materials'][] = [
-                'id' => $material->id,
-                'name' => ucfirst($material->description),
-                'quantity' => $material->quantity,
-            ];
-        }
-
+        $properties['materials'] = $this->getContractMaterials($event);
         $properties['collaborators'] = $this->getContractCollaborators($event);
         $properties['event_kits'] = $this->getContractKits($event);
 
@@ -120,18 +109,7 @@ class ContractController extends Controller
         $pdf = new Pdf();
         $fileName = 'contrato-evento-' . $event->id;
 
-        $date = $contract->created_at->format('d/m/Y');
-        $client = $contract->properties['client'];
-        $place = $contract->properties['place'];
-
-        $batches = $contract->properties['batches'];
-
-        $collaborators = $contract->properties['collaborators'];
-        $materials = $contract->properties['materials'];
-        $event = $contract->properties;
-
-
-        $viewContent = view("/pdfs/contract-pdf", compact(['event', 'date', 'client', 'place', 'contract', 'materials', 'batches', 'collaborators']));
+        $viewContent = view("/pdfs/contract-pdf", compact(['contract']));
 
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
@@ -139,6 +117,25 @@ class ContractController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function getContractMaterials(Event $event)
+    {
+        $selectedMaterials = $event->materials->filter(function ($material) {
+            return $material->pivot->selected == true;
+        });
+
+        $contractMaterials = [];
+
+        foreach ($selectedMaterials as $material) {
+            $contractMaterials[] = [
+                'id' => $material->id,
+                'name' => ucfirst($material->description),
+                'quantity' => $material->quantity,
+            ];
+        }
+
+        return $contractMaterials;
     }
 
     public function getContractCollaborators(Event $event)
