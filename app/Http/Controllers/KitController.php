@@ -18,7 +18,11 @@ class KitController extends Controller
 
     public function index(Request $request)
     {   
-        $query = Kit::query()->whereNull('kit_id');
+        $query = Kit::query();
+
+        if (empty($request->input('filter_by'))) {
+            $query->whereNull('kit_id');
+        }
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');

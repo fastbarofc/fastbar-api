@@ -9,6 +9,8 @@
         "cviebrock/eloquent-sluggable": "^10.0",
         "goldspecdigital/laravel-eloquent-uuid": "^10.0",
         "guzzlehttp/guzzle": "^7.2",
+        "h4cc/wkhtmltopdf-amd64": "^0.12.4",
+        "h4cc/wkhtmltopdf-i386": "^0.12.4",
         "intervention/image": "*",
         "intervention/imagecache": "^2.6",
         "laravel/framework": "^10.10",

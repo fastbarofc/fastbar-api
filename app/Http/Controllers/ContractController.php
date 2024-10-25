@@ -9,6 +9,7 @@ use App\Models\Contract;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\EventKit;
+use App\Services\FileService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -60,27 +61,21 @@ class ContractController extends Controller
             'filterable_fields' => Contract::filterableFields()
         ], 200);
     }
-    
+
     public function store(StoreContractRequest $request)
     {
-        $data = $request->all();
-        $event = Event::find($data['id']);
-        $collaborators = $event->officeEvents()->wherePivot('quantity', '>', 0)->withPivot('quantity')->get();
-        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
-        $selectedMaterials = $event->materials->filter(function ($material) {
-            return $material->pivot->selected == true;
-        });
+        $event = Event::find($request->id);
 
-        $data['version'] = Contract::where('event_id', $data['id'])->count() + 1;
-        $data['properties'] = [];
-        $data['event_id'] = $data['id'];
+        $data = [];
+
+        $data['id'] = $event->id;
+        $data['version'] = Contract::where('event_id', $request->id)->count() + 1;
+        $data['event_id'] = $request->id;
         $data['client_id'] = $event->client_id;
         
+        $data['properties'] = [];
+
         $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date_time', 'duration', 'lease', 'buffet_value']);
-        
-        $properties['materials'] = [];
-        $properties['collaborators'] = [];
-        $properties['event_kits'] = [];
 
         $properties['client'] = $event->client
             ->select('id', 'name', 'phone_1')
@@ -96,84 +91,122 @@ class ContractController extends Controller
             ->select('id', 'unit_value', 'guests')
             ->get()
             ->toArray();
-        
+
+        $properties['materials'] = $this->getContractMaterials($event);
+        $properties['collaborators'] = $this->getContractCollaborators($event);
+        $properties['event_kits'] = $this->getContractKits($event);
+
+        $data['properties'] = $properties;
+        $data['properties_diff'] = $this->calculatePropertiesDiff($data);
+
+        $contract = Contract::create($data);
+
+        if (!$contract) {
+            return response()->json(['error' => 'Contract creation failed'], 500);
+        }
+
+
+        $pdf = new Pdf();
+        $fileName = 'contrato-evento-' . $event->id;
+
+        $viewContent = view("/pdfs/contract-pdf", compact(['contract']));
+
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getContractMaterials(Event $event)
+    {
+        $selectedMaterials = $event->materials->filter(function ($material) {
+            return $material->pivot->selected == true;
+        });
+
+        $contractMaterials = [];
+
         foreach ($selectedMaterials as $material) {
-            $properties['materials'][] = [
+            $contractMaterials[] = [
                 'id' => $material->id,
                 'name' => ucfirst($material->description),
                 'quantity' => $material->quantity,
             ];
         }
-        
+
+        return $contractMaterials;
+    }
+
+    public function getContractCollaborators(Event $event)
+    {
+        $collaborators = $event->officeEvents()->wherePivot('quantity', '>', 0)->withPivot('quantity')->get();
+
+        $contractCollaborators = [];
+
         foreach ($collaborators as $collaborator) {
-            $properties['collaborators'][] = [
+            $contractCollaborators[] = [
                 'id' => $collaborator->id,
                 'name' => $collaborator->description,
                 'quantity' => $collaborator->pivot->quantity
             ];
         }
-        
-        foreach ($kits as $kit) {
-            $properties['event_kits'][$kit->name] = [];
-            foreach ($kit->children as $child) {
-                $properties['event_kits'][$kit->name][] = [
-                    $child['data']['name'],
-                ];
-                if (!empty($child['children'])) {
-                    $kitLevel2 = EventKit::find($child['data']['id']);
-                    $childrenKitLevel2 = $kitLevel2->children;
-                    if(!empty($childrenKitLevel2)) {
-                        foreach ($childrenKitLevel2 as $product) {
-                            $productName = is_array($product['data']['name']) ? reset($product['data']['name']) : $product['data']['name'];
-                            $properties['event_kits'][$kit->name][$child['data']['name']][] = $productName;
-                        }
-                    }
-                }
-            }
-        }
-        
-        $data['properties'] = $properties;
-        $data['properties_diff'] = $this->calculatePropertiesDiff($data);
-        
-        $contract = Contract::create($data);
-        
-        if (!$contract) {
-            return response()->json(['error' => 'Contract creation failed'], 500);
-        }
-        
-        
-        $pdf = new Pdf();
-        $fileName = 'contrato-evento-' . $event->id . '.pdf';
-        
-        $date = $contract->created_at->format('d/m/Y');
-        $client = $contract->properties['client'];
-        $place = $contract->properties['place'];
-        
-        $kits = $properties['event_kits'];
-        $batches = $contract->properties['batches'];
-        
-        $collaborators = $contract->properties['collaborators'];
-        $materials = $contract->properties['materials'];
-        $event = $contract->properties;
 
-
-        $html = view("/pdfs/contract-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'materials', 'batches', 'collaborators']))->render();
-        $pdf->addPage($html);
-        $filePath = storage_path("app/public/pdfs");
-
-        if (!File::exists($filePath)) {
-            File::makeDirectory($filePath, 0755, true);
-        }
-
-        $fullFilePath = "{$filePath}/{$fileName}";
-
-        if (!$pdf->saveAs($fullFilePath)) {
-            return response()->json(['error' => $pdf->getError()], 500);
-        }
-
-        $pdfUrl = asset("storage/pdfs/{$fileName}");
-        return response()->json(['pdf_url' => $pdfUrl]);
+        return $contractCollaborators;
     }
+
+    public function getContractKits(Event $event)
+    {
+        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
+
+        $contractKits = [];
+
+        foreach ($kits as $kit) {
+            $kitData = [
+                'id' => $kit->id,
+                'name' => $kit->name,
+                'type' => 'kit',
+                'children' => []
+            ];
+
+            foreach ($kit->children as $child) {
+                $kitData['children'][] = $this->processKitChildren($child);
+            }
+
+            $contractKits[] = $kitData;
+        }
+
+        return $contractKits;
+    }
+
+    public function processKitChildren($kit)
+    {
+        if (empty($kit)) {
+            return [];
+        }
+
+        if (!empty($kit['children'])) {
+            $kit = EventKit::find($kit['data']['id']);
+
+            $result = [
+                'id' => $kit->id,
+                'name' => $kit->name,
+                'type' => 'kit',
+                'children' => $kit->children->map(function ($child) {
+                    return $this->processKitChildren($child);
+                })->toArray()
+            ];
+
+            return $result;
+        }
+
+        return [
+            'id' => $kit['data']['id'],
+            'name' => $kit['data']['name'],
+            'type' => 'product',
+        ];
+    }
+
 
     private function calculatePropertiesDiff(array $data)
     {
@@ -221,18 +254,6 @@ class ContractController extends Controller
 
         ksort($array);
         return $array;
-    }
-
-    public function generateFirstContract(Event $event)
-    {
-        $data = [];
-        $data['version'] = 1;
-        $data['properties_diff'] = [];
-
-        $properties = $event->toArray();
-        $data['properties'] = $properties;
-
-
     }
 
     public function show(Contract $contract)

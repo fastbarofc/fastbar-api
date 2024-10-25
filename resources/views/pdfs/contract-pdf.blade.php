@@ -10,9 +10,8 @@
     <style>
         body {
             font-family: 'Lato', sans-serif;
-            margin-left: 100px;
-            margin-right: 100px;
-            margin-top: 0;
+            margin-left: 50px;
+            margin-right: 50px;
             color: #333;
         }
 
@@ -21,9 +20,9 @@
         }
 
         .logo-title {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: table;
+            width: 100%;
+            text-align: center;
         }
 
         h2,
@@ -131,7 +130,7 @@
 
 <body>
     <div style="display: flex; align-items: center; justify-content: space-between">
-        <p> {{ $date }}</p>
+        <p> {{ $contract->created_at->format('d/m/Y') }}</p>
     </div>
     <div class="logo-title">
         <h2>CONTRATO</h2>
@@ -139,27 +138,27 @@
     <table class="event-section">
         <tr class="event-row">
             <td>Evento:</td>
-            <td>{{ $event['name'] }}</td>
+            <td>{{ $contract->properties['name'] }}</td>
             <td>Contato:</td>
-            <td>{{ $client['phone_1'] }}</td>
+            <td>{{ $contract->properties['client']['phone_1'] }}</td>
         </tr>
         <tr class="event-row">
             <td>Data:</td>
-            <td>{{ \Carbon\Carbon::parse($event['date_time'])->format('d/m/Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($contract->properties['date_time'])->format('d/m/Y') }}</td>
             <td>Local:</td>
-            <td>{{ $place['name'] }}</td>
+            <td>{{ $contract->properties['place']['name'] }}</td>
         </tr>
         <tr class="event-row">
             <td>Horário:</td>
-            <td>{{ \Carbon\Carbon::parse($event['date_time'])->format('H:i') }} h</td>
+            <td>{{ \Carbon\Carbon::parse($contract->properties['date_time'])->format('H:i') }} h</td>
             <td>Duração (h):</td>
-            <td>{{ $event['duration'] }} h</td>
+            <td>{{ $contract->properties['duration'] }} h</td>
         </tr>
         <tr class="event-row">
             <td>Cliente:</td>
-            <td>{{ $client['name'] }}</td>
-            <td>N° Convidados:</td>
-            <td>nao tem esse numero asda sdasd as</td>
+            <td>{{ $contract->properties['client']['name'] }}</td>
+            <td style="white-space: nowrap;">N° Convidados:</td>
+            <td> TODO </td>
         </tr>
     </table>
 
@@ -191,24 +190,66 @@
         <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus</p>
     </div>
 
+    <h4>Os itens contratados são:</h4>
+
+    <p><span class="text-bold">Itens de Buffet:</span></p>
+
     <div class="event-section">
         <ul>
-            @foreach ($kits as $kitName => $children)
-            <li>{{ $kitName }}
+            @foreach ($contract['properties']['event_kits'] as $key => $kit)
+            <li>
+                {{ $kit['name'] }}
+                @if(!empty($kit['children'][0]))
                 <ul>
-                    @foreach ($children as $childKey => $child)
-                    @if (is_array($child))
-                    <li>{{ $child[0] }}</li>
-                    @else
-                    <li>{{ $childKey }}
+                    @foreach ($kit['children'] as $key1 => $child)
+                    <li>
+                        {{ $child['name'] }}
+                        @if(!empty($child['children'][0]))
                         <ul>
-                            @foreach ($child as $product)
-                            <li>{{ $product }}</li>
+                            @foreach ($child['children'] as $key2 => $child2)
+                            <li>
+                                {{ $child2['name'] }}
+                            </li>
                             @endforeach
                         </ul>
+                        @endif
                     </li>
-                    @endif
                     @endforeach
+                </ul>
+                @endif
+            </li>
+            @endforeach
+        </ul>
+    </div>
+
+    <div class="event-section">
+        <span class="text-bold">Materiais:</span>
+        <br><br>
+        <ul>
+            @foreach ($contract['properties']['materials'] as $material)
+            <li>{{ $material['name'] }} (Qtd: {{ $material['quantity'] }})</li>
+            @endforeach
+        </ul>
+    </div>
+
+    <div class="event-section">
+        <span class="text-bold">Valores:</span>
+        <br><br>
+        Locação: R$ {{ number_format(floatval($contract->properties['lease'] ?? 0), 2, ',', '.') }}</br>
+        Buffet: R$ {{ number_format(floatval($contract->properties['buffet_value'] ?? 0), 2, ',', '.') }}.
+
+    </div>
+
+    <div class="event-section">
+        <span class="text-bold">Lotes:</span>
+        <br><br>
+        <ul>
+            @foreach ($contract->properties['batches'] as $batch)
+            <li>Lote {{ $loop->index + 1 }}:
+                <ul>
+                    <li>Valor unitário: R$ {{ number_format(floatval($batch['unit_value'] ?? 0), 2, ',', '.') }} </li>
+                    <li>Convidados: {{ number_format(floatval($batch['guests'] ?? 0), 0, ',', '.') }} </li>
+                    <li>Total: R$ {{ number_format(floatval($batch['unit_value'] ?? 0) * ($batch['guests'] ?? 0), 2, ',', '.') }} </li>
                 </ul>
             </li>
             @endforeach
@@ -216,34 +257,14 @@
     </div>
 
     <div class="event-section">
-        <p><span class="text-bold">Materiais:</span><br>
-            @foreach ($materials as $material)
-            <span>{{ $material['name'] }}</span>: <span>{{ $material['quantity'] }}</span>{{ $loop->remaining == 1 ? ' e' : (!$loop->last ? ',' : '.') }}
+        <span class="text-bold">Colaboradores:</span>
+        <br><br>
+        <ul>
+            @foreach ($contract->properties['collaborators'] as $collaborator)
+            <li>{{ $collaborator['name'] }} (Qtd: {{ $collaborator['quantity'] }})</li>
             @endforeach
-        </p>
-    </div>
+        </ul>
 
-    <div class="event-section">
-        <p><span class="text-bold">Valores:</span> <br>
-            <span>Locação R$ {{ number_format(floatval($event['lease'] ?? 0), 2, ',', '.') }}</span>.
-            <span>Buffet R$ {{ number_format(floatval($event['buffet_value'] ?? 0), 2, ',', '.') }}</span>.
-        </p>
-    </div>
-
-    <div class="event-section">
-        <p><span class="text-bold">Lotes:</span> <br>
-            @foreach ($batches as $batch)
-            <span>Lote {{ $loop->index + 1 }}: Valor unitário: R$ {{ number_format(floatval($batch['unit_value'] ?? 0), 2, ',', '.') }} Convidados: {{ number_format(floatval($batch['guests'] ?? 0), 0, ',', '.') }} Total: R$ {{ number_format(floatval($batch['unit_value'] ?? 0) * ($batch['guests'] ?? 0), 2, ',', '.') }}</span><br>
-            @endforeach
-        </p>
-    </div>
-
-    <div class="event-section">
-        <p><span class="text-bold">Colaboradores:</span> <br>
-            @foreach ($collaborators as $collaborator)
-            <span>{{ $collaborator['name'] }} {{ $collaborator['quantity'] }}</span><br>
-            @endforeach
-        </p>
     </div>
 </body>
 
