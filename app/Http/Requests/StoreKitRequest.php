@@ -17,7 +17,7 @@ class StoreKitRequest extends FormRequest
     {
         return [
             'kit_id'       => 'nullable|numeric',
-            'name'         => 'required|string|max:255|unique:kits',
+            'name'         => 'required|string|max:255|unique:kits,name,NULL,NULL,deleted_at,NULL',
         ];
     }
 
