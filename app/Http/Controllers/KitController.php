@@ -107,8 +107,25 @@ class KitController extends Controller
 
     public function destroy(Kit $kit)
     {
-        $kit->delete();
+        $children = Kit::where('kit_id', $kit->id)->get();
+        if ($children->count() > 0) {
+            $this->destroyChildrenKit($kit);
+        }
+        $kit->delete();        
         return response()->json([], 204);
+    }
+
+    public function destroyChildrenKit(Kit $parentKit)
+    {
+        $children = Kit::where('kit_id', $parentKit->id)->get();
+
+        foreach ($children as $child) {
+            $children2 = Kit::where('kit_id', $child->id)->get();
+            if ($children2->count() > 0) {
+                $this->destroyChildrenKit($child);
+            }
+            $child->delete();
+        }
     }
 
     public function children(Kit $kit)
