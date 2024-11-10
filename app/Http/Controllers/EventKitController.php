@@ -160,7 +160,24 @@ class EventKitController extends Controller
 
     public function destroy(EventKit $eventKit)
     {
+        $children = EventKit::where('event_kit_id', $eventKit->id)->get();
+        if ($children->count() > 0) {
+            $this->destroyChildrenKit($eventKit);
+        }
         $eventKit->delete();
         return response()->json([], 204);
+    }
+
+    public function destroyChildrenKit(EventKit $parentKit)
+    {
+        $children = EventKit::where('event_kit_id', $parentKit->id)->get();
+
+        foreach ($children as $child) {
+            $children2 = EventKit::where('event_kit_id', $child->id)->get();
+            if ($children2->count() > 0) {
+                $this->destroyChildrenKit($child);
+            }
+            $child->delete();
+        }
     }
 }
