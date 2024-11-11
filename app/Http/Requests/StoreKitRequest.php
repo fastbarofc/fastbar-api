@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreKitRequest extends FormRequest
 {
@@ -17,7 +18,7 @@ class StoreKitRequest extends FormRequest
     {
         return [
             'kit_id'       => 'nullable|numeric',
-            'name'         => 'required|string|max:255|unique:kits,name,NULL,NULL,deleted_at,NULL',
+            'name'         => ['required', 'string', 'max:255', Rule::unique('kits', 'name')->whereNull('deleted_at')->where('kit_id', $this->kit_id)],
         ];
     }
 

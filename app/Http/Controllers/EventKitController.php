@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEventKitRequest;
+use App\Http\Requests\UpdateEventKitRequest;
 use App\Http\Resources\EventKitTreeResource;
 use App\Http\Resources\EventKitResource;
 use App\Http\Resources\ProductResource;
@@ -102,7 +104,7 @@ class EventKitController extends Controller
         return response()->json($children, 200);
     }
 
-    public function store(Request $request)
+    public function store(StoreEventKitRequest $request)
     {
         $kit = Kit::find($request->input('id'));
         $data = $request->all();
@@ -150,7 +152,7 @@ class EventKitController extends Controller
         return response()->json(new EventKitTreeResource($eventKit), 200);
     }
 
-    public function update(Request $request, EventKit $eventKit)
+    public function update(UpdateEventKitRequest $request, EventKit $eventKit)
     {
         $eventKit->update($request->all());
         return response()->json(new EventKitTreeResource($eventKit), 200);
@@ -158,7 +160,24 @@ class EventKitController extends Controller
 
     public function destroy(EventKit $eventKit)
     {
+        $children = EventKit::where('event_kit_id', $eventKit->id)->get();
+        if ($children->count() > 0) {
+            $this->destroyChildrenKit($eventKit);
+        }
         $eventKit->delete();
         return response()->json([], 204);
+    }
+
+    public function destroyChildrenKit(EventKit $parentKit)
+    {
+        $children = EventKit::where('event_kit_id', $parentKit->id)->get();
+
+        foreach ($children as $child) {
+            $children2 = EventKit::where('event_kit_id', $child->id)->get();
+            if ($children2->count() > 0) {
+                $this->destroyChildrenKit($child);
+            }
+            $child->delete();
+        }
     }
 }
