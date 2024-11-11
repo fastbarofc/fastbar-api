@@ -238,5 +238,10 @@ class Event extends Model implements AuditableInterface
         return $this->belongsToMany(Event::class, 'event_tasting', 'tasting_event_id', 'event_id');
     }
 
+    public function contractTemplates()
+    {
+        return $this->hasMany(ContractTemplate::class);
+    }
+
 
 }

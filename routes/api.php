@@ -33,6 +33,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CollaboratorIncidentController;
 use App\Http\Controllers\CompetingCompanyController;
+use App\Http\Controllers\ContractTemplateController;
 use App\Http\Controllers\HowDidYouHearController;
 use App\Http\Controllers\EventNoteController;
 use App\Http\Controllers\EventBatchController;
@@ -207,4 +208,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('/events/generate-closure/{event}', [EventController::class, 'generateClosure']);
 
     Route::post('/events/generate-summary/{event}', [EventController::class, 'generateSummary']);
+
+    Route::get('/contract-template/{event_id}', [ContractTemplateController::class, 'show']);
+
+    Route::resource('/contract-templates', [ContractTemplateController::class]);
 });
