@@ -209,7 +209,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::post('/events/generate-summary/{event}', [EventController::class, 'generateSummary']);
 
-    Route::get('/contract-template/{event_id}', [ContractTemplateController::class, 'show']);
-
-    Route::resource('/contract-templates', [ContractTemplateController::class]);
+    Route::post('/contract-template/save', [ContractTemplateController::class, 'save']);
+    Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
 });

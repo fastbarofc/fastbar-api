@@ -9,7 +9,7 @@ class ContractTemplate extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['event_id', 'content'];
+    protected $fillable = ['content'];
 
     public function event()
     {
