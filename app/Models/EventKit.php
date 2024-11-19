@@ -64,7 +64,7 @@ class EventKit extends Model implements AuditableInterface
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'event_kit_product')->withPivot(['value', 'ordination', 'optional', 'average consumption ', 'quantity', 'comments ']);
+        return $this->belongsToMany(Product::class, 'event_kit_product')->withPivot(['value', 'ordination', 'optional', 'average consumption ', 'quantity', 'comments', 'checklist', 'observation']);
     }
 
     public function getHasChildrenAttribute()
@@ -85,6 +85,10 @@ class EventKit extends Model implements AuditableInterface
             $products->transform(function ($item) {
                 $item['event_kit_id'] = $this->id;
                 $item['type'] = 'product';
+                $item['checklist'] = $item->pivot->checklist ? true : false;
+                $item['optional'] = $item->pivot->optional ? true : false;
+                $item['value'] = $item->pivot->value;
+                $item['observation'] = $item->pivot->observation;
                 return $item;
             });
         }
@@ -113,7 +117,11 @@ class EventKit extends Model implements AuditableInterface
                     'event_kit_id' => $item['event_kit_id'],
                     'name' => $item['name'],
                     'value' => $item['value'],
-                    'type' => $item['type']
+                    'type' => $item['type'],
+                    'themed_table' => $item['themed_table'],
+                    'optional' => $item['optional'],
+                    'checklist' => $item['checklist'],
+                    'observation' => $item['observation'],
                 ],
                 'children' => $getChild ? $item['children'] : (!empty($item['children']) &&  !empty($item['children'][0]) ? [[]] : [])
             ];

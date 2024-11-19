@@ -152,6 +152,19 @@ class EventKitController extends Controller
         return response()->json(new EventKitTreeResource($eventKit), 200);
     }
 
+    public function updateProductEventKit(Request $request)
+    {
+        $data = $request->all();
+        unset($data['name']);
+        unset($data['type']);
+        $product = Product::find($data['id']);
+        unset($data['id']);
+        unset($data['themed_table']);
+        $product->eventKits()->updateExistingPivot($data['event_kit_id'], $data);
+        return response()->json(1, 200);
+    }
+
+
     public function update(UpdateEventKitRequest $request, EventKit $eventKit)
     {
         if (!$eventKit) {
