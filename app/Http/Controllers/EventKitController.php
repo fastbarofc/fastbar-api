@@ -154,6 +154,12 @@ class EventKitController extends Controller
 
     public function update(UpdateEventKitRequest $request, EventKit $eventKit)
     {
+        if (!$eventKit) {
+            return response()->json(['error' => 'Kit não encontrado'], 404);
+        }
+        Log::info($request->all());
+        Log::info($eventKit);
+        dd($request->all());
         $eventKit->update($request->all());
         return response()->json(new EventKitTreeResource($eventKit), 200);
     }
