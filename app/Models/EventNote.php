@@ -19,7 +19,8 @@ class EventNote extends Model implements AuditableInterface
         'text',
         'collaborator_id',
         'checklist',
-        'event_id'
+        'event_id',
+        'user_name'
     ];
 
     protected static $sortableFields = [

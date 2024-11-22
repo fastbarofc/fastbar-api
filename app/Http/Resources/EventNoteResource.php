@@ -22,6 +22,7 @@ class EventNoteResource extends JsonResource
             'event_id' => $this->event_id,
             'created_at' => $this->created_at->format('d/m/Y H:i:s'),
             'collaborator' => $this->collaborator,
+            'user_name' => $this->user_name
         ];
     }
 }
