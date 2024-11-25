@@ -22,6 +22,7 @@ use App\Models\Ceremonial;
 use App\Models\Client;
 use App\Models\Collaborator;
 use App\Models\CompetingCompany;
+use App\Models\ContractTemplate;
 use App\Models\Decorator;
 use App\Models\EventBatch;
 use App\Models\EventCapture;
@@ -143,6 +144,9 @@ class EventController extends Controller
     public function store(StoreEventRequest $request)
     {
         $data = $request->all();
+
+        $data['contract_body'] = ContractTemplate::first()?->content ?? null;
+
         $event = Event::create($data);
 
         if ($request->is_draft) {
@@ -691,7 +695,7 @@ class EventController extends Controller
     }
 
     public function generateEventChecklist(Event $event)
-    {   
+    {
         $client = $event->client;
         $place = $event->eventPlace;
 
@@ -704,7 +708,7 @@ class EventController extends Controller
         }
 
         $eventResponsibleNames = implode(', ', $event->clients->pluck('name')->toArray());
-        
+
         $fileName = 'checklist-evento-' . $event->id;
         $viewContent = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames', 'themedTables']));
 
@@ -735,7 +739,7 @@ class EventController extends Controller
 
         $fileName = 'fechamento-' . $event->id;
         $viewContent = view("/pdfs/closure-pdf", compact(['event', 'place', 'responsibles', 'totalGuests', 'extraSaleTotal']));
-        
+
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
@@ -761,7 +765,7 @@ class EventController extends Controller
 
         $fileName = 'resumo-' . $event->id;
         $viewContent = view("/pdfs/summary-pdf", compact(['event', 'totalGuests', 'selectedMaterials', 'responsibles', 'kits']));
-       
+
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);

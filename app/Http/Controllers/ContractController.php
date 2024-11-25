@@ -72,10 +72,12 @@ class ContractController extends Controller
         $data['version'] = Contract::where('event_id', $request->id)->count() + 1;
         $data['event_id'] = $request->id;
         $data['client_id'] = $event->client_id;
+
+        $data['body'] = $event->contract_body;
         
         $data['properties'] = [];
 
-        $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date_time', 'duration', 'lease', 'buffet_value']);
+        $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date_time', 'duration', 'lease', 'buffet_value', 'event_guests']);
 
         $properties['client'] = $event->client
             ->select('id', 'name', 'phone_1')

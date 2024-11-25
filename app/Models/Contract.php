@@ -16,6 +16,7 @@ class Contract extends UuidModel implements AuditableInterface
 
     protected $fillable = [
         'event_id',
+        'body',
         'version',
         'properties',
         'properties_diff',
