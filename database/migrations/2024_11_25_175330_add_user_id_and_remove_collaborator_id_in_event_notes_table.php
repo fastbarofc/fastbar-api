@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('event_notes', function (Blueprint $table) {
-            $table->string('user_name');
+            $table->dropForeign(['collaborator_id']); 
+            $table->dropColumn('collaborator_id');   
+            $table->foreignId('user_id')->constrained();
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('event_notes', function (Blueprint $table) {
-            $table->dropColumn('user_name');
+            $table->dropForeign(['user_id']); 
+            $table->dropColumn('user_id');   
+            $table->foreignId('collaborator_id')->constrained();
         });
     }
 };

@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Collaborator;
 use App\Models\Event;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,9 +20,10 @@ class EventNoteFactory extends Factory
     {
         return [
             'text' => $this->faker->text(),
-            'collaborator_id' => Collaborator::all()->random()->id,
             'checklist' => $this->faker->boolean(),
-            'event_id' => Event::all()->random()->id,
+            'user_id' => User::query()->pluck('id')->random(),
+            'event_id' => Event::query()->pluck('id')->random(),
+
         ];
     }
 }

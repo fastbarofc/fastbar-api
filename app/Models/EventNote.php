@@ -17,20 +17,19 @@ class EventNote extends Model implements AuditableInterface
 
     protected $fillable = [
         'text',
-        'collaborator_id',
+        'user_id',
         'checklist',
         'event_id',
-        'user_name'
     ];
 
     protected static $sortableFields = [
-        'collaborator_id',
+        'user_id',
         'created_at',
         'updated_at'
     ];
 
     protected static $filterableFields = [
-        'collaborator_id'
+        'user_id'
     ];
 
     protected $casts = [
@@ -42,8 +41,8 @@ class EventNote extends Model implements AuditableInterface
         return $this->belongsTo(Event::class);
     }
 
-    public function collaborator()
+    public function user()
     {
-        return $this->belongsTo(Collaborator::class);
+        return $this->belongsTo(User::class);
     }
 }
