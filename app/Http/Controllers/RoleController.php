@@ -21,8 +21,9 @@ class RoleController extends Controller
             $filterable = $request->input('filter_by');
             if ($filterable && $filterable !== '[]') {
                 $filterableArray = json_decode($filterable, true);
-                $filterableArray = $filterableArray[0];
-                foreach ($filterableArray as  $field => $value) {
+                foreach ($filterableArray as $filter) {
+                    $field = array_keys($filter)[0];
+                    $value = $filter[$field];
                     $query->filterByField($field, $value);
                 }
             }
