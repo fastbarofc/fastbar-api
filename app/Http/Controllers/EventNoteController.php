@@ -59,10 +59,7 @@ class EventNoteController extends Controller
 
     public function store(StoreEventNoteRequest $request)
     {
-        $user = auth()->user();
-        $collaborator = $user->collaborator;
         $data = $request->all();
-        $data['collaborator_id'] = $collaborator->id;
         $eventNote = EventNote::create($data);
         return response()->json(new EventNoteResource($eventNote), 201);
     }
