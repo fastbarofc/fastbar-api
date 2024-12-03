@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateEventNoteRequest;
 use App\Models\EventNote;
 use Illuminate\Http\Request;
 use App\Http\Resources\EventNoteResource;
+use Illuminate\Support\Facades\Log;
 
 class EventNoteController extends Controller
 {
