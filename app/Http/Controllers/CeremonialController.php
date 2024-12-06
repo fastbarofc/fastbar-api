@@ -45,7 +45,7 @@ class CeremonialController extends Controller
         return response()->json([
             'data'       => CeremonialResource::collection($ceremonials),
             'pagination' => [
-                'current_page' => $ceremonials->currentPage(),
+                'page' => $ceremonials->currentPage(),
                 'total_pages'  => $ceremonials->lastPage(),
                 'per_page'     => $ceremonials->perPage(),
                 'total'        => $ceremonials->total(),

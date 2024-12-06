@@ -37,7 +37,7 @@ class PermissionController extends Controller
         return response()->json([
             'data' => PermissionResource::collection($permissions),
             'pagination' => [
-                'current_page' => $permissions->currentPage(),
+                'page' => $permissions->currentPage(),
                 'total_pages' => $permissions->lastPage(),
                 'per_page' => $permissions->perPage(),
                 'total' => $permissions->total(),

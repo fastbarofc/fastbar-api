@@ -44,7 +44,7 @@ class FailureController extends Controller
         return response()->json([
             'data' => FailureResource::collection($failures),
             'pagination' => [
-                'current_page' => $failures->currentPage(),
+                'page' => $failures->currentPage(),
                 'total_pages' => $failures->lastPage(),
                 'per_page' => $failures->perPage(),
                 'total' => $failures->total(),

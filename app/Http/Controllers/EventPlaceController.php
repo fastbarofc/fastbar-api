@@ -50,7 +50,7 @@ class EventPlaceController extends Controller
         return response()->json([
             'data' => EventPlaceResource::collection($eventPlaces),
             'pagination' => [
-                'current_page' => $eventPlaces->currentPage(),
+                'page' => $eventPlaces->currentPage(),
                 'total_pages' => $eventPlaces->lastPage(),
                 'per_page' => $eventPlaces->perPage(),
                 'total' => $eventPlaces->total(),

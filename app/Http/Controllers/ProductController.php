@@ -54,7 +54,7 @@ class ProductController extends Controller
         return response()->json([
             'data' => ProductResource::collection($products),
             'pagination' => [
-                'current_page' => $products->currentPage(),
+                'page' => $products->currentPage(),
                 'total_pages' => $products->lastPage(),
                 'per_page' => $products->perPage(),
                 'total' => $products->total(),

@@ -48,7 +48,7 @@ class CollaboratorIncidentController extends Controller
         return response()->json([
             'data' => CollaboratorIncidentResource::collection($collaboratorIncidents),
             'pagination' => [
-                'current_page' => $collaboratorIncidents->currentPage(),
+                'page' => $collaboratorIncidents->currentPage(),
                 'total_pages' => $collaboratorIncidents->lastPage(),
                 'per_page' => $collaboratorIncidents->perPage(),
                 'total' => $collaboratorIncidents->total(),

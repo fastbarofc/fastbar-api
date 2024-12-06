@@ -44,7 +44,7 @@ class EventGiftController extends Controller
         return response()->json([
             'data' => EventGiftResource::collection($eventGifts),
             'pagination' => [
-                'current_page' => $eventGifts->currentPage(),
+                'page' => $eventGifts->currentPage(),
                 'total_pages' => $eventGifts->lastPage(),
                 'per_page' => $eventGifts->perPage(),
                 'total' => $eventGifts->total(),

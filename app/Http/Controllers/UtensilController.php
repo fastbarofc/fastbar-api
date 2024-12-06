@@ -44,7 +44,7 @@ class UtensilController extends Controller
         return response()->json([
             'data' => UtensilResource::collection($utensils),
             'pagination' => [
-                'current_page' => $utensils->currentPage(),
+                'page' => $utensils->currentPage(),
                 'total_pages' => $utensils->lastPage(),
                 'per_page' => $utensils->perPage(),
                 'total' => $utensils->total(),

@@ -44,7 +44,7 @@ class EventTypeController extends Controller
         return response()->json([
             'data' => EventTypeResource::collection($eventTypes),
             'pagination' => [
-                'current_page' => $eventTypes->currentPage(),
+                'page' => $eventTypes->currentPage(),
                 'total_pages' => $eventTypes->lastPage(),
                 'per_page' => $eventTypes->perPage(),
                 'total' => $eventTypes->total(),

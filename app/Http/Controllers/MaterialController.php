@@ -49,7 +49,7 @@ class MaterialController extends Controller
         return response()->json([
             'data' => MaterialResource::collection($materials),
             'pagination' => [
-                'current_page' => $materials->currentPage(),
+                'page' => $materials->currentPage(),
                 'total_pages' => $materials->lastPage(),
                 'per_page' => $materials->perPage(),
                 'total' => $materials->total(),

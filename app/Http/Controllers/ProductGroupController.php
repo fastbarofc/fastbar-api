@@ -42,7 +42,7 @@ class ProductGroupController extends Controller
         if ($perPage != 0) {
             $productGroups = $query->paginate($perPage);
             $pagination = [
-                'current_page' => $productGroups->currentPage(),
+                'page' => $productGroups->currentPage(),
                 'total_pages' => $productGroups->lastPage(),
                 'per_page' => $productGroups->perPage(),
                 'total' => $productGroups->total(),

@@ -58,7 +58,7 @@ class ClientController extends Controller
         return response()->json([
             'data' => ClientResource::collection($clients),
             'pagination' => [
-                'current_page' => $clients->currentPage(),
+                'page' => $clients->currentPage(),
                 'total_pages' => $clients->lastPage(),
                 'per_page' => $clients->perPage(),
                 'total' => $clients->total(),

@@ -43,7 +43,7 @@ class BlockedDateController extends Controller
         return response()->json([
             'data' => BlockedDateResource::collection($blockedDates),
             'pagination' => [
-                'current_page' => $blockedDates->currentPage(),
+                'page' => $blockedDates->currentPage(),
                 'total_pages' => $blockedDates->lastPage(),
                 'per_page' => $blockedDates->perPage(),
                 'total' => $blockedDates->total(),

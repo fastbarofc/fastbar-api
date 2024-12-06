@@ -44,7 +44,7 @@ class LostReasonController extends Controller
         return response()->json([
             'data' => LostReasonResource::collection($lostReason),
             'pagination' => [
-                'current_page' => $lostReason->currentPage(),
+                'page' => $lostReason->currentPage(),
                 'total_pages' => $lostReason->lastPage(),
                 'per_page' => $lostReason->perPage(),
                 'total' => $lostReason->total(),

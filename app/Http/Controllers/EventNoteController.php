@@ -47,7 +47,7 @@ class EventNoteController extends Controller
         return response()->json([
             'data' => EventNoteResource::collection($eventNotes),
             'pagination' => [
-                'current_page' => $eventNotes->currentPage(),
+                'page' => $eventNotes->currentPage(),
                 'total_pages' => $eventNotes->lastPage(),
                 'per_page' => $eventNotes->perPage(),
                 'total' => $eventNotes->total(),

@@ -44,7 +44,7 @@ class PaymentMethodController extends Controller
         return response()->json([
             'data' => PaymentMethodResource::collection($paymentMethods),
             'pagination' => [
-                'current_page' => $paymentMethods->currentPage(),
+                'page' => $paymentMethods->currentPage(),
                 'total_pages' => $paymentMethods->lastPage(),
                 'per_page' => $paymentMethods->perPage(),
                 'total' => $paymentMethods->total(),

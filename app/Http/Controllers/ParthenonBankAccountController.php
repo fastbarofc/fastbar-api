@@ -49,7 +49,7 @@ class ParthenonBankAccountController extends Controller
         return response()->json([
             'data' => ParthenonBankAccountResource::collection($accounts),
             'pagination' => [
-                'current_page' => $accounts->currentPage(),
+                'page' => $accounts->currentPage(),
                 'total_pages' => $accounts->lastPage(),
                 'per_page' => $accounts->perPage(),
                 'total' => $accounts->total(),

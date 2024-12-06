@@ -44,7 +44,7 @@ class SectorController extends Controller
     if ($perPage != 0) {
         $sectors = $query->paginate($perPage);
         $pagination = [
-            'current_page' => $sectors->currentPage(),
+            'page' => $sectors->currentPage(),
             'total_pages' => $sectors->lastPage(),
             'per_page' => $sectors->perPage(),
             'total' => $sectors->total(),
@@ -105,7 +105,7 @@ class SectorController extends Controller
         return response()->json([
             'data' => SectorOfficeResource::collection($sectorOffices),
             'pagination' => [
-                'current_page' => $sectorOffices->currentPage(),
+                'page' => $sectorOffices->currentPage(),
                 'total_pages' => $sectorOffices->lastPage(),
                 'per_page' => $sectorOffices->perPage(),
                 'total' => $sectorOffices->total(),

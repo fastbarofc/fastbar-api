@@ -49,7 +49,7 @@ class EventPaymentController extends Controller
     return response()->json([
         'data' => EventPaymentResource::collection($eventPayments),
         'pagination' => [
-            'current_page' => $eventPayments->currentPage(),
+            'page' => $eventPayments->currentPage(),
             'total_pages' => $eventPayments->lastPage(),
             'per_page' => $eventPayments->perPage(),
             'total' => $eventPayments->total(),

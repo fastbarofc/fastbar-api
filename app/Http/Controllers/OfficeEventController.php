@@ -51,7 +51,7 @@ class OfficeEventController extends Controller
         return response()->json([
             'data' => OfficeEventResource::collection($officeEvents),
             'pagination' => [
-                'current_page' => $officeEvents->currentPage(),
+                'page' => $officeEvents->currentPage(),
                 'total_pages' => $officeEvents->lastPage(),
                 'per_page' => $officeEvents->perPage(),
                 'total' => $officeEvents->total(),

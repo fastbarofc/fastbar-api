@@ -90,7 +90,7 @@ class EventController extends Controller
         return response()->json([
             'data' => EventResource::collection($events),
             'pagination' => [
-                'current_page' => $events->currentPage(),
+                'page' => $events->currentPage(),
                 'total_pages' => $events->lastPage(),
                 'per_page' => $events->perPage(),
                 'total' => $events->total(),
@@ -442,7 +442,7 @@ class EventController extends Controller
         return response()->json([
             'data' => EventGiftResource::collection($eventGifts),
             'pagination' => [
-                'current_page' => $eventGifts->currentPage(),
+                'page' => $eventGifts->currentPage(),
                 'total_pages' => $eventGifts->lastPage(),
                 'per_page' => $eventGifts->perPage(),
                 'total' => $eventGifts->total(),
@@ -487,7 +487,7 @@ class EventController extends Controller
         return response()->json([
             'data' => ExtraSaleResource::collection($extraSales),
             'pagination' => [
-                'current_page' => $extraSales->currentPage(),
+                'page' => $extraSales->currentPage(),
                 'total_pages' => $extraSales->lastPage(),
                 'per_page' => $extraSales->perPage(),
                 'total' => $extraSales->total(),
@@ -564,7 +564,7 @@ class EventController extends Controller
         return response()->json([
             'data' => EventKitResource::collection($eventKit),
             'pagination' => [
-                'current_page' => $eventKit->currentPage(),
+                'page' => $eventKit->currentPage(),
                 'total_pages' => $eventKit->lastPage(),
                 'per_page' => $eventKit->perPage(),
                 'total' => $eventKit->total(),
@@ -591,7 +591,7 @@ class EventController extends Controller
         return response()->json([
             'data' => ContractResource::collection($contract),
             'pagination' => [
-                'current_page' => $contract->currentPage(),
+                'page' => $contract->currentPage(),
                 'total_pages' => $contract->lastPage(),
                 'per_page' => $contract->perPage(),
                 'total' => $contract->total(),

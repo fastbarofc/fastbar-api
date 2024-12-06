@@ -42,7 +42,7 @@ class UnitController extends Controller
         if ($perPage != 0) {
             $units = $query->paginate($perPage);
             $pagination = [
-                'current_page' => $units->currentPage(),
+                'page' => $units->currentPage(),
                 'total_pages' => $units->lastPage(),
                 'per_page' => $units->perPage(),
                 'total' => $units->total(),

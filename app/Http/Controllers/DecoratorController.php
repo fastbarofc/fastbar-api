@@ -44,7 +44,7 @@ class DecoratorController extends Controller
         return response()->json([
             'data' => DecoratorResource::collection($decorators),
             'pagination' => [
-                'current_page' => $decorators->currentPage(),
+                'page' => $decorators->currentPage(),
                 'total_pages' => $decorators->lastPage(),
                 'per_page' => $decorators->perPage(),
                 'total' => $decorators->total(),

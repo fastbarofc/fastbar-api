@@ -47,7 +47,7 @@ class CompetingCompanyController extends Controller
         return response()->json([
             'data' => CompetingCompanyResource::collection($competingCompany),
             'pagination' => [
-                'current_page' => $competingCompany->currentPage(),
+                'page' => $competingCompany->currentPage(),
                 'total_pages' => $competingCompany->lastPage(),
                 'per_page' => $competingCompany->perPage(),
                 'total' => $competingCompany->total(),

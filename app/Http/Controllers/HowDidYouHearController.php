@@ -55,7 +55,7 @@ class HowDidYouHearController extends Controller
         return response()->json([
             'data' => HowDidYouHearResource::collection($howDidYouHear),
             'pagination' => [
-                'current_page' => $howDidYouHear->currentPage(),
+                'page' => $howDidYouHear->currentPage(),
                 'total_pages' => $howDidYouHear->lastPage(),
                 'per_page' => $howDidYouHear->perPage(),
                 'total' => $howDidYouHear->total(),

@@ -61,7 +61,7 @@ class CollaboratorController extends Controller
         return response()->json([
             'data' => CollaboratorResource::collection($collaborators),
             'pagination' => [
-                'current_page' => $collaborators->currentPage(),
+                'page' => $collaborators->currentPage(),
                 'total_pages' => $collaborators->lastPage(),
                 'per_page' => $collaborators->perPage(),
                 'total' => $collaborators->total(),

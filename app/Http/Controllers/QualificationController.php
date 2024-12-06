@@ -44,7 +44,7 @@ class QualificationController extends Controller
         return response()->json([
             'data' => QualificationResource::collection($qualifications),
             'pagination' => [
-                'current_page' => $qualifications->currentPage(),
+                'page' => $qualifications->currentPage(),
                 'total_pages' => $qualifications->lastPage(),
                 'per_page' => $qualifications->perPage(),
                 'total' => $qualifications->total(),

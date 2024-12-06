@@ -44,7 +44,7 @@ class EventStatusController extends Controller
         return response()->json([
             'data' => EventStatusResource::collection($eventStatuses),
             'pagination' => [
-                'current_page' => $eventStatuses->currentPage(),
+                'page' => $eventStatuses->currentPage(),
                 'total_pages' => $eventStatuses->lastPage(),
                 'per_page' => $eventStatuses->perPage(),
                 'total' => $eventStatuses->total(),

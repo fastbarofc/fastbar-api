@@ -53,7 +53,7 @@ class ContractController extends Controller
         return response()->json([
             'data' => ContractResource::collection($contracts),
             'pagination' => [
-                'current_page' => $contracts->currentPage(),
+                'page' => $contracts->currentPage(),
                 'total_pages' => $contracts->lastPage(),
                 'per_page' => $contracts->perPage(),
                 'total' => $contracts->total(),

@@ -52,7 +52,7 @@ class BreakItemController extends Controller
         return response()->json([
             'data' => BreakItemResource::collection($breakItems),
             'pagination' => [
-                'current_page' => $breakItems->currentPage(),
+                'page' => $breakItems->currentPage(),
                 'total_pages' => $breakItems->lastPage(),
                 'per_page' => $breakItems->perPage(),
                 'total' => $breakItems->total(),

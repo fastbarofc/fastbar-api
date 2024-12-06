@@ -48,7 +48,7 @@ class OfficeBudgetController extends Controller
         return response()->json([
             'data' => OfficeBudgetResource::collection($officeBudgets),
             'pagination' => [
-                'current_page' => $officeBudgets->currentPage(),
+                'page' => $officeBudgets->currentPage(),
                 'total_pages' => $officeBudgets->lastPage(),
                 'per_page' => $officeBudgets->perPage(),
                 'total' => $officeBudgets->total(),

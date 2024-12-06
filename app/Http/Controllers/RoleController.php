@@ -40,7 +40,7 @@ class RoleController extends Controller
         return response()->json([
             'data' => RoleResource::collection($roles),
             'pagination' => [
-                'current_page' => $roles->currentPage(),
+                'page' => $roles->currentPage(),
                 'total_pages' => $roles->lastPage(),
                 'per_page' => $roles->perPage(),
                 'total' => $roles->total(),

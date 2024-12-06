@@ -46,7 +46,7 @@ class EventBatchController extends Controller
         return response()->json([
             'data' => EventBatchResource::collection($eventBatches),
             'pagination' => [
-                'current_page' => $eventBatches->currentPage(),
+                'page' => $eventBatches->currentPage(),
                 'total_pages' => $eventBatches->lastPage(),
                 'per_page' => $eventBatches->perPage(),
                 'total' => $eventBatches->total(),

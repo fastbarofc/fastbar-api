@@ -45,7 +45,7 @@ class StockController extends Controller
         return response()->json([
             'data' => StockResource::collection($stocks),
             'pagination' => [
-                'current_page' => $stocks->currentPage(),
+                'page' => $stocks->currentPage(),
                 'total_pages' => $stocks->lastPage(),
                 'per_page' => $stocks->perPage(),
                 'total' => $stocks->total(),

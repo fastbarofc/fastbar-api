@@ -44,7 +44,7 @@ class ExtraSaleController extends Controller
         return response()->json([
             'data' => ExtraSaleResource::collection($extraSales),
             'pagination' => [
-                'current_page' => $extraSales->currentPage(),
+                'page' => $extraSales->currentPage(),
                 'total_pages' => $extraSales->lastPage(),
                 'per_page' => $extraSales->perPage(),
                 'total' => $extraSales->total(),

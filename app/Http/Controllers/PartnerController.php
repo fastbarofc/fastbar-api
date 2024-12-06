@@ -49,7 +49,7 @@ class PartnerController extends Controller
         return response()->json([
             'data' => PartnerResource::collection($partners),
             'pagination' => [
-                'current_page' => $partners->currentPage(),
+                'page' => $partners->currentPage(),
                 'total_pages' => $partners->lastPage(),
                 'per_page' => $partners->perPage(),
                 'total' => $partners->total(),

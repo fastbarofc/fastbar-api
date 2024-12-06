@@ -44,7 +44,7 @@ class EventCaptureController extends Controller
         return response()->json([
             'data' => EventCaptureResource::collection($eventCaptures),
             'pagination' => [
-                'current_page' => $eventCaptures->currentPage(),
+                'page' => $eventCaptures->currentPage(),
                 'total_pages' => $eventCaptures->lastPage(),
                 'per_page' => $eventCaptures->perPage(),
                 'total' => $eventCaptures->total(),
