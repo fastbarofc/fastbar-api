@@ -34,10 +34,17 @@ class BreakItemController extends Controller
             }
         }
 
+        $query->with('unit');
+
         if ($request->input('order_by')) {
-            $sorteableField = $request->input('order_by');
+            $sortableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderByField($sorteableField, $direction);
+            if ($sortableField === 'unit_name') {
+                $query->join('units', 'break_items.unit_id', '=', 'units.id')
+                      ->orderBy('units.description', $direction);
+            } else {
+                $query->orderByField($sortableField, $direction);
+            }
         }
 
         $breakItems = $query->paginate($perPage);
