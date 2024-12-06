@@ -20,6 +20,8 @@ class ContractTemplateController extends Controller
     public function save(Request $request)
     {
         $data = $request->only('content');
+
+        $data['content'] = $data['content'] ?? '';
         
         $contractTemplate = ContractTemplate::first();
 
