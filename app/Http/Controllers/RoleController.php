@@ -8,6 +8,7 @@ use Spatie\Permission\Models\Role;
 use App\Http\Resources\RoleResource;
 use App\Http\Requests\SyncPermissionUserRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use Illuminate\Support\Facades\Log;
 
 class RoleController extends Controller
 {
@@ -24,18 +25,20 @@ class RoleController extends Controller
                 foreach ($filterableArray as $filter) {
                     $field = array_keys($filter)[0];
                     $value = $filter[$field];
-                    $query->filterByField($field, $value);
+                    $query->where($field, 'like', "%$value%");
                 }
             }
         }
 
         if($request->input('order_by')) {
-            $sorteableField = $request->input('order_by');
-            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderBy($sorteableField, $direction);
+            if ($request->input('direction') == 'desc') {
+                $query->orderByDesc('name');
+            } else {
+                $query->orderBy('name');
+            }
         }
 
-        $roles = Role::paginate($perPage);
+        $roles = $query->paginate($perPage);
 
         return response()->json([
             'data' => RoleResource::collection($roles),
