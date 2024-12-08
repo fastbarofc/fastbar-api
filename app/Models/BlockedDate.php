@@ -28,4 +28,8 @@ class BlockedDate extends Model implements AuditableInterface
         'date',
         'description'
     ];
+
+    protected static $searchableFields = [
+        'description',
+    ];
 }
