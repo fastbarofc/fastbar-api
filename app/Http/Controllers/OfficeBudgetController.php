@@ -32,7 +32,12 @@ class OfficeBudgetController extends Controller
                 foreach ($filterableArray as $filter) {
                     $field = array_keys($filter)[0];
                     $value = $filter[$field];
-                    $query->filterByField($field, $value);
+                    $operator = $field == 'name' ? 'like' : '=';
+                    $query->filterByField(
+                        field: $field,
+                        value: $value,
+                        operator: $operator
+                    );
                 }
             }
         }
