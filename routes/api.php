@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -212,4 +213,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::post('/contract-template/save', [ContractTemplateController::class, 'save']);
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
+
+    Route::get('/addresses/cep/{cep}', [AddressController::class, 'getAddressByCep']);
 });
