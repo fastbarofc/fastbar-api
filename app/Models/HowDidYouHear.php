@@ -28,4 +28,8 @@ class HowDidYouHear extends Model implements AuditableInterface
     protected static $filterableFields = [
         'name'
     ];
+
+    protected static $searchableFields = [
+        'name',
+    ];
 }

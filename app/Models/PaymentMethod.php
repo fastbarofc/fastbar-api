@@ -28,6 +28,10 @@ class PaymentMethod extends Model implements AuditableInterface
         'name',
     ];
 
+    protected static $searchableFields = [
+        'name',
+    ];
+
     public function sluggable(): array
     {
         return [
