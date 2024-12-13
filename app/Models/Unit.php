@@ -28,6 +28,10 @@ class Unit extends Model implements AuditableInterface
         'description',
     ];
 
+    protected static $searchableFields = [
+        'description',
+    ];
+
     public function sluggable(): array
     {
         return [
