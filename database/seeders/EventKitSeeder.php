@@ -17,7 +17,7 @@ class EventKitSeeder extends Seeder
 
         foreach ($grandparentKits as $parent) {
             EventKit::factory(3)
-            ->state(['event_kit_id'=> $parent->id])
+            ->state(['event_kit_id'=> $parent->id, 'event_id' => $parent->event_id])
             ->create();
         }
 
@@ -25,7 +25,7 @@ class EventKitSeeder extends Seeder
 
         foreach ($parentKits as $parent) {
             EventKit::factory(2)
-            ->state(['event_kit_id'=> $parent->id])
+            ->state(['event_kit_id'=> $parent->id, 'event_id' => $parent->event_id])
             ->create();
         }
     }

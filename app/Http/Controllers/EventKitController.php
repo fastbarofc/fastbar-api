@@ -54,11 +54,7 @@ class EventKitController extends Controller
             }
         }
 
-        if ($request->input('order_by')) {
-            $sorteableField = $request->input('order_by');
-            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderByField($sorteableField, $direction);
-        }
+        $query->orderBy('ordination', 'asc');
 
         $query->whereNull('event_kit_id');
 
