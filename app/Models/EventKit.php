@@ -120,11 +120,14 @@ class EventKit extends Model implements AuditableInterface
                     'type' => $item['type'],
                     'themed_table' => $item['themed_table'],
                     'optional' => $item['optional'],
+                    'ordination' => $item['ordination'],
                     'checklist' => $item['checklist'],
                     'observation' => $item['observation'],
                 ],
                 'children' => $getChild ? $item['children'] : (!empty($item['children']) &&  !empty($item['children'][0]) ? [[]] : [])
             ];
-        });
+        })->sortBy(function ($item) {
+            return $item['data']['ordination'] ?? PHP_INT_MAX;
+        })->values();
     }
 }

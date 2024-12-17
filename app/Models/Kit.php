@@ -17,6 +17,7 @@ class Kit extends Model implements AuditableInterface
     protected $fillable = [
         'kit_id',
         'name',
+        'ordination',
     ];
 
     protected static $sortableFields = [
@@ -87,10 +88,13 @@ class Kit extends Model implements AuditableInterface
                     'id' => $item['id'],
                     'kit_id' => $item['kit_id'],
                     'name' => $item['name'],
+                    'ordination' => $item['ordination'],
                     'type' => $item['type']
                 ],
                 'children' => $getChild ? $item['children'] : (!empty($item['children']) &&  !empty($item['children'][0]) ? [[]] : [])
             ];
-        });
+        })->sortBy(function ($item) {
+            return $item['data']['ordination'] ?? PHP_INT_MAX;
+        })->values();
     }
 }
