@@ -12,9 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('event_notes', function (Blueprint $table) {
-            $table->dropForeign(['collaborator_id']); 
-            $table->dropColumn('collaborator_id');   
-            $table->foreignId('user_id')->constrained();
+            if (Schema::hasColumn('event_notes', 'collaborator_id')) {
+                $table->dropForeign(['collaborator_id']); 
+                $table->dropColumn('collaborator_id');   
+            }
+    
+            if (!Schema::hasColumn('event_notes', 'user_id')) {
+                $table->foreignId('user_id')->constrained();
+            }
         });
     }
 
