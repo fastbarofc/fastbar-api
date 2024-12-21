@@ -100,6 +100,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::put('event-kits/update-product', [EventKitController::class, 'updateProductEventKit'])->name('event-kits.update-product');
     Route::get('event-kits/tree', [EventKitController::class, 'indexTree'])->name('event-kits.tree');
+    Route::post('event-kits/{movingEventKit}/change-ordination', [EventKitController::class, 'changeOrdination'])->name('event-kits.change-ordination');
     Route::resource('event-kits', EventKitController::class);
     Route::get('event-kits/{kit}/children', [EventKitController::class, 'children'])->name('event-kits.children');
 

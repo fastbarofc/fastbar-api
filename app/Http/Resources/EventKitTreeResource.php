@@ -19,6 +19,7 @@ class EventKitTreeResource extends JsonResource
                 'optional'     => $this->optional,
                 'value'        => $this->value,
                 'observation'  => $this->observation,
+                'ordination'   => $this->ordination,
             ],
             'children'     => !empty($this->has_children) ? [[]] : [],
             'model'        => 'event_kit'

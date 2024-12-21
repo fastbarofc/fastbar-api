@@ -23,7 +23,7 @@ class EventKitController extends Controller
     public function index(Request $request)
     {
 
-        $query = EventKit::query()->where('event_id', $request->input('event_id'));
+        $query = EventKit::query()->where('event_id', $request->input('event_id'))->whereNull('event_kit_id');
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -54,11 +54,7 @@ class EventKitController extends Controller
             }
         }
 
-        $query->orderBy('ordination', 'asc');
-
-        $query->whereNull('event_kit_id');
-
-        $eventKits = $query->get();
+        $eventKits = $query->get()->sortBy('ordination')->values();
 
 
         return response()->json([
@@ -82,13 +78,7 @@ class EventKitController extends Controller
             }
         }
 
-        if ($request->input('order_by')) {
-            $sorteableField = $request->input('order_by');
-            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderByField($sorteableField, $direction);
-        }
-
-        $eventKits = $query->get();
+        $eventKits = $query->get()->sortBy('ordination')->values();
 
 
         return response()->json([
@@ -110,6 +100,7 @@ class EventKitController extends Controller
         $data['optional'] = false;
         $data['checklist'] = false;
         if (empty($data['type']) || $data['type'] != 'product') {
+            $data['ordination'] = EventKit::where('event_kit_id', $data['event_kit_id'])->where('event_id', $data['event_id'])->get()->count() + 1;
             $eventKit = EventKit::create($data);
             $this->transformKitToEventKit($kit, $eventKit);
             return response()->json(new EventKitTreeResource($eventKit), 201);
@@ -136,12 +127,94 @@ class EventKitController extends Controller
                 $data['themed_table'] = false;
                 $data['checklist'] = false;
                 $data['optional'] = false;
+                $data['ordination'] = EventKit::where('event_kit_id', $data['event_kit_id'])->where('event_id', $data['event_id'])->get()->count() + 1;
                 $newEventKit = EventKit::create($data);
                 $newKit = Kit::find($child['data']['id']);
                 if ($kit && $kit->has_children) {
                     $this->transformKitToEventKit($newKit, $newEventKit);
                 }
             }
+        }
+    }
+
+    public function changeOrdination(EventKit $movingEventKit, Request $request)
+    {
+        $destinationKit = EventKit::find($request->id);
+
+        if ($movingEventKit->event_kit_id != $destinationKit->event_kit_id) {
+            return response()->json(['message' => 'Você só pode reordenar kits dentro da mesma pasta.'], 422);
+        }
+
+        $this->fixEmptyOrdination($movingEventKit);
+
+        $movingEventKit->refresh();
+        $destinationKit->refresh();
+
+        if ($this->isAscending($movingEventKit, $destinationKit)) {
+            $this->shiftUpward($movingEventKit, $destinationKit);
+            return response()->json(1, 200);
+        }
+
+        $this->shiftDownward($movingEventKit, $destinationKit);
+        return response()->json(1, 200);
+    }
+
+    public function shiftUpward(EventKit $movingEventKit, EventKit $destinationKit)
+    {
+        $kitsToShift = EventKit::where('event_id', $movingEventKit->event_id)
+            ->where('event_kit_id', $movingEventKit->event_kit_id)
+            ->whereBetween('ordination', [$destinationKit->ordination + 1, $movingEventKit->ordination - 1])
+            ->get();
+
+
+        foreach ($kitsToShift as $kit) {
+            $kit->ordination = $kit->ordination + 1;
+            $kit->save();
+        }
+
+        $movingEventKit->ordination = $destinationKit->ordination + 1;
+        $movingEventKit->save();
+    }
+
+    public function shiftDownward(EventKit $movingEventKit, EventKit $destinationKit)
+    {
+        $kitsToShift = EventKit::where('event_id', $movingEventKit->event_id)
+            ->where('event_kit_id', $movingEventKit->event_kit_id)
+            ->whereBetween('ordination', [$movingEventKit->ordination + 1, $destinationKit->ordination])
+            ->get()
+            ->sortBy('ordination')
+            ->values();
+
+        foreach ($kitsToShift as $kit) {
+            $kit->ordination = $kit->ordination - 1;
+            $kit->save();
+        }
+
+        $movingEventKit->ordination = $destinationKit->ordination;
+        $movingEventKit->save();
+    }
+
+    public function isAscending(EventKit $movingEventKit, EventKit $destinationKit)
+    {
+        return $movingEventKit->ordination > $destinationKit->ordination;
+    }
+
+    public function fixEmptyOrdination(EventKit $movingEventKit)
+    {
+        $eventKitWithEmptyOrdination = EventKit::where('event_id', $movingEventKit->event_id)
+        ->where('event_kit_id', $movingEventKit->event_kit_id)
+        ->whereNull('ordination')
+        ->get()
+        ->sortBy('name')
+        ->values();
+
+        $totalKits =  EventKit::where('event_id', $movingEventKit->event_id)
+        ->where('event_kit_id', $movingEventKit->event_kit_id)
+        ->get()
+        ->count();
+
+        foreach ($eventKitWithEmptyOrdination as $key => $eventKit) {
+            $eventKit->update(['ordination' => $totalKits + $key + 1]);
         }
     }
 
@@ -168,9 +241,6 @@ class EventKitController extends Controller
         if (!$eventKit) {
             return response()->json(['error' => 'Kit não encontrado'], 404);
         }
-        Log::info($request->all());
-        Log::info($eventKit);
-        dd($request->all());
         $eventKit->update($request->all());
         return response()->json(new EventKitTreeResource($eventKit), 200);
     }

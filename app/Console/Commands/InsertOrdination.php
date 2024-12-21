@@ -28,16 +28,23 @@ class InsertOrdination extends Command
      */
     public function handle()
     {
-        $eventKits = EventKit::all();
-        $j = 1;
+        $eventKitsGroupedByEventId = EventKit::whereNull('event_kit_id')
+            ->orderBy('event_id')  
+            ->get()
+            ->groupBy('event_id');  
 
-        foreach ($eventKits as $eventKit) {
-            $eventKit->update(['ordination' => $j]);
-            $j++;
-            $groupedEventKits = EventKit::where('event_kit_id', $eventKit->id)
+        foreach ($eventKitsGroupedByEventId as $eventId => $eventKits) {
+            $j = 1;  
+
+            foreach ($eventKits as $eventKit) {
+                $eventKit->update(['ordination' => $j]);
+                $j++;
+            }
+
+            $groupedEventKits = EventKit::where('event_id', $eventId)
                 ->orderBy('ordination', 'asc')
                 ->get()
-                ->groupBy('event_kit_id');
+                ->groupBy('event_kit_id'); 
 
             foreach ($groupedEventKits as $parentId => $eventKits) {
                 $i = 1;
@@ -48,7 +55,7 @@ class InsertOrdination extends Command
             }
         }
 
-        $kits = Kit::all();        
+        $kits = Kit::whereNull('kit_id')->get();
         $j = 1;
 
         foreach ($kits as $kit) {
