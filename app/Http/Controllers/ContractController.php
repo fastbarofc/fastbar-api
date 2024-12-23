@@ -74,40 +74,44 @@ class ContractController extends Controller
         $data['event_id'] = $request->id;
         $data['client_id'] = $event->client_id;
 
-        $data['body'] = $event->contract_body;
-        
+        $data['body'] = $event->contract_body ?? '';
+
         $data['properties'] = [];
 
         $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date_time', 'duration', 'lease', 'buffet_value', 'event_guests']);
 
         $properties['client'] = $event->client
+            ? $event->client
             ->select('id', 'name', 'phone_1')
             ->first()
-            ->toArray();
+            ->toArray()
+            : ['id' => null, 'name' => null, 'phone_1' => null];
 
         $properties['place'] = $event->eventPlace
+            ? $event->eventPlace
             ->select('id', 'name')
             ->first()
-            ->toArray();
+            ->toArray()
+            : ['id' => null, 'name' => null];
 
         $properties['batches'] = $event->eventBatches()
             ->select('id', 'unit_value', 'guests')
             ->get()
-            ->toArray();
+            ->toArray() ?? [];
 
-        $properties['materials'] = $this->getContractMaterials($event);
-        $properties['collaborators'] = $this->getContractCollaborators($event);
-        $properties['event_kits'] = $this->getContractKits($event);
+        $properties['materials'] = $this->getContractMaterials($event) ?? [];
+        $properties['collaborators'] = $this->getContractCollaborators($event) ?? [];
+        $properties['event_kits'] = $this->getContractKits($event) ?? [];
 
         $data['properties'] = $properties;
-        $data['properties_diff'] = $this->calculatePropertiesDiff($data);
+
+        $data['properties_diff'] = $this->calculatePropertiesDiff($data) ?? [];
 
         $contract = Contract::create($data);
 
         if (!$contract) {
             return response()->json(['error' => 'Contract creation failed'], 500);
         }
-
 
         $pdf = new Pdf();
         $fileName = 'contrato-evento-' . $event->id;
