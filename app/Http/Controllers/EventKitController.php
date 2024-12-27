@@ -96,18 +96,32 @@ class EventKitController extends Controller
     {
         $kit = Kit::find($request->input('id'));
         $data = $request->all();
+
         $data['themed_table'] = false;
         $data['optional'] = false;
         $data['checklist'] = false;
+
         if (empty($data['type']) || $data['type'] != 'product') {
             $data['ordination'] = EventKit::where('event_kit_id', $data['event_kit_id'])->where('event_id', $data['event_id'])->get()->count() + 1;
             $eventKit = EventKit::create($data);
             $this->transformKitToEventKit($kit, $eventKit);
             return response()->json(new EventKitTreeResource($eventKit), 201);
         }
+
         $product = Product::find($data['id']);
-        $product->eventKits()->attach($data['event_kit_id']);
-        $product->type = 'product';
+
+        if (!$product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        try {
+            $product->eventKits()->attach($data['event_kit_id']);
+            $product->type = 'product';
+            $product->save();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json(['error' => 'Error creating kit'], 500);
+        }
         return response()->json(['data' => $product], 201);
     }
 
@@ -139,9 +153,17 @@ class EventKitController extends Controller
 
     public function changeOrdination(EventKit $movingEventKit, Request $request)
     {
+        if ($request->type == 'product') {
+            return response()->json(['message' => 'Você só pode reordenar entre kits e não produtos.'], 422);
+        }
+
         $destinationKit = EventKit::find($request->id);
 
         if ($movingEventKit->event_kit_id != $destinationKit->event_kit_id) {
+            if ($this->isShiftingToFirtOrdination($movingEventKit, $destinationKit)) {
+                $this->shiftToFirstOrdination($movingEventKit);
+                return response()->json(1, 200);
+            }
             return response()->json(['message' => 'Você só pode reordenar kits dentro da mesma pasta.'], 422);
         }
 
@@ -157,6 +179,26 @@ class EventKitController extends Controller
 
         $this->shiftDownward($movingEventKit, $destinationKit);
         return response()->json(1, 200);
+    }
+
+    public function shiftToFirstOrdination(EventKit $movingEventKit)
+    {
+        $eventKits = EventKit::where('event_id', $movingEventKit->event_id)
+            ->where('event_kit_id', $movingEventKit->event_kit_id)
+            ->get();
+
+        foreach ($eventKits as $kit) {
+            $kit->ordination = $kit->ordination + 1;
+            $kit->save();
+        }
+
+        $movingEventKit->ordination = 1;
+        $movingEventKit->save();
+    }
+
+    public function isShiftingToFirtOrdination(EventKit $movingEventKit, EventKit $destinationKit)
+    {
+        return $movingEventKit->event_kit_id == $destinationKit->id;
     }
 
     public function shiftUpward(EventKit $movingEventKit, EventKit $destinationKit)
