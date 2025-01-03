@@ -101,8 +101,10 @@ class EventKitController extends Controller
         $data['optional'] = false;
         $data['checklist'] = false;
 
+        $eventKitId = !empty($data['event_kit_id']) ? $data['event_kit_id'] : null;
+
         if (empty($data['type']) || $data['type'] != 'product') {
-            $data['ordination'] = EventKit::where('event_kit_id', $data['event_kit_id'])->where('event_id', $data['event_id'])->get()->count() + 1;
+            $data['ordination'] = EventKit::where('event_kit_id', $eventKitId)->where('event_id', $data['event_id'])->get()->count() + 1;
             $eventKit = EventKit::create($data);
             $this->transformKitToEventKit($kit, $eventKit);
             return response()->json(new EventKitTreeResource($eventKit), 201);
@@ -115,7 +117,7 @@ class EventKitController extends Controller
         }
 
         try {
-            $product->eventKits()->attach($data['event_kit_id']);
+            $product->eventKits()->attach($eventKitId);
             $product->type = 'product';
             $product->save();
         } catch (\Exception $e) {
