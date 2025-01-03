@@ -244,16 +244,16 @@ class EventKitController extends Controller
     public function fixEmptyOrdination(EventKit $movingEventKit)
     {
         $eventKitWithEmptyOrdination = EventKit::where('event_id', $movingEventKit->event_id)
-        ->where('event_kit_id', $movingEventKit->event_kit_id)
-        ->whereNull('ordination')
-        ->get()
-        ->sortBy('name')
-        ->values();
+            ->where('event_kit_id', $movingEventKit->event_kit_id)
+            ->whereNull('ordination')
+            ->get()
+            ->sortBy('name')
+            ->values();
 
         $totalKits =  EventKit::where('event_id', $movingEventKit->event_id)
-        ->where('event_kit_id', $movingEventKit->event_kit_id)
-        ->get()
-        ->count();
+            ->where('event_kit_id', $movingEventKit->event_kit_id)
+            ->get()
+            ->count();
 
         foreach ($eventKitWithEmptyOrdination as $key => $eventKit) {
             $eventKit->update(['ordination' => $totalKits + $key + 1]);
