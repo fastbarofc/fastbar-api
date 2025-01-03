@@ -18,7 +18,7 @@ class StoreEventKitRequest extends FormRequest
     {
         return [
             'event_kit_id'       => 'nullable|numeric',
-            'name'         => ['required', 'string', 'max:255', Rule::unique('event_kits', 'name')->whereNull('deleted_at')->where('event_kit_id', $this->event_kit_id)],
+            'name'         => ['required', 'string', 'max:255', Rule::unique('event_kits', 'name')->whereNull('deleted_at')->where('event_kit_id', $this->event_kit_id)->where('event_id', $this->event_id)],
         ];
     }
 
