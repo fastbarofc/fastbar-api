@@ -101,8 +101,10 @@ class EventKitController extends Controller
         $data['optional'] = false;
         $data['checklist'] = false;
 
+        $eventKitId = !empty($data['event_kit_id']) ? $data['event_kit_id'] : null;
+
         if (empty($data['type']) || $data['type'] != 'product') {
-            $data['ordination'] = EventKit::where('event_kit_id', $data['event_kit_id'])->where('event_id', $data['event_id'])->get()->count() + 1;
+            $data['ordination'] = EventKit::where('event_kit_id', $eventKitId)->where('event_id', $data['event_id'])->get()->count() + 1;
             $eventKit = EventKit::create($data);
             $this->transformKitToEventKit($kit, $eventKit);
             return response()->json(new EventKitTreeResource($eventKit), 201);
@@ -115,7 +117,7 @@ class EventKitController extends Controller
         }
 
         try {
-            $product->eventKits()->attach($data['event_kit_id']);
+            $product->eventKits()->attach($eventKitId);
             $product->type = 'product';
             $product->save();
         } catch (\Exception $e) {
@@ -159,10 +161,15 @@ class EventKitController extends Controller
 
         $destinationKit = EventKit::find($request->id);
 
+        if (empty($destinationKit->id)) {
+            $this->shiftToFirstOrdination($movingEventKit);
+            return response()->json(['message' => 'Alterado com sucesso.'], 200);
+        }
+
         if ($movingEventKit->event_kit_id != $destinationKit->event_kit_id) {
             if ($this->isShiftingToFirtOrdination($movingEventKit, $destinationKit)) {
                 $this->shiftToFirstOrdination($movingEventKit);
-                return response()->json(1, 200);
+                return response()->json(['message' => 'Alterado com sucesso.'], 200);
             }
             return response()->json(['message' => 'Você só pode reordenar kits dentro da mesma pasta.'], 422);
         }
@@ -174,11 +181,11 @@ class EventKitController extends Controller
 
         if ($this->isAscending($movingEventKit, $destinationKit)) {
             $this->shiftUpward($movingEventKit, $destinationKit);
-            return response()->json(1, 200);
+            return response()->json(['message' => 'Alterado com sucesso.'], 200);
         }
 
         $this->shiftDownward($movingEventKit, $destinationKit);
-        return response()->json(1, 200);
+        return response()->json(['message' => 'Alterado com sucesso.'], 200);
     }
 
     public function shiftToFirstOrdination(EventKit $movingEventKit)
@@ -274,7 +281,7 @@ class EventKitController extends Controller
         unset($data['id']);
         unset($data['themed_table']);
         $product->eventKits()->updateExistingPivot($data['event_kit_id'], $data);
-        return response()->json(1, 200);
+        return response()->json(['message' => 'Alterado com sucesso.'], 200);
     }
 
 
