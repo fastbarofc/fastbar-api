@@ -18,7 +18,7 @@ class UpdateEventKitRequest extends FormRequest
     {
         return [
             'event_kit_id'          => 'nullable|numeric',
-            'name'         => ['nullable', 'string', 'max:255', Rule::unique('event_kits', 'name')->ignore($this->route('event_kit')->id)->whereNull('deleted_at')->where('event_kit_id', $this->event_kit_id)],
+            'name'         => ['nullable', 'string', 'max:255', Rule::unique('event_kits', 'name')->ignore($this->route('event_kit')->id)->whereNull('deleted_at')->where('event_kit_id', $this->event_kit_id)->where('event_id', $this->event_id)],
         ];
     }
 
