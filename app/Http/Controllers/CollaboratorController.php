@@ -309,7 +309,9 @@ class CollaboratorController extends Controller
         }
 
         foreach ($data['qualifications'] as $qualification) {
-            $qualificationsData[$qualification['id']] = ['points' => $qualification['points']];
+            if (!empty($qualification['id'])) {
+                $qualificationsData[$qualification['id']] = ['points' => $qualification['points']];
+            }
         }
 
         $collaborator->qualifications()->syncWithoutDetaching($qualificationsData);
