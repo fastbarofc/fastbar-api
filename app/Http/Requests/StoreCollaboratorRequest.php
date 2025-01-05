@@ -31,7 +31,9 @@ class StoreCollaboratorRequest extends FormRequest
             'sector_office_id'  => 'required|exists:sector_offices,id',
             'has_login'  => 'nullable|boolean',
             'active'     => 'boolean',
-            'user_id'    => 'nullable|exists:users,id'
+            'user_id'    => 'nullable|exists:users,id',
+            'pix_keys'   => 'nullable|array',
+            'bank_details' => 'nullable|array',
         ];
         
 

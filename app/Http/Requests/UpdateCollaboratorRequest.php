@@ -48,6 +48,9 @@ class UpdateCollaboratorRequest extends FormRequest
             'has_login'  => 'nullable|boolean',
             'active'     => 'nullable|boolean',
             'user_id'    => 'nullable|exists:users,id',
+            'pix_keys'   => 'nullable|array',
+            'bank_details' => 'nullable|array',
+            'qualifications' => 'nullable|array',
         ];
 
         /* if ($this->request->get('has_login')) {
