@@ -58,7 +58,7 @@ class KitController extends Controller
 
     public function indexTree(Request $request)
     {
-        $query = Kit::query();
+        $query = Kit::query()->whereNull('kit_id');
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -73,15 +73,7 @@ class KitController extends Controller
             }
         }
 
-        if ($request->input('order_by')) {
-            $sorteableField = $request->input('order_by');
-            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderByField($sorteableField, $direction);
-        }
-
-        $query->whereNull('kit_id');
-
-        $kits = $query->get();
+        $kits = $query->get()->sortBy('ordination')->values();
 
         return response()->json([
             'data' => KitTreeResource::collection($kits),
@@ -105,6 +97,115 @@ class KitController extends Controller
     {
         $kit->update($request->all());
         return response()->json(new KitResource($kit), 200);
+    }
+
+    public function changeOrdination(Kit $movingKit, Request $request)
+    {
+        if ($request->type == 'product') {
+            return response()->json(['message' => 'Você só pode reordenar entre kits e não produtos.'], 422);
+        }
+
+        $destinationKit = Kit::find($request->id);
+
+        if (empty($destinationKit->id)) {
+            $this->shiftToFirstOrdination($movingKit);
+            return response()->json(['message' => 'Alterado com sucesso.'], 200);
+        }
+
+        if ($movingKit->kit_id != $destinationKit->kit_id) {
+            if ($this->isShiftingToFirtOrdination($movingKit, $destinationKit)) {
+                $this->shiftToFirstOrdination($movingKit);
+                return response()->json(['message' => 'Alterado com sucesso.'], 200);
+            }
+            return response()->json(['message' => 'Você só pode reordenar kits dentro da mesma pasta.'], 422);
+        }
+
+        $this->fixEmptyOrdination($movingKit);
+
+        $movingKit->refresh();
+        $destinationKit->refresh();
+
+        if ($this->isAscending($movingKit, $destinationKit)) {
+            $this->shiftUpward($movingKit, $destinationKit);
+            return response()->json(['message' => 'Alterado com sucesso.'], 200);
+        }
+
+        $this->shiftDownward($movingKit, $destinationKit);
+        return response()->json(['message' => 'Alterado com sucesso.'], 200);
+    }
+
+    public function shiftToFirstOrdination(Kit $movingKit)
+    {
+        $kits = Kit::where('kit_id', $movingKit->kit_id)
+            ->get();
+
+        foreach ($kits as $kit) {
+            $kit->ordination = $kit->ordination + 1;
+            $kit->save();
+        }
+
+        $movingKit->ordination = 1;
+        $movingKit->save();
+    }
+
+    public function isShiftingToFirtOrdination(Kit $movingKit, Kit $destinationKit)
+    {
+        return $movingKit->kit_id == $destinationKit->id;
+    }
+
+    public function shiftUpward(Kit $movingKit, Kit $destinationKit)
+    {
+        $kitsToShift = Kit::where('kit_id', $movingKit->kit_id)
+            ->whereBetween('ordination', [$destinationKit->ordination + 1, $movingKit->ordination - 1])
+            ->get();
+
+
+        foreach ($kitsToShift as $kit) {
+            $kit->ordination = $kit->ordination + 1;
+            $kit->save();
+        }
+
+        $movingKit->ordination = $destinationKit->ordination + 1;
+        $movingKit->save();
+    }
+
+    public function shiftDownward(Kit $movingKit, Kit $destinationKit)
+    {
+        $kitsToShift = Kit::where('kit_id', $movingKit->kit_id)
+            ->whereBetween('ordination', [$movingKit->ordination + 1, $destinationKit->ordination])
+            ->get()
+            ->sortBy('ordination')
+            ->values();
+
+        foreach ($kitsToShift as $kit) {
+            $kit->ordination = $kit->ordination - 1;
+            $kit->save();
+        }
+
+        $movingKit->ordination = $destinationKit->ordination;
+        $movingKit->save();
+    }
+
+    public function isAscending(Kit $movingKit, Kit $destinationKit)
+    {
+        return $movingKit->ordination > $destinationKit->ordination;
+    }
+
+    public function fixEmptyOrdination(Kit $movingKit)
+    {
+        $kitWithEmptyOrdination = Kit::where('kit_id', $movingKit->kit_id)
+            ->whereNull('ordination')
+            ->get()
+            ->sortBy('name')
+            ->values();
+
+        $totalKits =  Kit::where('kit_id', $movingKit->kit_id)
+            ->get()
+            ->count();
+
+        foreach ($kitWithEmptyOrdination as $key => $kit) {
+            $kit->update(['ordination' => $totalKits + $key + 1]);
+        }
     }
 
     public function destroy(Kit $kit)
