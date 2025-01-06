@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Qualification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\this;
@@ -30,11 +31,11 @@ class CollaboratorResource extends JsonResource
             'user_id'        => $this->user_id,
             'file_id'=> $this->file_id,
             'file_path'      => $this->file ? asset('storage/' . $this->file->path) : null,
-            'qualifications' => $this->qualifications->map(function ($qualification) {
+            'qualifications' => Qualification::all()->map(function ($qualification) {
                 return [
                     'id'          => $qualification->id,
                     'description' => $qualification->description,
-                    'points'      => $qualification->pivot->points ?? '0',
+                    'points'      => $this->qualifications?->find($qualification->id)?->pivot?->points ?? 0,
                 ];
             }),
             'incidents' => $this->collaboratorIncidents->map(function ($incident) {

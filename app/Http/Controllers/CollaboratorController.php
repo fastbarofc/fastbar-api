@@ -143,6 +143,7 @@ class CollaboratorController extends Controller
             }
         }
 
+        $this->syncQualifications($collaborator, $data);
 
         return response()->json(new CollaboratorResource($collaborator), 201);
     }
@@ -281,6 +282,8 @@ class CollaboratorController extends Controller
             PixKey::whereIn('id', $data['removed_pix_key_ids'])->delete();
         }
 
+        $this->syncQualifications($collaborator, $data);
+
         return response()->json(new CollaboratorResource($collaborator), 200);
     }
 
@@ -294,6 +297,26 @@ class CollaboratorController extends Controller
         return response()->json([], 204);
     }
 
+    public function syncQualifications(Collaborator $collaborator, array $data)
+    {
+
+        $availableQualifications = Qualification::all();
+
+        $qualificationsData = [];
+
+        foreach ($availableQualifications as $qualification) {
+            $qualificationsData[$qualification->id] = ['points' => 0];
+        }
+
+        foreach ($data['qualifications'] as $qualification) {
+            if (!empty($qualification['id'])) {
+                $qualificationsData[$qualification['id']] = ['points' => $qualification['points']];
+            }
+        }
+
+        $collaborator->qualifications()->syncWithoutDetaching($qualificationsData);
+    }
+
     public function updateQualifications(Request $request, Collaborator $collaborator)
     {
         if (!empty($request->qualifications)) {
@@ -304,7 +327,4 @@ class CollaboratorController extends Controller
 
         return response()->json(['message' => 'Qualificações atualizadas com sucesso!']);
     }
-
-
-
 }

@@ -24,14 +24,16 @@ class StoreCollaboratorRequest extends FormRequest
             'birth_date' => 'nullable|date|date_format:Y-m-d',
             'cpf'        => 'nullable|string|max:14|unique:collaborators',
             'rg'         => 'nullable|string|max:20|unique:collaborators',
-            'email'      => 'required|email',
+            'email'      => 'required|email|unique:collaborators,email',
             'phone_1'    => 'required|string|max:20',
             'phone_2'    => 'nullable|string|max:20',
             'sector_id'  => 'required|exists:sectors,id',
             'sector_office_id'  => 'required|exists:sector_offices,id',
             'has_login'  => 'nullable|boolean',
             'active'     => 'boolean',
-            'user_id'    => 'nullable|exists:users,id'
+            'user_id'    => 'nullable|exists:users,id',
+            'pix_keys'   => 'nullable|array',
+            'bank_details' => 'nullable|array',
         ];
         
 
