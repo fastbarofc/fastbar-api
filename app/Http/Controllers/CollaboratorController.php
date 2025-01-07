@@ -51,9 +51,26 @@ class CollaboratorController extends Controller
         }
 
         if ($request->input('order_by')) {
-            $sorteableField = $request->input('order_by');
+            $sortableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderBy($sorteableField, $direction);
+    
+            switch ($sortableField) {
+                case 'sector_id':
+                    $query->join('sectors', 'collaborators.sector_id', '=', 'sectors.id')
+                          ->orderBy('sectors.name', $direction)
+                          ->select('collaborators.*');
+                    break;
+    
+                case 'sector_office_id':
+                    $query->join('sector_offices', 'collaborators.sector_office_id', '=', 'sector_offices.id')
+                          ->orderBy('sector_offices.name', $direction)
+                          ->select('collaborators.*');
+                    break;
+    
+                default:
+                    $query->orderBy($sortableField, $direction);
+                    break;
+            }
         }
 
         $collaborators = $query->paginate($perPage);

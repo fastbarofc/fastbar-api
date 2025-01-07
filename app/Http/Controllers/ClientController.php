@@ -48,9 +48,34 @@ class ClientController extends Controller
         }
 
         if ($request->input('order_by')) {
-            $sorteableField = $request->input('order_by');
+            $sortableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderByField($sorteableField, $direction);
+    
+            switch ($sortableField) {
+                case 'city_id':
+                    $query->join('addresses', function ($join) {
+                        $join->on('clients.id', '=', 'addresses.addressable_id')
+                             ->where('addresses.addressable_type', '=', 'App\\Models\\Client');
+                    })
+                    ->join('cities', 'addresses.city_id', '=', 'cities.id')
+                    ->orderBy('cities.name', $direction)
+                    ->select('clients.*');
+                    break;
+    
+                case 'state_id':
+                    $query->join('addresses', function ($join) {
+                        $join->on('clients.id', '=', 'addresses.addressable_id')
+                             ->where('addresses.addressable_type', '=', 'App\\Models\\Client');
+                    })
+                    ->join('states', 'addresses.state_id', '=', 'states.id')
+                    ->orderBy('states.name', $direction)
+                    ->select('clients.*');
+                    break;
+    
+                default:
+                    $query->orderBy($sortableField, $direction);
+                    break;
+            }
         }
 
         $clients = $query->paginate($perPage);
