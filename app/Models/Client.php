@@ -41,7 +41,10 @@ class Client extends Model implements AuditableInterface
         'name',
         'birth_date',
         'nickname',
+        'city_name', 
+        'state_name',
     ];
+    
 
     protected static $filterableFields = [
         'id',

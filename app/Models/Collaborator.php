@@ -44,6 +44,8 @@ class Collaborator extends Model implements AuditableInterface
         'nickname',
         'birth_date',
         'email',
+        'sector.name',    
+        'sectorOffice.name',
     ];
 
     protected static $filterableFields = [

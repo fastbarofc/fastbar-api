@@ -67,35 +67,8 @@ class CollaboratorController extends Controller
 
     if ($request->input('order_by')) {
         $sortableField = $request->input('order_by');
-        $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
-
-        if (str_contains($sortableField, '.')) {
-            [$relation, $field] = explode('.', $sortableField);
-            $relationTable = match ($relation) {
-                'sectorOffice' => 'sector_offices',
-                'sector' => 'sectors',
-                default => $relation,
-            };
-        
-            if ($relation === 'sector') {
-                if (!isset($joins['sector_offices'])) {
-                    $query->leftJoin('sector_offices', 'collaborators.sector_office_id', '=', 'sector_offices.id');
-                    $joins['sector_offices'] = true;
-                }
-        
-                if (!isset($joins['sectors'])) {
-                    $query->leftJoin('sectors', 'sector_offices.sector_id', '=', 'sectors.id');
-                    $joins['sectors'] = true;
-                }
-            } elseif (!isset($joins[$relationTable])) {
-                $query->leftJoin($relationTable, 'collaborators.sector_office_id', '=', "$relationTable.id");
-                $joins[$relationTable] = true;
-            }
-        
-            $query->orderBy("$relationTable.$field", $direction);
-        }
-        
-        
+        $direction = $request->input('direction', 'asc');
+        $query->orderByField($sortableField, $direction);
     }
 
     $collaborators = $query->paginate($perPage);
