@@ -362,10 +362,13 @@ class EventController extends Controller
 
         $event->update($data);
 
-        if ($event->event_status_id != $data['event_status_id']) {
-            EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
+        if (isset($data['event_status_id']) && $event->event_status_id != $data['event_status_id']) {
+            EventStatusHistory::create([
+                'event_id' => $event->id,
+                'event_status_id' => $event->event_status_id,
+                'collaborator_id' => auth()->user()->collaborator->id
+            ]);
         }
-
         return response()->json(new EventResource($event), 200);
     }
 

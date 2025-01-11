@@ -17,7 +17,7 @@ class StoreClientRequest extends FormRequest
     public function rules(): array
     {
         $data = [
-            'type'         => 'required|string|in:pf,pj',
+            'type'         => 'nullable|string|in:pf,pj',
             'email'        => 'required_if:has_login,true|nullable|email|unique:clients,email',
             'phone_1'      => 'required|string|max:20',
             'phone_2'      => 'nullable|string|max:20',
