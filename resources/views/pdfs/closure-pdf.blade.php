@@ -47,14 +47,14 @@
     <table>
         <tr>
             <td><span class="text-bold">EVENTO:</span> {{ $event->id }} - {{ $event->name }}</td>
-            <td><span class="text-bold">DATA:</span> {{ $event->date_time->format('d/m/Y') }}</td>
+            <td><span class="text-bold">DATA:</span> {{ $event->date_time?->format('d/m/Y') }}</td>
         </tr>
         <tr>
             <td><span class="text-bold">RESPONSÁVEL:</span> {{ $responsibles }}</td>
-            <td><span class="text-bold">HORÁRIO:</span> {{ $event->date_time->format('H:i') }} h</td>
+            <td><span class="text-bold">HORÁRIO:</span> {{ $event->date_time?->format('H:i') }} h</td>
         </tr>
         <tr>
-            <td><span class="text-bold">LOCAL:</span> {{ $place->name }}</td>
+            <td><span class="text-bold">LOCAL:</span> {{ $place?->name }}</td>
             <td><span class="text-bold">DURAÇÃO:</span> {{ $event->duration }} h</td>
         </tr>
         <tr>

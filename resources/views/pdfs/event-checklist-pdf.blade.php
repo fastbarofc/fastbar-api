@@ -107,11 +107,11 @@
         </tr>
         <tr>
             <td colspan="3"> <span class="text-bold">EVENTO:</span>&nbsp;{{ $event->name }}</td>
-            <td><span class="text-bold">DATA:</span>&nbsp;{{ $event->date_time->format('d/m/Y') }}</td>
+            <td><span class="text-bold">DATA:</span>&nbsp;{{ $event->date_time?->format('d/m/Y') }}</td>
         </tr>
         <tr>
             <td><span class="text-bold">HORÁRIO DO
-                    DURAÇÃO:</span>&nbsp;{{ $event->date_time->format('H:i') }}h</td>
+                    DURAÇÃO:</span>&nbsp;{{ $event->date_time?->format('H:i') }}h</td>
             <td><span class="text-bold">DURAÇÃO:</span>&nbsp;{{ $event->duration }}h</td>
             <td><span class="text-bold">PÓS EVENTO:</span>&nbsp;{{ $event->duration_after }}h</td>
             <td><span class="text-bold">Nº TOTAL DE
@@ -123,16 +123,16 @@
             <td><span class="text-bold">TELEFONE:</span>&nbsp;{{ $event->client->phone_1 }}</td>
         </tr>
         <tr>
-            <td colspan="2"><span class="text-bold">LOCAL:</span>&nbsp;{{ $place->name }}</td>
-            <td><span class="text-bold">RESP. LOCAL:</span>&nbsp;{{ $place->responsible }}</td>
-            <td><span class="text-bold">TELEFONE:</span>&nbsp;{{ $place->phone_1 }}</td>
+            <td colspan="2"><span class="text-bold">LOCAL:</span>&nbsp;{{ $place?->name }}</td>
+            <td><span class="text-bold">RESP. LOCAL:</span>&nbsp;{{ $place?->responsible }}</td>
+            <td><span class="text-bold">TELEFONE:</span>&nbsp;{{ $place?->phone_1 }}</td>
         </tr>
         <tr>
-            <td colspan="4"><span class="text-bold">ENDEREÇO:</span>&nbsp;{{ $place->address->street }},&nbsp;{{ $place->address->number }},&nbsp;{{ $place->address->city->name }},&nbsp;{{ $place->address->state->letter }}</td>
+            <td colspan="4"><span class="text-bold">ENDEREÇO:</span>&nbsp;{{ $place?->address?->street }},&nbsp;{{ $place?->address?->number }},&nbsp;{{ $place?->address?->city->name }},&nbsp;{{ $place?->address?->state->letter }}</td>
         </tr>
         <tr>
-            <td colspan="2"><span class="text-bold">DECORADOR(A):</span>&nbsp;{{ $event->decorator->name }}</td>
-            <td colspan="2"><span class="text-bold">CERIMONIAL:</span>&nbsp;{{ $event->ceremonial->name }}</td>
+            <td colspan="2"><span class="text-bold">DECORADOR(A):</span>&nbsp;{{ $event->decorator?->name }}</td>
+            <td colspan="2"><span class="text-bold">CERIMONIAL:</span>&nbsp;{{ $event->ceremonial?->name }}</td>
         </tr>
     </table>
 
@@ -164,13 +164,13 @@
             <th>INFORMAÇÕES PARA EMISSÃO DA NF</th>
         </tr>
         <tr>
-            <td> <span class="text-bold">NOME / RAZÃO SOCIAL:</span>&nbsp;{{ $event->invoiceClient->name }}</td>
+            <td> <span class="text-bold">NOME / RAZÃO SOCIAL:</span>&nbsp;{{ $event->invoiceClient?->name }}</td>
         </tr>
         <tr>
-            <td><span class="text-bold">ENDEREÇO:</span>&nbsp;{{ $event->invoiceClient->address->street }},&nbsp;{{ $event->invoiceClient->address->number }},&nbsp;{{ $event->invoiceClient->address->city->name }},&nbsp;{{ $event->invoiceClient->address->state->letter }}</td>
+            <td><span class="text-bold">ENDEREÇO:</span>&nbsp;{{ $event->invoiceClient?->address?->street }},&nbsp;{{ $event->invoiceClient?->address->number }},&nbsp;{{ $event->invoiceClient?->address?->city->name }},&nbsp;{{ $event->invoiceClient?->address->state->letter }}</td>
         </tr>
         <tr>
-            <td><span class="text-bold">CPF / CNPJ: </span>{{ $event->invoiceClient->cnpj ?: $event->invoiceClient->cpf }}</td>
+            <td><span class="text-bold">CPF / CNPJ: </span>{{ $event->invoiceClient?->cnpj ?: $event->invoiceClient?->cpf }}</td>
         </tr>
     </table>
 
