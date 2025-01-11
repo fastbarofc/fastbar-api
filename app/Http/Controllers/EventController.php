@@ -76,12 +76,12 @@ class EventController extends Controller
         if ($request->input('order_by')) {
             $sortField = $request->input('order_by');
             $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
-
+    
             if (str_contains($sortField, '.')) {
                 [$relation, $field] = explode('.', $sortField);
                 $query->whereHas($relation)->with($relation)->orderByRelation($relation, $field, $direction);
             } else {
-                $query->orderBy($sortField, $direction);
+                $query->orderByField($sortField, $direction);
             }
         }
 

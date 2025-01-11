@@ -6,6 +6,7 @@ use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
@@ -43,6 +44,8 @@ class Collaborator extends Model implements AuditableInterface
         'nickname',
         'birth_date',
         'email',
+        'sector.name',    
+        'sectorOffice.name',
     ];
 
     protected static $filterableFields = [
@@ -80,6 +83,22 @@ class Collaborator extends Model implements AuditableInterface
             $model->phone_1 = preg_replace("/[^0-9]/", "", $model->phone_1);
             $model->phone_2 = preg_replace("/[^0-9]/", "", $model->phone_2);
         });
+    }
+
+    public function scopeOrderByRelation(Builder $query, $relation, $field, $direction = 'asc')
+    {
+        $relatedModel = $this->{$relation}()->getRelated();
+        
+        $relatedTable = $relatedModel->getTable();
+    
+        $foreignKey = $this->{$relation}()->getForeignKeyName();
+    
+    
+        $query->select("{$this->getTable()}.*")
+              ->leftJoin("{$relatedTable}", "{$relatedTable}.id", '=', "{$this->getTable()}.{$foreignKey}")
+              ->orderBy("{$relatedTable}.{$field}", $direction);
+    
+        return $query->groupBy("{$this->getTable()}.id");
     }
 
     public function sector()
