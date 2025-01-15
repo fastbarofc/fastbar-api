@@ -781,67 +781,70 @@ class EventController extends Controller
         }
     }
 
-    public function generatePdf(Request $request)
-    {
-        $item = $request->input('item');
-        $pdf = new Pdf();
-
-
-        $slug = Str::slug($item, '-');
-
-        switch ($item) {
-            case 'Resumo':
-                $html = view("/pdfs/summary-pdf")->render();
-                break;
-            case 'Orçamento':
-                $html = view("/pdfs/budget-pdf", compact(['test' => 'dfg']))->render();
-                break;
-            case 'Orçamento Timbrado':
-                $html = view("/pdfs/letterhead-budget-pdf")->render();
-                break;
-            case 'Contrato de Buffet':
-                $html = view("/pdfs/buffet-contract-pdf")->render();
-                break;
-            case 'Contrato de Locação':
-                $html = view("/pdfs/lease-contract-pdf")->render();
-                break;
-            case 'Cardápio':
-                $html = view("/pdfs/menu-pdf")->render();
-                break;
-            case 'Colaboradores':
-                $html = view("/pdfs/collaborators-pdf")->render();
-                break;
-            case 'Fechamento':
-                $html = view("/pdfs/closure-pdf")->render();
-                break;
-            case 'Check List Evento':
-                $html = view("/pdfs/event-checklist-pdf")->render();
-                break;
-            case 'Check List de Itens do Evento':
-                $html = view("/pdfs/event-items-checklist-pdf")->render();
-                break;
-            default:
-                return response()->json(['error' => 'View não encontrada para o item especificado'], 400);
+    public function generateLetterheadBudget(Event $event) {
+        $fileName = 'orcamento-timbrado-' . $event->id;
+        $viewContent = view("/pdfs/letterhead-budget-pdf");
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
 
-
-        $pdf->addPage($html);
-
-        $fileName = $slug . '.pdf';
-        $directoryPath = storage_path('app/public/pdfs');
-
-        if (!File::exists($directoryPath)) {
-            File::makeDirectory($directoryPath, 0755, true);
+    public function generateBuffetContract(Event $event) {
+        $fileName = 'contrato-buffet-' . $event->id;
+        $viewContent = view("/pdfs/buffet-contract-pdf");
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
 
-        $filePath = "{$directoryPath}/{$fileName}";
-
-        if (!$pdf->saveAs($filePath)) {
-            return response()->json(['error' => $pdf->getError()], 500);
+    public function generateEventItemChecklist(Event $event) {
+        $fileName = 'check-list-itens-evento-' . $event->id;
+        $viewContent = view("/pdfs/event-item-checklist-pdf");
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
 
-        $pdfUrl = asset("storage/pdfs/{$fileName}");
-        return response()->json(['pdf_url' => $pdfUrl]);
+    public function generateLeaseContract(Event $event) {
+        $fileName = 'contrato-locacao-' . $event->id;
+        $viewContent = view("/pdfs/lease-contract-pdf");
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function generateMenu(Event $event) {
+        $fileName = 'menu-' . $event->id;
+        $viewContent = view("/pdfs/menu-pdf");
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function generateCollaborators(Event $event) {
+        $fileName = 'collaborators-' . $event->id;
+        $viewContent = view("/pdfs/collaborators-pdf");
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
 

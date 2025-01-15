@@ -155,13 +155,13 @@
             </tr>
             <tr class="event-row">
                 <td>Data:</td>
-                <td>{{ $event->date_time->format('d/m/Y') }}</td>
+                <td>{{ $event->date_time?->format('d/m/Y') }}</td>
                 <td>Local:</td>
-                <td>{{ $place->name }}</td>
+                <td>{{ $place?->name }}</td>
             </tr>
             <tr class="event-row">
                 <td>Horário:</td>
-                <td>{{ $event->date_time->format('H:i') }} h</td>
+                <td>{{ $event->date_time?->format('H:i') }} </td>
                 <td>Duração (h):</td>
                 <td>{{ $event->duration }}</td>
             </tr>
