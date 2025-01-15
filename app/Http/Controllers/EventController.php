@@ -803,6 +803,17 @@ class EventController extends Controller
         }
     }
 
+    public function generateEventItemChecklist(Event $event) {
+        $fileName = 'check-list-itens-evento-' . $event->id;
+        $viewContent = view("/pdfs/event-item-checklist-pdf");
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function generateLeaseContract(Event $event) {
         $fileName = 'contrato-locacao-' . $event->id;
         $viewContent = view("/pdfs/lease-contract-pdf");

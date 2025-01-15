@@ -201,7 +201,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('parthenon-bank-accounts', ParthenonBankAccountController::class);
     Route::resource('event-payments', EventPaymentController::class);
 
-    Route::post('/events/generate-pdf', [EventController::class, 'generatePdf']);
     Route::delete('/events/{event}/related-events', [EventController::class, 'clearRelatedEvents']);    
     Route::post('/events/generate-budget/{event}', [EventController::class, 'generateBudget']);
     Route::post('/events/generate-letterhead-budget/{event}', [EventController::class, 'generateLetterheadBudget']);
@@ -213,6 +212,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('/events/generate-menu/{event}', [EventController::class, 'generateMenu']);
     Route::post('/events/generate-collaborators/{event}', [EventController::class, 'generateCollaborators']);
     Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
+    Route::post('/events/generate-event-items-checklist/{event}', [EventController::class, 'generateEventItemChecklist']);
 
     Route::post('/contract-template/save', [ContractTemplateController::class, 'save']);
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
