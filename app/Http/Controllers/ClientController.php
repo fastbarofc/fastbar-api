@@ -25,58 +25,50 @@ class ClientController extends Controller
     }
 
     public function index(Request $request)
-{
-    $perPage = $request->input('per_page', 10);
+    {
+        $perPage = $request->input('per_page', 10);
 
-    $query = Client::query();
+        $query = Client::query();
 
-    if ($request->input('filter_by')) {
-        $filterable = $request->input('filter_by');
-        if ($filterable && $filterable !== '[]') {
-            $filterableArray = json_decode($filterable, true);
-            foreach ($filterableArray as $filter) {
-                $field = array_keys($filter)[0];
-                $value = $filter[$field];
-                $operator = in_array($field, ['name', 'nickname', 'email']) ? 'like' : '=';
-
-                $qualifiedField = match ($field) {
-                    'name' => 'clients.name',
-                    'nickname' => 'clients.nickname',
-                    'email' => 'clients.email',
-                    'type' => 'clients.type',
-                    'search' => 'clients.name',
-                    default => $field,
-                };
-
-                $query->filterByField(
-                    field: $qualifiedField,
-                    value: $operator == 'like' ? "%$value%" : $value,
-                    operator: $operator
-                );
+        if ($request->input('filter_by')) {
+            $filterable = $request->input('filter_by');
+            if ($filterable && $filterable !== '[]') {
+                $filterableArray = json_decode($filterable, true);
+                foreach ($filterableArray as $filter) {
+                    $field = array_keys($filter)[0];
+                    $value = $filter[$field];
+                    $operator = $field == 'name' ? 'like' : '=';
+                    $query->filterByField(
+                        field: $field,
+                        value: $operator == 'like' ? "%$value%" : $value,
+                        operator: $operator
+                    );
+                }
             }
         }
+
+        if($request->input('order_by')) {
+            $sorteableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sorteableField, $direction);
+        }
+
+        $products = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => ClientResource::collection($products),
+            'pagination' => [
+                'page' => $products->currentPage(),
+                'total_pages' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+            ],
+            'sortable_fields' => Client::sortableFields(),
+            'filterable_fields' => Client::filterableFields()
+        ], 200);
     }
 
-    if ($request->input('order_by')) {
-        $sortableField = $request->input('order_by');
-        $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
-        $query->orderByField($sortableField, $direction);
-    }
 
-    $clients = $query->paginate($perPage);
-
-    return response()->json([
-        'data' => ClientResource::collection($clients),
-        'pagination' => [
-            'page' => $clients->currentPage(),
-            'total_pages' => $clients->lastPage(),
-            'per_page' => $clients->perPage(),
-            'total' => $clients->total(),
-        ],
-        'sortable_fields' => Client::sortableFields(),
-        'filterable_fields' => Client::filterableFields()
-    ], 200);
-}
 
     
 
