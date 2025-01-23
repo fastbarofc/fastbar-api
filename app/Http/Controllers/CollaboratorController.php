@@ -23,56 +23,92 @@ use Illuminate\Support\Facades\Storage;
 class CollaboratorController extends Controller
 {
 
-    public function __construct()
-    {
-        $this->authorizeResource(Collaborator::class, 'collaborator');
-    }
-
     public function index(Request $request)
 {
+    // Paginação
     $perPage = $request->input('per_page', 10);
+
+    // Query inicial para o model Collaborator
     $query = Collaborator::query();
-    $query->select('collaborators.*');
 
-    $joins = []; 
+    // Variáveis para controlar os joins e evitar duplicação
+    $joins = [
+        'sector_offices' => false,
+        'sectors' => false,
+    ];
 
+    // Tratamento de filtros
     if ($request->input('filter_by')) {
         $filterable = $request->input('filter_by');
         if ($filterable && $filterable !== '[]') {
             $filterableArray = json_decode($filterable, true);
+
             foreach ($filterableArray as $filter) {
                 $field = array_keys($filter)[0];
                 $value = $filter[$field];
-                $operator = in_array($field, ['name', 'nickname']) ? 'like' : '=';
 
-                $qualifiedField = match ($field) {
-                    'sector_id' => 'sector_offices.sector_id',
-                    'sector_office_id' => 'collaborators.sector_office_id',
-                    default => $field,
-                };
-
-                if ($qualifiedField === 'sector_offices.sector_id' && !isset($joins['sector_offices'])) {
-                    $query->join('sector_offices', 'collaborators.sector_office_id', '=', 'sector_offices.id');
-                    $joins['sector_offices'] = true;
+                // Campo "search" tratado diretamente
+                if ($field === 'search') {
+                    $query->where(function ($subQuery) use ($value) {
+                        foreach (Collaborator::searchableFields() as $searchableField) {
+                            $subQuery->orWhere("collaborators.$searchableField", 'like', "%$value%");
+                        }
+                    });
+                } else {
+                    // Adiciona o prefixo do nome da tabela base ou relacionamento
+                    if (Collaborator::isFieldFilterable($field)) {
+                        $query->where("collaborators.$field", $value);
+                    } elseif ($field === 'sector_id') {
+                        if (!$joins['sectors']) {
+                            $query->leftJoin('sectors', 'sectors.id', '=', 'collaborators.sector_id');
+                            $joins['sectors'] = true;
+                        }
+                        $query->where('sectors.id', $value);
+                    } elseif ($field === 'sector_office_id') {
+                        if (!$joins['sector_offices']) {
+                            $query->leftJoin('sector_offices', 'sector_offices.id', '=', 'collaborators.sector_office_id');
+                            $joins['sector_offices'] = true;
+                        }
+                        $query->where('sector_offices.id', $value);
+                    }
                 }
-
-                $query->filterByField(
-                    field: $qualifiedField,
-                    value: $operator == 'like' ? "%$value%" : $value,
-                    operator: $operator
-                );
             }
         }
     }
 
+    // Tratamento de ordenação
     if ($request->input('order_by')) {
-        $sortableField = $request->input('order_by');
-        $direction = $request->input('direction', 'asc');
-        $query->orderByField($sortableField, $direction);
+        $sortField = $request->input('order_by');
+        $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
+
+        if (str_contains($sortField, '.')) {
+            // Ordenação por relacionamentos
+            [$relation, $field] = explode('.', $sortField);
+
+            // Relacionamentos padronizados para as tabelas no banco de dados
+            if ($relation === 'sector_office') {
+                if (!$joins['sector_offices']) {
+                    $query->leftJoin('sector_offices', 'sector_offices.id', '=', 'collaborators.sector_office_id');
+                    $joins['sector_offices'] = true;
+                }
+                $query->orderBy("sector_offices.$field", $direction);
+            } elseif ($relation === 'sector') {
+                if (!$joins['sectors']) {
+                    $query->leftJoin('sectors', 'sectors.id', '=', 'collaborators.sector_id');
+                    $joins['sectors'] = true;
+                }
+                $query->orderBy("sectors.$field", $direction);
+            }
+        } else {
+            // Ordenação por campos da tabela base
+            $query->orderBy("collaborators.$sortField", $direction);
+        }
     }
 
+    // Paginação dos resultados
     $collaborators = $query->paginate($perPage);
 
+    // Retorna a resposta com os dados e informações de paginação
     return response()->json([
         'data' => CollaboratorResource::collection($collaborators),
         'pagination' => [
@@ -85,8 +121,6 @@ class CollaboratorController extends Controller
         'filterable_fields' => Collaborator::filterableFields(),
     ], 200);
 }
-
-    
 
 
 
