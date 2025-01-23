@@ -25,19 +25,17 @@ class CollaboratorController extends Controller
 
     public function index(Request $request)
 {
-    // Paginação
     $perPage = $request->input('per_page', 10);
 
-    // Query inicial para o model Collaborator
     $query = Collaborator::query();
 
-    // Variáveis para controlar os joins e evitar duplicação
+    // Flag para controlar se a junção foi realizada
     $joins = [
         'sector_offices' => false,
         'sectors' => false,
     ];
 
-    // Tratamento de filtros
+    // Aplica os filtros, se existirem
     if ($request->input('filter_by')) {
         $filterable = $request->input('filter_by');
         if ($filterable && $filterable !== '[]') {
@@ -47,7 +45,7 @@ class CollaboratorController extends Controller
                 $field = array_keys($filter)[0];
                 $value = $filter[$field];
 
-                // Campo "search" tratado diretamente
+                // Filtro de busca geral
                 if ($field === 'search') {
                     $query->where(function ($subQuery) use ($value) {
                         foreach (Collaborator::searchableFields() as $searchableField) {
@@ -55,16 +53,18 @@ class CollaboratorController extends Controller
                         }
                     });
                 } else {
-                    // Adiciona o prefixo do nome da tabela base ou relacionamento
+                    // Filtros diretos nos campos da tabela colaboradores
                     if (Collaborator::isFieldFilterable($field)) {
                         $query->where("collaborators.$field", $value);
                     } elseif ($field === 'sector_id') {
+                        // Filtro por setor
                         if (!$joins['sectors']) {
                             $query->leftJoin('sectors', 'sectors.id', '=', 'collaborators.sector_id');
                             $joins['sectors'] = true;
                         }
                         $query->where('sectors.id', $value);
                     } elseif ($field === 'sector_office_id') {
+                        // Filtro por cargo (setor de escritório)
                         if (!$joins['sector_offices']) {
                             $query->leftJoin('sector_offices', 'sector_offices.id', '=', 'collaborators.sector_office_id');
                             $joins['sector_offices'] = true;
@@ -76,23 +76,24 @@ class CollaboratorController extends Controller
         }
     }
 
-    // Tratamento de ordenação
+    // Ordenação
     if ($request->input('order_by')) {
         $sortField = $request->input('order_by');
         $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
 
+        // Verifica se a ordenação é por um campo relacionado
         if (str_contains($sortField, '.')) {
-            // Ordenação por relacionamentos
             [$relation, $field] = explode('.', $sortField);
 
-            // Relacionamentos padronizados para as tabelas no banco de dados
             if ($relation === 'sector_office') {
+                // Ordenação por campo de setor de escritório
                 if (!$joins['sector_offices']) {
                     $query->leftJoin('sector_offices', 'sector_offices.id', '=', 'collaborators.sector_office_id');
                     $joins['sector_offices'] = true;
                 }
                 $query->orderBy("sector_offices.$field", $direction);
             } elseif ($relation === 'sector') {
+                // Ordenação por campo de setor
                 if (!$joins['sectors']) {
                     $query->leftJoin('sectors', 'sectors.id', '=', 'collaborators.sector_id');
                     $joins['sectors'] = true;
@@ -100,15 +101,18 @@ class CollaboratorController extends Controller
                 $query->orderBy("sectors.$field", $direction);
             }
         } else {
-            // Ordenação por campos da tabela base
+            // Ordenação direta nos campos da tabela colaboradores
             $query->orderBy("collaborators.$sortField", $direction);
         }
     }
 
-    // Paginação dos resultados
+    // Seleção explícita dos campos desejados (somente os dados dos colaboradores)
+    $query->select('collaborators.*');
+
+    // Executa a consulta com paginação
     $collaborators = $query->paginate($perPage);
 
-    // Retorna a resposta com os dados e informações de paginação
+    // Retorna os dados formatados para o cliente
     return response()->json([
         'data' => CollaboratorResource::collection($collaborators),
         'pagination' => [
@@ -121,6 +125,9 @@ class CollaboratorController extends Controller
         'filterable_fields' => Collaborator::filterableFields(),
     ], 200);
 }
+
+
+
 
 
 
