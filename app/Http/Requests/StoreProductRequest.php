@@ -22,13 +22,13 @@ class StoreProductRequest extends FormRequest
             'unit_id'             => 'nullable|numeric|exists:units,id',
             'weight'              => 'nullable|numeric',
             'manufacturer'        => 'nullable|string|max:255',
-            'value'               => 'nullable|numeric|min:0',
+            'value'               => 'nullable|numeric|min:0|max:9999999',
             'supplier'            => 'nullable|string|max:255',
             'marketable'          => 'nullable|boolean',
-            'average_consumption' => 'nullable|numeric',
+            'average_consumption' => 'nullable|numeric|max:999999',
             'display_checklist'   => 'nullable|boolean',
             'own_production'      => 'nullable|boolean',
-            'recipe_yield'        => 'nullable|numeric',
+            'recipe_yield'        => 'nullable|numeric|max:999999',
         ];
     }
 
