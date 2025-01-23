@@ -22,7 +22,7 @@ class UpdateClientRequest extends FormRequest
         $data = [
             'type'         => 'nullable|string|in:pf,pj',
             'email'        => [
-                'required_if:has_login,true', 
+                'nullable', 
                 'email',
                 Rule::unique('clients', 'email')->ignore($clientId),
             ],
