@@ -17,7 +17,6 @@ class HowDidYouHear extends Model implements AuditableInterface
 
     protected $fillable = [
         'name',
-        'slug',
         'contract_text'
     ];
 
