@@ -203,11 +203,16 @@ class ClientController extends Controller
             }
         }
 
-        if ($request->has('order_by')) {
-            $orderBy = $request->input('order_by');
-            $direction = $request->input('direction', 'asc');
-
-            $query->orderBy($orderBy, $direction);
+        if ($request->input('order_by')) {
+            $sortField = $request->input('order_by');
+            $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
+    
+            if (str_contains($sortField, '.')) {
+                [$relation, $field] = explode('.', $sortField);
+                $query->whereHas($relation)->with($relation)->orderByRelation($relation, $field, $direction);
+            } else {
+                $query->orderByField($sortField, $direction);
+            }
         }
 
         $events = $query->paginate($perPage);
