@@ -49,7 +49,7 @@ class UpdateProductRequest extends FormRequest
             'manufacturer.max'            => 'O campo fabricante deve ter no máximo 255 caracteres.',
             'value.numeric'               => 'O campo valor deve ser numérico.',
             'value.min'                   => 'O campo valor não pode ser negativo',
-            'value.max'                   => 'O valor do campo "Valor" não pode ser superior a 9.999.999.',
+            'value.max'                   => 'O campo valor não pode ser superior a 9.999.999.',
             'supplier.string'             => 'O campo fornecedor deve ser uma string.',
             'supplier.max'                => 'O campo fornecedor deve ter no máximo 255 caracteres.',
             'average_consumption.numeric' => 'O campo consumo médio deve conter apenas números.',
