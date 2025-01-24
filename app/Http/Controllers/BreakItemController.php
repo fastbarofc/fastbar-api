@@ -37,13 +37,14 @@ class BreakItemController extends Controller
         $query->with('unit');
 
         if ($request->input('order_by')) {
-            $sortableField = $request->input('order_by');
-            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            if ($sortableField === 'unit_name') {
-                $query->join('units', 'break_items.unit_id', '=', 'units.id')
-                      ->orderBy('units.description', $direction);
+            $sortField = $request->input('order_by');
+            $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
+    
+            if (str_contains($sortField, '.')) {
+                [$relation, $field] = explode('.', $sortField);
+                $query->whereHas($relation)->with($relation)->orderByRelation($relation, $field, $direction);
             } else {
-                $query->orderByField($sortableField, $direction);
+                $query->orderByField($sortField, $direction);
             }
         }
 
