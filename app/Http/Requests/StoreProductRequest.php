@@ -50,13 +50,16 @@ class StoreProductRequest extends FormRequest
             'manufacturer.max'            => 'O campo fabricante deve ter no máximo 255 caracteres.',
             'value.numeric'               => 'O campo valor deve ser numérico.',
             'value.min'                   => 'O campo valor não pode ser negativo',
+            'value.max'                   => 'O campo valor não pode ser superior a 9.999.999.',
             'supplier.string'             => 'O campo fornecedor deve ser uma string.',
             'supplier.max'                => 'O campo fornecedor deve ter no máximo 255 caracteres.',
             'marketable.boolean'          => 'O campo comercializável deve ser um formato válido.',
             'average_consumption.numeric' => 'O campo consumo médio deve conter apenas números.',
+            'average_consumption.max'     => 'O campo consumo médio não pode ser superior a 999.999.',
             'display_checklist.boolean'   => 'O campo checklist deve estar em formato válido.',
             'own_production.boolean'      => 'O campo produção própria estar em formato válido.',
             'recipe_yield.numeric'        => 'O campo rendimento deve conter apenas números.',
+            'recipe_yield.max'            => 'O campo rendimento não pode ser superior a 999.999.',
         ];
     }
 }
