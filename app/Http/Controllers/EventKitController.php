@@ -118,12 +118,11 @@ class EventKitController extends Controller
 
         try {
             $product->eventKits()->attach($eventKitId);
-            $product->type = 'product';
-            $product->save();
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response()->json(['error' => 'Error creating kit'], 500);
         }
+        $product->type = 'product';
         return response()->json(['data' => $product], 201);
     }
 
