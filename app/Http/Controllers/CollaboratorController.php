@@ -275,8 +275,11 @@ class CollaboratorController extends Controller
                 ]
             );
         }
-        $bankDetails = BankDetail::with('bankDetailable')->where('collaborator_id', $collaborator->id)->get();
-        
+        $bankDetails = BankDetail::with('bankDetailable')
+    ->where('bank_detailable_type', 'App\Models\Collaborator')
+    ->where('bank_detailable_id', $collaborator->id)
+    ->get();
+
         if (!empty($request->bank_details)) {
             foreach ($request->bank_details as $bankData) {
                 if (isset($bankData['id'])) {
