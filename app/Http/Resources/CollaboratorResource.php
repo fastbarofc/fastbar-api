@@ -46,7 +46,7 @@ class CollaboratorResource extends JsonResource
                 ];
             }),
             'bank_details' => BankDetailResource::collection($this->bankDetails),
-            'pix_keys' => PixKeyResource::collection($this->pixKey),
+            'pix_keys' => PixKeyResource::collection($this->pixKeys),
 
         ];
 

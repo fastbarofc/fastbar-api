@@ -166,8 +166,8 @@ class CollaboratorController extends Controller
 
         if (!empty($data['bank_details'])) {
             foreach ($data['bank_details'] as $bankData) {
-                $bank = BankDetail::updateOrCreate(
-                    ['collaborator_id' => $collaborator->id],
+                BankDetail::updateOrCreate(
+                    ['bank_detailable_id' => $collaborator->id, 'bank_detailable_type' => Collaborator::class],
                     [
                         'bank_name' => $bankData['bank_name'],
                         'agency' => $bankData['agency'],
@@ -177,11 +177,10 @@ class CollaboratorController extends Controller
                 );
             }
         }
-
         if (!empty($data['pix_keys'])) {
             foreach ($data['pix_keys'] as $pixKey) {
                 PixKey::updateOrCreate(
-                    ['collaborator_id' => $collaborator->id],
+                    ['pix_keyable_id' => $collaborator->id, 'pix_keyable_type' => Collaborator::class],
                     [
                         'type' => $pixKey['type'],
                         'key' => $pixKey['key']
@@ -189,7 +188,7 @@ class CollaboratorController extends Controller
                 );
             }
         }
-
+    
         $this->syncQualifications($collaborator, $data);
 
         return response()->json(new CollaboratorResource($collaborator), 201);
@@ -276,12 +275,13 @@ class CollaboratorController extends Controller
                 ]
             );
         }
-
-        if (!empty($data['bank_details'])) {
-            foreach ($data['bank_details'] as $bankData) {
+        $bankDetails = BankDetail::with('bankDetailable')->where('collaborator_id', $collaborator->id)->get();
+        
+        if (!empty($request->bank_details)) {
+            foreach ($request->bank_details as $bankData) {
                 if (isset($bankData['id'])) {
-                    $bank = BankDetail::updateOrCreate(
-                        ['id' => $bankData['id'], 'collaborator_id' => $collaborator->id],
+                    BankDetail::updateOrCreate(
+                        ['id' => $bankData['id'], 'bank_detailable_id' => $collaborator->id, 'bank_detailable_type' => Collaborator::class],
                         [
                             'bank_name' => $bankData['bank_name'],
                             'agency' => $bankData['agency'],
@@ -290,8 +290,9 @@ class CollaboratorController extends Controller
                         ]
                     );
                 } else {
-                    $bank = BankDetail::create([
-                        'collaborator_id' => $collaborator->id,
+                    BankDetail::create([
+                        'bank_detailable_id' => $collaborator->id,
+                        'bank_detailable_type' => Collaborator::class,
                         'bank_name' => $bankData['bank_name'],
                         'agency' => $bankData['agency'],
                         'account' => $bankData['account'],
@@ -305,23 +306,13 @@ class CollaboratorController extends Controller
             BankDetail::whereIn('id', $data['removed_bank_detail_ids'])->delete();
         }
 
-        if (!empty($data['pix_keys'])) {
-            foreach ($data['pix_keys'] as $pixKey) {
-                if (isset($pixKey['id'])) {
-                    PixKey::updateOrCreate(
-                        ['id' => $pixKey['id'], 'collaborator_id' => $collaborator->id],
-                        [
-                            'type' => $pixKey['type'],
-                            'key' => $pixKey['key']
-                        ]
-                    );
-                } else {
-                    PixKey::create([
-                        'collaborator_id' => $collaborator->id,
-                        'type' => $pixKey['type'],
-                        'key' => $pixKey['key']
-                    ]);
-                }
+      
+        if ($request->has('pix_keys')) {
+            foreach ($request->pix_keys as $pixKeyData) {
+                PixKey::updateOrCreate(
+                    ['pix_keyable_id' => $collaborator->id, 'pix_keyable_type' => Collaborator::class],
+                    ['key' => $pixKeyData['key'], 'type' => $pixKeyData['type']]
+                );
             }
         }
 

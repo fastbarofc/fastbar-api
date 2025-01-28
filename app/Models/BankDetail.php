@@ -10,13 +10,13 @@ class BankDetail extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['collaborator_id', 'bank_name', 'agency', 'account', 'status'];
+    protected $fillable = ['bank_detailable_id', 'bank_detailable_type', 'bank_name', 'agency', 'account', 'status'];
 
 
 
-    public function colaborador()
+    public function bankDetailable()
     {
-        return $this->belongsTo(Collaborator::class);
+        return $this->morphTo('bank_detailable',);
     }
 
     
