@@ -54,9 +54,9 @@
         <p><span class="text-bold">EVENTO:</span> {{ $event->name }}</p>
         <p><span class="text-bold">RESPONSÁVEL:</span> {{ $responsibles }}</p>
         <p><span class="text-bold">CÓDIGO:</span> {{ $event->id }}</p>
-        <p><span class="text-bold">DATA:</span> {{ $event->date_time?->format('d/m/Y') }}</p>
+        <p><span class="text-bold">DATA:</span> {{ Carbon\Carbon::parse($event->date)->format('d/m/Y') }}</p>
         <p><span class="text-bold">LOCAL:</span> {{ $event->eventPlace?->description }}</p>
-        <p><span class="text-bold">HORÁRIO:</span> {{ $event->date_time?->format('H:i') }} h</p>
+        <p><span class="text-bold">HORÁRIO:</span> {{ $event->time ? Carbon\Carbon::parse($event->time)->format('H:i') . ' h' : 'Hora a definir' }} h</p>
         <p><span class="text-bold">DURAÇÃO:</span> {{ $event->duration }} h</p>
         <p><span class="text-bold">NÚMERO DE CONVIDADOS:</span> {{ $totalGuests }}</p>
     </div>

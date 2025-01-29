@@ -21,6 +21,9 @@ class EventFactory extends Factory
         $eventPlace = EventPlace::all()->random();
         $eventStatus = EventStatus::all()->random();
 
+        $date = $this->faker->dateTimeBetween('-1 years', '+1 years');
+        $time = $this->faker->optional()->time('H:i');
+
         return [
             'name' => $this->faker->company,
             'client_id' => Client::all()->random()->id,
@@ -32,7 +35,8 @@ class EventFactory extends Factory
             'lease' => $this->faker->numberBetween(1000, 10000),
             'duration' => $this->faker->numberBetween(1, 12),
             'duration_after' => $this->faker->numberBetween(1, 12),
-            'date_time' => $this->faker->dateTimeBetween('-1 years', '+1 years'),
+            'date' => Carbon::parse($dateTime)->format('Y-m-d'),
+            'time' => $time,
             'partner_id' => Partner::all()->random()->id,
             'decorator_id' => Decorator::all()->random()->id,
             'event_capture_id' => EventCapture::all()->random()->id,
