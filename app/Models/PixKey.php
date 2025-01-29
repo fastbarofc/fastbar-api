@@ -10,10 +10,10 @@ class PixKey extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['collaborator_id', 'type', 'key'];
+    protected $fillable = ['pix_keyable_id', 'pix_keyable_type', 'type', 'key'];
 
-    public function collaborator()
+    public function pixKeyable()
     {
-        return $this->belongsTo(BankDetail::class);
+        return $this->morphTo('pix_keyable');
     }
 }

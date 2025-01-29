@@ -144,12 +144,12 @@ class Collaborator extends Model implements AuditableInterface
 
     public function bankDetails()
     {
-        return $this->hasMany(BankDetail::class);
+        return $this->morphMany(BankDetail::class, 'bank_detailable');
     }
 
-    public function pixKey()
+    public function pixKeys()
     {
-        return $this->hasMany(PixKey::class);
+        return $this->morphMany(PixKey::class, 'pix_keyable');
     }
 
     public function officeEvents()
