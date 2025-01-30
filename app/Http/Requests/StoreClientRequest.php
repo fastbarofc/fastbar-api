@@ -77,7 +77,7 @@ class StoreClientRequest extends FormRequest
             'complement' => ['nullable', 'string'],
             'city_id'    => ['required', 'exists:cities,id'],
             'state_id'   => ['required', 'exists:states,id'],
-            'number'     => ['required'],
+            'number'     => ['required', 'string', 'max:50'],
             'zip_code'   => ['required', 'formato_cep'],
             'reference'  => ['nullable', 'string'],
         ],[
@@ -91,6 +91,8 @@ class StoreClientRequest extends FormRequest
             'state_id.required'    => 'O campo state ID é obrigatório',
             'state_id.exists'      => 'O campo Estado deve ser um Estado valido',
             'number.required'      => 'O campo número é obrigatório',
+            'number.string'        => 'O campo número deve conter apenas letras e números',
+            'number.max'           => 'O campo número não pode ter mais de 50 caracteres',
             'zip_code.required'    => 'O campo CEP é obrigatório',
             'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido',
             'referencia.string'    => 'O campo referencia deve ser uma string',
