@@ -703,6 +703,9 @@ class EventController extends Controller
 
     public function generateEventChecklist(Event $event)
     {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $client = $event->client;
         $place = $event->eventPlace;
 
@@ -729,6 +732,9 @@ class EventController extends Controller
 
     public function generateClosure(Event $event)
     {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $place = $event->eventPlace;
 
         $responsibles = $event->clients->pluck('name')->implode(', ');
@@ -757,6 +763,9 @@ class EventController extends Controller
 
     public function generateSummary(Event $event)
     {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $responsibles = $event->clients->pluck('name')->implode(', ');
 
         $kits = $event->eventKits()->whereNull('event_kit_id')->get();
@@ -781,18 +790,10 @@ class EventController extends Controller
         }
     }
 
-    public function generateLetterheadBudget(Event $event) {
-        $fileName = 'orcamento-timbrado-' . $event->id;
-        $viewContent = view("/pdfs/letterhead-budget-pdf");
-        try {
-            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
-            return response()->json(['pdf_url' => $pdfUrl]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
     public function generateBuffetContract(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'contrato-buffet-' . $event->id;
         $viewContent = view("/pdfs/buffet-contract-pdf");
         try {
@@ -804,6 +805,9 @@ class EventController extends Controller
     }
 
     public function generateEventItemChecklist(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'check-list-itens-evento-' . $event->id;
         $viewContent = view("/pdfs/event-item-checklist-pdf");
         try {
@@ -815,6 +819,9 @@ class EventController extends Controller
     }
 
     public function generateLeaseContract(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'contrato-locacao-' . $event->id;
         $viewContent = view("/pdfs/lease-contract-pdf");
         try {
@@ -826,6 +833,9 @@ class EventController extends Controller
     }
 
     public function generateMenu(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'menu-' . $event->id;
         $viewContent = view("/pdfs/menu-pdf");
         try {
@@ -837,6 +847,9 @@ class EventController extends Controller
     }
 
     public function generateCollaborators(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'collaborators-' . $event->id;
         $viewContent = view("/pdfs/collaborators-pdf");
         try {
