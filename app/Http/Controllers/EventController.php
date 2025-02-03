@@ -327,29 +327,27 @@ class EventController extends Controller
             }
         }
 
-        if (!empty($data['related_events']) || !empty($data['events_with_tastings'])) {
-            if (!empty($data['related_events'])) {
-                $relatedTastingEvents = $data['related_events'];
-
-                $event->tastings()->sync($relatedTastingEvents);
-
-                foreach ($relatedTastingEvents as $tastingEventId) {
-                    $tastingEvent = Event::find($tastingEventId);
-                    $tastingEvent->eventsWithTastings()->syncWithoutDetaching([$event->id]);
-                }
-            }
-            if (!empty($data['events_with_tastings'])) {
-                $eventsWithTastings = $data['events_with_tastings'];
-
-                $event->eventsWithTastings()->sync($eventsWithTastings);
-
-                foreach ($eventsWithTastings as $mainEventId) {
-                    $mainEvent = Event::find($mainEventId);
-
-                    $mainEvent->tastings()->syncWithoutDetaching([$event->id]);
-                }
+        if (!empty($data['related_tasting_events'])) {
+            $relatedTastingEvents = $data['related_tasting_events'];
+            $event->tastingEvents()->sync($relatedTastingEvents);
+        
+            $tastingEvents = Event::findMany($relatedTastingEvents);
+            foreach ($tastingEvents as $tastingEvent) {
+                $tastingEvent->parentEvents()->syncWithoutDetaching([$event->id]);
             }
         }
+        
+        if (!empty($data['parent_events'])) {
+            $parentEvents = $data['parent_events'];
+            $event->parentEvents()->sync($parentEvents);
+        
+            $mainEvents = Event::findMany($parentEvents);
+            foreach ($mainEvents as $mainEvent) {
+                $mainEvent->tastingEvents()->syncWithoutDetaching([$event->id]);
+            }
+        }
+        
+        
 
 
         if (!empty($data['legal_representatives'])) {
@@ -379,52 +377,55 @@ class EventController extends Controller
     }
 
     public function getFormData(Event $event)
-    {
-        $eventCaptures = EventCapture::all();
-        $eventTypes = EventType::all();
-        $partners = Partner::all();
-        $decorators = Decorator::all();
-        $ceremonials = Ceremonial::all();
-        $eventStatuses = EventStatus::all();
-        $eventPlaces = EventPlace::with(['address.city', 'address.state'])->get();
-        $competingCompany = CompetingCompany::all();
-        $lostReason = LostReason::all();
-        $events = Event::all();
+{
+    $eventCaptures = EventCapture::all();
+    $eventTypes = EventType::all();
+    $partners = Partner::all();
+    $decorators = Decorator::all();
+    $ceremonials = Ceremonial::all();
+    $eventStatuses = EventStatus::all();
+    $eventPlaces = EventPlace::with(['address.city', 'address.state'])->get();
+    $competingCompany = CompetingCompany::all();
+    $lostReason = LostReason::all();
 
+    $clients = [];
+    $invoiceClients = [];
+    $collaborators = [];
+    $relatedTastingEvents = [];
+    $parentEvents = [];
+    $hasTasting = false;
 
-        $clients = [];
-        $invoiceClients = [];
-        $collaborators = [];
-        $relatedEvents = [];
-
-        if ($event) {
-            $clients = Client::where('id', $event->client_id)->get();
-            $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
-            $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
-            $relatedEvents = $event->tastings()->pluck('events.id');
-            $hasTasting = $event->tastings()->exists();
-            $eventsWithTastings = $event->eventsWithTastings()->pluck('events.id');
-        }
-
-        return response()->json([
-            'event_captures' => $eventCaptures,
-            'event_types' => $eventTypes,
-            'partners' => $partners,
-            'decorators' => $decorators,
-            'ceremonials' => $ceremonials,
-            'event_statuses' => $eventStatuses,
-            'event_places' => $eventPlaces,
-            'clients' => $clients,
-            'invoice_clients' => $invoiceClients,
-            'collaborators' => $collaborators,
-            'events' => $events,
-            'competing_companies' => $competingCompany,
-            'lost_reasons' => $lostReason,
-            'related_events' => $relatedEvents,
-            'has_tasting' => $hasTasting,
-            'events_with_tastings' => $eventsWithTastings
-        ], 200);
+    if ($event) {
+        $clients = Client::where('id', $event->client_id)->get();
+        $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
+        $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
+        $hasTasting = $event->tastingEvents()->exists();
+        $parentEvents = Event::whereIn('id', $event->parentEvents()->pluck('events.id'))
+            ->get(['id', 'name']);
+        $relatedTastingEvents = Event::whereIn('id', $event->tastingEvents()->pluck('events.id'))
+            ->get(['id', 'name']);
     }
+
+    return response()->json([
+        'event_captures' => $eventCaptures,
+        'event_types' => $eventTypes,
+        'partners' => $partners,
+        'decorators' => $decorators,
+        'ceremonials' => $ceremonials,
+        'event_statuses' => $eventStatuses,
+        'event_places' => $eventPlaces,
+        'clients' => $clients,
+        'invoice_clients' => $invoiceClients,
+        'collaborators' => $collaborators,
+        'competing_companies' => $competingCompany,
+        'lost_reasons' => $lostReason,
+        'related_tasting_events' => $relatedTastingEvents,
+        'has_tasting' => $hasTasting,
+        'parent_events' => $parentEvents
+    ], 200);
+}
+
+
 
     public function gifts(Request $request, Event $event)
     {
@@ -851,8 +852,8 @@ class EventController extends Controller
     public function clearRelatedEvents($eventId)
     {
         $event = Event::findOrFail($eventId);
-        $event->tastings()->detach();
-        $event->eventsWithTastings()->detach();
+        $event->tastingEvents()->detach();
+        $event->parentEvents()->detach();
         return response()->json(['message' => 'Eventos relacionados removidos com sucesso.']);
     }
 }
