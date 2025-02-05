@@ -38,7 +38,7 @@ class StoreEventRequest extends FormRequest
             'office_events'      => 'nullable|array',
             'legal_representatives'            => 'nullable|array',
             'legal_representatives.*'          => 'exists:clients,id',
-            'min_guests' => 'nullable|numeric|min:1',
+            'min_guests' => 'nullable|integer|min:1',
         ];
 
         return $data;
@@ -83,7 +83,7 @@ class StoreEventRequest extends FormRequest
             'partner_courtesies.numeric'   => 'O campo cortesia parceiro deve ser um número',
             'partner_courtesies.min'       => 'O campo cortesia parceiro não pode ser negativo',
             'clients.*.exists'          => 'O campo ID do cliente deve ser um ID válido.',
-            'min_guests.numeric' => 'O campo convidados mínimos deve conter apenas números',
+            'min_guests.integer' => 'O campo convidados mínimos deve conter apenas números inteiros',
             'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
         ];
     }
