@@ -18,12 +18,13 @@ class StoreEventPlaceRequest extends FormRequest
     public function rules(): array
     {
         $data = [
-            'name'        => 'required|string|max:255|unique:event_places',
-            'responsible' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-            'phone_1'     => 'required|string|min:10|max:20',
-            'phone_2'     => 'nullable|string|min:10|max:20',
-            'email'       => 'required|email',
+            'name'              => 'required|string|max:255|unique:event_places',
+            'responsible'       => 'required|string|max:255',
+            'description'       => 'required|string|max:255',
+            'phone_1'           => 'required|string|min:10|max:20',
+            'phone_2'           => 'nullable|string|min:10|max:20',
+            'email'             => 'required|email',
+            'belongs_parthenon' => 'boolean',
         ];
 
         if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
@@ -54,6 +55,7 @@ class StoreEventPlaceRequest extends FormRequest
             'email.email'             => 'O campo e-mail deve ser um e-mail válido.',
             'email.required'          => 'O campo e-mail é obrigatório.',
             'email.unique'            => 'E-mail já cadastrado.',
+            'belongs_parthenon.boolean' => 'O campo pertence ao Parthenon deve ser um valor booleano',
         ];
     
     
