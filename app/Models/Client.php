@@ -49,6 +49,7 @@ class Client extends Model implements AuditableInterface
         'type',
         'email',
         'name',
+        'type',
         'birth_date',
         'nickname',
     ];
@@ -56,6 +57,7 @@ class Client extends Model implements AuditableInterface
     protected static $searchableFields = [
         'name',
         'email',
+        'type',
         'nickname',
     ];
 
