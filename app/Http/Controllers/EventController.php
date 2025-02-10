@@ -855,4 +855,34 @@ class EventController extends Controller
         $event->eventsWithTastings()->detach();
         return response()->json(['message' => 'Eventos relacionados removidos com sucesso.']);
     }
+
+    public function checkIfHasScheduledEvents(Event $event)
+{
+    $eventDate = $event->date_time->format('Y-m-d');
+
+    $closedStatusId = EventStatus::where('name', 'Fechado')->value('id');
+    $preReservedStatusId = EventStatus::where('name', 'Pré-Reserva')->value('id');
+
+    $conflictingEvents = Event::where('event_place_id', $event->event_place_id)
+        ->whereDate('date_time', $eventDate)
+        ->where('id', '<>', $event->id)
+        ->whereIn('event_status_id', [$closedStatusId, $preReservedStatusId]) 
+        ->get(['id', 'name', 'event_status_id']);
+
+    $hasClosedEvent = $conflictingEvents->contains('event_status_id', $closedStatusId);
+
+    $conflictingEvents = $conflictingEvents->map(function ($event) {
+        return [
+            'id' => $event->id,
+            'name' => $event->name,
+            'status' => EventStatus::where('id', $event->event_status_id)->value('name'),
+        ];
+    });
+
+    return response()->json([
+        'has_conflicting_events' => !$conflictingEvents->isEmpty(),
+        'conflicting_events' => $conflictingEvents,
+        'has_closed_event' => $hasClosedEvent,
+    ]);
+}
 }

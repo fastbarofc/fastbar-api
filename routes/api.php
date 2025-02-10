@@ -213,6 +213,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('/events/generate-collaborators/{event}', [EventController::class, 'generateCollaborators']);
     Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
     Route::post('/events/generate-event-items-checklist/{event}', [EventController::class, 'generateEventItemChecklist']);
+    Route::get('/events/{event}/check-if-has-scheduled-events', [EventController::class, 'checkIfHasScheduledEvents']);
 
     Route::post('/contract-template/save', [ContractTemplateController::class, 'save']);
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
