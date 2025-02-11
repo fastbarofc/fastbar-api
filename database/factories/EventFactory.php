@@ -12,6 +12,7 @@ use App\Models\EventType;
 use App\Models\EventPlace;
 use App\Models\EventStatus;
 use App\Models\Partner;
+use Carbon\Carbon;
 
 class EventFactory extends Factory
 {
@@ -35,7 +36,7 @@ class EventFactory extends Factory
             'lease' => $this->faker->numberBetween(1000, 10000),
             'duration' => $this->faker->numberBetween(1, 12),
             'duration_after' => $this->faker->numberBetween(1, 12),
-            'date' => Carbon::parse($dateTime)->format('Y-m-d'),
+            'date' => Carbon::parse($date)->format('Y-m-d'),
             'time' => $time,
             'partner_id' => Partner::all()->random()->id,
             'decorator_id' => Decorator::all()->random()->id,
