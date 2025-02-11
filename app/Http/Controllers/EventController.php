@@ -869,8 +869,6 @@ class EventController extends Controller
         ->whereIn('event_status_id', [$closedStatusId, $preReservedStatusId]) 
         ->get(['id', 'name', 'event_status_id']);
 
-    $hasClosedEvent = $conflictingEvents->contains('event_status_id', $closedStatusId);
-
     $conflictingEvents = $conflictingEvents->map(function ($event) {
         return [
             'id' => $event->id,
@@ -880,9 +878,7 @@ class EventController extends Controller
     });
 
     return response()->json([
-        'has_conflicting_events' => !$conflictingEvents->isEmpty(),
         'conflicting_events' => $conflictingEvents,
-        'has_closed_event' => $hasClosedEvent,
     ]);
 }
 }
