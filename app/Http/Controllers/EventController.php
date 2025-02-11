@@ -230,10 +230,6 @@ class EventController extends Controller
             $event->officeBudgets()->sync($data['office_budgets']);
         }
 
-        if (!empty($data['legal_representatives'])) {
-            $event->clients()->sync($data['legal_representatives']);
-        }
-
         EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
 
         return response()->json(new EventResource($event), 201);
@@ -349,11 +345,6 @@ class EventController extends Controller
                     $mainEvent->tastings()->syncWithoutDetaching([$event->id]);
                 }
             }
-        }
-
-
-        if (!empty($data['legal_representatives'])) {
-            $event->clients()->sync($data['legal_representatives']);
         }
 
         $data['competing_company_id'] = $data['competing_company_id'] ?? null;
