@@ -150,6 +150,7 @@ class EventController extends Controller
         $data = $request->all();
 
         $data['contract_body'] = ContractTemplate::first()?->content ?? null;
+        $data['is_medicine'] = $data['is_medicine'] ?? false;
 
         $event = Event::create($data);
 
@@ -247,6 +248,8 @@ class EventController extends Controller
     public function update(UpdateEventRequest $request, Event $event)
     {
         $data = $request->all();
+
+        $data['is_medicine'] = $data['is_medicine'] ?? $event->is_medicine;
 
         if (!empty($data['event_batches'])) {
             $batchesIds = collect($data['event_batches']);
