@@ -149,6 +149,7 @@ class EventController extends Controller
     {
         $data = $request->all();
 
+        $data['collaborator_id'] = auth()->user()->collaborator->id;
         $data['contract_body'] = ContractTemplate::first()?->content ?? null;
 
         $event = Event::create($data);
