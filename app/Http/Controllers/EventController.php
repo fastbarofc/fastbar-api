@@ -856,4 +856,6 @@ class EventController extends Controller
         $event->parentEvents()->detach();
         return response()->json(['message' => 'Eventos relacionados removidos com sucesso.']);
     }
+
+    
 }
