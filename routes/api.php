@@ -201,7 +201,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('parthenon-bank-accounts', ParthenonBankAccountController::class);
     Route::resource('event-payments', EventPaymentController::class);
 
-    Route::delete('/events/{event}/related-events', [EventController::class, 'clearRelatedEvents']);    
+    Route::delete('/events/{event}/related-events', [EventController::class, 'clearRelatedEvents']);
+    Route::post('/events/{event}/legal-representative/{legalRepresentative}', [EventController::class, 'attachLegalRepresentative']);  
+    Route::delete('/events/{event}/legal-representative/{legalRepresentative}', [EventController::class, 'detachLegalRepresentative']);    
     Route::post('/events/generate-budget/{event}', [EventController::class, 'generateBudget']);
     Route::post('/events/generate-letterhead-budget/{event}', [EventController::class, 'generateLetterheadBudget']);
     Route::post('/events/generate-buffet-contract/{event}', [EventController::class, 'generateBuffetContract']);

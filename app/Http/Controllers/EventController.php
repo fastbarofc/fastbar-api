@@ -72,7 +72,7 @@ class EventController extends Controller
                 }
             }
         }
-
+        
         if ($request->input('order_by')) {
             $sortField = $request->input('order_by');
             $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
@@ -230,10 +230,6 @@ class EventController extends Controller
             $event->officeBudgets()->sync($data['office_budgets']);
         }
 
-        if (!empty($data['legal_representatives'])) {
-            $event->clients()->sync($data['legal_representatives']);
-        }
-
         EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
 
         return response()->json(new EventResource($event), 201);
@@ -348,11 +344,6 @@ class EventController extends Controller
         }
         
         
-
-
-        if (!empty($data['legal_representatives'])) {
-            $event->clients()->sync($data['legal_representatives']);
-        }
 
         $data['competing_company_id'] = $data['competing_company_id'] ?? null;
         $data['lost_reason_id'] = $data['lost_reason_id'] ?? null;
@@ -617,6 +608,20 @@ class EventController extends Controller
     {
         $this->authorize('attachLegalRepresentatives', $event);
         $event->clients()->sync($request->legal_representatives);
+    }
+
+    public function attachLegalRepresentative(Request $request, Event $event)
+    {
+        $this->authorize('attachLegalRepresentatives', $event);
+        $event->clients()->attach($request->legalRepresentativeId);
+        return response()->json([], 201);
+    }
+
+    public function detachLegalRepresentative(Event $event, $legalRepresentativeId)
+    {
+        $this->authorize('attachLegalRepresentatives', $event);
+        $event->clients()->detach($legalRepresentativeId);
+        return response()->json([], 204);
     }
 
     public function syncMaterials(Event $event, Material $material, Request $request)
