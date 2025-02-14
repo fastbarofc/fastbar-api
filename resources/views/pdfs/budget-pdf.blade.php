@@ -57,6 +57,21 @@
             margin-bottom: 0;
         }
 
+        ol{
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+
+        ol li {
+            font-family: 'Times New Roman', serif;
+            font-size: 12px
+        }
+
+        ol li::marker {
+            color: #AA8534;
+            font-size: 10px;
+        }
+
         .table-container {
             padding: 3px;
             background-color: #f2f2f2;
@@ -255,7 +270,7 @@
         </div>
         <hr style="padding: 1px; margin: 0px;">
         <div class="terms-title" style="position: relative; overflow: hidden;">
-            <ol style="float: left; width: 30%; padding: 10px; list-style-type: decimal;">
+            <ol style="float: left; width: 30%; padding: 10px;">
                 <li>O serviço de buffet serve todos os itens do cardápio a vontade dentro do tempo de duração do evento.</li>
                 <li>Duração do evento: {{ $event->duration }} horas</li>
                 <li>Hora adicional: 10% do valor do evento</li>
@@ -264,7 +279,7 @@
                 <li>Toalhas de mesa</li>
                 <li>Aparadores para mesas temáticas, prato quente, e/ou jantar</li>
             </ol>
-            <ol style="float: left; width: 30%; padding: 10px; list-style-type: decimal;">
+            <ol style="float: left; width: 30%; padding: 10px;">
                 <li>O não comparecimento do número de convidados não implicará na redução deste orçamento, outrossim, o excedente será corbado por pessoa.</li>
                 <li>No caso de haver aumento nos custos das mercadorias e / ou matérias primas para o fornecimento de que ora se trata, os preços serão reajustados pelo índice do IGP -M ou outro índice que venha a substituir.</li>
                 <li>Este orçamento é válido por 10 dias, para o número mínimo de {{ $event->min_guests }} convidados e cancela e substitui os anteriores porventura existentes.</li>
