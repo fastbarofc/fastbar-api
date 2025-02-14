@@ -50,10 +50,12 @@ class Event extends Model implements AuditableInterface
         'discount',
         'unit_discount',
         'min_guests',
+        'is_medicine',
     ];
 
     protected $casts = [
         'date_time' => 'datetime:Y-m-d H:i:s',
+        'is_medicine' => 'boolean',
     ];
 
     protected static $sortableFields = [

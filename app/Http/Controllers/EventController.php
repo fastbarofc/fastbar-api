@@ -151,6 +151,7 @@ class EventController extends Controller
 
         $data['collaborator_id'] = auth()->user()->collaborator->id;
         $data['contract_body'] = ContractTemplate::first()?->content ?? null;
+        $data['is_medicine'] = $data['is_medicine'] ?? false;
 
         $event = Event::create($data);
 
@@ -244,6 +245,12 @@ class EventController extends Controller
     public function update(UpdateEventRequest $request, Event $event)
     {
         $data = $request->all();
+
+        if (isset($data['event_type_id']) && $data['event_type_id'] !== 7) {
+            $data['is_medicine'] = false;
+        }
+
+        $data['is_medicine'] = $data['is_medicine'] ?? $event->is_medicine;
 
         if (!empty($data['event_batches'])) {
             $batchesIds = collect($data['event_batches']);
