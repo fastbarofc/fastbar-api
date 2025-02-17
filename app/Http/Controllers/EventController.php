@@ -73,7 +73,7 @@ class EventController extends Controller
                 }
             }
         }
-
+        
         if ($request->input('order_by')) {
             $sortField = $request->input('order_by');
             $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
@@ -150,7 +150,9 @@ class EventController extends Controller
     {
         $data = $request->all();
 
+        $data['collaborator_id'] = auth()->user()->collaborator->id;
         $data['contract_body'] = ContractTemplate::first()?->content ?? null;
+        $data['is_medicine'] = $data['is_medicine'] ?? false;
 
         $event = Event::create($data);
 
@@ -231,10 +233,6 @@ class EventController extends Controller
             $event->officeBudgets()->sync($data['office_budgets']);
         }
 
-        if (!empty($data['legal_representatives'])) {
-            $event->clients()->sync($data['legal_representatives']);
-        }
-
         EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
 
         return response()->json(new EventResource($event), 201);
@@ -248,6 +246,12 @@ class EventController extends Controller
     public function update(UpdateEventRequest $request, Event $event)
     {
         $data = $request->all();
+
+        if (isset($data['event_type_id']) && $data['event_type_id'] !== 7) {
+            $data['is_medicine'] = false;
+        }
+
+        $data['is_medicine'] = $data['is_medicine'] ?? $event->is_medicine;
 
         if (!empty($data['event_batches'])) {
             $batchesIds = collect($data['event_batches']);
@@ -328,34 +332,27 @@ class EventController extends Controller
             }
         }
 
-        if (!empty($data['related_events']) || !empty($data['events_with_tastings'])) {
-            if (!empty($data['related_events'])) {
-                $relatedTastingEvents = $data['related_events'];
-
-                $event->tastings()->sync($relatedTastingEvents);
-
-                foreach ($relatedTastingEvents as $tastingEventId) {
-                    $tastingEvent = Event::find($tastingEventId);
-                    $tastingEvent->eventsWithTastings()->syncWithoutDetaching([$event->id]);
-                }
-            }
-            if (!empty($data['events_with_tastings'])) {
-                $eventsWithTastings = $data['events_with_tastings'];
-
-                $event->eventsWithTastings()->sync($eventsWithTastings);
-
-                foreach ($eventsWithTastings as $mainEventId) {
-                    $mainEvent = Event::find($mainEventId);
-
-                    $mainEvent->tastings()->syncWithoutDetaching([$event->id]);
-                }
+        if (!empty($data['related_tasting_events'])) {
+            $relatedTastingEvents = $data['related_tasting_events'];
+            $event->tastingEvents()->sync($relatedTastingEvents);
+        
+            $tastingEvents = Event::findMany($relatedTastingEvents);
+            foreach ($tastingEvents as $tastingEvent) {
+                $tastingEvent->parentEvents()->syncWithoutDetaching([$event->id]);
             }
         }
-
-
-        if (!empty($data['legal_representatives'])) {
-            $event->clients()->sync($data['legal_representatives']);
+        
+        if (!empty($data['parent_events'])) {
+            $parentEvents = $data['parent_events'];
+            $event->parentEvents()->sync($parentEvents);
+        
+            $mainEvents = Event::findMany($parentEvents);
+            foreach ($mainEvents as $mainEvent) {
+                $mainEvent->tastingEvents()->syncWithoutDetaching([$event->id]);
+            }
         }
+        
+        
 
         $data['competing_company_id'] = $data['competing_company_id'] ?? null;
         $data['lost_reason_id'] = $data['lost_reason_id'] ?? null;
@@ -380,52 +377,55 @@ class EventController extends Controller
     }
 
     public function getFormData(Event $event)
-    {
-        $eventCaptures = EventCapture::all();
-        $eventTypes = EventType::all();
-        $partners = Partner::all();
-        $decorators = Decorator::all();
-        $ceremonials = Ceremonial::all();
-        $eventStatuses = EventStatus::all();
-        $eventPlaces = EventPlace::with(['address.city', 'address.state'])->get();
-        $competingCompany = CompetingCompany::all();
-        $lostReason = LostReason::all();
-        $events = Event::all();
+{
+    $eventCaptures = EventCapture::all();
+    $eventTypes = EventType::all();
+    $partners = Partner::all();
+    $decorators = Decorator::all();
+    $ceremonials = Ceremonial::all();
+    $eventStatuses = EventStatus::all();
+    $eventPlaces = EventPlace::with(['address.city', 'address.state'])->get();
+    $competingCompany = CompetingCompany::all();
+    $lostReason = LostReason::all();
 
+    $clients = [];
+    $invoiceClients = [];
+    $collaborators = [];
+    $relatedTastingEvents = [];
+    $parentEvents = [];
+    $hasTasting = false;
 
-        $clients = [];
-        $invoiceClients = [];
-        $collaborators = [];
-        $relatedEvents = [];
-
-        if ($event) {
-            $clients = Client::where('id', $event->client_id)->get();
-            $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
-            $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
-            $relatedEvents = $event->tastings()->pluck('events.id');
-            $hasTasting = $event->tastings()->exists();
-            $eventsWithTastings = $event->eventsWithTastings()->pluck('events.id');
-        }
-
-        return response()->json([
-            'event_captures' => $eventCaptures,
-            'event_types' => $eventTypes,
-            'partners' => $partners,
-            'decorators' => $decorators,
-            'ceremonials' => $ceremonials,
-            'event_statuses' => $eventStatuses,
-            'event_places' => $eventPlaces,
-            'clients' => $clients,
-            'invoice_clients' => $invoiceClients,
-            'collaborators' => $collaborators,
-            'events' => $events,
-            'competing_companies' => $competingCompany,
-            'lost_reasons' => $lostReason,
-            'related_events' => $relatedEvents,
-            'has_tasting' => $hasTasting,
-            'events_with_tastings' => $eventsWithTastings
-        ], 200);
+    if ($event) {
+        $clients = Client::where('id', $event->client_id)->get();
+        $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
+        $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
+        $hasTasting = $event->tastingEvents()->exists();
+        $parentEvents = Event::whereIn('id', $event->parentEvents()->pluck('events.id'))
+            ->get(['id', 'name']);
+        $relatedTastingEvents = Event::whereIn('id', $event->tastingEvents()->pluck('events.id'))
+            ->get(['id', 'name']);
     }
+
+    return response()->json([
+        'event_captures' => $eventCaptures,
+        'event_types' => $eventTypes,
+        'partners' => $partners,
+        'decorators' => $decorators,
+        'ceremonials' => $ceremonials,
+        'event_statuses' => $eventStatuses,
+        'event_places' => $eventPlaces,
+        'clients' => $clients,
+        'invoice_clients' => $invoiceClients,
+        'collaborators' => $collaborators,
+        'competing_companies' => $competingCompany,
+        'lost_reasons' => $lostReason,
+        'related_tasting_events' => $relatedTastingEvents,
+        'has_tasting' => $hasTasting,
+        'parent_events' => $parentEvents
+    ], 200);
+}
+
+
 
     public function gifts(Request $request, Event $event)
     {
@@ -619,6 +619,20 @@ class EventController extends Controller
         $event->clients()->sync($request->legal_representatives);
     }
 
+    public function attachLegalRepresentative(Request $request, Event $event)
+    {
+        $this->authorize('attachLegalRepresentatives', $event);
+        $event->clients()->attach($request->legalRepresentativeId);
+        return response()->json([], 201);
+    }
+
+    public function detachLegalRepresentative(Event $event, $legalRepresentativeId)
+    {
+        $this->authorize('attachLegalRepresentatives', $event);
+        $event->clients()->detach($legalRepresentativeId);
+        return response()->json([], 204);
+    }
+
     public function syncMaterials(Event $event, Material $material, Request $request)
     {
         $this->authorize('syncMaterials', $event);
@@ -704,6 +718,9 @@ class EventController extends Controller
 
     public function generateEventChecklist(Event $event)
     {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $client = $event->client;
         $place = $event->eventPlace;
 
@@ -730,6 +747,9 @@ class EventController extends Controller
 
     public function generateClosure(Event $event)
     {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $place = $event->eventPlace;
 
         $responsibles = $event->clients->pluck('name')->implode(', ');
@@ -758,6 +778,9 @@ class EventController extends Controller
 
     public function generateSummary(Event $event)
     {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $responsibles = $event->clients->pluck('name')->implode(', ');
 
         $kits = $event->eventKits()->whereNull('event_kit_id')->get();
@@ -782,18 +805,10 @@ class EventController extends Controller
         }
     }
 
-    public function generateLetterheadBudget(Event $event) {
-        $fileName = 'orcamento-timbrado-' . $event->id;
-        $viewContent = view("/pdfs/letterhead-budget-pdf");
-        try {
-            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
-            return response()->json(['pdf_url' => $pdfUrl]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
     public function generateBuffetContract(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'contrato-buffet-' . $event->id;
         $viewContent = view("/pdfs/buffet-contract-pdf");
         try {
@@ -805,6 +820,9 @@ class EventController extends Controller
     }
 
     public function generateEventItemChecklist(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'check-list-itens-evento-' . $event->id;
         $viewContent = view("/pdfs/event-item-checklist-pdf");
         try {
@@ -816,6 +834,9 @@ class EventController extends Controller
     }
 
     public function generateLeaseContract(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'contrato-locacao-' . $event->id;
         $viewContent = view("/pdfs/lease-contract-pdf");
         try {
@@ -827,6 +848,9 @@ class EventController extends Controller
     }
 
     public function generateMenu(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'menu-' . $event->id;
         $viewContent = view("/pdfs/menu-pdf");
         try {
@@ -838,6 +862,9 @@ class EventController extends Controller
     }
 
     public function generateCollaborators(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'collaborators-' . $event->id;
         $viewContent = view("/pdfs/collaborators-pdf");
         try {
@@ -852,8 +879,8 @@ class EventController extends Controller
     public function clearRelatedEvents($eventId)
     {
         $event = Event::findOrFail($eventId);
-        $event->tastings()->detach();
-        $event->eventsWithTastings()->detach();
+        $event->tastingEvents()->detach();
+        $event->parentEvents()->detach();
         return response()->json(['message' => 'Eventos relacionados removidos com sucesso.']);
     }
 }

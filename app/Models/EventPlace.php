@@ -25,7 +25,8 @@ class EventPlace extends Model implements AuditableInterface
         'description',
         'phone_1',
         'phone_2',
-        'email'
+        'email',
+        'belongs_parthenon',
     ];
 
     protected static $sortableFields = [
@@ -40,6 +41,7 @@ class EventPlace extends Model implements AuditableInterface
         'responsible',
         'description',
         'email',
+        'belongs_parthenon',
     ];
 
     protected static $searchableFields = [

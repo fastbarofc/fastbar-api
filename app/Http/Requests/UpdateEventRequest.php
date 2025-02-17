@@ -39,7 +39,8 @@ class UpdateEventRequest extends FormRequest
             'office_events'      => 'nullable|array',
             'legal_representatives'            => 'nullable|array',
             'legal_representatives.*'          => 'nullable|exists:clients,id',
-            'min_guests' => 'nullable|numeric|min:1',
+            'min_guests' => 'nullable|integer|min:1',
+            'is_medicine' => 'nullable|boolean',
         ];
     }
 
@@ -73,8 +74,9 @@ class UpdateEventRequest extends FormRequest
             'excess_unit_value.numeric' => 'O campo valor unitário excedente deve ser um número',
             'excess_unit_value.min' => 'O campo valor unitário excedente não pode ser negativo',
             'legal_representatives.*.exists'          => 'O campo ID do representante legal deve ser um ID válido.',
-            'min_guests.numeric' => 'O campo convidados mínimos deve conter apenas números',
+            'min_guests.integer' => 'O campo convidados mínimos deve conter apenas números inteiros',
             'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
+            'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
         ];
     }
 }
