@@ -860,13 +860,14 @@ class EventController extends Controller
 {
     $eventDate = $event->date_time->format('Y-m-d');
 
-    $closedStatusId = EventStatus::where('name', 'Fechado')->value('id');
-    $preReservedStatusId = EventStatus::where('name', 'Pré-Reserva')->value('id');
+    $blockedStatusIds = EventStatus::whereIn('name', ['Fechado', 'Pré-Reserva', 'Planejamento', 'Concluído'])
+        ->pluck('id')
+        ->toArray();
 
     $conflictingEvents = Event::where('event_place_id', $event->event_place_id)
         ->whereDate('date_time', $eventDate)
         ->where('id', '<>', $event->id)
-        ->whereIn('event_status_id', [$closedStatusId, $preReservedStatusId]) 
+        ->whereIn('event_status_id', $blockedStatusIds) 
         ->get(['id', 'name', 'event_status_id']);
 
     $conflictingEvents = $conflictingEvents->map(function ($event) {
@@ -881,4 +882,6 @@ class EventController extends Controller
         'conflicting_events' => $conflictingEvents,
     ]);
 }
+
+
 }
