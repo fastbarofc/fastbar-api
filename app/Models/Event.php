@@ -30,7 +30,8 @@ class Event extends Model implements AuditableInterface
         'event_capture_id',
         'ceremonial_id',
         'lease',
-        'date_time',
+        'date',
+        'time',
         'duration',
         'duration_after',      
         'contract_body',
@@ -54,6 +55,8 @@ class Event extends Model implements AuditableInterface
     ];
 
     protected $casts = [
+        'date' => 'date:Y-m-d',
+        'time' => 'string'
         'date_time' => 'datetime:Y-m-d H:i:s',
         'is_medicine' => 'boolean',
     ];
@@ -62,7 +65,8 @@ class Event extends Model implements AuditableInterface
         'name',
         'client_id',
         'event_place_id',
-        'date_time',
+        'date',
+        'time',
         'email',
         'id'
     ];
@@ -74,7 +78,8 @@ class Event extends Model implements AuditableInterface
         'collaborator_id',
         'event_type_id',
         'email',
-        'date_time',
+        'date',
+        'time',
         'event_status_id',
         'event_place_id',
     ];
