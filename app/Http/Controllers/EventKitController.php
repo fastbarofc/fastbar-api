@@ -116,6 +116,17 @@ class EventKitController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
 
+        if (empty($eventKitId)) {
+            $kit = Kit::find($data['kit_id']);
+            $eventKitId = $this->checkKitParent(null, $kit, $data['event_id']);
+            $product->eventKits()->attach($eventKitId);
+            $eventKit = EventKit::find($eventKitId);
+            while(!empty($eventKit->event_kit_id)) {
+                $eventKit = EventKit::find($eventKit->event_kit_id);
+            }
+            return response()->json(new EventKitTreeResource($eventKit), 201);
+        }
+
         try {
             $product->eventKits()->attach($eventKitId);
         } catch (\Exception $e) {
@@ -124,6 +135,32 @@ class EventKitController extends Controller
         }
         $product->type = 'product';
         return response()->json(['data' => $product], 201);
+    }
+
+    public function checkKitParent($parentId, $kit, $eventId)
+    {
+        if (!empty($kit->kit_id)) {
+            $parentKit = Kit::find($kit->kit_id);
+            if ($parentKit) {
+                $parentId = $this->checkKitParent($parentId, $parentKit, $eventId);
+            }
+        }
+
+        $eventKit = EventKit::where('event_kit_id', $parentId)->where('event_id', $eventId)->where('name', $kit->name)->first();
+
+        if (empty($eventKit)) {
+            $eventKit = EventKit::create([
+                'name' => $kit->name,
+                'event_id' => $eventId,
+                'event_kit_id' => $parentId,
+                'ordination' => EventKit::where('event_kit_id', $parentId)->where('event_id', $kit->event_id)->count() + 1,
+                'themed_table' => false,
+                'optional' => false,
+                'checklist' => false
+            ]);
+        }
+
+        return $eventKit->id;
     }
 
     public function transformKitToEventKit($kit, $eventKit)
