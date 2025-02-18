@@ -252,22 +252,22 @@ class EventController extends Controller
 
         $data['is_medicine'] = $data['is_medicine'] ?? $event->is_medicine;
         
+
         $filteredBatches = array_filter($data['event_batches'], function ($batch) {
-            return array_filter($batch); 
+            return isset($batch['guests']) && $batch['guests'] !== null;
         });
-        
+
         if (!empty($filteredBatches)) {
-            
             $batchesIds = collect($filteredBatches)
                 ->where('id', '!=', null)
                 ->pluck('id')
                 ->toArray();
-        
+
             $batchesToDelete = $event->eventBatches->whereNotIn('id', $batchesIds);
             foreach ($batchesToDelete as $batch) {
                 $batch->delete();
             }
-        
+
             foreach ($filteredBatches as $batch) {
                 $batch['event_id'] = $event->id;
                 if (!empty($batch['id'])) {
@@ -277,6 +277,7 @@ class EventController extends Controller
                 EventBatch::create($batch);
             }
         }
+
         
 
         if (!empty($data['materials'])) {
