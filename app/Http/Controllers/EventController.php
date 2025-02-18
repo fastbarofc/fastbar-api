@@ -159,7 +159,6 @@ class EventController extends Controller
         if ($request->is_draft) {
             return response()->json(new EventResource($event), 201);
         }
-
         if (!empty($data['event_batches'])) {
             foreach ($data['event_batches'] as $eventBatch) {
                 $eventBatch['event_id'] = $event->id;
@@ -252,15 +251,24 @@ class EventController extends Controller
         }
 
         $data['is_medicine'] = $data['is_medicine'] ?? $event->is_medicine;
-
-        if (!empty($data['event_batches'])) {
-            $batchesIds = collect($data['event_batches']);
-            $batchesIds = $batchesIds->where('id', '!=', null)->pluck('id')->toArray();
+        
+        $filteredBatches = array_filter($data['event_batches'], function ($batch) {
+            return array_filter($batch); 
+        });
+        
+        if (!empty($filteredBatches)) {
+            
+            $batchesIds = collect($filteredBatches)
+                ->where('id', '!=', null)
+                ->pluck('id')
+                ->toArray();
+        
             $batchesToDelete = $event->eventBatches->whereNotIn('id', $batchesIds);
             foreach ($batchesToDelete as $batch) {
                 $batch->delete();
             }
-            foreach ($data['event_batches'] as $batch) {
+        
+            foreach ($filteredBatches as $batch) {
                 $batch['event_id'] = $event->id;
                 if (!empty($batch['id'])) {
                     EventBatch::find($batch['id'])->update($batch);
@@ -269,6 +277,7 @@ class EventController extends Controller
                 EventBatch::create($batch);
             }
         }
+        
 
         if (!empty($data['materials'])) {
             $materialsArray = collect($data['materials'])->mapWithKeys(function ($material) {
