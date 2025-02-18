@@ -12,6 +12,8 @@ use App\Models\Address;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use App\Models\BankDetail;
+use App\Models\PixKey;
 
 class SupplierController extends Controller
 {
@@ -87,6 +89,26 @@ class SupplierController extends Controller
             ]);
         }
 
+        if (!empty($data['bank_details']) && is_array($data['bank_details'])) {
+            BankDetail::create([
+                'bank_detailable_id' => $supplier->id,
+                'bank_detailable_type' => Supplier::class,
+                'bank_name' => $data['bank_details']['bank_name'],
+                'agency' => $data['bank_details']['agency'],
+                'account' => $data['bank_details']['account'],
+                'status' => $data['bank_details']['status'],
+            ]);
+        }
+    
+        if (!empty($data['pix_keys']) && is_array($data['pix_keys'])) {
+            PixKey::create([
+                'pix_keyable_id' => $supplier->id,
+                'pix_keyable_type' => Supplier::class,
+                'type' => $data['pix_keys']['type'],
+                'key' => $data['pix_keys']['key'],
+            ]);
+        }
+
         return response()->json(new SupplierResource($supplier), 201);
     }
 
@@ -119,7 +141,33 @@ class SupplierController extends Controller
                 ]
             );
         }
-
+        if (!empty($data['bank_details']) && is_array($data['bank_details'])) {
+            BankDetail::updateOrCreate(
+                [
+                    'bank_detailable_id' => $supplier->id,
+                    'bank_detailable_type' => Supplier::class,
+                ],
+                [
+                    'bank_name' => $data['bank_details']['bank_name'],
+                    'agency' => $data['bank_details']['agency'],
+                    'account' => $data['bank_details']['account'],
+                    'status' => $data['bank_details']['status'],
+                ]
+            );
+        }
+    
+        if (!empty($data['pix_keys']) && is_array($data['pix_keys'])) {
+            PixKey::updateOrCreate(
+                [
+                    'pix_keyable_id' => $supplier->id,
+                    'pix_keyable_type' => Supplier::class,
+                ],
+                [
+                    'type' => $data['pix_keys']['type'],
+                    'key' => $data['pix_keys']['key'],
+                ]
+            );
+        }
         return response()->json(new SupplierResource($supplier), 200);
     }
 

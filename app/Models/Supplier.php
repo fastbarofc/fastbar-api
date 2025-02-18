@@ -21,10 +21,6 @@ class Supplier extends Model implements AuditableInterface
         'state_registration',
         'phone_1',
         'phone_2',
-        'bank',
-        'agency',
-        'account',
-        'pix_key',
         'account_holder',
         'observations',
         'user_id',
@@ -69,5 +65,15 @@ class Supplier extends Model implements AuditableInterface
 
     public function user() {
         return $this->belongsTo(User::class);
+    }
+
+    public function bankDetails()
+    {
+        return $this->morphMany(BankDetail::class, 'bank_detailable');
+    }
+
+    public function pixKeys()
+    {
+        return $this->morphMany(PixKey::class, 'pix_keyable');
     }
 }
