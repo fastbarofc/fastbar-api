@@ -21,7 +21,6 @@ class Supplier extends Model implements AuditableInterface
         'state_registration',
         'phone_1',
         'phone_2',
-        'account_holder',
         'observations',
         'user_id',
     ];

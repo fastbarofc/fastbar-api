@@ -24,7 +24,6 @@ class StoreSupplierRequest extends FormRequest
             'state_registration' => 'required|string|max:255',
             'phone_1' => 'required|string|max:20',
             'phone_2' => 'nullable|string|max:20',
-            'account_holder' => 'nullable|string|max:255',
             'observations' => 'nullable|string',
             'user_id' => 'nullable|exists:users,id',
             'pix_keys'   => 'nullable|array',
@@ -58,8 +57,6 @@ class StoreSupplierRequest extends FormRequest
             'phone_1.max' => 'O campo telefone 1 deve ter no máximo 20 caracteres.',
             'phone_2.string' => 'O campo telefone 2 deve ser uma string.',
             'phone_2.max' => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
-            'account_holder.string' => 'O campo titular da conta deve ser uma string.',
-            'account_holder.max' => 'O campo titular da conta deve ter no máximo 255 caracteres.',
             'observations.string' => 'O campo observações deve ser uma string.',
             'user_id.exists' => 'O usuário informado não existe.',
         ];

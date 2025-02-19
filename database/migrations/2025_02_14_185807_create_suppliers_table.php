@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('state_registration');
             $table->string('phone_1');
             $table->string('phone_2')->nullable();
-            $table->string('account_holder')->nullable();
             $table->string('observations')->nullable();
             $table->foreignId('user_id')->nullable()->constrained();
             $table->timestamps();

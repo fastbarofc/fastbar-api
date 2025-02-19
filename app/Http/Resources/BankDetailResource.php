@@ -19,6 +19,7 @@ class BankDetailResource extends JsonResource
             'bank_name' => $this->bank_name,
             'agency' => $this->agency,
             'account' => $this->account,
+            'account_holder' => $this->account_holder,
             'status' => $this->status,
         ];
     }

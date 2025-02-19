@@ -17,12 +17,11 @@ class SupplierResource extends JsonResource
             'state_registration' => $this->state_registration,
             'phone_1' => $this->phone_1,
             'phone_2' => $this->phone_2,
-            'account_holder' => $this->account_holder,
             'observations' => $this->observations,
             'user_id' => new UserResource($this->user_id),
             'address' => new AddressResource($this->address),
-            'bank_details' => $this->bankDetails->first() ? new BankDetailResource($this->bankDetails->first()) : null,
-    'pix_keys' => $this->pixKeys->first() ? new PixKeyResource($this->pixKeys->first()) : null,
+            'bank_details' => BankDetailResource::collection($this->bankDetails),
+            'pix_keys' => PixKeyResource::collection($this->pixKeys),
         ];
     }
 }

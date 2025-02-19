@@ -89,26 +89,30 @@ class SupplierController extends Controller
             ]);
         }
 
-        if (!empty($data['bank_details']) && is_array($data['bank_details'])) {
-            BankDetail::create([
-                'bank_detailable_id' => $supplier->id,
-                'bank_detailable_type' => Supplier::class,
-                'bank_name' => $data['bank_details']['bank_name'],
-                'agency' => $data['bank_details']['agency'],
-                'account' => $data['bank_details']['account'],
-                'status' => $data['bank_details']['status'],
-            ]);
+        if (!empty($data['bank_details'])) {
+            foreach ($data['bank_details'] as $bankData) {
+                BankDetail::create([
+                    'bank_detailable_id' => $supplier->id,
+                    'bank_detailable_type' => Supplier::class,
+                    'bank_name' => $bankData['bank_name'],
+                    'agency' => $bankData['agency'],
+                    'account' => $bankData['account'],
+                    'account_holder' => $bankData['account_holder'],
+                    'status' => $bankData['status'],
+                ]);
+            }
         }
-    
-        if (!empty($data['pix_keys']) && is_array($data['pix_keys'])) {
-            PixKey::create([
-                'pix_keyable_id' => $supplier->id,
-                'pix_keyable_type' => Supplier::class,
-                'type' => $data['pix_keys']['type'],
-                'key' => $data['pix_keys']['key'],
-            ]);
+        
+        if (!empty($data['pix_keys'])) {
+            foreach ($data['pix_keys'] as $pixKey) {
+                PixKey::create([
+                    'pix_keyable_id' => $supplier->id,
+                    'pix_keyable_type' => Supplier::class,
+                    'type' => $pixKey['type'],
+                    'key' => $pixKey['key']
+                ]);
+            }
         }
-
         return response()->json(new SupplierResource($supplier), 201);
     }
 
@@ -141,32 +145,63 @@ class SupplierController extends Controller
                 ]
             );
         }
-        if (!empty($data['bank_details']) && is_array($data['bank_details'])) {
-            BankDetail::updateOrCreate(
-                [
-                    'bank_detailable_id' => $supplier->id,
-                    'bank_detailable_type' => Supplier::class,
-                ],
-                [
-                    'bank_name' => $data['bank_details']['bank_name'],
-                    'agency' => $data['bank_details']['agency'],
-                    'account' => $data['bank_details']['account'],
-                    'status' => $data['bank_details']['status'],
-                ]
-            );
+        if (!empty($data['bank_details'])) {
+            foreach ($data['bank_details'] as $bankData) {
+                if (isset($bankData['id'])) {
+                    BankDetail::updateOrCreate(
+                        ['id' => $bankData['id'], 'bank_detailable_id' => $supplier->id, 'bank_detailable_type' => Supplier::class],
+                        [
+                            'bank_name' => $bankData['bank_name'],
+                            'agency' => $bankData['agency'],
+                            'account' => $bankData['account'],
+                            'account_holder' => $bankData['account_holder'],
+                            'status' => $bankData['status'],
+                        ]
+                    );
+                } else {
+                    BankDetail::create([
+                        'bank_detailable_id' => $supplier->id,
+                        'bank_detailable_type' => Supplier::class,
+                        'bank_name' => $bankData['bank_name'],
+                        'agency' => $bankData['agency'],
+                        'account' => $bankData['account'],
+                        'account_holder' => $bankData['account_holder'],
+                        'status' => $bankData['status'],
+                    ]);
+                }
+            }
         }
-    
-        if (!empty($data['pix_keys']) && is_array($data['pix_keys'])) {
-            PixKey::updateOrCreate(
-                [
-                    'pix_keyable_id' => $supplier->id,
-                    'pix_keyable_type' => Supplier::class,
-                ],
-                [
-                    'type' => $data['pix_keys']['type'],
-                    'key' => $data['pix_keys']['key'],
-                ]
-            );
+        
+        if (!empty($data['removed_bank_detail_ids'])) {
+            BankDetail::whereIn('id', $data['removed_bank_detail_ids'])->delete();
+        }
+        
+        if (!empty($data['pix_keys'])) {
+            foreach ($data['pix_keys'] as $pixKey) {
+                if (isset($pixKey['id'])) {
+                 
+                    PixKey::updateOrCreate(
+                        ['id' => $pixKey['id']],
+                        [
+                            'type' => $pixKey['type'],
+                            'key' => $pixKey['key'],
+                            'pix_keyable_id' => $supplier->id,
+                            'pix_keyable_type' => Supplier::class,
+                        ]
+                    );
+                } else {
+                    PixKey::create([
+                        'type' => $pixKey['type'],
+                        'key' => $pixKey['key'],
+                        'pix_keyable_id' => $supplier->id,
+                        'pix_keyable_type' => Supplier::class,
+                    ]);
+                }
+            }
+        }
+        
+        if (!empty($data['removed_pix_key_ids'])) {
+            PixKey::whereIn('id', $data['removed_pix_key_ids'])->delete();
         }
         return response()->json(new SupplierResource($supplier), 200);
     }
