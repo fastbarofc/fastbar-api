@@ -885,14 +885,14 @@ class EventController extends Controller
 
     public function checkIfHasScheduledEvents(Event $event)
 {
-    $eventDate = $event->date_time->format('Y-m-d');
+    $eventDate = $event->date->format('Y-m-d');
 
     $blockedStatusIds = EventStatus::whereIn('name', ['Fechado', 'Pré-Reserva', 'Planejamento', 'Concluído'])
         ->pluck('id')
         ->toArray();
 
     $conflictingEvents = Event::where('event_place_id', $event->event_place_id)
-        ->whereDate('date_time', $eventDate)
+        ->whereDate('date', $eventDate)
         ->where('id', '<>', $event->id)
         ->whereIn('event_status_id', $blockedStatusIds) 
         ->get(['id', 'name', 'event_status_id']);
