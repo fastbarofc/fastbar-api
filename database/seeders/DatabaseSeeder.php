@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder
             PaymentMethodSeeder::class,
             OfficeBudgetSeeder::class,
             EventPaymentSeeder::class,
+            SupplierSeeder::class,
 
 
         ]);
