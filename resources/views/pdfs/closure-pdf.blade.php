@@ -47,11 +47,11 @@
     <table>
         <tr>
             <td><span class="text-bold">EVENTO:</span> {{ $event->id }} - {{ $event->name }}</td>
-            <td><span class="text-bold">DATA:</span> {{ $event->date_time?->format('d/m/Y') }}</td>
+            <td><span class="text-bold">DATA:</span> {{ \Carbon\Carbon::parse($event->date)->format('d/m/Y') }}</td>
         </tr>
         <tr>
             <td><span class="text-bold">RESPONSÁVEL:</span> {{ $responsibles }}</td>
-            <td><span class="text-bold">HORÁRIO:</span> {{ $event->date_time?->format('H:i') }} h</td>
+            <td><span class="text-bold">HORÁRIO:</span> {{ $event->time ? \Carbon\Carbon::parse($event->time)->format('H:i') : 'Hora a definir' }} h</td>
         </tr>
         <tr>
             <td><span class="text-bold">LOCAL:</span> {{ $place?->name }}</td>

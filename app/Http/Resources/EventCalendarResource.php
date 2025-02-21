@@ -15,7 +15,8 @@ class EventCalendarResource extends JsonResource
         return [
             'id'                 => $this->id,
             'name'               => $this->name,
-            'date' => Carbon::parse($this->date_time)->format('Y-m-d'),
+            'date'               => Carbon::parse($this->date)->format('Y-m-d'),
+            'time'               => $this->time ? Carbon::parse($this->time)->format('H:i') : null,
             'event_place'        => $this->eventPlace->name . ' (' . $this->eventPlace->address->city->name . ' - ' . $this->eventPlace->address->city->state->letter . ')',
             'guests'             => $this->event_guests + $batchGuestsCount,
             'event_status'             => $this->eventStatus->name,

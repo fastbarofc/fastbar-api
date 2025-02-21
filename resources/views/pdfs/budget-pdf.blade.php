@@ -170,13 +170,13 @@
             </tr>
             <tr class="event-row">
                 <td>Data:</td>
-                <td>{{ $event->date_time?->format('d/m/Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse($event->date)->format('d/m/Y') }}</td>
                 <td>Local:</td>
                 <td>{{ $place?->name }}</td>
             </tr>
             <tr class="event-row">
                 <td>Horário:</td>
-                <td>{{ $event->date_time?->format('H:i') }} </td>
+                <td>{{ $event->time ? \Carbon\Carbon::parse($event->time)->format('H:i') : 'Hora a definir' }} </td>
                 <td>Duração (h):</td>
                 <td>{{ $event->duration }}</td>
             </tr>

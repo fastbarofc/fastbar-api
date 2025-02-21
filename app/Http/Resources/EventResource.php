@@ -7,6 +7,7 @@ use App\Models\Material;
 use App\Models\OfficeEvent;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
 
 class EventResource extends JsonResource
 {
@@ -31,7 +32,8 @@ class EventResource extends JsonResource
             'status'             => $this->eventStatus,
             'lease'              => $this->lease,
             'duration'           => $this->duration,
-            'date_time'          => $this->date_time?->format('Y-m-d\TH:i'),
+            'date' => $this->date ? Carbon::parse($this->date)->format('Y-m-d') : null,
+            'time' => $this->time ? Carbon::createFromFormat(strlen($this->time) == 5 ? 'H:i' : 'H:i:s', $this->time)->format('H:i') : null,
             'duration_after'    => $this->duration_after,
             'contract_body'      => $this->contract_body,
             'parthenon_courtesies' => $this->parthenon_courtesies,

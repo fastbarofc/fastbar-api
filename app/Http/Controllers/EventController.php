@@ -63,11 +63,12 @@ class EventController extends Controller
                     $field = array_keys($filter)[0];
                     $value = $filter[$field];
                     $operator = $field == 'name' ? 'like' : '=';
+                    $isDate = in_array($field, ['date']);
                     $query->filterByField(
                         field: $field,
                         value: $value,
                         operator: $operator,
-                        isDate: $field == 'date_time'
+                        isDate: $isDate
                     );
                 }
             }
@@ -115,7 +116,7 @@ class EventController extends Controller
         $start = $request->start ? Carbon::parse($request->start)->setHour(0)->setMinute(0)->setSecond(0) : Carbon::now()->startOfWeek(0);
         $end = $request->end ? Carbon::parse($request->end)->setHour(23)->setMinute(59)->setSecond(59) : Carbon::now()->endOfWeek(0);
 
-        $query->whereDate('date_time', '>=', $start)->whereDate('date_time', '<', $end);
+        $query->whereDate('date', '>=', $start)->whereDate('date', '<', $end);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -158,7 +159,6 @@ class EventController extends Controller
         if ($request->is_draft) {
             return response()->json(new EventResource($event), 201);
         }
-
         if (!empty($data['event_batches'])) {
             foreach ($data['event_batches'] as $eventBatch) {
                 $eventBatch['event_id'] = $event->id;
@@ -251,15 +251,24 @@ class EventController extends Controller
         }
 
         $data['is_medicine'] = $data['is_medicine'] ?? $event->is_medicine;
+        
 
-        if (!empty($data['event_batches'])) {
-            $batchesIds = collect($data['event_batches']);
-            $batchesIds = $batchesIds->where('id', '!=', null)->pluck('id')->toArray();
+        $filteredBatches = array_filter($data['event_batches'], function ($batch) {
+            return isset($batch['guests']) && $batch['guests'] !== null;
+        });
+
+        if (!empty($filteredBatches)) {
+            $batchesIds = collect($filteredBatches)
+                ->where('id', '!=', null)
+                ->pluck('id')
+                ->toArray();
+
             $batchesToDelete = $event->eventBatches->whereNotIn('id', $batchesIds);
             foreach ($batchesToDelete as $batch) {
                 $batch->delete();
             }
-            foreach ($data['event_batches'] as $batch) {
+
+            foreach ($filteredBatches as $batch) {
                 $batch['event_id'] = $event->id;
                 if (!empty($batch['id'])) {
                     EventBatch::find($batch['id'])->update($batch);
@@ -268,6 +277,8 @@ class EventController extends Controller
                 EventBatch::create($batch);
             }
         }
+
+        
 
         if (!empty($data['materials'])) {
             $materialsArray = collect($data['materials'])->mapWithKeys(function ($material) {
