@@ -57,7 +57,6 @@ class Event extends Model implements AuditableInterface
     protected $casts = [
         'date' => 'date:Y-m-d',
         'time' => 'string',
-        'date_time' => 'datetime:Y-m-d H:i:s',
         'is_medicine' => 'boolean',
     ];
 
