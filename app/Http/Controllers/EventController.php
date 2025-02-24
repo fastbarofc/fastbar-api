@@ -240,6 +240,22 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
+        $event->load([
+            'client',
+            'invoiceClient',
+            'collaborator',
+            'eventType',
+            'eventPlace',
+            'eventStatus',
+            'materials',
+            'officeEvents',
+            'eventGifts',
+            'extraSales',
+            'eventBatches',
+            'eventNotes', 
+           // 'legalRepresentatives', 
+        ]);
+
         return response()->json(new EventResource($event), 200);
     }
 

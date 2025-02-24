@@ -12,47 +12,47 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
 
-class Event extends Model implements AuditableInterface
-{
-    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
+    class Event extends Model implements AuditableInterface
+    {
+        use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
-    protected $fillable = [
-        'name',
-        'client_id',
-        'event_id', 
-        'invoice_client_id',
-        'collaborator_id',
-        'event_type_id',
-        'event_place_id',
-        'event_status_id',
-        'partner_id',
-        'decorator_id',
-        'event_capture_id',
-        'ceremonial_id',
-        'lease',
-        'date',
-        'time',
-        'duration',
-        'duration_after',      
-        'contract_body',
-        'parthenon_courtesies',
-        'partner_courtesies',
-        'unit_insurance',
-        'competing_company_id',
-        'lost_reason_id',
-        'is_draft',
-        'total_value',
-        'buffet_value',
-        'sub_total',
-        'event_guests',
-        'present_guests',
-        'guest_unit_value',
-        'excess_unit_value',
-        'discount',
-        'unit_discount',
-        'min_guests',
-        'is_medicine',
-    ];
+        protected $fillable = [
+            'name',
+            'client_id',
+            'event_id', 
+            'invoice_client_id',
+            'collaborator_id',
+            'event_type_id',
+            'event_place_id',
+            'event_status_id',
+            'partner_id',
+            'decorator_id',
+            'event_capture_id',
+            'ceremonial_id',
+            'lease',
+            'date',
+            'time',
+            'duration',
+            'duration_after',      
+            'contract_body',
+            'parthenon_courtesies',
+            'partner_courtesies',
+            'unit_insurance',
+            'competing_company_id',
+            'lost_reason_id',
+            'is_draft',
+            'total_value',
+            'buffet_value',
+            'sub_total',
+            'event_guests',
+            'present_guests',
+            'guest_unit_value',
+            'excess_unit_value',
+            'discount',
+            'unit_discount',
+            'min_guests',
+            'is_medicine',
+        ];
 
     protected $casts = [
         'date' => 'date:Y-m-d',

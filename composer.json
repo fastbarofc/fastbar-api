@@ -13,6 +13,7 @@
         "h4cc/wkhtmltopdf-i386": "^0.12.4",
         "intervention/image": "*",
         "intervention/imagecache": "^2.6",
+        "itsgoingd/clockwork": "^5.3",
         "laravel/framework": "^10.10",
         "laravel/passport": "^11.9",
         "laravel/sanctum": "^3.2",

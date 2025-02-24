@@ -39,8 +39,8 @@ class EventListResource extends JsonResource
             'collaborator'   => $this->collaborator->name ?? null,
             'event_types'    => EventType::select('id', 'name')->get(),
             'event_places'   => EventPlace::select('id', 'name')->get(),
-            'formatted_event_place_info' => "{$this->eventPlace->name} - {$this->eventPlace->address->city_name} - {$this->eventPlace->address->state_letter}",
-            'event_statuses' => EventStatus::select('id', 'name')->get(),
+           // 'status' => EventStatus::select('id', 'name')->get(),
+           'status'             => $this->eventStatus,
         ];
     }
 }
