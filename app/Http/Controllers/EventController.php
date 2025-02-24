@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateEventRequest;
 use App\Http\Resources\ContractResource;
 use App\Http\Resources\EventGiftResource;
 use App\Http\Resources\EventResource;
+use App\Http\Resources\EventListResource;
 use App\Http\Resources\ExtraSaleResource;
 use App\Http\Resources\EventKitResource;
 use App\Models\Event;
@@ -89,7 +90,7 @@ class EventController extends Controller
         $events = $query->paginate($perPage);
 
         return response()->json([
-            'data' => EventResource::collection($events),
+            'data' => EventListResource::collection($events),
             'pagination' => [
                 'page' => $events->currentPage(),
                 'total_pages' => $events->lastPage(),
