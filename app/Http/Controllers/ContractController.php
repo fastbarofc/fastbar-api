@@ -346,4 +346,12 @@ class ContractController extends Controller
         $contract->update($data);
         return response()->json(new ContractResource($contract), 200);
     }
+
+    public function checkSignedContract($eventId) {
+        $hasSignedContract = Contract::where('event_id', $eventId)
+            ->whereNotNull('signed_at')
+            ->exists();
+
+        return response()->json(['hasSignedContract' => $hasSignedContract]);
+    }
 }

@@ -47,6 +47,7 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductGroupController;
 use App\Http\Controllers\QualificationController;
 use App\Models\Qualification;
+use App\Http\Controllers\SupplierController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -166,6 +167,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     
     Route::post('contracts/{contract}/to-sign', [ContractController::class, 'toSign'])->name('contracts.to-sign');
 
+    Route::get('/contracts/{eventId}/check-signed', [ContractController::class, 'checkSignedContract']);
+
     Route::resource('collaborator-incidents', CollaboratorIncidentController::class);
 
     Route::put('/collaborator/{collaborator}/qualifications', [CollaboratorController::class, 'updateQualifications']);
@@ -221,4 +224,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
 
     Route::get('/addresses/cep/{cep}', [AddressController::class, 'getAddressByCep']);
+
+    Route::resource('suppliers', SupplierController::class);
 });
