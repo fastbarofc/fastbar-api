@@ -63,16 +63,17 @@ class EventController extends Controller
                     $field = array_keys($filter)[0];
                     $value = $filter[$field];
                     $operator = $field == 'name' ? 'like' : '=';
+                    $isDate = in_array($field, ['date']);
                     $query->filterByField(
                         field: $field,
                         value: $value,
                         operator: $operator,
-                        isDate: $field == 'date_time'
+                        isDate: $isDate
                     );
                 }
             }
         }
-
+        
         if ($request->input('order_by')) {
             $sortField = $request->input('order_by');
             $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
@@ -115,7 +116,7 @@ class EventController extends Controller
         $start = $request->start ? Carbon::parse($request->start)->setHour(0)->setMinute(0)->setSecond(0) : Carbon::now()->startOfWeek(0);
         $end = $request->end ? Carbon::parse($request->end)->setHour(23)->setMinute(59)->setSecond(59) : Carbon::now()->endOfWeek(0);
 
-        $query->whereDate('date_time', '>=', $start)->whereDate('date_time', '<', $end);
+        $query->whereDate('date', '>=', $start)->whereDate('date', '<', $end);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -149,14 +150,15 @@ class EventController extends Controller
     {
         $data = $request->all();
 
+        $data['collaborator_id'] = auth()->user()->collaborator->id;
         $data['contract_body'] = ContractTemplate::first()?->content ?? null;
+        $data['is_medicine'] = $data['is_medicine'] ?? false;
 
         $event = Event::create($data);
 
         if ($request->is_draft) {
             return response()->json(new EventResource($event), 201);
         }
-
         if (!empty($data['event_batches'])) {
             foreach ($data['event_batches'] as $eventBatch) {
                 $eventBatch['event_id'] = $event->id;
@@ -230,10 +232,6 @@ class EventController extends Controller
             $event->officeBudgets()->sync($data['office_budgets']);
         }
 
-        if (!empty($data['legal_representatives'])) {
-            $event->clients()->sync($data['legal_representatives']);
-        }
-
         EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
 
         return response()->json(new EventResource($event), 201);
@@ -248,14 +246,29 @@ class EventController extends Controller
     {
         $data = $request->all();
 
-        if (!empty($data['event_batches'])) {
-            $batchesIds = collect($data['event_batches']);
-            $batchesIds = $batchesIds->where('id', '!=', null)->pluck('id')->toArray();
+        if (isset($data['event_type_id']) && $data['event_type_id'] !== 7) {
+            $data['is_medicine'] = false;
+        }
+
+        $data['is_medicine'] = $data['is_medicine'] ?? $event->is_medicine;
+        
+
+        $filteredBatches = array_filter($data['event_batches'], function ($batch) {
+            return isset($batch['guests']) && $batch['guests'] !== null;
+        });
+
+        if (!empty($filteredBatches)) {
+            $batchesIds = collect($filteredBatches)
+                ->where('id', '!=', null)
+                ->pluck('id')
+                ->toArray();
+
             $batchesToDelete = $event->eventBatches->whereNotIn('id', $batchesIds);
             foreach ($batchesToDelete as $batch) {
                 $batch->delete();
             }
-            foreach ($data['event_batches'] as $batch) {
+
+            foreach ($filteredBatches as $batch) {
                 $batch['event_id'] = $event->id;
                 if (!empty($batch['id'])) {
                     EventBatch::find($batch['id'])->update($batch);
@@ -264,6 +277,8 @@ class EventController extends Controller
                 EventBatch::create($batch);
             }
         }
+
+        
 
         if (!empty($data['materials'])) {
             $materialsArray = collect($data['materials'])->mapWithKeys(function ($material) {
@@ -348,11 +363,6 @@ class EventController extends Controller
         }
         
         
-
-
-        if (!empty($data['legal_representatives'])) {
-            $event->clients()->sync($data['legal_representatives']);
-        }
 
         $data['competing_company_id'] = $data['competing_company_id'] ?? null;
         $data['lost_reason_id'] = $data['lost_reason_id'] ?? null;
@@ -619,6 +629,20 @@ class EventController extends Controller
         $event->clients()->sync($request->legal_representatives);
     }
 
+    public function attachLegalRepresentative(Request $request, Event $event)
+    {
+        $this->authorize('attachLegalRepresentatives', $event);
+        $event->clients()->attach($request->legalRepresentativeId);
+        return response()->json([], 201);
+    }
+
+    public function detachLegalRepresentative(Event $event, $legalRepresentativeId)
+    {
+        $this->authorize('attachLegalRepresentatives', $event);
+        $event->clients()->detach($legalRepresentativeId);
+        return response()->json([], 204);
+    }
+
     public function syncMaterials(Event $event, Material $material, Request $request)
     {
         $this->authorize('syncMaterials', $event);
@@ -704,6 +728,9 @@ class EventController extends Controller
 
     public function generateEventChecklist(Event $event)
     {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $client = $event->client;
         $place = $event->eventPlace;
 
@@ -730,6 +757,9 @@ class EventController extends Controller
 
     public function generateClosure(Event $event)
     {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $place = $event->eventPlace;
 
         $responsibles = $event->clients->pluck('name')->implode(', ');
@@ -758,6 +788,9 @@ class EventController extends Controller
 
     public function generateSummary(Event $event)
     {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $responsibles = $event->clients->pluck('name')->implode(', ');
 
         $kits = $event->eventKits()->whereNull('event_kit_id')->get();
@@ -782,18 +815,10 @@ class EventController extends Controller
         }
     }
 
-    public function generateLetterheadBudget(Event $event) {
-        $fileName = 'orcamento-timbrado-' . $event->id;
-        $viewContent = view("/pdfs/letterhead-budget-pdf");
-        try {
-            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
-            return response()->json(['pdf_url' => $pdfUrl]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
     public function generateBuffetContract(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'contrato-buffet-' . $event->id;
         $viewContent = view("/pdfs/buffet-contract-pdf");
         try {
@@ -805,6 +830,9 @@ class EventController extends Controller
     }
 
     public function generateEventItemChecklist(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'check-list-itens-evento-' . $event->id;
         $viewContent = view("/pdfs/event-item-checklist-pdf");
         try {
@@ -816,6 +844,9 @@ class EventController extends Controller
     }
 
     public function generateLeaseContract(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'contrato-locacao-' . $event->id;
         $viewContent = view("/pdfs/lease-contract-pdf");
         try {
@@ -827,6 +858,9 @@ class EventController extends Controller
     }
 
     public function generateMenu(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'menu-' . $event->id;
         $viewContent = view("/pdfs/menu-pdf");
         try {
@@ -838,6 +872,9 @@ class EventController extends Controller
     }
 
     public function generateCollaborators(Event $event) {
+        if ($event->status && $event->status->name !== 'Fechado') {
+            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        }
         $fileName = 'collaborators-' . $event->id;
         $viewContent = view("/pdfs/collaborators-pdf");
         try {

@@ -47,6 +47,7 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductGroupController;
 use App\Http\Controllers\QualificationController;
 use App\Models\Qualification;
+use App\Http\Controllers\SupplierController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -203,7 +204,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('parthenon-bank-accounts', ParthenonBankAccountController::class);
     Route::resource('event-payments', EventPaymentController::class);
 
-    Route::delete('/events/{event}/related-events', [EventController::class, 'clearRelatedEvents']);    
+    Route::delete('/events/{event}/related-events', [EventController::class, 'clearRelatedEvents']);
+    Route::post('/events/{event}/legal-representative/{legalRepresentative}', [EventController::class, 'attachLegalRepresentative']);  
+    Route::delete('/events/{event}/legal-representative/{legalRepresentative}', [EventController::class, 'detachLegalRepresentative']);    
     Route::post('/events/generate-budget/{event}', [EventController::class, 'generateBudget']);
     Route::post('/events/generate-letterhead-budget/{event}', [EventController::class, 'generateLetterheadBudget']);
     Route::post('/events/generate-buffet-contract/{event}', [EventController::class, 'generateBuffetContract']);
@@ -220,4 +223,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
 
     Route::get('/addresses/cep/{cep}', [AddressController::class, 'getAddressByCep']);
+
+    Route::resource('suppliers', SupplierController::class);
 });

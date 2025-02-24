@@ -66,7 +66,7 @@ class EventPlaceController extends Controller
 
         $eventPlace = EventPlace::create($data);
 
-        if (!empty($data['address']) && !empty($data['address']['street'])) {
+        if (!empty($data['address'])) {
             $address = $data['address'];
             Address::create([
                'addressable_id'      => $eventPlace->id,

@@ -21,7 +21,8 @@ class StoreEventRequest extends FormRequest
             'event_type_id'      => 'nullable|exists:event_types,id',
             'event_place_id'     => 'nullable|exists:event_places,id',
             'lease'              => 'nullable|numeric|min:0',
-            'date_time'          => 'nullable|date|after:now',
+            'date'          => 'nullable|date|after:now',
+            'time'          => 'nullable|date_format:H:i',
             'contract_body'      => 'nullable',
             'parthenon_courtesies' => 'nullable|numeric|min:0',
             'partner_courtesies'   => 'nullable|numeric|min:0',
@@ -39,6 +40,7 @@ class StoreEventRequest extends FormRequest
             'legal_representatives'            => 'nullable|array',
             'legal_representatives.*'          => 'exists:clients,id',
             'min_guests' => 'nullable|integer|min:1',
+            'is_medicine' => 'nullable|boolean',
         ];
 
         return $data;
@@ -57,9 +59,11 @@ class StoreEventRequest extends FormRequest
             'lease.required'            => 'O campo aluguel é obrigatório',
             'lease.string'              => 'O campo aluguel deve ser uma string',
             'lease.min'                 => 'O campo aluguel não pode ser negativo',
-            'date_time.required'        => 'O campo data e hora é obrigatório',
-            'date_time.date'            => 'O campo data e hora deve ser uma data valida',
-            'date_time.after'           => 'A data e hora devem ser maiores que a data e hora atuais.',
+            'date.required'        => 'O campo data é obrigatório',
+            'date.date'            => 'O campo data deve ser uma data valida',
+            'date.after'           => 'A data deve ser posterior à data atual.',
+            'time.date_format'     => 'O campo hora deve estar no formato HH:mm',
+            'time>required_if'     => 'A hora é obrigatoria quando o evento estiver sendo fechado',
             'parthenon_courtesies.numeric' => 'O campo cortesia parthenon deve ser um número',
             'parthenon_courtesies.min'     => 'O campo cortesia parthenon não pode ser negativo',
             'total_value.numeric' => 'O campo valor total deve ser um número',
@@ -85,6 +89,7 @@ class StoreEventRequest extends FormRequest
             'clients.*.exists'          => 'O campo ID do cliente deve ser um ID válido.',
             'min_guests.integer' => 'O campo convidados mínimos deve conter apenas números inteiros',
             'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
+            'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
         ];
     }
 }

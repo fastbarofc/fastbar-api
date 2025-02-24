@@ -107,11 +107,11 @@
         </tr>
         <tr>
             <td colspan="3"> <span class="text-bold">EVENTO:</span>&nbsp;{{ $event->name }}</td>
-            <td><span class="text-bold">DATA:</span>&nbsp;{{ $event->date_time?->format('d/m/Y') }}</td>
+            <td><span class="text-bold">DATA:</span>&nbsp;{{ Carbon\Carbon::parse($event->date)->format('d/m/Y') }}</td>
         </tr>
         <tr>
             <td><span class="text-bold">HORÁRIO DO
-                    DURAÇÃO:</span>&nbsp;{{ $event->date_time?->format('H:i') }}h</td>
+                    DURAÇÃO:</span>&nbsp;{{ $event->time ? Carbon\Carbon::parse($event->time)->format('H:i') . 'h' : 'Hora a definir' }}h</td>
             <td><span class="text-bold">DURAÇÃO:</span>&nbsp;{{ $event->duration }}h</td>
             <td><span class="text-bold">PÓS EVENTO:</span>&nbsp;{{ $event->duration_after }}h</td>
             <td><span class="text-bold">Nº TOTAL DE

@@ -21,7 +21,8 @@ class UpdateEventRequest extends FormRequest
             'event_type_id'      => 'nullable|exists:event_types,id',
             'event_place_id'     => 'nullable|exists:event_places,id',
             'lease'              => 'nullable|numeric|min:0',
-            'date_time'          => 'nullable|date',
+            'date'              => 'nullable|date',
+            'time'              => 'nullable|date_format:H:i',
             'contract_body'      => 'nullable',
             'parthenon_courtesies' => 'nullable|numeric|min:0',
             'partner_courtesies'   => 'nullable|numeric|min:0',
@@ -39,6 +40,7 @@ class UpdateEventRequest extends FormRequest
             'legal_representatives'            => 'nullable|array',
             'legal_representatives.*'          => 'nullable|exists:clients,id',
             'min_guests' => 'nullable|integer|min:1',
+            'is_medicine' => 'nullable|boolean',
         ];
     }
 
@@ -51,7 +53,8 @@ class UpdateEventRequest extends FormRequest
             'event_place_id.exists'     => 'O campo local do evento deve ser um local válido.',
             'lease.string'              => 'O campo aluguel deve ser uma string',
             'lease.min'                 => 'O campo aluguel não pode ser negativo',
-            'date_time.date'            => 'O campo data e hora deve ser uma data valida',
+            'date.date'               => 'O campo data deve ser uma data valida',
+            'time.date_format'        =>'O campo hora deve estar no formato HH:mm',
             'parthenon_courtesies.numeric' => 'O campo cortesias parthenon deve conter apenas números',
             'parthenon_courtesies.min'     => 'O campo cortesias parthenon não pode ser negativo',
             'partner_courtesies.numeric'   => 'O campo cortesias parceiro deve conter apenas números',
@@ -73,6 +76,7 @@ class UpdateEventRequest extends FormRequest
             'legal_representatives.*.exists'          => 'O campo ID do representante legal deve ser um ID válido.',
             'min_guests.integer' => 'O campo convidados mínimos deve conter apenas números inteiros',
             'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
+            'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
         ];
     }
 }
