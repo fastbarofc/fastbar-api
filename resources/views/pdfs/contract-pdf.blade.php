@@ -144,13 +144,13 @@
         </tr>
         <tr class="event-row">
             <td>Data:</td>
-            <td>{{ \Carbon\Carbon::parse($contract->properties['date_time'])->format('d/m/Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($contract->properties['date'])->format('d/m/Y') }}</td>
             <td>Local:</td>
             <td>{{ $contract->properties['place']['name'] }}</td>
         </tr>
         <tr class="event-row">
             <td>Horário:</td>
-            <td>{{ \Carbon\Carbon::parse($contract->properties['date_time'])->format('H:i') }} h</td>
+            <td>{{ $contract->properties['time'] ? \Carbon\Carbon::parse($contract->properties['time'])->format('H:i') . ' h' : 'Hora a definir'  }} h</td>
             <td>Duração (h):</td>
             <td>{{ $contract->properties['duration'] }} h</td>
         </tr>

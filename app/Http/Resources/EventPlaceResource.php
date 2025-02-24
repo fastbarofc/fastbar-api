@@ -18,6 +18,7 @@ class EventPlaceResource extends JsonResource
             'phone_1'           => $this->phone_1,
             'phone_2'           => $this->phone_2,
             'email'             => $this->email,
+            'belongs_parthenon' => $this->belongs_parthenon,
             'address'           => new AddressResource($this->address),
         ];
 

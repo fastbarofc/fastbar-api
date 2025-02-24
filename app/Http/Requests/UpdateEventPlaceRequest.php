@@ -27,11 +27,12 @@ class UpdateEventPlaceRequest extends FormRequest
                 Rule::unique('event_places', 'name')->ignore($eventPlaceId),
             ],
             'nullable|string|max:255|unique:event_places,name,' . $this->route('event_place')->id,
-            'responsible'=> 'nullable|string|max:255',
-            'description'=> 'nullable|string|max:255',
-            'phone_1'    => 'nullable|string|min:10|max:20',
-            'phone_2'    => 'nullable|string|min:10|max:20',
-            'email'      => 'nullable|email',
+            'responsible'       => 'nullable|string|max:255',
+            'description'       => 'nullable|string|max:255',
+            'phone_1'           => 'nullable|string|min:10|max:20',
+            'phone_2'           => 'nullable|string|min:10|max:20',
+            'email'             => 'nullable|email',
+            'belongs_parthenon' => 'boolean',
         ];
 
         if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
@@ -57,6 +58,7 @@ class UpdateEventPlaceRequest extends FormRequest
             'phone_2.max'             => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
             'email.email'             => 'O campo e-mail deve ser um e-mail válido.',
             'email.unique'            => 'E-mail já cadastrado.',
+            'belongs_parthenon.boolean' => 'O campo pertence ao Parthenon deve ser um valor booleano',
         ];
     
     

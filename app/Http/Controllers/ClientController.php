@@ -68,10 +68,6 @@ class ClientController extends Controller
         ], 200);
     }
 
-
-
-    
-
     public function store(StoreClientRequest $request)
     {
         $data = $request->all();

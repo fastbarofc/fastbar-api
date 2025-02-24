@@ -10,8 +10,7 @@ class BankDetail extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['bank_detailable_id', 'bank_detailable_type', 'bank_name', 'agency', 'account', 'status'];
-
+    protected $fillable = ['bank_detailable_id', 'bank_detailable_type', 'bank_name', 'agency', 'account', 'account_holder', 'status'];
 
 
     public function bankDetailable()

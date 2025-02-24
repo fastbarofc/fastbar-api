@@ -79,7 +79,7 @@ class Product extends Model implements AuditableInterface
 
     public function kits()
     {
-        return $this->belongsToMany(kit::class, 'kit_product')->withPivot(['value', 'optional']);
+        return $this->belongsToMany(Kit::class, 'kit_product')->withPivot(['value', 'optional']);
     }
     
     public function eventKits()
