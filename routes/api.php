@@ -167,6 +167,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     
     Route::post('contracts/{contract}/to-sign', [ContractController::class, 'toSign'])->name('contracts.to-sign');
 
+    Route::get('/contracts/{eventId}/check-signed', [ContractController::class, 'checkSignedContract']);
+
     Route::resource('collaborator-incidents', CollaboratorIncidentController::class);
 
     Route::put('/collaborator/{collaborator}/qualifications', [CollaboratorController::class, 'updateQualifications']);
