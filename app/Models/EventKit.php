@@ -89,6 +89,7 @@ class EventKit extends Model implements AuditableInterface
                 $item['optional'] = $item->pivot->optional ? true : false;
                 $item['value'] = $item->pivot->value;
                 $item['observation'] = $item->pivot->observation;
+                $item['ordination'] = $item->pivot->ordination;
                 return $item;
             });
         }

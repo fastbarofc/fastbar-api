@@ -26,7 +26,6 @@ services:
             - redis
             - meilisearch
             - mailpit
-            - selenium
     mysql:
         image: 'mysql/mysql-server:8.0'
         ports:
@@ -63,6 +62,8 @@ services:
             PMA_HOST: mysql
             PMA_USER: "${DB_USERNAME}"
             PMA_PASSWORD: "${DB_PASSWORD}"
+            PMA_ARBITRARY: 1
+            UPLOAD_LIMIT: 128M
         networks:
             - sail
     redis:
@@ -104,14 +105,6 @@ services:
         ports:
             - '${FORWARD_MAILPIT_PORT:-1025}:1025'
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
-        networks:
-            - sail
-    selenium:
-        image: selenium/standalone-chrome
-        extra_hosts:
-            - 'host.docker.internal:host-gateway'
-        volumes:
-            - '/dev/shm:/dev/shm'
         networks:
             - sail
 networks:
