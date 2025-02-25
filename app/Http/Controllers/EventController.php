@@ -253,7 +253,6 @@ class EventController extends Controller
             'extraSales',
             'eventBatches',
             'eventNotes', 
-           // 'legalRepresentatives', 
         ]);
 
         return response()->json(new EventResource($event), 200);
@@ -411,13 +410,13 @@ class EventController extends Controller
     $decorators = Decorator::all();
     $ceremonials = Ceremonial::all();
     $eventStatuses = EventStatus::all();
-    $eventPlaces = EventPlace::with(['address.city', 'address.state'])->get();
     $competingCompany = CompetingCompany::all();
     $lostReason = LostReason::all();
 
     $clients = [];
     $invoiceClients = [];
     $collaborators = [];
+    $eventPlaces = [];
     $relatedTastingEvents = [];
     $parentEvents = [];
     $hasTasting = false;
@@ -426,6 +425,7 @@ class EventController extends Controller
         $clients = Client::where('id', $event->client_id)->get();
         $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
         $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
+        $eventPlaces = EventPlace::where('id', $event->event_place_id)->get();
         $hasTasting = $event->tastingEvents()->exists();
         $parentEvents = Event::whereIn('id', $event->parentEvents()->pluck('events.id'))
             ->get(['id', 'name']);
