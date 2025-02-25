@@ -154,12 +154,26 @@ class ProductController extends Controller
     public function attachToEventKit(Request $request)
     {
         $eventKit = EventKit::find($request->event_kit_id);
+
+        $hasProduct = $eventKit->products()->where('product_id', $request->product_id)->exists();
+
+        if ($hasProduct) {
+            return response()->json(['message' => 'Produto já adicionado ao kit'], 400);
+        }
+
         $eventKit->products()->attach($request->product_id);
     }
 
     public function attachToKit(Request $request)
     {
         $kit = Kit::find($request->kit_id);
+
+        $hasProduct = $kit->products()->where('product_id', $request->product_id)->exists();
+
+        if ($hasProduct) {
+            return response()->json(['message' => 'Produto já adicionado ao kit'], 400);
+        }
+
         $kit->products()->attach($request->product_id);
     }
 
