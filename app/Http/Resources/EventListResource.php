@@ -5,10 +5,6 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\Carbon;
-use App\Models\EventStatus;
-use App\Models\EventType;
-use App\Models\EventPlace;
-
 
 class EventListResource extends JsonResource
 {
@@ -22,25 +18,23 @@ class EventListResource extends JsonResource
         return [
             'id'             => $this->id,
             'name'           => $this->name,
-            'status'         => $this->eventStatus->name ?? null,
+            'status'         => $this->whenLoaded('eventStatus', fn() => $this->eventStatus->name),
             'date'           => $this->date ? Carbon::parse($this->date)->format('Y-m-d') : null,
             'time'           => $this->time ? Carbon::createFromFormat(strlen($this->time) == 5 ? 'H:i' : 'H:i:s', $this->time)->format('H:i') : null,
-            'event_place'    => $this->eventPlace ? [
+            'event_place'    => $this->whenLoaded('eventPlace', fn() => [
                 'id'   => $this->eventPlace->id,
                 'name' => $this->eventPlace->name,
-            ] : null,
-            'client'         => $this->client ? [
+            ]),
+            'client'         => $this->whenLoaded('client', fn() => [
                 'name'    => $this->client->name,
                 'phone_1' => $this->client->phone_1,
                 'phone_2' => $this->client->phone_2,
                 'email'   => $this->client->email,
-            ] : null,
-            'type'           => $this->eventType->name ?? null,
-            'collaborator'   => $this->collaborator->name ?? null,
-            'event_types'    => EventType::select('id', 'name')->get(),
-            'event_places'   => EventPlace::select('id', 'name')->get(),
-           // 'status' => EventStatus::select('id', 'name')->get(),
-           'status'             => $this->eventStatus,
+            ]),
+            'type'           => $this->whenLoaded('eventType', fn() => $this->eventType->name),
+            'collaborator'   => $this->whenLoaded('collaborator', fn() => $this->collaborator->name),
+            'event_types'    => $this->whenLoaded('eventTypes', fn() => $this->eventTypes->pluck('id', 'name')),
+            'event_places'   => $this->whenLoaded('eventPlaces', fn() => $this->eventPlaces->pluck('id', 'name')),
         ];
     }
 }

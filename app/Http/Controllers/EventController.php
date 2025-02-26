@@ -54,7 +54,13 @@ class EventController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = Event::where('is_draft', false);
+        $query = Event::where('is_draft', false)->with([
+            'eventStatus',
+            'eventPlace',
+            'client',
+            'eventType',
+            'collaborator'
+        ]);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
