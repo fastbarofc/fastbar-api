@@ -819,8 +819,11 @@ class EventController extends Controller
         if ($event->status && $event->status->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
+        $client = $event->client;
+        $place = $event->eventPlace;
+
         $fileName = 'contrato-buffet-' . $event->id;
-        $viewContent = view("/pdfs/buffet-contract-pdf");
+        $viewContent = view("/pdfs/buffet-contract-pdf", compact(['event', 'place', 'client']));
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
