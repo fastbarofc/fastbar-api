@@ -64,7 +64,7 @@ class StoreEventPlaceRequest extends FormRequest
             'complement' => ['nullable', 'string'],
             'city_id'    => ['required', 'exists:cities,id'],
             'state_id'   => ['required', 'exists:states,id'],
-            'number'     => ['nullable'],
+            'number'     => ['nullable', 'string'],
             'zip_code'   => ['nullable', 'formato_cep'],
             'reference'  => ['nullable', 'string'],
         ],[
@@ -75,6 +75,7 @@ class StoreEventPlaceRequest extends FormRequest
             'city_id.exists'       => 'O campo Cidade deve ser uma Cidade valida',
             'state_id.required'    => 'O campo state ID é obrigatório',
             'state_id.exists'      => 'O campo Estado deve ser um Estado valido',
+            'number.string'        => 'O campo número deve conter apenas letras e números',
             'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido',
             'referencia.string'    => 'O campo referencia deve ser uma string',
         ]);

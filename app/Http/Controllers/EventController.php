@@ -929,4 +929,33 @@ class EventController extends Controller
         $event->parentEvents()->detach();
         return response()->json(['message' => 'Eventos relacionados removidos com sucesso.']);
     }
+
+    public function checkIfHasScheduledEvents(Event $event)
+{
+    $eventDate = $event->date->format('Y-m-d');
+
+    $blockedStatusIds = EventStatus::whereIn('name', ['Fechado', 'Pré-Reserva', 'Planejamento', 'Concluído'])
+        ->pluck('id')
+        ->toArray();
+
+    $conflictingEvents = Event::where('event_place_id', $event->event_place_id)
+        ->whereDate('date', $eventDate)
+        ->where('id', '<>', $event->id)
+        ->whereIn('event_status_id', $blockedStatusIds) 
+        ->get(['id', 'name', 'event_status_id']);
+
+    $conflictingEvents = $conflictingEvents->map(function ($event) {
+        return [
+            'id' => $event->id,
+            'name' => $event->name,
+            'status' => EventStatus::where('id', $event->event_status_id)->value('name'),
+        ];
+    });
+
+    return response()->json([
+        'conflicting_events' => $conflictingEvents,
+    ]);
+}
+
+
 }

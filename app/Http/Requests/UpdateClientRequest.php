@@ -81,7 +81,7 @@ class UpdateClientRequest extends FormRequest
             'complement' => ['nullable', 'string'],
             'city_id'    => ['nullable', 'exists:cities,id'],
             'state_id'   => ['nullable', 'exists:states,id'],
-            'number'     => ['nullable', 'integer'],
+            'number'     => ['nullable', 'string', 'max:50'],
             'zip_code'   => ['nullable', 'formato_cep'],
             'reference'  => ['nullable', 'nullable', 'string'],
         ],[
@@ -90,7 +90,8 @@ class UpdateClientRequest extends FormRequest
             'complement.string'    => 'O campo complemento deve ser uma string.',
             'city_id.exists'       => 'O campo Cidade deve ser uma Cidade valida.',
             'state_id.exists'      => 'O campo Estado deve ser um Estado valido.',
-            'number.integer'       => 'O campo número é deve conter apenas números.',
+            'number.string'        => 'O campo número deve conter apenas letras e números',
+            'number.max'           => 'O campo número não pode ter mais de 50 caracteres',
             'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido.',
             'referencia.string'    => 'O campo referencia deve ser uma string.',
         ]);
