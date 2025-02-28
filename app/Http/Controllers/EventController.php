@@ -84,14 +84,21 @@ class EventController extends Controller
         if ($request->input('order_by')) {
             $sortField = $request->input('order_by');
             $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
-    
+        
             if (str_contains($sortField, '.')) {
                 [$relation, $field] = explode('.', $sortField);
-                $query->whereHas($relation)->with($relation)->orderByRelation($relation, $field, $direction);
+                $query->whereHas($relation, function ($q) use ($field, $direction) {
+                    $q->orderBy($field, $direction);
+                })->with($relation);
             } else {
-                $query->orderByField($sortField, $direction);
+                $query->orderBy('events.' . $sortField, $direction); 
             }
         }
+
+        $eventTypes = EventType::all(['id', 'name']);
+        $eventPlaces = EventPlace::all(['id', 'name']);
+        $eventStatuses = EventStatus::all(['id', 'name']);
+        
 
         $events = $query->paginate($perPage);
 
@@ -104,7 +111,10 @@ class EventController extends Controller
                 'total' => $events->total(),
             ],
             'sortable_fields' => Event::sortableFields(),
-            'filterable_fields' => Event::filterableFields()
+            'filterable_fields' => Event::filterableFields(),
+            'event_types' => $eventTypes,
+            'event_places' => $eventPlaces,
+            'event_statuses' => $eventStatuses
         ], 200);
     }
 
@@ -275,9 +285,12 @@ class EventController extends Controller
         $data['is_medicine'] = $data['is_medicine'] ?? $event->is_medicine;
         
 
-        $filteredBatches = array_filter($data['event_batches'], function ($batch) {
-            return isset($batch['guests']) && $batch['guests'] !== null;
-        });
+        $filteredBatches = isset($data['event_batches']) && is_array($data['event_batches'])
+    ? array_filter($data['event_batches'], function ($batch) {
+        return isset($batch['guests']) && $batch['guests'] !== null;
+    })
+    : [];
+
 
         if (!empty($filteredBatches)) {
             $batchesIds = collect($filteredBatches)

@@ -33,8 +33,6 @@ class EventListResource extends JsonResource
             ]),
             'type'           => $this->whenLoaded('eventType', fn() => $this->eventType->name),
             'collaborator'   => $this->whenLoaded('collaborator', fn() => $this->collaborator->name),
-            'event_types'    => $this->whenLoaded('eventTypes', fn() => $this->eventTypes->pluck('id', 'name')),
-            'event_places'   => $this->whenLoaded('eventPlaces', fn() => $this->eventPlaces->pluck('id', 'name')),
         ];
     }
 }
