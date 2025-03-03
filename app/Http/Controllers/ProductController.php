@@ -129,13 +129,25 @@ class ProductController extends Controller
         return response()->json([], 204);
     }
 
+    private function fixProductEmptyOrdination(EventKit | Kit $kit)
+    {
+        $products = $kit->products()->wherePivot('ordination', null)->get();
+        $totalProducts = $kit->products()->wherePivot('ordination', '!=', null)->get()->count();
+        foreach ($products as $index => $product) {
+            $product->pivot->update(['ordination' => $totalProducts + $index + 1]);
+        }
+    }
+
     public function moveToKit(Request $request)
     {
         $newKit = Kit::find($request->new_kit['id']);
         $oldKit = Kit::find($request->old_kit['id']);
         $product = Product::find($request->product['id']);
 
-        $newKit->products()->attach($product->id);
+        $ordination = $this->getProductOrdination($newKit->id);
+        $newKit->products()->attach($product->id, [
+            'ordination' => $ordination
+        ]);
         $oldKit->products()->detach($product->id);
 
         return response()->json([], 201);
@@ -146,9 +158,18 @@ class ProductController extends Controller
         $newEventKit = EventKit::find($request->new_event_kit['id']);
         $oldEventKit = EventKit::find($request->old_event_kit['id']);
         $product = Product::find($request->product['id']);
-        $newEventKit->products()->attach($product->id);
+        $ordination = $this->getProductOrdination($newEventKit);
+        $newEventKit->products()->attach($product->id, [
+            'ordination' => $ordination
+        ]);
         $oldEventKit->products()->detach($product->id);
+    }
 
+    private function getProductOrdination(EventKit | Kit $kit)
+    {
+        $this->fixProductEmptyOrdination($kit);
+        $products = $kit->products;
+        return $products->count() + 1;
     }
 
     public function attachToEventKit(Request $request)
@@ -160,8 +181,10 @@ class ProductController extends Controller
         if ($hasProduct) {
             return response()->json(['message' => 'Produto já adicionado ao kit'], 400);
         }
-
-        $eventKit->products()->attach($request->product_id);
+        $ordination = $this->getProductOrdination($eventKit);
+        $eventKit->products()->attach($request->product_id, [
+            'ordination' => $ordination
+        ]);
     }
 
     public function attachToKit(Request $request)
@@ -174,7 +197,10 @@ class ProductController extends Controller
             return response()->json(['message' => 'Produto já adicionado ao kit'], 400);
         }
 
-        $kit->products()->attach($request->product_id);
+        $ordination = $this->getProductOrdination($kit);
+        $kit->products()->attach($request->product_id, [
+            'ordination' => $ordination
+        ]);
     }
 
     public function detachFromEventKit(Request $request)

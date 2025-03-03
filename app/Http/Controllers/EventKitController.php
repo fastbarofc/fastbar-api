@@ -116,10 +116,11 @@ class EventKitController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        if (empty($eventKitId)) {
+        if ($this->isMovingProductToRootKit($eventKitId)) {
             $kit = Kit::find($data['kit_id']);
             $eventKitId = $this->checkKitParent(null, $kit, $data['event_id']);
-            $product->eventKits()->attach($eventKitId);
+            $ordination = $this->getProductOrdination($eventKitId);
+            $product->eventKits()->attach($eventKitId, ['ordination' => $ordination]);
             $eventKit = EventKit::find($eventKitId);
             while(!empty($eventKit->event_kit_id)) {
                 $eventKit = EventKit::find($eventKit->event_kit_id);
@@ -128,13 +129,36 @@ class EventKitController extends Controller
         }
 
         try {
-            $product->eventKits()->attach($eventKitId);
+            $ordination = $this->getProductOrdination($eventKitId);
+            $product->eventKits()->attach($eventKitId, ['ordination' => $ordination]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response()->json(['error' => 'Error creating kit'], 500);
         }
         $product->type = 'product';
         return response()->json(['data' => $product], 201);
+    }
+
+    private function getProductOrdination($eventKitId)
+    {
+        $eventKit = EventKit::find($eventKitId);
+        $this->fixProductEmptyOrdination($eventKit);
+        $products = $eventKit->products;
+        return $products->count() + 1;
+    }
+
+    private function fixProductEmptyOrdination($eventKit)
+    {
+        $products = $eventKit->products()->wherePivot('ordination', null)->get();
+        $totalProducts = $eventKit->products()->wherePivot('ordination', '!=', null)->get()->count();
+        foreach ($products as $index => $product) {
+            $product->pivot->update(['ordination' => $totalProducts + $index + 1]);
+        }
+    }
+
+    private function isMovingProductToRootKit($eventKitId = null)
+    {
+        return empty($eventKitId);
     }
 
     public function checkKitParent($parentId, $kit, $eventId)
@@ -170,7 +194,8 @@ class EventKitController extends Controller
             foreach ($children as $child) {
                 if ($child['data']['type'] == 'product') {
                     $product = Product::find($child['data']['id']);
-                    $product->eventKits()->attach($eventKit->id);
+                    $ordination = $this->getProductOrdination($eventKit->id);
+                    $product->eventKits()->attach($eventKit->id, ['ordination' => $ordination]);
                     continue;
                 }
                 $data = $child['data'];
