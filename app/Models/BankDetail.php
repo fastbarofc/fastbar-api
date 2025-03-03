@@ -15,7 +15,7 @@ class BankDetail extends Model
 
     public function bankDetailable()
     {
-        return $this->morphTo('bank_detailable',);
+        return $this->morphTo('bank_detailable');
     }
 
     

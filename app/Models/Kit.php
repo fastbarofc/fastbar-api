@@ -40,7 +40,7 @@ class Kit extends Model implements AuditableInterface
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'kit_product')->withPivot(['value', 'optional']);
+        return $this->belongsToMany(Product::class, 'kit_product')->withPivot(['value', 'optional', 'ordination']);
     }
 
     public function getHasChildrenAttribute()
@@ -61,6 +61,7 @@ class Kit extends Model implements AuditableInterface
             $products->transform(function ($item) {
                 $item['kit_id'] = $this->id;
                 $item['type'] = 'product';
+                $item['ordination'] = $item->pivot->ordination;
                 return $item;
             });
         }

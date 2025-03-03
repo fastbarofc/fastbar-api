@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateKitRequest;
 use App\Http\Resources\KitResource;
 use App\Http\Resources\KitTreeResource;
 use App\Models\Kit;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class KitController extends Controller
@@ -99,11 +100,13 @@ class KitController extends Controller
         return response()->json(new KitResource($kit), 200);
     }
 
-    public function changeOrdination(Kit $movingKit, Request $request)
+    public function changeOrdination($movingItem, Request $request)
     {
-        if ($request->type == 'product') {
-            return response()->json(['message' => 'Você só pode reordenar entre kits e não produtos.'], 422);
+        if ($request->type == 'product' || $request->moving_type == 'product') {
+            return $this->changeProductOrdination($movingItem, $request);
         }
+
+        $movingKit = Kit::find($movingItem);
 
         $destinationKit = Kit::find($request->id);
 
@@ -134,6 +137,64 @@ class KitController extends Controller
         return response()->json(['message' => 'Alterado com sucesso.'], 200);
     }
 
+    public function changeProductOrdination($movingItem, Request $request)
+    {
+        if ($request->type == 'kit') {
+            if ($request->id != $request->moving_parent_kit_id) {
+                return response()->json(['message' => 'Você só pode reordenar produtos dentro do mesmo kit.'], 422);
+            }
+            $parentKit = Kit::find($request->moving_parent_kit_id);
+            $this->shiftProductToFirstOrdination($parentKit, $movingItem);
+            return response()->json(['message' => 'Alterado com sucesso.'], 200);
+        }
+
+        $destinationProduct = Product::find($request->id);
+
+        if (empty($destinationProduct->id)) {
+            return response()->json(['message' => 'Não é possível reordenar produtos para fora de um kit.'], 422);
+        }
+
+        $parentKit = Kit::find($request->moving_parent_kit_id);
+
+        $destinationProduct = $parentKit->products()->wherePivot('product_id', $request->id)->first();
+        $movingProduct = $parentKit->products()->wherePivot('product_id', $movingItem)->first();
+
+        if ($parentKit->id != $request->kit_id) {
+            return response()->json(['message' => 'Você só pode reordenar produtos dentro do mesmo kit.'], 422);
+        }
+
+        $this->fixEmptyOrdinationProduct($parentKit);
+
+        $movingProduct->refresh();
+        $destinationProduct->refresh();
+
+        if ($this->isAscendingProduct($movingProduct, $destinationProduct)) {
+            $this->shiftProductsUpward($movingProduct, $destinationProduct, $parentKit);
+            return response()->json(['message' => 'Alterado com sucesso.'], 200);
+        }
+
+        $this->shiftProductsDownward($movingProduct, $destinationProduct, $parentKit);
+        return response()->json(['message' => 'Alterado com sucesso.'], 200);
+    }
+
+    public function shiftProductToFirstOrdination(Kit $parentKit, $movingItem)
+    {
+        $products = $parentKit->products()
+            ->get();
+
+        foreach ($products as $product) {
+            $product->pivot->ordination = $product->pivot->ordination + 1;
+            $product->pivot->save();
+        }
+
+        $movingProduct = $parentKit->products()
+            ->wherePivot('product_id', $movingItem)
+            ->first();
+
+        $movingProduct->pivot->ordination = 1;
+        $movingProduct->pivot->save();
+    }
+
     public function shiftToFirstOrdination(Kit $movingKit)
     {
         $kits = Kit::where('kit_id', $movingKit->kit_id)
@@ -153,6 +214,21 @@ class KitController extends Controller
         return $movingKit->kit_id == $destinationKit->id;
     }
 
+    public function shiftProductsUpward(Product $movingProduct, Product $destinationProduct, Kit $parentKit)
+    {
+        $productsToShift = $parentKit->products()
+            ->whereBetween('ordination', [$destinationProduct->pivot->ordination + 1, $movingProduct->pivot->ordination - 1])
+            ->get();
+
+        foreach ($productsToShift as $product) {
+            $product->pivot->ordination = $product->pivot->ordination + 1;
+            $product->pivot->save();
+        }
+
+        $movingProduct->pivot->ordination = $destinationProduct->pivot->ordination + 1;
+        $movingProduct->pivot->save();
+    }
+
     public function shiftUpward(Kit $movingKit, Kit $destinationKit)
     {
         $kitsToShift = Kit::where('kit_id', $movingKit->kit_id)
@@ -167,6 +243,23 @@ class KitController extends Controller
 
         $movingKit->ordination = $destinationKit->ordination + 1;
         $movingKit->save();
+    }
+
+    public function shiftProductsDownward(Product $movingProduct, Product $destinationProduct, Kit $parentKit)
+    {
+        $productsToShift = $parentKit->products()
+        ->whereBetween('ordination', [$movingProduct->pivot->ordination + 1, $destinationProduct->pivot->ordination])
+        ->get()
+        ->sortBy('ordination')
+        ->values();
+
+        foreach ($productsToShift as $product) {
+            $product->pivot->ordination = $product->pivot->ordination - 1;
+            $product->pivot->save();
+        }
+
+        $movingProduct->pivot->ordination = $destinationProduct->pivot->ordination;
+        $movingProduct->pivot->save();
     }
 
     public function shiftDownward(Kit $movingKit, Kit $destinationKit)
@@ -189,6 +282,22 @@ class KitController extends Controller
     public function isAscending(Kit $movingKit, Kit $destinationKit)
     {
         return $movingKit->ordination > $destinationKit->ordination;
+    }
+
+    public function isAscendingProduct(Product $movingProduct, Product $destinationProduct)
+    {
+        return $movingProduct->pivot->ordination > $destinationProduct->pivot->ordination;
+    }
+
+    public function fixEmptyOrdinationProduct(Kit $parentKit)
+    {
+        $productWithEmptyOrdination = $parentKit->products()->wherePivot('ordination', null)->get();
+
+        $totalProducts = $parentKit->products()->wherePivot('ordination', '!=', null)->get()->count();
+
+        foreach ($productWithEmptyOrdination as $index => $product) {
+            $product->pivot->update(['ordination' => $totalProducts + $index + 1]);
+        }
     }
 
     public function fixEmptyOrdination(Kit $movingKit)
