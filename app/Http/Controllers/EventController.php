@@ -715,11 +715,13 @@ class EventController extends Controller
 
         $footerPath = resource_path('views/pdfs/footer.html');
         $footer = file_get_contents($footerPath);
+        $headerPath = resource_path('views/pdfs/header.html');
+        $header = file_get_contents($headerPath);
         $fileName = 'orcamento-' . $event->id;
         $viewContent = view("/pdfs/budget-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'totalGuests']));
 
         try {
-            $pdfUrl = FileService::generatePdf($viewContent, $fileName, $footer);
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName, $footer, $header);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
