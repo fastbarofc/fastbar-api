@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateEventRequest;
 use App\Http\Resources\ContractResource;
 use App\Http\Resources\EventGiftResource;
 use App\Http\Resources\EventResource;
+use App\Http\Resources\EventListResource;
 use App\Http\Resources\ExtraSaleResource;
 use App\Http\Resources\EventKitResource;
 use App\Models\Event;
@@ -50,56 +51,81 @@ class EventController extends Controller
     }
 
     public function index(Request $request)
-    {
-        $perPage = $request->input('per_page', 10);
+{
+    $query = Event::where('is_draft', false)->with([
+        'eventStatus',
+        'eventPlace',
+        'client',
+        'eventType',
+        'collaborator'
+    ]);
 
-        $query = Event::where('is_draft', false);
+    if ($request->input('filter_by')) {
+        $filterable = $request->input('filter_by');
+        if ($filterable && $filterable !== '[]') {
+            $filterableArray = json_decode($filterable, true);
+            
+            foreach ($filterableArray as $filter) {
+                $field = array_keys($filter)[0];
+                $value = $filter[$field];
+                $operator = $field == 'name' ? 'like' : '=';
+                $isDate = in_array($field, ['date']);
 
-        if ($request->input('filter_by')) {
-            $filterable = $request->input('filter_by');
-            if ($filterable && $filterable !== '[]') {
-                $filterableArray = json_decode($filterable, true);
-                foreach ($filterableArray as $filter) {
-                    $field = array_keys($filter)[0];
-                    $value = $filter[$field];
-                    $operator = $field == 'name' ? 'like' : '=';
-                    $isDate = in_array($field, ['date']);
-                    $query->filterByField(
-                        field: $field,
-                        value: $value,
-                        operator: $operator,
-                        isDate: $isDate
-                    );
+                if (str_contains($field, '.')) {
+                    [$relation, $relationField] = explode('.', $field);
+                    $query->whereHas($relation, function ($q) use ($relationField, $value, $operator) {
+                        $q->where($relationField, $operator, $operator === 'like' ? "%$value%" : $value);
+                    });
+                } elseif ($field === 'search') {
+                    $query->where(function($q) use ($value) {
+                        foreach (Event::searchableFields() as $searchableField) {
+                            $q->orWhere('events.' . $searchableField, 'like', "%$value%");
+                        }
+                    });
+                } else {
+                    if ($field === 'id') {
+                        $query->where('events.id', $value);
+                    } else {
+                        $query->filterByField($field, $value, $operator, $isDate);
+                    }
                 }
             }
         }
-        
-        if ($request->input('order_by')) {
-            $sortField = $request->input('order_by');
-            $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
-    
-            if (str_contains($sortField, '.')) {
-                [$relation, $field] = explode('.', $sortField);
-                $query->whereHas($relation)->with($relation)->orderByRelation($relation, $field, $direction);
-            } else {
-                $query->orderByField($sortField, $direction);
-            }
-        }
-
-        $events = $query->paginate($perPage);
-
-        return response()->json([
-            'data' => EventResource::collection($events),
-            'pagination' => [
-                'page' => $events->currentPage(),
-                'total_pages' => $events->lastPage(),
-                'per_page' => $events->perPage(),
-                'total' => $events->total(),
-            ],
-            'sortable_fields' => Event::sortableFields(),
-            'filterable_fields' => Event::filterableFields()
-        ], 200);
     }
+
+    if ($request->input('order_by')) {
+        $sortField = $request->input('order_by');
+        $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
+    
+        if (str_contains($sortField, '.')) {
+            [$relation, $field] = explode('.', $sortField);
+            $query->orderByRelation($relation, $field, $direction);
+        } else {
+            $query->orderBy('events.' . $sortField, $direction); 
+        }
+    }
+
+    $events = $query->paginate($request->input('per_page', 10));
+
+    return response()->json([
+        'data' => EventListResource::collection($events),
+        'pagination' => [
+            'page' => $events->currentPage(),
+            'total_pages' => $events->lastPage(),
+            'per_page' => $events->perPage(),
+            'total' => $events->total(),
+        ],
+        'sortable_fields' => Event::sortableFields(),
+        'filterable_fields' => Event::filterableFields(),
+        'event_types' => EventType::all(['id', 'name']),
+        'event_places' => EventPlace::all(['id', 'name']),
+        'event_statuses' => EventStatus::all(['id', 'name'])
+    ], 200);
+}
+
+    
+
+
 
     public function legalRepresentatives(Event $event)
     {
@@ -239,6 +265,21 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
+        $event->load([
+            'client',
+            'invoiceClient',
+            'collaborator',
+            'eventType',
+            'eventPlace',
+            'eventStatus',
+            'materials',
+            'officeEvents',
+            'eventGifts',
+            'extraSales',
+            'eventBatches',
+            'eventNotes', 
+        ]);
+
         return response()->json(new EventResource($event), 200);
     }
 
@@ -253,9 +294,12 @@ class EventController extends Controller
         $data['is_medicine'] = $data['is_medicine'] ?? $event->is_medicine;
         
 
-        $filteredBatches = array_filter($data['event_batches'], function ($batch) {
-            return isset($batch['guests']) && $batch['guests'] !== null;
-        });
+        $filteredBatches = isset($data['event_batches']) && is_array($data['event_batches'])
+    ? array_filter($data['event_batches'], function ($batch) {
+        return isset($batch['guests']) && $batch['guests'] !== null;
+    })
+    : [];
+
 
         if (!empty($filteredBatches)) {
             $batchesIds = collect($filteredBatches)
@@ -394,13 +438,13 @@ class EventController extends Controller
     $decorators = Decorator::all();
     $ceremonials = Ceremonial::all();
     $eventStatuses = EventStatus::all();
-    $eventPlaces = EventPlace::with(['address.city', 'address.state'])->get();
     $competingCompany = CompetingCompany::all();
     $lostReason = LostReason::all();
 
     $clients = [];
     $invoiceClients = [];
     $collaborators = [];
+    $eventPlaces = [];
     $relatedTastingEvents = [];
     $parentEvents = [];
     $hasTasting = false;
@@ -409,6 +453,7 @@ class EventController extends Controller
         $clients = Client::where('id', $event->client_id)->get();
         $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
         $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
+        $eventPlaces = EventPlace::where('id', $event->event_place_id)->get();
         $hasTasting = $event->tastingEvents()->exists();
         $parentEvents = Event::whereIn('id', $event->parentEvents()->pluck('events.id'))
             ->get(['id', 'name']);
