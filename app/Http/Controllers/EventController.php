@@ -83,7 +83,11 @@ class EventController extends Controller
                         }
                     });
                 } else {
-                    $query->filterByField($field, $value, $operator, $isDate);
+                    if ($field === 'id') {
+                        $query->where('events.id', $value);
+                    } else {
+                        $query->filterByField($field, $value, $operator, $isDate);
+                    }
                 }
             }
         }
