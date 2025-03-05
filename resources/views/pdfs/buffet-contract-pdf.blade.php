@@ -115,17 +115,21 @@
     font-weight: bold; 
         }
 
+        .witness-rectangle {
+    display: flex;
+    border: 1px solid black;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
     </style>
 </head>
 
 <body>
-    <div style="display: -webkit-box; -webkit-box-align: center; -webkit-box-pack: justify;">
-        <p>{{ \Carbon\Carbon::now()->format('d/m/Y') }}</p>
-        <p class="bg-gold">ID: {{ $event->id }}</p>
-    </div>
 
     <div class="logo-title">
-        <h2 style="font-weight: normal;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE BUFẼ</h2>
+        <h2 style="font-weight: bold; text-align: center; border: 2px solid #000;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE BUFẼ</h2>
         <hr class="hr-strong">
     </div>
 
@@ -134,24 +138,24 @@
             <th colspan="3" style="border: 1px solid #000;">Quadro-Resumo</th>
         </tr>
         <tr>
-            <td style="border: 1px solid #000;">01</td>
-            <td style="border: 1px solid #000;">Contratada</td>
-            <td style="border: 1px solid #000;">ORGANIZAÇÃO BARATELLA E BALTAZAR EVENTOS LTDA., cujo nome fantasia é Buffet Parthenon, pessoa jurídica de direito privado, inscrita no CNPJ sob o n. 01.005.782/0001-14, com sede na Rua Antônio Lopes Lélis, n. 199, Bairro Santo Antônio, CEP 36.570-000, neste ato representada por seu sócio administrador, André Baratella Baltazar, inscrito no CPF sob o n. 071.448.506-36.</td>
+            <td style="border: 1px solid #000;"><strong>01</strong></td>
+            <td style="border: 1px solid #000;"><strong>Contratada</strong></td>
+            <td style="border: 1px solid #000;"><strong>ORGANIZAÇÃO BARATELLA E BALTAZAR EVENTOS LTDA.</strong>, cujo nome fantasia é Buffet Parthenon, pessoa jurídica de direito privado, inscrita no CNPJ sob o n. 01.005.782/0001-14, com sede na Rua Antônio Lopes Lélis, n. 199, Bairro Santo Antônio, CEP 36.570-000, neste ato representada por seu sócio administrador, André Baratella Baltazar, inscrito no CPF sob o n. 071.448.506-36.</td>
         </tr>
         <tr>
-            <td style="border: 1px solid #000;">02</td>
-            <td style="border: 1px solid #000;">Contratante</td>
-            <td style="border: 1px solid #000;">Nome: {{ $client->name ?? 'Não informado' }}, nacionalidade: {{ $client->nationality ?? 'Não informado' }}, estado civil: {{ $client->civil_status ?? 'Não informado' }}, profissão: {{ $client->profession ?? 'Não informado' }}, inscrito(a) no CPF sob o n. {{ $client->cpf ?? 'Não informado' }} e portador(a) da CI de n. {{ $client->rg ?? 'Não informado' }}, residente e domiciliado(a) na Rua {{ $client->address['street'] ?? 'Não informado' }}, nº {{ $client->address['number'] ?? 'Não informado' }}{{ $client->address['complement'] ? ', ' . $client->address['complement'] : '' }}, Bairro {{ $client->address['district'] ?? 'Não informado' }}, CEP {{ $client->address['zip_code'] ?? 'Não informado' }}.</td>
+            <td style="border: 1px solid #000;"><strong>02</strong></td>
+            <td style="border: 1px solid #000;"><strong>Contratante</strong></td>
+            <td style="border: 1px solid #000;"><strong>Nome: {{ $client->name ?? 'Não informado' }}</strong>, nacionalidade: {{ $client->nationality ?? 'Não informado' }}, estado civil: {{ $client->civil_status ?? 'Não informado' }}, profissão: {{ $client->profession ?? 'Não informado' }}, inscrito(a) no CPF sob o n. {{ $client->cpf ?? 'Não informado' }} e portador(a) da CI de n. {{ $client->rg ?? 'Não informado' }}, residente e domiciliado(a) na Rua {{ $client->address['street'] ?? 'Não informado' }}, nº {{ $client->address['number'] ?? 'Não informado' }}{{ $client->address['complement'] ? ', ' . $client->address['complement'] : '' }}, Bairro {{ $client->address['district'] ?? 'Não informado' }}, CEP {{ $client->address['zip_code'] ?? 'Não informado' }}.</td>
         </tr>
 
         <tr>
-            <td style="border: 1px solid #000;">03</td>
-            <td style="border: 1px solid #000;">Objeto</td>
+            <td style="border: 1px solid #000;"><strong>03</strong></td>
+            <td style="border: 1px solid #000;"><strong>Objeto</strong></td>
             <td style="border: 1px solid #000;"></td>
         </tr>
         <tr>
-            <td style="border: 1px solid #000;">04</td>
-            <td style="border: 1px solid #000;">Evento</td>
+            <td style="border: 1px solid #000;"><strong>04</strong></td>
+            <td style="border: 1px solid #000;"><strong>Evento</strong></td>
             <td style="border: 1px solid #000;">
                 Nome: {{ $event->name }}<br>
                 Local: {{ $place?->name }}<br>
@@ -162,18 +166,18 @@
             </td>
         </tr>
         <tr>
-            <td style="border: 1px solid #000;">05</td>
-            <td style="border: 1px solid #000;">Preço</td>
+            <td style="border: 1px solid #000;"><strong>05</strong></td>
+            <td style="border: 1px solid #000;"><strong>Preço</strong></td>
             <td style="border: 1px solid #000;"></td>
         </tr>
         <tr>
-            <td style="border: 1px solid #000;">06</td>
-            <td style="border: 1px solid #000;">Forma de Pagamento</td>
+            <td style="border: 1px solid #000;"><strong>06</strong></td>
+            <td style="border: 1px solid #000;"><strong>Forma de Pagamento</strong></td>
             <td style="border: 1px solid #000;"></td>
         </tr>
         <tr>
-            <td style="border: 1px solid #000;">07</td>
-            <td style="border: 1px solid #000;">Data de Assinatura</td>
+            <td style="border: 1px solid #000;"><strong>07</strong></td>
+            <td style="border: 1px solid #000;"><strong>Data de Assinatura</strong></td>
             <td style="border: 1px solid #000;">{{ \Carbon\Carbon::now()->format('d/m/Y') }}</td>
         </tr>
     </table>
@@ -404,20 +408,27 @@
         </div>
     </div>
 
+    <div style="text-align: center; margin-top: 10px;">
+    Viçosa – MG, {{ \Carbon\Carbon::now()->translatedFormat('d \d\e F \d\e Y') }}
+  </div>
+
     <div style="white-space: pre-line;">
-    <strong>CONTRATADA:</strong><br><br><br>
-    <strong>CONTRATANTE:</strong><br><br><br>
-    Testemunhas:<br>
-    _____________________________<span style="margin-left: 50px;"></span>_____________________________
+    <ul>
+    <li><u><strong>CONTRATADA:</strong></u></li><br><br><br>
+    <li><u><strong>CONTRATANTE:</strong></u></li><br><br><br>
+    <li><u><strong>Testemunhas:</strong></u><br><br>
+        ______________________________________<span style="margin-left: 50px;"></span>______________________________________
+        <table class="summary-table" style="width: 80%; border-collapse: collapse;">
+        <tr>
+            <td style="border: 1px solid #000; width: 50%;  text-align: left;">Nome: <br> CPF:</td>
+            <td style="border: 1px solid #000; width: 50%;">Nome: <br> CPF:</td>
+        </tr>
+        </table>
+    </li>
+</ul>
+
 </div>
 
-    
-
-    <div class="footer">
-        <div class="parthenon-info">
-            <p class="footer-item">Viçosa - MG, {{ \Carbon\Carbon::now()->format('d/m/Y') }}</p>
-        </div>
-    </div>
 
 
 </body>
