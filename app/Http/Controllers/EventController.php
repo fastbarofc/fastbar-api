@@ -51,72 +51,77 @@ class EventController extends Controller
     }
 
     public function index(Request $request)
-    {
-        $perPage = $request->input('per_page', 10);
+{
+    $query = Event::where('is_draft', false)->with([
+        'eventStatus',
+        'eventPlace',
+        'client',
+        'eventType',
+        'collaborator'
+    ]);
 
-        $query = Event::where('is_draft', false)->with([
-            'eventStatus',
-            'eventPlace',
-            'client',
-            'eventType',
-            'collaborator'
-        ]);
+    if ($request->input('filter_by')) {
+        $filterable = $request->input('filter_by');
+        if ($filterable && $filterable !== '[]') {
+            $filterableArray = json_decode($filterable, true);
+            
+            foreach ($filterableArray as $filter) {
+                $field = array_keys($filter)[0];
+                $value = $filter[$field];
+                $operator = $field == 'name' ? 'like' : '=';
+                $isDate = in_array($field, ['date']);
 
-        if ($request->input('filter_by')) {
-            $filterable = $request->input('filter_by');
-            if ($filterable && $filterable !== '[]') {
-                $filterableArray = json_decode($filterable, true);
-                foreach ($filterableArray as $filter) {
-                    $field = array_keys($filter)[0];
-                    $value = $filter[$field];
-                    $operator = $field == 'name' ? 'like' : '=';
-                    $isDate = in_array($field, ['date']);
-                    $query->filterByField(
-                        field: $field,
-                        value: $value,
-                        operator: $operator,
-                        isDate: $isDate
-                    );
+                if (str_contains($field, '.')) {
+                    [$relation, $relationField] = explode('.', $field);
+                    $query->whereHas($relation, function ($q) use ($relationField, $value, $operator) {
+                        $q->where($relationField, $operator, $operator === 'like' ? "%$value%" : $value);
+                    });
+                } elseif ($field === 'search') {
+                    $query->where(function($q) use ($value) {
+                        foreach (Event::searchableFields() as $searchableField) {
+                            $q->orWhere('events.' . $searchableField, 'like', "%$value%");
+                        }
+                    });
+                } else {
+                    $query->filterByField($field, $value, $operator, $isDate);
                 }
             }
         }
-        
-        if ($request->input('order_by')) {
-            $sortField = $request->input('order_by');
-            $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
-        
-            if (str_contains($sortField, '.')) {
-                [$relation, $field] = explode('.', $sortField);
-                $query->whereHas($relation, function ($q) use ($field, $direction) {
-                    $q->orderBy($field, $direction);
-                })->with($relation);
-            } else {
-                $query->orderBy('events.' . $sortField, $direction); 
-            }
-        }
-
-        $eventTypes = EventType::all(['id', 'name']);
-        $eventPlaces = EventPlace::all(['id', 'name']);
-        $eventStatuses = EventStatus::all(['id', 'name']);
-        
-
-        $events = $query->paginate($perPage);
-
-        return response()->json([
-            'data' => EventListResource::collection($events),
-            'pagination' => [
-                'page' => $events->currentPage(),
-                'total_pages' => $events->lastPage(),
-                'per_page' => $events->perPage(),
-                'total' => $events->total(),
-            ],
-            'sortable_fields' => Event::sortableFields(),
-            'filterable_fields' => Event::filterableFields(),
-            'event_types' => $eventTypes,
-            'event_places' => $eventPlaces,
-            'event_statuses' => $eventStatuses
-        ], 200);
     }
+
+    if ($request->input('order_by')) {
+        $sortField = $request->input('order_by');
+        $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
+    
+        if (str_contains($sortField, '.')) {
+            [$relation, $field] = explode('.', $sortField);
+            $query->orderByRelation($relation, $field, $direction);
+        } else {
+            $query->orderBy('events.' . $sortField, $direction); 
+        }
+    }
+
+    $events = $query->paginate($request->input('per_page', 10));
+
+    return response()->json([
+        'data' => EventListResource::collection($events),
+        'pagination' => [
+            'page' => $events->currentPage(),
+            'total_pages' => $events->lastPage(),
+            'per_page' => $events->perPage(),
+            'total' => $events->total(),
+        ],
+        'sortable_fields' => Event::sortableFields(),
+        'filterable_fields' => Event::filterableFields(),
+        'event_types' => EventType::all(['id', 'name']),
+        'event_places' => EventPlace::all(['id', 'name']),
+        'event_statuses' => EventStatus::all(['id', 'name'])
+    ], 200);
+}
+
+    
+
+
 
     public function legalRepresentatives(Event $event)
     {
