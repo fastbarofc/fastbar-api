@@ -5,10 +5,8 @@
         @php
         $child3 = App\Models\EventKit::find($subChild['data']['id']);
         $nestedChildren = $child3?->children ?? [];
-        @endphp
-        @php
         $component = 'budget-products';
         @endphp
-        @include('pdfs.' . $component, $subChild)
+        @include('pdfs.' . $component, $nestedChildren)
     </div>
 </div>

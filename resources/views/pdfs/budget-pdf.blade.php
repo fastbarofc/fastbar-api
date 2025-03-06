@@ -214,16 +214,26 @@
             <hr class="hr-strong" style="margin-top: 0px !important;">
             <div style="margin-top: 15px;">
                 @if(!empty($child['children']))
-                @php
-                $child2 = App\Models\EventKit::find($child['data']['id']);
-                $subChildren = $child2?->children ?? [];
-                @endphp
-                @foreach($subChildren as $subChild)
-                @php
-                $component = 'budget-kits';
-                @endphp
-                @include('pdfs.' . $component, $subChild)
-                @endforeach
+                    @php
+                        $child2 = App\Models\EventKit::find($child['data']['id']);
+                        $subChildren = $child2?->children ?? [];
+                    @endphp
+                    @if (!empty($subChildren))
+                        @if ($subChildren[0]['data']['type'] == 'kit')
+                            @foreach($subChildren as $subChild)
+                                @php
+                                    $component = 'budget-kits';
+                                @endphp
+                                @include('pdfs.' . $component, $subChild)
+                            @endforeach
+                        @else
+                            @php
+                                $component = 'budget-products';
+                                $nestedChildren = $subChildren;
+                            @endphp
+                            @include('pdfs.' . $component, $nestedChildren)
+                        @endif
+                    @endif
                 @endif
             </div>
         </div>
