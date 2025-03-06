@@ -55,7 +55,7 @@
                     $child2 = App\Models\EventKit::find($child['data']['id']);
                     $subChildren = $child2?->children ?? [];
                     @endphp
-                    @if (!empty($subChildren))
+                    @if (!empty($subChildren) && !empty($subChildren[0]))
                     @if ($subChildren[0]['data']['type'] == 'kit')
                     @foreach($subChildren as $subChild)
                     @php
