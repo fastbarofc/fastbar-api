@@ -101,12 +101,15 @@ class EventKitController extends Controller
         $data['optional'] = false;
         $data['checklist'] = false;
 
-        $eventKitId = !empty($data['event_kit_id']) ? $data['event_kit_id'] : null;
-
         if (empty($data['type']) || $data['type'] != 'product') {
-            $data['ordination'] = EventKit::where('event_kit_id', $eventKitId)->where('event_id', $data['event_id'])->get()->count() + 1;
-            $eventKit = EventKit::create($data);
+            $eventKitId = $this->checkKitParent(null, $kit, $data['event_id']);
+            $eventKit = EventKit::find($eventKitId);
+            $ordination = $this->getKitOrdination($eventKitId);
             $this->transformKitToEventKit($kit, $eventKit);
+            $eventKit = EventKit::find($eventKitId);
+            while (!empty($eventKit->event_kit_id)) {
+                $eventKit = EventKit::find($eventKit->event_kit_id);
+            }
             return response()->json(new EventKitTreeResource($eventKit), 201);
         }
 
@@ -116,17 +119,15 @@ class EventKitController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        if ($this->isMovingProductToRootKit($eventKitId)) {
-            $kit = Kit::find($data['kit_id']);
-            $eventKitId = $this->checkKitParent(null, $kit, $data['event_id']);
-            $ordination = $this->getProductOrdination($eventKitId);
-            $product->eventKits()->attach($eventKitId, ['ordination' => $ordination]);
-            $eventKit = EventKit::find($eventKitId);
-            while(!empty($eventKit->event_kit_id)) {
-                $eventKit = EventKit::find($eventKit->event_kit_id);
-            }
-            return response()->json(new EventKitTreeResource($eventKit), 201);
+        $kit = Kit::find($data['kit_id']);
+        $eventKitId = $this->checkKitParent(null, $kit, $data['event_id']);
+        $ordination = $this->getProductOrdination($eventKitId);
+        $product->eventKits()->attach($eventKitId, ['ordination' => $ordination]);
+        $eventKit = EventKit::find($eventKitId);
+        while (!empty($eventKit->event_kit_id)) {
+            $eventKit = EventKit::find($eventKit->event_kit_id);
         }
+        return response()->json(new EventKitTreeResource($eventKit), 201);
 
         try {
             $ordination = $this->getProductOrdination($eventKitId);
@@ -137,6 +138,13 @@ class EventKitController extends Controller
         }
         $product->type = 'product';
         return response()->json(['data' => $product], 201);
+    }
+
+    private function getKitOrdination($eventKitId)
+    {
+        $eventKit = EventKit::find($eventKitId);
+        $kits = EventKit::where('event_kit_id', $eventKit->event_kit_id)->get();
+        return $kits->count() + 1;
     }
 
     private function getProductOrdination($eventKitId)
@@ -154,11 +162,6 @@ class EventKitController extends Controller
         foreach ($products as $index => $product) {
             $product->pivot->update(['ordination' => $totalProducts + $index + 1]);
         }
-    }
-
-    private function isMovingProductToRootKit($eventKitId = null)
-    {
-        return empty($eventKitId);
     }
 
     public function checkKitParent($parentId, $kit, $eventId)
@@ -250,7 +253,8 @@ class EventKitController extends Controller
         return response()->json(['message' => 'Alterado com sucesso.'], 200);
     }
 
-    public function changeProductOrdination($movingItem, $request) {
+    public function changeProductOrdination($movingItem, $request)
+    {
         if ($request->type == 'kit') {
             if ($request->id != $request->moving_parent_event_kit_id) {
                 return response()->json(['message' => 'Você só pode reordenar produtos dentro do mesmo kit.'], 422);
@@ -293,10 +297,10 @@ class EventKitController extends Controller
     public function shiftProductsDownward(Product $movingProduct, Product $destinationProduct, EventKit $parentKit)
     {
         $productsToShift = $parentKit->products()
-        ->whereBetween('ordination', [$movingProduct->pivot->ordination + 1, $destinationProduct->pivot->ordination])
-        ->get()
-        ->sortBy('ordination')
-        ->values();
+            ->whereBetween('ordination', [$movingProduct->pivot->ordination + 1, $destinationProduct->pivot->ordination])
+            ->get()
+            ->sortBy('ordination')
+            ->values();
 
         foreach ($productsToShift as $product) {
             $product->pivot->ordination = $product->pivot->ordination - 1;
