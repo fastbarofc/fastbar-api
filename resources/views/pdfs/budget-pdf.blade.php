@@ -10,7 +10,6 @@
         body {
             margin-left: 50px;
             margin-right: 50px;
-            padding-top: 50px;
             color: #333;
         }
 
@@ -209,60 +208,36 @@
     </div>
     <div class="kits" style="page-break-inside: avoid;">
         @foreach($kits as $kit)
+        @foreach($kit->children as $child)
         <div style="margin-bottom: 15px;">
-            <h2 style="font-weight: normal; margin-bottom: 0px;">{{ $kit->name }}</h2>
+            <h2 style="font-weight: normal; margin-bottom: 0px;">{{ $child['data']['name'] }}</h2>
             <hr class="hr-strong" style="margin-top: 0px !important;">
-            @foreach($kit->children as $child)
             <div style="margin-top: 15px;">
                 @if(!empty($child['children']))
-                    <h3 style="font-weight: normal;">&nbsp; &nbsp; &nbsp; {{ $child['data']['name'] }}</h3>
-                    <hr style="margin-top: 0px !important;">
-                    <div style="width: 100%; display: table;">
-                        <div style="display: table-row;">
-                            <div style="display: table-cell; width: 48%; padding-right: 2%;">
-                                <ul>
-                                    @php
-                                    $kitLevel2 = App\Models\EventKit::find($child['data']['id']);
-                                    $childrenKitLevel2 = $kitLevel2->children;
-                                    @endphp
-
-                                    @if(!empty($childrenKitLevel2))
-                                        @foreach($childrenKitLevel2 as $product)
-                                            @if ($loop->index % 2 == 0)
-                                            <li>{{ $product['data']['name'] }}</li>
-                                            @endif
-                                        @endforeach
-                                    @endif
-                                </ul>
-                            </div>
-                            <div style="display: table-cell; width: 48%;">
-                                <ul>
-                                    @php
-                                    $kitLevel2 = App\Models\EventKit::find($child['data']['id']);
-                                    $childrenKitLevel2 = $kitLevel2->children;
-                                    @endphp
-
-                                    @if(!empty($childrenKitLevel2))
-                                        @foreach($childrenKitLevel2 as $product)
-                                            @if ($loop->index % 2 == 1)
-                                            <li>{{ $product['data']['name'] }}</li>
-                                            @endif
-                                        @endforeach
-                                    @endif
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <ul>
-                        <li>
-                            {{ $child['data']['name'] }}
-                        </li>
-                    </ul>
+                    @php
+                        $child2 = App\Models\EventKit::find($child['data']['id']);
+                        $subChildren = $child2?->children ?? [];
+                    @endphp
+                    @if (!empty($subChildren) && !empty($subChildren[0]))
+                        @if ($subChildren[0]['data']['type'] == 'kit')
+                            @foreach($subChildren as $subChild)
+                                @php
+                                    $component = 'budget-kits';
+                                @endphp
+                                @include('pdfs.' . $component, $subChild)
+                            @endforeach
+                        @else
+                            @php
+                                $component = 'budget-products';
+                                $nestedChildren = $subChildren;
+                            @endphp
+                            @include('pdfs.' . $component, $nestedChildren)
+                        @endif
+                    @endif
                 @endif
             </div>
-            @endforeach
         </div>
+        @endforeach
         @endforeach
     </div>
     <div style="position: relative; height: 100px;">
@@ -304,7 +279,7 @@
             </div>
         </div>
     </div>
-    
+
 </body>
 
 </html>

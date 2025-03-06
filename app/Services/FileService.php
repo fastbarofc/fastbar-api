@@ -49,7 +49,7 @@ class FileService
     $file->delete();
   }
 
-  public static function generatePdf($viewContent, $fileName, $footerContent = null)
+  public static function generatePdf($viewContent, $fileName, $footerContent = null, $headerContent = null)
   {
     $root = base_path();
     $arch = self::getArchitecture();
@@ -63,6 +63,11 @@ class FileService
     if (!empty($footerContent)) {
       $footer = new MikeFile($footerContent, '.html');
       $options['footer-html'] = $footer;
+    }
+
+    if (!empty($headerContent)) {
+      $header = new MikeFile($headerContent, '.html');
+      $options['header-html'] = $header;
     }
 
     $pdf = new Pdf($options);
