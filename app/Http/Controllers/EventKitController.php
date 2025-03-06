@@ -95,6 +95,12 @@ class EventKitController extends Controller
     public function store(StoreEventKitRequest $request)
     {
         $kit = Kit::find($request->input('id'));
+
+        if (empty($kit) && empty($request->input('type'))) {
+            $eventKit = EventKit::create($request->all());
+            return response()->json(new EventKitTreeResource($eventKit), 201);
+        }
+
         $data = $request->all();
 
         $data['themed_table'] = false;
