@@ -219,49 +219,16 @@
                 $subChildren = $child2?->children ?? [];
                 @endphp
                 @foreach($subChildren as $subChild)
-                <h3 style="font-weight: normal;">&nbsp; &nbsp; &nbsp; {{ $subChild['data']['name'] }}</h3>
-                <hr style="margin-top: 0px !important;">
-                <div style="width: 100%;">
-                    <div>
-                        @php
-                        $child3 = App\Models\EventKit::find($subChild['data']['id']);
-                        $nestedChildren = $child3?->children ?? [];
-                        @endphp
-                        <div style="width: 100%; display: table; margin-top: 20px;">
-                            <div style="display: table-row;">
-                                @php
-                                $kitsRigth = ceil(count($nestedChildren) / 2);
-                                $kitsLeft = count($nestedChildren) - $kitsRigth;
-                                @endphp
-                                <div style="display: table-cell; width: 48%; padding-right: 2%;">
-                                    <ul>
-                                        @if(!empty($nestedChildren))
-                                        @for($i = 0; $i < $kitsLeft; $i++)
-                                            <li>{{ $nestedChildren[$i]['data']['name'] }}</li>
-                                            @endfor
-                                            @endif
-                                    </ul>
-                                </div>
-                                <div style="display: table-cell; width: 48%;">
-                                    <ul>
-                                        @if(!empty($nestedChildren))
-                                        @for($i = $kitsLeft; $i < count($nestedChildren); $i++)
-                                            <li>{{ $nestedChildren[$i]['data']['name'] }}</li>
-                                            @endfor
-                                            @endif
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @php
+                $component = 'budget-kits';
+                @endphp
+                @include('pdfs.' . $component, $subChild)
+                @endforeach
+                @endif
             </div>
-            @endforeach
-            @endif
         </div>
-    </div>
-    @endforeach
-    @endforeach
+        @endforeach
+        @endforeach
     </div>
     <div style="position: relative; height: 100px;">
         <div style="position: absolute; right: 0; bottom: 0;">
