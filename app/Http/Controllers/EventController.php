@@ -760,11 +760,13 @@ class EventController extends Controller
 
         $footerPath = resource_path('views/pdfs/footer.html');
         $footer = file_get_contents($footerPath);
+        $headerPath = resource_path('views/pdfs/header.html');
+        $header = file_get_contents($headerPath);
         $fileName = 'orcamento-' . $event->id;
         $viewContent = view("/pdfs/budget-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'totalGuests']));
 
         try {
-            $pdfUrl = FileService::generatePdf($viewContent, $fileName, $footer);
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName, $footer, $header);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -909,10 +911,23 @@ class EventController extends Controller
         if ($event->status && $event->status->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
-        $fileName = 'menu-' . $event->id;
-        $viewContent = view("/pdfs/menu-pdf");
+        $date = Carbon::now()->format('d/m/Y');
+        $client = $event->client;
+        $place = $event->eventPlace;
+        $kits = $event->eventKits()->whereNull('event_kit_id')->get();
+
+        $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
+        foreach ($event->eventBatches as $eventBatch) {
+            $totalGuests += $eventBatch->guests;
+        }
+
+        $headerPath = resource_path('views/pdfs/header.html');
+        $header = file_get_contents($headerPath);
+        $fileName = 'orcamento-' . $event->id;
+        $viewContent = view("/pdfs/menu-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'totalGuests']));
+
         try {
-            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            $pdfUrl = FileService::generatePdf(viewContent: $viewContent, fileName: $fileName, footerContent: $header, headerContent: $header);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
