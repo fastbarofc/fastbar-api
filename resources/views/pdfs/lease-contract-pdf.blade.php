@@ -102,7 +102,7 @@
     <div class="clause">
         <div class="clause-title">DO PREÇO</div>
         <div class="clause-content">
-            <p><span class="clause-number">Cláusula 8ª.</span> O valor da presente locação é de R$ {{ number_format($event->price, 2, ',', '.') }}, que será pago da seguinte forma:</p>
+            <p><span class="clause-number">Cláusula 8ª.</span> O valor da presente locação é de R$ {{ number_format($event->lease, 2, ',', '.') }}, que será pago da seguinte forma:</p>
             <p><span class="clause-number">Cláusula 8.1.</span> O pagamento será realizado de forma à vista, em dinheiro, no ato da assinatura deste contrato OU O pagamento será realizado de forma à vista, mediante a emissão de cheque nominal e não à ordem à <strong>ORGANIZAÇÃO BARATELLA E BALTAZAR LTDA. - EPP</strong>, devidamente cruzado, no ato da assinatura deste contrato.</p>
             <p><span class="clause-number">Cláusula 9ª.</span> Os pagamentos não realizados ou qualquer pagamento fora da data acima pactuada sofrerá acréscimo de multa de 10% (dez por cento) e juros de mora de 1% ao mês, e ficarão condicionados à confirmação da data pactuada.</p>
             <p><span class="clause-number">Cláusula 10ª.</span> Caso, no dia da locação, o imóvel não esteja disponível para a realização do evento, por motivos de embargo do Poder Público ou motivo de força maior e caso fortuito, haverá rescisão imediata de contrato e devolução integral da quantia paga pelo LOCATÁRIO, não sendo devida nenhuma multa por este motivo.</p>
