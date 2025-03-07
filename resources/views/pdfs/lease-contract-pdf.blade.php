@@ -96,6 +96,8 @@
             <p><span class="clause-number">Cláusula 4ª.</span> Caberá ao LOCATÁRIO manter e zelar pela conservação de todos os utensílios e equipamentos que guarnecem o imóvel e assim restituí-los ao final, sob pena de responder civilmente pelos danos eventualmente provocados.</p>
             <p><span class="clause-number">Cláusula 5ª.</span> Fica determinado que o acionamento do Ar condicionado será realizado 3 (três) horas antecedentes ao evento e durante toda a execução do mesmo.</p>
             <p><span class="clause-number">Cláusula 5.1ª.</span> Caso seja solicitado o acionamento do ar condicionado em horário anterior ao estabelecido acima, será cobrada uma taxa no valor adicional de R$70,00 (setenta reais) por hora.</p>
+            <p><span class="clause-number">Cláusula 6ª.</span> A LOCADORA fornecerá todo o material para os toaletes masculino e feminino, além de um funcionário em cada banheiro e outro para a manutenção em geral, ou seja, o total de 03 (três) funcionários.</p>
+            <p><span class="clause-number">Cláusula 7ª.</span> A área locada destina-se exclusivamente à finalidade de realização do evento informado no preâmbulo, ficando expressamente proibida a cessão ou sublocação deste espaço, exceto expressa autorização do locador.</p>
         </div>
     </div>
 
@@ -117,6 +119,8 @@
             <p><span class="clause-number">Cláusula 13ª.</span> A LOCADORA poderá certificar-se do estado de conservação das dependências sempre que achar necessário, tendo permissão de entrar com até 3 (três) representantes, independentemente do horário, até mesmo durante a realização do evento.</p>
             <p><span class="clause-number">Cláusula 14ª.</span> Deverá a LOCADORA entregar o espaço limpo e em bom estado de conservação possibilitando a utilização para as atividades a serem nele desenvolvidas.</p>
             <p><span class="clause-number">Cláusula 15ª.</span> É proibida qualquer alteração ou modificação na estrutura do imóvel locado, excetuados apenas as que sejam removíveis, que deverão ser retiradas por ocasião da entrega do imóvel locado, sendo proibido colar, fixar ou pregar qualquer tipo de objetos ou papel nas paredes e tetos. O LOCATÁRIO será responsável por qualquer danificação na pintura ou no piso.</p>
+            <p><span class="clause-number">Cláusula 16ª.</span> Quaisquer instalações de equipamento, montagens, infraestrutura do evento, bem como as contratações que se fizerem necessárias, sejam de pessoas, equipamentos, decoração, conforme normas técnicas pertinentes ao assunto ocorrerão por conta exclusiva do LOCATÁRIO, isentando a LOCADORA de quaisquer ônus que por ventura recaiam sobre o ELA e que digam respeito à ocupação da área durante o período de contrato.</p>
+            <p><span class="clause-number">Cláusula 17ª.</span> A LOCADORA entregará o salão com a capacidade máxima de 200 KW para ser utilizado interna e externamente, não se responsabilizando pelo que exceder, devendo o LOCATÁRIO se prevenir com antecedência contratando, caso julgue necessário, geradores. A LOCADORA em nenhuma hipótese será responsabilizada pela falta de energia elétrica, que possa vir a prejudicar o evento.</p>
         </div>
     </div>
 
