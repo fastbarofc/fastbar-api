@@ -942,8 +942,12 @@ class EventController extends Controller
         if ($event->status && $event->status->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
+
+        $date = Carbon::now()->format('d/m/Y');
+        $client = $event->client;
+
         $fileName = 'collaborators-' . $event->id;
-        $viewContent = view("/pdfs/collaborators-pdf");
+        $viewContent = view("/pdfs/collaborators-pdf" , compact(['event', 'date', 'client']));
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
