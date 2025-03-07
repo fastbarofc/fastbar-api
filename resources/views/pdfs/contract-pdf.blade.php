@@ -162,8 +162,37 @@
         </tr>
     </table>
 
+    @php
+        $mapping = [
+    '{{ nome_cliente }}' => $contract->event->client->name ?? 'Não informado',
+    '{{ nacionalidade_cliente }}' => $contract->event->client->nationality ?? 'Não informado',
+    '{{ estado_civil_cliente }}' => $contract->event->client->civil_status ?? 'Não informado',
+    '{{ profissao_cliente }}' => $contract->event->client->profession ?? 'Não informado',
+    '{{ cpf_cliente }}' => $contract->event->client->cpf ?? 'Não informado',
+    '{{ rg_cliente }}' => $contract->event->client->rg ?? 'Não informado',
+    '{{ endereco_cliente.rua }}' => $contract->event->client->address->street ?? 'Não informado',
+    '{{ endereco_cliente.numero }}' => $contract->event->client->address->number ?? 'Não informado',
+    '{{ endereco_cliente.complemento }}' => $contract->event->client->address->complement ?? '',
+    '{{ endereco_cliente.bairro }}' => $contract->event->client->address->district ?? 'Não informado',
+    '{{ endereco_cliente.cep }}' => $contract->event->client->address->zip_code ?? 'Não informado',
+    '{{ nome_evento }}' => $contract->event->name,
+    '{{ local_evento }}' => $contract->event->eventPlace->name ?? 'Local não informado',
+    '{{ data_evento }}' => \Carbon\Carbon::parse($contract->event->date)->format('d/m/Y'),
+    '{{ horario_evento }}' => $contract->event->time ? \Carbon\Carbon::parse($contract->event->time)->format('H:i') : 'Hora a definir',
+    '{{ duracao_evento }}' => $contract->event->duration,
+    '{{ numero_convidados }}' => $contract->event->event_guests ?? 'Número de convidados não informado',
+    '{{ data_assinatura }}' => \Carbon\Carbon::parse($contract->created_at)->format('d/m/Y'),
+];
+
+$contractBody = $contract->body;
+
+foreach ($mapping as $placeholder => $value) {
+    $contractBody = str_replace($placeholder, $value, $contractBody);
+}
+        @endphp
+
     <div class="event-text">
-        <p>{!! $contract['body'] !!}</p>
+        <p>{!! $contractBody !!}</p>
     </div>
 
     <h4>Os itens contratados são:</h4>
