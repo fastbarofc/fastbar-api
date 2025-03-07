@@ -57,7 +57,8 @@ class EventController extends Controller
         'eventPlace',
         'client',
         'eventType',
-        'collaborator'
+        'collaborator',
+        'eventKits'
     ]);
 
     if ($request->input('filter_by')) {

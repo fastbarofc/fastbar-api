@@ -33,6 +33,7 @@ class EventListResource extends JsonResource
             ]),
             'type'           => $this->whenLoaded('eventType', fn() => $this->eventType->name),
             'collaborator'   => $this->whenLoaded('collaborator', fn() => $this->collaborator->name),
+            'has_kit'        => $this->eventKits()->exists()
         ];
     }
 }
