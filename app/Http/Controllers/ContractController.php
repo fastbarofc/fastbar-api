@@ -89,10 +89,24 @@ class ContractController extends Controller
 
         $properties['client'] = $event->client
             ? $event->client
-            ->select('id', 'name', 'phone_1')
+            ->select('id', 'name', 'phone_1', 'cpf', 'rg')
+            ->with('address')
             ->first()
             ->toArray()
-            : ['id' => null, 'name' => null, 'phone_1' => null];
+            : [
+                'id' => null, 
+                'name' => null, 
+                'phone_1' => null,
+                'cpf' => null,
+                'rg' => null,
+                'address' => [
+                    'street' => null,
+                    'number' => null,
+                    'complement' => null,
+                    'district' => null,
+                    'zip_code' => null,
+                ]
+            ];
 
         $properties['place'] = $event->eventPlace
             ? $event->eventPlace

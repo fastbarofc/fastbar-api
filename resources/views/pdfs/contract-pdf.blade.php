@@ -163,24 +163,26 @@
     </table>
 
     @php
-        $mapping = [
-    '{{ nome_cliente }}' => $contract->event->client->name ?? 'Não informado',
-    '{{ nacionalidade_cliente }}' => $contract->event->client->nationality ?? 'Não informado',
-    '{{ estado_civil_cliente }}' => $contract->event->client->civil_status ?? 'Não informado',
-    '{{ profissao_cliente }}' => $contract->event->client->profession ?? 'Não informado',
-    '{{ cpf_cliente }}' => $contract->event->client->cpf ?? 'Não informado',
-    '{{ rg_cliente }}' => $contract->event->client->rg ?? 'Não informado',
-    '{{ endereco_cliente.rua }}' => $contract->event->client->address->street ?? 'Não informado',
-    '{{ endereco_cliente.numero }}' => $contract->event->client->address->number ?? 'Não informado',
-    '{{ endereco_cliente.complemento }}' => $contract->event->client->address->complement ?? '',
-    '{{ endereco_cliente.bairro }}' => $contract->event->client->address->district ?? 'Não informado',
-    '{{ endereco_cliente.cep }}' => $contract->event->client->address->zip_code ?? 'Não informado',
-    '{{ nome_evento }}' => $contract->event->name,
-    '{{ local_evento }}' => $contract->event->eventPlace->name ?? 'Local não informado',
-    '{{ data_evento }}' => \Carbon\Carbon::parse($contract->event->date)->format('d/m/Y'),
-    '{{ horario_evento }}' => $contract->event->time ? \Carbon\Carbon::parse($contract->event->time)->format('H:i') : 'Hora a definir',
-    '{{ duracao_evento }}' => $contract->event->duration,
-    '{{ numero_convidados }}' => $contract->event->event_guests ?? 'Número de convidados não informado',
+    $mapping = [
+    '{{ nome_cliente }}' => $contract->properties['client']['name'] ?? 'Cliente não informado',
+    '{{ nacionalidade_cliente }}' => $contract->properties['client']['nationality'] ?? 'Não informado',
+    '{{ estado_civil_cliente }}' => $contract->properties['client']['civil_status'] ?? 'Não informado',
+    '{{ profissao_cliente }}' => $contract->properties['client']['profession'] ?? 'Não informado',
+    '{{ cpf_cliente }}' => $contract->properties['client']['cpf'] ?? 'Não informado',
+    '{{ rg_cliente }}' => $contract->properties['client']['rg'] ?? 'Não informado',
+    '{{ endereco_cliente.rua }}' => $contract->properties['client']['address']['street'] ?? 'Não informado',
+    '{{ endereco_cliente.numero }}' => $contract->properties['client']['address']['number'] ?? 'Não informado',
+    '{{ endereco_cliente.complemento }}' => !empty($contract->properties['client']['address']['complement'])
+        ? ', ' . $contract->properties['client']['address']['complement']
+        : '',
+    '{{ endereco_cliente.bairro }}' => $contract->properties['client']['address']['district'] ?? 'Não informado',
+    '{{ endereco_cliente.cep }}' => $contract->properties['client']['address']['zip_code'] ?? 'Não informado',
+    '{{ nome_evento }}' => $contract->properties['name'],
+    '{{ local_evento }}' => $contract->properties['place']['name'] ?? 'Local não informado',
+    '{{ data_evento }}' => \Carbon\Carbon::parse($contract->properties['date'])->format('d/m/Y'),
+    '{{ horario_evento }}' => $contract->properties['time'] ? \Carbon\Carbon::parse($contract->properties['time'])->format('H:i') : 'Hora a definir',
+    '{{ duracao_evento }}' => $contract->properties['duration'],
+    '{{ numero_convidados }}' => $contract->properties['event_guests'] ?? 'Número de convidados não informado',
     '{{ data_assinatura }}' => \Carbon\Carbon::parse($contract->created_at)->format('d/m/Y'),
 ];
 
