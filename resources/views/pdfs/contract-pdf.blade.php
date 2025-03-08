@@ -162,8 +162,39 @@
         </tr>
     </table>
 
+    @php
+    $mapping = [
+    '{{ nome_cliente }}' => $contract->properties['client']['name'] ?? 'Cliente não informado',
+    '{{ nacionalidade_cliente }}' => $contract->properties['client']['nationality'] ?? 'Não informado',
+    '{{ estado_civil_cliente }}' => $contract->properties['client']['civil_status'] ?? 'Não informado',
+    '{{ profissao_cliente }}' => $contract->properties['client']['profession'] ?? 'Não informado',
+    '{{ cpf_cliente }}' => $contract->properties['client']['cpf'] ?? 'Não informado',
+    '{{ rg_cliente }}' => $contract->properties['client']['rg'] ?? 'Não informado',
+    '{{ endereco_cliente.rua }}' => $contract->properties['client']['address']['street'] ?? 'Não informado',
+    '{{ endereco_cliente.numero }}' => $contract->properties['client']['address']['number'] ?? 'Não informado',
+    '{{ endereco_cliente.complemento }}' => !empty($contract->properties['client']['address']['complement'])
+        ? ', ' . $contract->properties['client']['address']['complement']
+        : '',
+    '{{ endereco_cliente.bairro }}' => $contract->properties['client']['address']['district'] ?? 'Não informado',
+    '{{ endereco_cliente.cep }}' => $contract->properties['client']['address']['zip_code'] ?? 'Não informado',
+    '{{ nome_evento }}' => $contract->properties['name'],
+    '{{ local_evento }}' => $contract->properties['place']['name'] ?? 'Local não informado',
+    '{{ data_evento }}' => \Carbon\Carbon::parse($contract->properties['date'])->format('d/m/Y'),
+    '{{ horario_evento }}' => $contract->properties['time'] ? \Carbon\Carbon::parse($contract->properties['time'])->format('H:i') : 'Hora a definir',
+    '{{ duracao_evento }}' => $contract->properties['duration'],
+    '{{ numero_convidados }}' => $contract->properties['event_guests'] ?? 'Número de convidados não informado',
+    '{{ data_assinatura }}' => \Carbon\Carbon::parse($contract->created_at)->format('d/m/Y'),
+];
+
+$contractBody = $contract->body;
+
+foreach ($mapping as $placeholder => $value) {
+    $contractBody = str_replace($placeholder, $value, $contractBody);
+}
+        @endphp
+
     <div class="event-text">
-        <p>{!! $contract['body'] !!}</p>
+        <p>{!! $contractBody !!}</p>
     </div>
 
     <h4>Os itens contratados são:</h4>
