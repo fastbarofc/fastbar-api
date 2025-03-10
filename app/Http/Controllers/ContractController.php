@@ -78,7 +78,7 @@ class ContractController extends Controller
 
         $data['properties'] = [];
 
-        $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date', 'time', 'duration', 'lease', 'buffet_value', 'event_guests']);
+        $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date', 'time', 'duration', 'lease', 'buffet_value', 'event_guests', 'sub_total']);
 
         $properties['date'] = $event->date;
         if (empty($event->time)) {

@@ -184,6 +184,7 @@
     '{{ duracao_evento }}' => $contract->properties['duration'],
     '{{ numero_convidados }}' => $contract->properties['event_guests'] ?? 'Número de convidados não informado',
     '{{ data_assinatura }}' => \Carbon\Carbon::parse($contract->created_at)->format('d/m/Y'),
+    '{{ preco }}' => 'R$ ' . str_replace('.', ',' ,$contract->properties['sub_total']) ?? 'Preço não informado',
 ];
 
 $contractBody = $contract->body;
@@ -196,7 +197,8 @@ foreach ($mapping as $placeholder => $value) {
     <div class="event-text">
         <p>{!! $contractBody !!}</p>
     </div>
-
+    
+    <p style="text-align: center;"><strong>ANEXO 1 - Cardápio</strong></p>
     <h4>Os itens contratados são:</h4>
 
     <p><span class="text-bold">Itens de Buffet:</span></p>
@@ -216,6 +218,15 @@ foreach ($mapping as $placeholder => $value) {
                             @foreach ($child['children'] as $key2 => $child2)
                             <li>
                                 {{ $child2['name'] }}
+                                @if(!empty($child2['children'][0]))
+                                <ul>
+                                    @foreach ($child2['children'] as $key3 => $child3)
+                                    <li>
+                                        {{ $child3['name'] }}
+                                    </li>
+                                    @endforeach
+                                </ul>
+                                @endif
                             </li>
                             @endforeach
                         </ul>
@@ -246,7 +257,7 @@ foreach ($mapping as $placeholder => $value) {
         Buffet: R$ {{ number_format(floatval($contract->properties['buffet_value'] ?? 0), 2, ',', '.') }}.
 
     </div>
-
+    @if (!empty($contract->properties['batches'][0]))
     <div class="event-section">
         <span class="text-bold">Lotes:</span>
         <br><br>
@@ -262,6 +273,7 @@ foreach ($mapping as $placeholder => $value) {
             @endforeach
         </ul>
     </div>
+    @endif
 
     <div class="event-section">
         <span class="text-bold">Colaboradores:</span>
