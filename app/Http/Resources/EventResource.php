@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Carbon\Carbon;
+use App\Models\Material;
 
 class EventResource extends JsonResource
 {
@@ -52,12 +53,15 @@ class EventResource extends JsonResource
             'event_capture_id'   => $this->event_capture_id,
             'ceremonial_id'      => $this->ceremonial_id,
             'legal_representatives' => $this->whenLoaded('legalRepresentatives', fn() => $this->legalRepresentatives->pluck('id')),
-            'materials'          => $this->whenLoaded('materials', fn() => $this->materials->map(fn($material) => [
-                'id'          => $material->id,
-                'description' => $material->description,
-                'quantity'    => $material->pivot->quantity ?? 0,
-                'selected'    => $material->pivot->selected ?? null,
-            ])),
+            'materials' => Material::all()->map(function ($material) {
+                $materialEvent = $this->materials->where('id', $material->id)->first();
+                return [
+                    'id' => $material->id,
+                    'description' => $material->description,
+                    'quantity' => $materialEvent ? $materialEvent->pivot->quantity : 0,
+                    'selected' => $materialEvent ? ($materialEvent->pivot->selected === null ? '-1' : $materialEvent->pivot->selected) : null,
+                ];
+            }),
             'extra_sales'        => $this->whenLoaded('extraSales'),
             'event_batches'      => $this->whenLoaded('eventBatches'),
             'event_notes'        => $this->whenLoaded('eventNotes', fn() => EventNoteResource::collection($this->eventNotes)),
