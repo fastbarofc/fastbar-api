@@ -249,6 +249,42 @@ foreach ($mapping as $placeholder => $value) {
             @endforeach
         </ul>
     </div>
+
+    <div class="event-section">
+        <span class="text-bold">Valores:</span>
+        <br><br>
+        Locação: R$ {{ number_format(floatval($contract->properties['lease'] ?? 0), 2, ',', '.') }}</br>
+        Buffet: R$ {{ number_format(floatval($contract->properties['buffet_value'] ?? 0), 2, ',', '.') }}.
+
+    </div>
+    @if (!empty($contract->properties['batches'][0]))
+    <div class="event-section">
+        <span class="text-bold">Lotes:</span>
+        <br><br>
+        <ul>
+            @foreach ($contract->properties['batches'] as $batch)
+            <li>Lote {{ $loop->index + 1 }}:
+                <ul>
+                    <li>Valor unitário: R$ {{ number_format(floatval($batch['unit_value'] ?? 0), 2, ',', '.') }} </li>
+                    <li>Convidados: {{ number_format(floatval($batch['guests'] ?? 0), 0, ',', '.') }} </li>
+                    <li>Total: R$ {{ number_format(floatval($batch['unit_value'] ?? 0) * ($batch['guests'] ?? 0), 2, ',', '.') }} </li>
+                </ul>
+            </li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    <div class="event-section">
+        <span class="text-bold">Colaboradores:</span>
+        <br><br>
+        <ul>
+            @foreach ($contract->properties['collaborators'] as $collaborator)
+            <li>{{ $collaborator['name'] }} (Qtd: {{ $collaborator['quantity'] }})</li>
+            @endforeach
+        </ul>
+
+    </div>
 </body>
 
 </html>
