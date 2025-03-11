@@ -129,8 +129,9 @@
 </head>
 
 <body>
-    <div style="display: flex; align-items: center; justify-content: space-between">
+<div style="display: -webkit-box; -webkit-box-align: center; -webkit-box-pack: justify; margin-bottom: 20px;">
         <p> {{ $contract->created_at->format('d/m/Y') }}</p>
+        <p>Código: {{ $contract->properties['id'] }}</p>
     </div>
     <div class="logo-title">
         <h2>CONTRATO</h2>
