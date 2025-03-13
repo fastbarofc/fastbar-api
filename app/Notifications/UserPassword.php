@@ -36,7 +36,7 @@ class UserPassword extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)->markdown('emails.user-password', ['password' => $this->password]);
+        return (new MailMessage)->markdown('emails.user-password', ['password' => $this->password, 'user' => $notifiable]);
     }
 
     /**

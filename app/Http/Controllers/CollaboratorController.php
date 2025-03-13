@@ -19,6 +19,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use App\Notifications\UserPassword;
 
 class CollaboratorController extends Controller
 {
@@ -126,18 +128,24 @@ class CollaboratorController extends Controller
 
         $collaborator = Collaborator::create($data);
 
-        /* if($data['has_login'] === null) {
-            $data['has_login'] = false;
-        }
+        if (empty($data['has_login'])) {
+            $randomPassword = Str::random(8);
 
-        if (!empty($data['has_login'])) {
-            $data['password'] = bcrypt($data['password']);
-            $user = User::create($data);
+            $userData = [
+                'name'     => $collaborator->name,
+                'email'    => $collaborator->email,
+                'password' => bcrypt($randomPassword),
+            ];
+
+            $user = User::create($userData);
+
             $collaborator->update(['user_id' => $user->id]);
-            
+        
             $roleAdmin = Role::where('name', 'Admin')->first();
             $user->assignRole($roleAdmin);
-        }  */
+
+            $user->notify(new UserPassword($randomPassword));
+        }
 
         if (!empty($data['address']) && !empty($data['address']['street'])) {
             $address = $data['address'];
