@@ -961,18 +961,33 @@ class EventController extends Controller
         return response()->json(['message' => 'Eventos relacionados removidos com sucesso.']);
     }
 
-    public function checkIfHasScheduledEvents(Event $event)
+    public function checkIfHasScheduledEvents(Event $event, Request $request)
 {
-    $eventDate = $event->date->format('Y-m-d');
+    $eventId = $event->id;
+    $eventPlaceId = $request->input('event_place_id');
+    $eventDate = $request->input('date');
+    $status_id = $request->input('status_id');
+
+    if (empty($eventDate) || empty($eventPlaceId)) {
+        return response()->json([
+            'conflicting_events' => [],
+        ]);
+    }
 
     $blockedStatusIds = EventStatus::whereIn('name', ['Fechado', 'Pré-Reserva', 'Planejamento', 'Concluído'])
         ->pluck('id')
-        ->toArray();
+        ->toArray();   
+    
+    if (!in_array($status_id, $blockedStatusIds)) {
+         return response()->json([
+            'conflicting_events' => [],
+        ]);
+     }    
 
-    $conflictingEvents = Event::where('event_place_id', $event->event_place_id)
+    $conflictingEvents = Event::where('event_place_id', $eventPlaceId)
         ->whereDate('date', $eventDate)
-        ->where('id', '<>', $event->id)
-        ->whereIn('event_status_id', $blockedStatusIds) 
+        ->where('id', '<>', $eventId)
+        ->whereIn('event_status_id', $blockedStatusIds)
         ->get(['id', 'name', 'event_status_id']);
 
     $conflictingEvents = $conflictingEvents->map(function ($event) {
@@ -982,6 +997,7 @@ class EventController extends Controller
             'status' => EventStatus::where('id', $event->event_status_id)->value('name'),
         ];
     });
+
 
     return response()->json([
         'conflicting_events' => $conflictingEvents,
