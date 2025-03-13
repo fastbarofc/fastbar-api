@@ -945,9 +945,11 @@ class EventController extends Controller
 
         $date = Carbon::now()->format('d/m/Y');
         $client = $event->client;
+        $place = $event->eventPlace;
+        Log::info($event);
 
         $fileName = 'collaborators-' . $event->id;
-        $viewContent = view("/pdfs/collaborators-pdf" , compact(['event', 'date', 'client']));
+        $viewContent = view("/pdfs/collaborators-pdf" , compact(['event', 'date', 'client','place']));
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
