@@ -1,10 +1,11 @@
 <x-mail::message>
-    # Sua nova senha foi gerada!
+    # Olá, {{ $user->name }}!
 
-    Use essa senha para ter acesso ao sistema Parthenon.
+    Seu usuário foi criado no sistema. Seguem seus dados de acesso:
 
-    Sua senha é: {{ $password }}
+    **Login:** {{ $user->email }}  
+    **Senha:** {{ $password }}
 
-    Obrigado,<br>
+    Obrigado,
     {{ config('app.name') }}
 </x-mail::message>
