@@ -48,6 +48,9 @@ use App\Http\Controllers\ProductGroupController;
 use App\Http\Controllers\QualificationController;
 use App\Models\Qualification;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\FinantialOperationController;
+use App\Http\Controllers\CostCenterController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -226,4 +229,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('/addresses/cep/{cep}', [AddressController::class, 'getAddressByCep']);
 
     Route::resource('suppliers', SupplierController::class);
+
+    Route::resource('company', CompanyController::class);
+    Route::resource('finantial-operation', FinantialOperationController::class);
+    Route::resource('cost-center', CostCenterController::class);
 });
