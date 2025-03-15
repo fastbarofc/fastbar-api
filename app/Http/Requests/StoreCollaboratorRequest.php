@@ -38,7 +38,6 @@ class StoreCollaboratorRequest extends FormRequest
         
 
          if ($this->request->get('has_login')) {
-            $data['password'] = 'required|string|min:8';
             $data['email']    = 'required|email|unique:users,email';
         } 
 
@@ -80,9 +79,6 @@ class StoreCollaboratorRequest extends FormRequest
             'has_login.boolean'      => 'O campo possui login deve ser um booleano.',
             'active.required'        => 'O campo ativo é obrigatório.',
             'active.boolean'         => 'O campo ativo deve ser um booleano.',
-            'password.required'      => 'O campo senha é obrigatório.',
-            'password.string'        => 'O campo senha deve ser uma string.',
-            'password.min'           => 'O campo senha deve ter no mínimo 8 caracteres.'
         ];
     }
 
