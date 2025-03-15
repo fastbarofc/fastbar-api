@@ -220,6 +220,7 @@
         @endif    
     </div>
     <div class="kits" style="page-break-inside: avoid;">
+    @if($kit && $kit->children)   
         @foreach($kit->children as $child)
         <div style="margin-bottom: 15px;">
             <h2 style="font-weight: normal; margin-bottom: 0px;">{{ $child['data']['name'] }}</h2>
@@ -250,6 +251,7 @@
             </div>
         </div>
         @endforeach
+        @endif   
     </div>
     <div style="position: relative; height: 100px;">
         <div style="position: absolute; right: 0; bottom: 0;">
