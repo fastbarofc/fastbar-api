@@ -124,7 +124,8 @@ class CollaboratorController extends Controller
 
             $collaborator = Collaborator::create($data);
 
-            if (empty($data['has_login'])) {
+            if (!empty($data['has_login'])) {
+                dd(1);
                 $randomPassword = Str::random(8);
 
                 $userData = [
