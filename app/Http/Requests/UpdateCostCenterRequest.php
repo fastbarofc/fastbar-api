@@ -15,11 +15,21 @@ class UpdateCostCenterRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
-            'code' => 'sometimes|string|unique:cost_centers,code,' . $this->costCenter->id,
+        // Obtém o ID do registro que está sendo atualizado
+        $costCenterId = $this->route('cost_center')->id; // Acessa o ID diretamente
+
+        // Regras de validação
+        $rules = [
             'description' => 'sometimes|string',
             'account' => 'sometimes|in:analytic,synthetic',
         ];
+
+        // Aplica a regra 'unique' apenas se o valor do campo 'code' for diferente do valor atual
+        if ($this->has('code')) {
+            $rules['code'] = 'sometimes|string|unique:cost_centers,code,' . $costCenterId . ',id';
+        }
+
+        return $rules;
     }
 
     public function messages(): array
