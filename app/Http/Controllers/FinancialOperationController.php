@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateFinancialOperationRequest;
 use App\Http\Resources\FinancialOperationResource;
 use App\Models\FinancialOperation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class FinancialOperationController extends Controller
 {
@@ -68,6 +69,8 @@ class FinancialOperationController extends Controller
 
     public function update(UpdateFinancialOperationRequest $request, FinancialOperation $financialOperation)
     {
+        Log::info($request->all());
+        Log::info($financialOperation);
         $financialOperation->update($request->all());
         return response()->json(new FinancialOperationResource($financialOperation), 200);
     }

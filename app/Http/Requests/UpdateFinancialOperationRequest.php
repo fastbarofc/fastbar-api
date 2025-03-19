@@ -16,7 +16,7 @@ class UpdateFinancialOperationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'sometimes|string|unique:financial_operations,code,' . $this->financialOperation->id,
+            'code' => 'sometimes|string|unique:financial_operations,code,' . $this->route('financialOperation'),
             'description' => 'sometimes|string',
             'account' => 'sometimes|in:analytic,synthetic',
             'nature' => 'sometimes|in:revenue,expense',
