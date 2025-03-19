@@ -946,7 +946,6 @@ class EventController extends Controller
         $date = Carbon::now()->format('d/m/Y');
         $client = $event->client;
         $place = $event->eventPlace;
-        Log::info($event);
 
         $fileName = 'collaborators-' . $event->id;
         $viewContent = view("/pdfs/collaborators-pdf" , compact(['event', 'date', 'client','place']));

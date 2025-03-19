@@ -69,8 +69,6 @@ class FinancialOperationController extends Controller
 
     public function update(UpdateFinancialOperationRequest $request, FinancialOperation $financialOperation)
     {
-        Log::info($request->all());
-        Log::info($financialOperation);
         $financialOperation->update($request->all());
         return response()->json(new FinancialOperationResource($financialOperation), 200);
     }
