@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class StoreCollaboratorRequest extends FormRequest
 {
@@ -22,9 +23,23 @@ class StoreCollaboratorRequest extends FormRequest
             'name'       => 'required|string|max:255',
             'nickname'   => 'nullable|string|max:255',
             'birth_date' => 'nullable|date|date_format:Y-m-d',
-            'cpf'        => 'nullable|string|max:14|unique:collaborators',
-            'rg'         => 'nullable|string|max:20|unique:collaborators',
-            'email'      => 'required|email|unique:collaborators,email',
+            'cpf'        => [
+                'nullable',
+                'string',
+                'max:14',
+                Rule::unique('collaborators')->whereNull('deleted_at'),
+            ],
+            'rg'         => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('collaborators')->whereNull('deleted_at'),
+            ],
+            'email'      => [
+                'required',
+                'email',
+                Rule::unique('collaborators')->whereNull('deleted_at'),
+            ],
             'phone_1'    => 'required|string|max:20',
             'phone_2'    => 'nullable|string|max:20',
             'sector_id'  => 'required|exists:sectors,id',
