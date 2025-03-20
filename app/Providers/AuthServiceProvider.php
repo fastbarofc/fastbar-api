@@ -118,22 +118,27 @@ class AuthServiceProvider extends ServiceProvider
      * Register any permissions.
      */
     public function registerPermissions(): void
-    {
-        $tables = DB::select('SHOW TABLES');
-
-        if (empty($tables)) {
-            return;
-        }
-
-        $tables =  array_map(function ($object) {
-            return $object->{'Tables_in_' . env('DB_DATABASE')};
-        }, $tables);
-
-        foreach ($tables as $table) {
-            $table = str_replace('_', '-', $table);
-            $this->createPermissionsForTable($table);
-        }
+{
+    $databaseName = env('DB_DATABASE');
+    if (empty($databaseName)) {
+        return;
     }
+
+    $tables = DB::select('SHOW TABLES');
+
+    if (empty($tables)) {
+        return;
+    }
+    $tables = array_map(function ($object) use ($databaseName) {
+        $property = 'Tables_in_' . $databaseName;
+        return $object->$property; 
+    }, $tables);
+
+    foreach ($tables as $table) {
+        $table = str_replace('_', '-', $table);
+        $this->createPermissionsForTable($table);
+    }
+}
 
     private function createPermissionsForTable($table)
     {
