@@ -125,21 +125,35 @@ class CollaboratorController extends Controller
             $collaborator = Collaborator::create($data);
 
             if (!empty($data['has_login'])) {
-                $randomPassword = Str::random(8);
+                $existingUser = User::where('email', $collaborator->email)->first();
+    
+                if ($existingUser) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'Email already registered as a user.',
+                    ], 422);
+                }
+    
+                $deletedUser = User::withTrashed()->where('email', $collaborator->email)->first();
+    
+                if ($deletedUser) {
+                    $deletedUser->update(['email' => $collaborator->email . '.deleted_' . time()]);
+                }
+    
 
+                $randomPassword = Str::random(8);
                 $userData = [
                     'name'     => $collaborator->name,
                     'email'    => $collaborator->email,
                     'password' => bcrypt($randomPassword),
                 ];
-
                 $user = User::create($userData);
-
+    
                 $collaborator->update(['user_id' => $user->id]);
-
+    
                 $roleAdmin = Role::where('name', 'Admin')->first();
                 $user->assignRole($roleAdmin);
-
+    
                 $user->notify(new UserPassword($randomPassword));
             }
 
@@ -239,23 +253,56 @@ class CollaboratorController extends Controller
 
             if (!empty($data['has_login'])) {
                 $user = $collaborator->user;
+    
                 if (!$user) {
+                    $existingUser = User::where('email', $collaborator->email)->first();
+    
+                    if ($existingUser) {
+                        DB::rollBack();
+                        return response()->json([
+                            'message' => 'Email already registered as a user.',
+                        ], 422);
+                    }
+    
+                    $deletedUser = User::withTrashed()->where('email', $collaborator->email)->first();
+    
+                    if ($deletedUser) {
+                        $deletedUser->update(['email' => $collaborator->email . '.deleted_' . time()]);
+                    }
+    
                     $randomPassword = Str::random(8);
-
                     $userData = [
                         'name'     => $collaborator->name,
                         'email'    => $collaborator->email,
                         'password' => bcrypt($randomPassword),
                     ];
-
                     $user = User::create($userData);
-
+    
                     $collaborator->update(['user_id' => $user->id]);
-
+    
                     $roleAdmin = Role::where('name', 'Admin')->first();
                     $user->assignRole($roleAdmin);
-
+    
                     $user->notify(new UserPassword($randomPassword));
+                } else {
+                    if ($collaborator->email !== $user->email) {
+                        $existingUser = User::where('email', $collaborator->email)->first();
+    
+                        if ($existingUser) {
+                            DB::rollBack();
+                            return response()->json([
+                                'message' => 'Email already registered as a user.',
+                            ], 422);
+                        }
+    
+                        $deletedUser = User::withTrashed()->where('email', $collaborator->email)->first();
+    
+                        if ($deletedUser) {
+                            $deletedUser->update(['email' => $collaborator->email . '.deleted_' . time()]);
+                        }
+    
+                        $user->update(['email' => $collaborator->email]);
+                    }
                 }
             }
 

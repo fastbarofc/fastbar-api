@@ -52,10 +52,13 @@ class StoreCollaboratorRequest extends FormRequest
         ];
         
 
-         if ($this->request->get('has_login')) {
-            $data['email']    = 'required|email|unique:users,email';
-        } 
-
+        if ($this->request->get('has_login')) {
+            $data['email'] = [
+                'required',
+                'email',
+                Rule::unique('users')->whereNull('deleted_at'),
+            ];
+        }
         if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
             $this->validateAddress($this->request->all()['address']);
         }
