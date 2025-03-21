@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('cost_centers', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique(); 
+            $table->string('code');
             $table->string('description'); 
             $table->enum('account', ['analytic', 'synthetic']);
             $table->timestamps();

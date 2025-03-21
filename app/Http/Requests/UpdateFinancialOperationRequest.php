@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class UpdateFinancialOperationRequest extends FormRequest
 {
@@ -16,7 +18,11 @@ class UpdateFinancialOperationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'sometimes|string|unique:financial_operations,code,' . $this->route('financialOperation'),
+            'code' => [
+                'sometimes',
+                'string',
+                Rule::unique('financial_operations', 'code')->whereNull('deleted_at')->ignore($this->route('financial_operation')),
+            ],
             'description' => 'sometimes|string',
             'account' => 'sometimes|in:analytic,synthetic',
             'nature' => 'sometimes|in:revenue,expense',
