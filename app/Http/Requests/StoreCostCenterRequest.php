@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCostCenterRequest extends FormRequest
 {
@@ -22,7 +23,11 @@ class StoreCostCenterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|string|unique:cost_centers,code',
+            'code' => [
+                'required',
+                'string',
+                Rule::unique('cost_centers')->whereNull('deleted_at'),
+            ],
             'description' => 'required|string',
             'account' => 'required|in:analytic,synthetic',
         ];
