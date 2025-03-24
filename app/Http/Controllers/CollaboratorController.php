@@ -153,9 +153,6 @@ class CollaboratorController extends Controller
     
                 $roleAdmin = Role::where('name', 'Admin')->first();
                 $user->assignRole($roleAdmin);
-
-                Log::info($randomPassword);
-                Log::info('controlller');
     
                 $user->notify(new UserPassword($randomPassword));
             }
