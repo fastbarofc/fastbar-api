@@ -12,7 +12,7 @@
             font-family: 'Arial', sans-serif;
             margin: 25px;
             color: #333;
-            font-size: 14px; /* Tamanho da fonte reduzido */
+            font-size: 14px;
         }
 
         .header {
@@ -56,20 +56,20 @@
         .event-info-table {
     width: 100%;
     border-collapse: collapse;
-    border: none; /* Remove a borda da tabela */
+    border: none; 
 }
 
 .event-info-table td {
     padding: 0; 
     margin: 0;
     vertical-align: top;
-    border: none; /* Remove a borda das células da tabela */
+    border: none; 
     font-size: 12px;
 }
 
         .declaration-title {
             text-align: center;
-            font-size: 1.1em; /* Tamanho da fonte reduzido */
+            font-size: 1.1em;
             margin: 20px 0;
         }
 
@@ -102,11 +102,11 @@ table:not(.event-info-table) th {
         }
 
         .coordinator-table th:nth-child(4) {
-            width: 15%; /* Coluna "PAGO" menor */
+            width: 15%; 
         }
 
         .coordinator-table th:nth-child(-n+3) {
-            width: 28.33%; /* Colunas "COORDENADORES", "NOME" e "ASSINATURA" maiores */
+            width: 28.33%;
         }
     </style>
 </head>
