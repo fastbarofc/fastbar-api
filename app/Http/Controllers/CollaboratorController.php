@@ -124,7 +124,7 @@ class CollaboratorController extends Controller
 
             $collaborator = Collaborator::create($data);
 
-            if (!empty($data['has_login'])) {
+            if (empty($data['has_login'])) {
                 $existingUser = User::where('email', $collaborator->email)->first();
     
                 if ($existingUser) {
@@ -251,7 +251,7 @@ class CollaboratorController extends Controller
                 }
             }
 
-            if (!empty($data['has_login'])) {
+            if (empty($data['has_login'])) {
                 $user = $collaborator->user;
     
                 if (!$user) {
