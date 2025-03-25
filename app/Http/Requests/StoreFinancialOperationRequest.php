@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreFinancialOperationRequest extends FormRequest
 {
@@ -16,7 +17,11 @@ class StoreFinancialOperationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|string|unique:financial_operations,code',
+            'code' => [
+                'required',
+                'string',
+                Rule::unique('financial_operations')->whereNull('deleted_at'),
+            ],
             'description' => 'required|string',
             'account' => 'required|in:analytic,synthetic',
             'nature' => 'required|in:revenue,expense',

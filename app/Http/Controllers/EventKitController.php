@@ -267,7 +267,6 @@ class EventKitController extends Controller
             }
             $parentKit = EventKit::find($request->moving_parent_event_kit_id);
             $this->shiftProductToFirstOrdination($parentKit, $movingItem);
-            Log::info('shiftProductToFirstOrdination');
             return response()->json(['message' => 'Alterado com sucesso.'], 200);
         }
 

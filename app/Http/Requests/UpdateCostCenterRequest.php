@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class UpdateCostCenterRequest extends FormRequest
 {
@@ -16,7 +18,11 @@ class UpdateCostCenterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'sometimes|string|unique:cost_centers,code,' . $this->costCenter->id,
+            'code' => [
+                'sometimes',
+                'string',
+                Rule::unique('cost_centers', 'code')->whereNull('deleted_at')->ignore($this->route('cost_center')),
+            ],
             'description' => 'sometimes|string',
             'account' => 'sometimes|in:analytic,synthetic',
         ];

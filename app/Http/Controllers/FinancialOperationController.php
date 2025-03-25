@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateFinancialOperationRequest;
 use App\Http\Resources\FinancialOperationResource;
 use App\Models\FinancialOperation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class FinancialOperationController extends Controller
 {

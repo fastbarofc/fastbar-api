@@ -49,7 +49,7 @@ use App\Http\Controllers\QualificationController;
 use App\Models\Qualification;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\FinantialOperationController;
+use App\Http\Controllers\FinancialOperationController;
 use App\Http\Controllers\CostCenterController;
 
 Route::controller(AuthController::class)->group(function () {
@@ -230,7 +230,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
 
     Route::resource('suppliers', SupplierController::class);
 
-    Route::resource('company', CompanyController::class);
-    Route::resource('finantial-operation', FinantialOperationController::class);
-    Route::resource('cost-center', CostCenterController::class);
+    Route::resource('companies', CompanyController::class);
+    Route::resource('financial-operations', FinancialOperationController::class);
+    Route::resource('cost-centers', CostCenterController::class);
 });
