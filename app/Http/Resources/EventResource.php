@@ -13,6 +13,7 @@ class EventResource extends JsonResource
     {
         return [
             'id'                 => $this->id,
+            'old_system_id'      => $this->old_system_id,
             'name'               => $this->name,
             'client_id'          => $this->client_id,
             'event_id'           => $this->event_id,

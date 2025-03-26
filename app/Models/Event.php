@@ -18,6 +18,7 @@ use OwenIt\Auditing\Auditable;
 
         protected $fillable = [
             'name',
+            'old_system_id',
             'client_id',
             'event_id', 
             'invoice_client_id',
@@ -67,11 +68,13 @@ use OwenIt\Auditing\Auditable;
         'date',
         'time',
         'email',
-        'id'
+        'id',
+        'old_system_id'
     ];
 
     protected static $filterableFields = [
         'id',
+        'old_system_id',
         'name',
         'client_id',
         'collaborator_id',

@@ -54,6 +54,7 @@ class EventFactory extends Factory
             'min_guests' => $this->faker->numberBetween(10, 50),
             'present_guests' => $this->faker->numberBetween(10, 50),
             'excess_unit_value' => $this->faker->numberBetween(10, 50),
+            'old_system_id' => $this->faker->unique()->randomNumber(5, true),
         ];
     }
 }
