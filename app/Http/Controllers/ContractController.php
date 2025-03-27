@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Arr;
+use App\Models\Client;
+use App\Models\EventPlace;
 
 class ContractController extends Controller
 {
@@ -87,32 +89,31 @@ class ContractController extends Controller
             $properties['time'] = $event->time;
         }
 
-        $properties['client'] = $event->client
-            ? $event->client
-            ->select('id', 'name', 'phone_1', 'cpf', 'rg')
-            ->with('address')
-            ->first()
-            ->toArray()
-            : [
-                'id' => null, 
-                'name' => null, 
-                'phone_1' => null,
-                'cpf' => null,
-                'rg' => null,
-                'address' => [
-                    'street' => null,
-                    'number' => null,
-                    'complement' => null,
-                    'district' => null,
-                    'zip_code' => null,
-                ]
-            ];
+        $client = Client::with('address')
+        ->select('id', 'name', 'phone_1', 'cpf', 'rg')
+        ->find($event->client_id);
 
-        $properties['place'] = $event->eventPlace
-            ? $event->eventPlace
-            ->select('id', 'name')
-            ->first()
-            ->toArray()
+        $properties['client'] = $client 
+        ? $client->toArray()
+        : [
+            'id' => null, 
+            'name' => null, 
+            'phone_1' => null,
+            'cpf' => null,
+            'rg' => null,
+            'address' => [
+                'street' => null,
+                'number' => null,
+                'complement' => null,
+                'district' => null,
+                'zip_code' => null,
+            ]
+        ];
+
+        $place = EventPlace::select('id', 'name')->find($event->event_place_id);
+
+        $properties['place'] = $place
+        ? $place->toArray()
             : ['id' => null, 'name' => null];
 
         $properties['batches'] = $event->eventBatches()
