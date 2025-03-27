@@ -41,7 +41,7 @@ class StoreEventRequest extends FormRequest
             'legal_representatives.*'          => 'exists:clients,id',
             'min_guests' => 'nullable|integer|min:1',
             'is_medicine' => 'nullable|boolean',
-            'old_system_id' => 'nullable|string|unique:events,old_system_id'
+            'old_system_id' => 'nullable|unique:events,old_system_id'
 
         ];
 
