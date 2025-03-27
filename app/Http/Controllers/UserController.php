@@ -112,10 +112,6 @@ public function updateProfile(UpdateProfileRequest $request)
 
     $user->update(['email' => $request->email]);
 
-    $user->update([
-        'email' => $request->email,
-    ]);
-
     if ($user->collaborator) {
         $user->collaborator->update([
             'email' => $request->email,
