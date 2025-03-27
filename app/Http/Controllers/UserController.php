@@ -10,6 +10,7 @@ use App\Http\Requests\SyncPermissionUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\UpdateProfileRequest;
 
 class UserController extends Controller
 {
@@ -101,7 +102,7 @@ class UserController extends Controller
     return null; 
 }
 
-public function updateProfile(Request $request)
+public function updateProfile(UpdateProfileRequest $request)
 {
     $user = auth()->user();
 
@@ -109,9 +110,7 @@ public function updateProfile(Request $request)
         return response()->json(['message' => 'Usuário não encontrado'], 404);
     }
 
-    $request->validate([
-        'email' => 'required|email|unique:users,email,' . $user->id,
-    ]);
+    $user->update(['email' => $request->email]);
 
     $user->update([
         'email' => $request->email,
