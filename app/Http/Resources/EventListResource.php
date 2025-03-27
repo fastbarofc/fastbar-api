@@ -17,6 +17,7 @@ class EventListResource extends JsonResource
     {
         return [
             'id'             => $this->id,
+            'old_system_id'  => $this->old_system_id,
             'name'           => $this->name,
             'status'         => $this->whenLoaded('eventStatus', fn() => $this->eventStatus->name),
             'date'           => $this->date ? Carbon::parse($this->date)->format('Y-m-d') : null,
