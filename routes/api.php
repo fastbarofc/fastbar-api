@@ -67,13 +67,15 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('cities/{state}', function (Request $request, State $state) {
         return City::where('state_id', $state->id)->get();
     });
+
+    Route::get('users/{user}/client', [UserController::class, 'getClientIdbyUserId'])->name('users.client');
+    Route::get('clients/{client}/events', [ClientController::class, 'clientEvents'])->name('clients.events');
 });
 
 Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('users', UserController::class)->except(['store']);
     Route::post('users/{user}/sync-roles', [UserController::class, 'syncRoles'])->name('users.sync-roles');
     Route::post('users/{user}/sync-permissions', [UserController::class, 'syncPermissions'])->name('users.sync-permissions');
-    Route::get('users/{user}/client', [UserController::class, 'getClientIdbyUserId'])->name('users.client');
 
     Route::resource('collaborators', CollaboratorController::class);
 
@@ -161,7 +163,6 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('office-events/{officeEventId}/detach-collaborator', [OfficeEventController::class, 'detachCollaborator'])->name('office-events.detach-collaborators');
 
     Route::resource('clients', ClientController::class);
-    Route::get('clients/{client}/events', [ClientController::class, 'clientEvents'])->name('clients.events');
     
 
     Route::resource('contracts', ContractController::class);

@@ -32,10 +32,11 @@ class AuthController extends Controller
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
 
         $permissions = [];
-        //$permissions = ['read-customer'];
          if ($user->isAdmin()) {
             $permissions = Permission::pluck('name')->toArray();
-        } 
+        } else {
+            $permissions = ['read-customer', 'create-customer', 'update-customer', 'delete-customer'];
+        }
         
 
         $response = [
