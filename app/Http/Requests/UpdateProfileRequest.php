@@ -25,4 +25,11 @@ class UpdateProfileRequest extends FormRequest
             'email' => 'required|email|unique:users,email,' . auth()->id(),
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'email.unique' => 'Email já cadastrado no sistema.',
+        ];
+    }
 }
