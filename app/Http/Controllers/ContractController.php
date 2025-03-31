@@ -12,7 +12,6 @@ use App\Models\EventKit;
 use App\Services\FileService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Arr;
 use App\Models\Client;
@@ -89,8 +88,6 @@ class ContractController extends Controller
             $properties['time'] = $event->time;
         }
 
-        Log::info($properties['time'] . ' - ' . $event->time);
-
         $client = Client::with('address')
         ->select('id', 'name', 'phone_1', 'cpf', 'rg')
         ->find($event->client_id);
@@ -143,9 +140,7 @@ class ContractController extends Controller
         $viewContent = view("/pdfs/contract-pdf", compact(['contract']));
 
         try {
-            Log::info('entrou em try');
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
-            Log::info('pdfUrl: ' . $pdfUrl);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
