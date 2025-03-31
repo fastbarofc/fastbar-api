@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class StoreClientRequest extends FormRequest
 {
@@ -18,7 +19,12 @@ class StoreClientRequest extends FormRequest
     {
         $data = [
             'type'         => 'nullable|string|in:pf,pj',
-            'email'        => 'required_if:has_login,true|nullable|email|unique:clients,email',
+            'email' => [
+                'required_if:has_login,true',
+                'nullable',
+                'email',
+                Rule::unique('clients')->whereNull('deleted_at'),
+            ],
             'phone_1'      => 'required|string|max:20',
             'phone_2'      => 'nullable|string|max:20',
             'name'         => 'nullable|string|max:255',
