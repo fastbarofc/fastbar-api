@@ -84,10 +84,12 @@ class ContractController extends Controller
 
         $properties['date'] = $event->date;
         if (empty($event->time)) {
-            $properties['time'] = 'Hora a definir';
+            $properties['time'] = '';
         } else {
             $properties['time'] = $event->time;
         }
+
+        Log::info($properties['time'] . ' - ' . $event->time);
 
         $client = Client::with('address')
         ->select('id', 'name', 'phone_1', 'cpf', 'rg')
@@ -141,7 +143,9 @@ class ContractController extends Controller
         $viewContent = view("/pdfs/contract-pdf", compact(['contract']));
 
         try {
+            Log::info('entrou em try');
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            Log::info('pdfUrl: ' . $pdfUrl);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

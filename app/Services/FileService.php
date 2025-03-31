@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use mikehaertl\tmp\File as MikeFile;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Facades\File as FileFacade;
+use Illuminate\Support\Facades\Log;
 
 class FileService
 {
@@ -51,6 +52,7 @@ class FileService
 
   public static function generatePdf($viewContent, $fileName, $footerContent = null, $headerContent = null)
   {
+    Log::info('Generating PDF');
     $root = base_path();
     $arch = self::getArchitecture();
     $bin = "{$root}/vendor/bin/wkhtmltopdf-{$arch}";
@@ -90,6 +92,7 @@ class FileService
     }
 
     $pdfUrl = asset("storage/pdfs/{$fileName}");
+    Log::info($pdfUrl);
     return $pdfUrl;
   }
 
