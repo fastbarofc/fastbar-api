@@ -151,7 +151,7 @@
         </tr>
         <tr class="event-row">
             <td>Horário:</td>
-            <td>{{ $contract->properties['time'] ? \Carbon\Carbon::parse($contract->properties['time'])->format('H:i') . ' h' : 'Hora a definir'  }} h</td>
+            <td>{{ $contract->properties['time'] ? \Carbon\Carbon::parse($contract->properties['time'])->format('H:i') . ' h' : 'Hora a definir'  }} </td>
             <td>Duração (h):</td>
             <td>{{ $contract->properties['duration'] }} h</td>
         </tr>
