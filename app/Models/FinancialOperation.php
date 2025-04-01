@@ -30,6 +30,6 @@ class FinancialOperation extends Model
 
     public function payables()
     {
-        return $this->hasMany(Payable::class, 'financial_operation_id');
+        return $this->hasMany(Payable::class);
     }
 }

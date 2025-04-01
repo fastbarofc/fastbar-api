@@ -30,4 +30,19 @@ class StorePayableRequest extends FormRequest
             'payableable_type' => 'required|string',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'description.required' => 'A descrição é obrigatória.',
+            'amount.required' => 'O valor é obrigatório.',
+            'amount.numeric' => 'O valor deve ser numérico.',
+            'due_date.required' => 'A data de vencimento é obrigatória.',
+            'due_date.date' => 'A data de vencimento deve estar em um formato válido.',
+            'financial_operation_id.required' => 'A operação financeira é obrigatória.',
+            'financial_operation_id.exists' => 'A operação financeira informada não existe.',
+            'payableable_id.required' => 'O ID do relacionamento polimórfico é obrigatório.',
+            'payableable_type.required' => 'O tipo do relacionamento polimórfico é obrigatório.',
+        ];
+    }
 }

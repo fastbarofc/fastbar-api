@@ -51,6 +51,8 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\FinancialOperationController;
 use App\Http\Controllers\CostCenterController;
+use App\Http\Controllers\PayableController;
+use App\Http\Controllers\ReceivableController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -229,6 +231,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('/addresses/cep/{cep}', [AddressController::class, 'getAddressByCep']);
 
     Route::resource('suppliers', SupplierController::class);
+
+    Route::resource('payables', PayableController::class);
+    Route::resource('receivables', ReceivableController::class);
 
     Route::resource('companies', CompanyController::class);
     Route::resource('financial-operations', FinancialOperationController::class);

@@ -30,4 +30,19 @@ class UpdatePayableRequest extends FormRequest
             'payableable_type' => 'sometimes|string',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'description.string' => 'A descrição deve ser um texto.',
+            'amount.numeric' => 'O valor deve ser numérico.',
+            'amount.min' => 'O valor não pode ser negativo.',
+            'due_date.date' => 'A data de vencimento deve estar em um formato válido.',
+            'paid_at.date' => 'A data de pagamento deve estar em um formato válido.',
+            'status.in' => 'O status deve ser pending, paid ou overdue.',
+            'financial_operation_id.exists' => 'A operação financeira informada não existe.',
+            'payableable_id.integer' => 'O ID do relacionamento polimórfico deve ser um número inteiro.',
+            'payableable_type.string' => 'O tipo do relacionamento polimórfico deve ser um texto.',
+        ];
+    }
 }

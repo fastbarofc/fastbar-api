@@ -17,6 +17,8 @@ class Receivable extends Model
         'paid_at',
         'status',
         'payment_method_id',
+        'receivableable_id',
+        'receivableable_type'
     ];
 
     public function receivableable()

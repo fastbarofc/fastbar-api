@@ -34,7 +34,7 @@ class PayableController extends Controller
         return response()->json(new PayableResource($payable));
     }
 
-    public function destroy(string $id)
+    public function destroy(Payable $payable)
     {
         $payable->delete();
         return response()->json(['message' => 'Payable deleted successfully'], 200);

@@ -16,7 +16,9 @@ class Payable extends Model
         'due_date',
         'paid_at',
         'status',
-        'financial_operation_id'
+        'financial_operation_id',
+        'payableable_id',
+        'payableable_type'
     ];
 
     public function payableable()
