@@ -27,4 +27,9 @@ class FinancialOperation extends Model
         'nature' => 'string',
         'type' => 'string',
     ];
+
+    public function payables()
+    {
+        return $this->hasMany(Payable::class, 'financial_operation_id');
+    }
 }
