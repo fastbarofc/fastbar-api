@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('description');
             $table->decimal('amount', 10, 2);
             $table->date('due_date');
-            $table->dateTime('paid_at')->nullable;
+            $table->dateTime('paid_at')->nullable();
             $table->enum('status', ['pending', 'paid', 'overdue'])->default('pending');
             $table->foreignId('payment_method_id')->constrained('payment_methods')->onDelete('cascade');
             $table->morphs('receivableable');

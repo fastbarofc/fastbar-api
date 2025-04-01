@@ -16,15 +16,18 @@ class PayableFactory extends Factory
 
     public function definition(): array
     {
+
+        $financialOperation = FinancialOperation::factory()->create();
+
         return [
             'description' => $this->faker->sentence,
             'amount' => $this->faker->randomFloat(2, 10, 10000),
             'due_date' => $this->faker->date,
             'paid_at' => $this->faker->optional()->dateTime,
             'status' => $this->faker->randomElement(['pending', 'paid', 'overdue']),
-            'financial_operation_id' => FinancialOperation::factory(),
-            'payableable_id' => null,
-            'payableable_type' => null
+            'financial_operation_id' => $financialOperation->id,
+            'payableable_id' => $financialOperation->id,
+            'payableable_type' => FinancialOperation::class,
         ];
     }
 }
