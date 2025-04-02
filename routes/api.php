@@ -67,6 +67,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('cities/{state}', function (Request $request, State $state) {
         return City::where('state_id', $state->id)->get();
     });
+
+    Route::put('/users/update-profile', [UserController::class, 'updateProfile']);
+    Route::put('/users/change-password', [UserController::class, 'changePassword']);
 });
 
 Route::group(['middleware' => ['auth:api', 'admin']], function () {
