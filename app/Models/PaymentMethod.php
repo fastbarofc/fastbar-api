@@ -40,4 +40,9 @@ class PaymentMethod extends Model implements AuditableInterface
             ]
         ];
     }
+
+    public function receivables()
+    {
+        return $this->hasMany(Receivable::class);
+    }
 }
