@@ -12,7 +12,6 @@ use App\Models\EventKit;
 use App\Services\FileService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Arr;
 use App\Models\Client;
@@ -84,7 +83,7 @@ class ContractController extends Controller
 
         $properties['date'] = $event->date;
         if (empty($event->time)) {
-            $properties['time'] = 'Hora a definir';
+            $properties['time'] = '';
         } else {
             $properties['time'] = $event->time;
         }

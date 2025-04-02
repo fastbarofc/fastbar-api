@@ -121,7 +121,7 @@ class ClientController extends Controller
             ], 422);
         }
     }
-
+        
     public function show(Client $client)
     {
         return response()->json(new ClientResource($client), 200);
@@ -224,6 +224,10 @@ class ClientController extends Controller
 
     public function destroy(Client $client)
     {
+        if ($client->user) {
+            $client->user->delete();
+        }
+
         $client->delete();
         return response()->json([], 204);
     }

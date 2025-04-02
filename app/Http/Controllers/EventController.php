@@ -177,9 +177,6 @@ class EventController extends Controller
     {
         $data = $request->all();
 
-        Log::info($data);
-        Log:info('entoru em store');
-
         $data['collaborator_id'] = auth()->user()->collaborator->id;
         $data['contract_body'] = ContractTemplate::first()?->content ?? null;
         $data['is_medicine'] = $data['is_medicine'] ?? false;

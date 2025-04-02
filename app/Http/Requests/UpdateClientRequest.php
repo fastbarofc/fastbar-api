@@ -24,7 +24,7 @@ class UpdateClientRequest extends FormRequest
             'email'        => [
                 'nullable', 
                 'email',
-                Rule::unique('clients', 'email')->ignore($clientId),
+                Rule::unique('clients')->whereNull('deleted_at')->ignore($clientId),
             ],
             'phone_1'      => 'nullable|string|max:20',
             'phone_2'      => 'nullable|string|max:20',
