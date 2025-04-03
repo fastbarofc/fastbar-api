@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contrato de Prestação de Serviços de Bufê</title>
+    <title>Contrato de Prestação de Serviços de Buffet</title>
 
     <style>
         body {
@@ -129,7 +129,7 @@
 <body>
 
     <div class="logo-title">
-        <h2 style="font-weight: bold; text-align: center; border: 2px solid #000;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE BUFẼ</h2>
+        <h2 style="font-weight: bold; text-align: center; border: 2px solid #000;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE BUFFET</h2>
         <hr class="hr-strong">
     </div>
 
