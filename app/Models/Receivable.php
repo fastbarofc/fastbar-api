@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Receivable extends Model
 {
@@ -21,7 +22,7 @@ class Receivable extends Model
         'receivableable_type'
     ];
 
-    public function receivableable()
+    public function receivableable(): MorphTo
     {
         return $this->morphTo();
     }

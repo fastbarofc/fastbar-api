@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
     class Event extends Model implements AuditableInterface
     {
@@ -251,6 +252,16 @@ use OwenIt\Auditing\Auditable;
     {
         return $this->hasMany(ContractTemplate::class);
     }
+
+    public function paymentPlan() {
+        return $this->hasOne(PaymentPlan::class);
+    }
+
+    public function receivables(): MorphMany
+    {
+        return $this->morphMany(Receivable::class, 'receivableable');
+    }
+    
 
 
 }

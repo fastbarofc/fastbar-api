@@ -241,4 +241,12 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('companies', CompanyController::class);
     Route::resource('financial-operations', FinancialOperationController::class);
     Route::resource('cost-centers', CostCenterController::class);
+
+    Route::get('/events/{event}/payment-plan', [EventController::class, 'getPaymentPlan']);
+
+    //Route::get('/events/{event}/receivables', [EventController::class, 'getReceivables']);
+    
+    // Route::put('/events/{event}/payment-plan', [EventController::class, 'savePaymentPlan']);
+
+    
 });
