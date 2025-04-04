@@ -416,8 +416,10 @@ class EventController extends Controller
         }
 
 
-        if (!empty($data['payment_plan'])) {
+        if (!empty(array_filter($data['payment_plan'], fn($value) => $value !== null && $value !== '' && $value !== 0))) {
+
             $paymentPlanData = $data['payment_plan'];
+            unset($paymentPlanData['id']);
             
             if ($event->paymentPlan) {
                 $event->paymentPlan()->update($paymentPlanData);
@@ -1037,12 +1039,6 @@ class EventController extends Controller
     ]);
 }
 
-/* private function createPaymentPlan(Event $event, $paymentPlanData)
-{
-    $plan = $event->paymentPlan()->create($paymentPlanData);
-    $this->generateReceivables($event, $plan);
-} */
-
 private function generateReceivables(Event $event, PaymentPlan $plan)
 {
     $today = now();
@@ -1085,16 +1081,8 @@ private function generateReceivables(Event $event, PaymentPlan $plan)
 
 }
 
- public function getPaymentPlan(Event $event) {
-    $paymentPlan = $event->paymentPlan;
-    return response()->json($paymentPlan);
- }
 
- public function getReceivables(Event $event)
- {
-     $receivables = $event->receivables()->with('paymentMethod')->get();
-     return response()->json($receivables->toArray());
- }
+
 
 
 }

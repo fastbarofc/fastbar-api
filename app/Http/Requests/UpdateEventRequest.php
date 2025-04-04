@@ -42,13 +42,6 @@ class UpdateEventRequest extends FormRequest
             'min_guests' => 'nullable|integer|min:1',
             'is_medicine' => 'nullable|boolean',
             'old_system_id' => 'nullable|unique:events,old_system_id,' . $this->route('event')->id,
-            'payment_plan' => 'nullable|array',
-            'payment_plan.total_amount' => 'required_with:payment_plan|numeric|min:0',
-            'payment_plan.down_payment' => 'nullable|numeric|min:0',
-            'payment_plan.num_installments' => 'required_with:payment_plan|integer|min:1',
-            'payment_plan.installment_amount' => 'required_with:payment_plan|numeric|min:0',
-            'payment_plan.payment_method_id' => 'required_with:payment_plan|exists:payment_methods,id',
-            'payment_plan.due_day' => 'required_with:payment_plan|integer|between:1,28',
 
         ];
     }
