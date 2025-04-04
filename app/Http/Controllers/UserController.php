@@ -9,6 +9,8 @@ use App\Http\Requests\SyncRoleUserRequest;
 use App\Http\Requests\SyncPermissionUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\UpdateProfileRequest;
 
 class UserController extends Controller
 {
@@ -98,6 +100,44 @@ class UserController extends Controller
     }
 
     return null; 
+}
+
+public function updateProfile(UpdateProfileRequest $request)
+{
+    $user = auth()->user();
+
+    if (!$user) {
+        return response()->json(['message' => 'Usuário não encontrado'], 404);
+    }
+
+    $user->update(['email' => $request->email]);
+
+    if ($user->collaborator) {
+        $user->collaborator->update([
+            'email' => $request->email,
+        ]);
+    }
+
+    return response()->json([
+        'message' => 'Perfil atualizado com sucesso!',
+        'user' => new UserResource($user),
+    ], 200);
+}
+
+public function changePassword(Request $request) {
+    $user = auth()->user();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+    if (!Hash::check($request->current_password, $user->password)) {
+        return response()->json(['message' => 'A senha fornecida está incorreta.'], 422);
+    }
+
+    $user->update(['password' => bcrypt($request->new_password)]);
+
+    return response()->json(['message' => 'Password changed successfully'], 200);
 }
 
 }
