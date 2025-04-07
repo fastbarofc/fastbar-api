@@ -28,7 +28,6 @@ class PaymentPlanSeeder extends Seeder
             $installmentAmount = round(($totalAmount - $downPayment) / $numInstallments, 2);
             $dueDay = $faker->numberBetween(1, 28);
 
-            // Criar PaymentPlan vinculado ao evento
             $paymentPlan = $event->paymentPlan()->create([
                 'total_amount' => $totalAmount,
                 'down_payment' => $downPayment,
@@ -38,10 +37,8 @@ class PaymentPlanSeeder extends Seeder
                 'due_day' => $dueDay,
             ]);
 
-            // Data inicial da primeira parcela
             $firstDueDate = Carbon::now()->day($dueDay)->format('Y-m-d');
 
-            // Criar Receivable para a entrada, se houver
             if ($downPayment > 0) {
                 Receivable::create([
                     'receivableable_id' => $event->id,
@@ -54,7 +51,6 @@ class PaymentPlanSeeder extends Seeder
                 ]);
             }
 
-            // Criar parcelas mensais
             for ($i = 0; $i < $numInstallments; $i++) {
                 Receivable::create([
                     'receivableable_id' => $event->id,
