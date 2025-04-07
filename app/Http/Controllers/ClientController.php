@@ -78,6 +78,21 @@ class ClientController extends Controller
         $client = Client::create($data);
 
         if (!empty($data['has_login'])) {
+            $existingUser = User::where('email', $client->email)->first();
+
+            if ($existingUser) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Email already registered as a user.',
+                ], 422);
+            }
+
+            $deletedUser = User::withTrashed()->where('email', $client->email)->first();
+
+            if ($deletedUser) {
+                $deletedUser->update(['email' => $client->email . '.deleted_' . time()]);
+            }
+
 
             $randomPassword = Str::random(8);
 
@@ -86,12 +101,12 @@ class ClientController extends Controller
                 'email'    => $client->email,
                 'password' => bcrypt($randomPassword),
             ];
-
             $user = User::create($userData);
+
             $client->update(['user_id' => $user->id]);
 
-            $roleClient = Role::where('name', 'Client')->first();
-            $user->assignRole($roleClient);
+            $roleAdmin = Role::where('name', 'Admin')->first();
+            $user->assignRole($roleAdmin);
 
             $user->notify(new UserPassword($randomPassword));
         }
