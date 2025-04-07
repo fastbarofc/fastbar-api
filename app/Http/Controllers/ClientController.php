@@ -105,8 +105,8 @@ class ClientController extends Controller
 
             $client->update(['user_id' => $user->id]);
 
-            $roleAdmin = Role::where('name', 'Admin')->first();
-            $user->assignRole($roleAdmin);
+            $roleClient = Role::where('name', 'Client')->first();
+            $user->assignRole($roleClient);
 
             $user->notify(new UserPassword($randomPassword));
         }
@@ -177,6 +177,9 @@ class ClientController extends Controller
                     $user = User::create($userData);
     
                     $client->update(['user_id' => $user->id]);
+
+                    $roleClient = Role::where('name', 'Client')->first();
+                    $user->assignRole($roleClient);
     
                     $user->notify(new UserPassword($randomPassword));
                 } else {
