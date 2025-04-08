@@ -1,9 +1,8 @@
-
 <div style="width: 100%; display: table; margin-top: 20px;">
     <div style="display: table-row;">
         @php
-        $kitsRigth = ceil(count($nestedChildren) / 2);
-        $kitsLeft = count($nestedChildren) - $kitsRigth;
+        $kitsLeft = ceil(count($nestedChildren) / 2);
+        $kitsRight = count($nestedChildren) - $kitsLeft;
         @endphp
         <div style="display: table-cell; width: 48%; padding-right: 2%;">
             <ul>
