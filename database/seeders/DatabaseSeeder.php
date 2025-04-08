@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
             SupplierSeeder::class,
             FinancialOperationSeeder::class,
             PayableSeeder::class,
-            ReceivableSeeder::class,
+            PaymentPlanSeeder::class,
 
 
         ]);

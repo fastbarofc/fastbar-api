@@ -36,6 +36,8 @@ use App\Models\LostReason;
 use App\Models\OfficeBudget;
 use App\Models\OfficeEvent;
 use App\Models\Partner;
+use App\Models\PaymentPlan;
+
 use App\Services\FileService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
@@ -183,6 +185,7 @@ class EventController extends Controller
 
         $event = Event::create($data);
 
+
         if ($request->is_draft) {
             return response()->json(new EventResource($event), 201);
         }
@@ -259,6 +262,7 @@ class EventController extends Controller
             $event->officeBudgets()->sync($data['office_budgets']);
         }
 
+
         EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
 
         return response()->json(new EventResource($event), 201);
@@ -279,6 +283,10 @@ class EventController extends Controller
             'extraSales',
             'eventBatches',
             'eventNotes', 
+            'paymentPlan',
+            'paymentPlan.paymentMethod',
+            'receivables',
+            'receivables.paymentMethod',
         ]);
 
         return response()->json(new EventResource($event), 200);
@@ -405,6 +413,28 @@ class EventController extends Controller
             foreach ($mainEvents as $mainEvent) {
                 $mainEvent->tastingEvents()->syncWithoutDetaching([$event->id]);
             }
+        }
+
+
+        if (!empty(array_filter($data['payment_plan'], fn($value) => $value !== null && $value !== '' && $value !== 0))) {
+
+            $paymentPlanData = $data['payment_plan'];
+            unset($paymentPlanData['id']);
+            
+            if ($event->paymentPlan) {
+                $event->paymentPlan()->update($paymentPlanData);
+                $plan = $event->paymentPlan;
+            } 
+            else {
+                $plan = $event->paymentPlan()->create($paymentPlanData);
+            }
+    
+            $event->receivables()
+                ->where('receivableable_type', get_class($event))
+                ->where('receivableable_id', $event->id)
+                ->delete();
+    
+            $this->generateReceivables($event, $plan);
         }
         
         
@@ -1008,6 +1038,51 @@ class EventController extends Controller
         'conflicting_events' => $conflictingEvents,
     ]);
 }
+
+private function generateReceivables(Event $event, PaymentPlan $plan)
+{
+    $today = now();
+    $currentYear = $today->year;
+    $currentMonth = $today->month;
+    
+    if ($plan->down_payment > 0) {
+        $event->receivables()->create([
+            'description' => 'Entrada - ' . $event->name,
+            'amount' => $plan->down_payment,
+            'due_date' => $today->format('Y-m-d'),
+            'status' => 'pending',
+            'payment_method_id' => $plan->payment_method_id,
+            'receivableable_type' => get_class($event),
+            'receivableable_id' => $event->id,
+        ]);
+    }
+    
+    for ($i = 1; $i <= $plan->num_installments; $i++) {
+        $dueMonth = $currentMonth + $i;
+        $dueYear = $currentYear;
+        
+        if ($dueMonth > 12) {
+            $dueMonth -= 12;
+            $dueYear += 1;
+        }
+        
+        $dueDate = \Carbon\Carbon::create($dueYear, $dueMonth, $plan->due_day);
+        
+        $event->receivables()->create([
+            'description' => 'Parcela ' . $i . '/' . $plan->num_installments . ' - ' . $event->name,
+            'amount' => $plan->installment_amount,
+            'due_date' => $dueDate->format('Y-m-d'),
+            'status' => 'pending',
+            'payment_method_id' => $plan->payment_method_id,
+            'receivableable_type' => get_class($event),
+            'receivableable_id' => $event->id,
+        ]);
+    }
+
+}
+
+
+
 
 
 }
