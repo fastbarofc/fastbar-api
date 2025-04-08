@@ -72,67 +72,68 @@ class ClientController extends Controller
     public function store(StoreClientRequest $request)
     {
         try {
-            DB::beginTransaction();
-            $data = $request->all();
+        DB::beginTransaction();
+        $data = $request->all();
 
-            $client = Client::create($data);
-            
-            if (!empty($data['has_login'])) {
+        $client = Client::create($data);
 
-                $existingUser = User::where('email', $client->email)->first();
+        if (!empty($data['has_login'])) {
+            $existingUser = User::where('email', $client->email)->first();
 
-                if ($existingUser) {
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => 'Email already registered as a user.',
-                    ], 422);
-                }
-
-                $deletedUser = User::withTrashed()->where('email', $client->email)->first();
-
-                if ($deletedUser) {
-                    $deletedUser->update(['email' => $client->email . '.deleted_' . time()]);
-                }
-                
-                $randomPassword = Str::random(8);
-                
-                $userData = [
-                    'name'     => $client->name,
-                    'email'    => $client->email,
-                    'password' => bcrypt($randomPassword),
-                ];
-                
-                $user = User::create($userData);
-                $client->update(['user_id' => $user->id]);
-                
-                $roleClient = Role::where('name', 'Client')->first();
-                $user->assignRole($roleClient);
-                
-                $user->notify(new UserPassword($randomPassword));
-            }
-            
-            if (!empty($data['address']) && !empty($data['address']['street'])) {
-                $address = $data['address'];
-                Address::create([
-                    'addressable_id'      => $client->id,
-                    'addressable_type'    => Client::class,
-                    'street'             => $address['street'],
-                    'district'             => $address['district'],
-                    'complement'             => $address['complement'],
-                    'city_id'             => $address['city_id'],
-                    'state_id'             => $address['state_id'],
-                    'number'             => $address['number'],
-                    'zip_code'             => $address['zip_code'],
-                    'reference'             => $address['reference'],
-                ]);
+            if ($existingUser) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Email already registered as a user.',
+                ], 422);
             }
 
-            DB::commit();
-            
-            return response()->json(new ClientResource($client), 201);
+            $deletedUser = User::withTrashed()->where('email', $client->email)->first();
+
+            if ($deletedUser) {
+                $deletedUser->update(['email' => $client->email . '.deleted_' . time()]);
+            }
+
+
+            $randomPassword = Str::random(8);
+
+            $userData = [
+                'name'     => $client->name,
+                'email'    => $client->email,
+                'password' => bcrypt($randomPassword),
+            ];
+            $user = User::create($userData);
+
+            $client->update(['user_id' => $user->id]);
+
+            $roleClient = Role::where('name', 'Client')->first();
+            $user->assignRole($roleClient);
+
+            $user->notify(new UserPassword($randomPassword));
+        }
+
+        if (!empty($data['address'])) {
+            $address = $data['address'];
+            Address::create([
+                'addressable_id'      => $client->id,
+                'addressable_type'    => Client::class,
+                'street'           => $address['street'] ?? '',
+                'district'         => $address['district'] ?? '',
+                'complement'       => $address['complement'] ?? '',
+                'city_id'          => $address['city_id'],
+                'state_id'         => $address['state_id'],
+                'number'           => $address['number'] ?? '',
+                'zip_code'         => $address['zip_code'] ?? '',
+                'reference'        => $address['reference'] ?? '',
+            ]);
+        }
+
+        DB::commit();
+        return response()->json(new ClientResource($client), 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
         }
     }
         
@@ -143,88 +144,101 @@ class ClientController extends Controller
 
     public function update(UpdateClientRequest $request, Client $client)
     {
-
         try {
             DB::beginTransaction();
-
             $data = $request->all();
-            
             $client->update($data);
-
+    
             if (!empty($data['has_login'])) {
-                $existingUser = User::where('email', $client->email)->first();
-
-                if ($existingUser && $existingUser->id !== $client->user_id) {
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => 'Email already registered as a user.'
-                    ], 422);
-                }
-                
-                $deletedUser = User::withTrashed()->where('email', $client->email)->first();
-                
-                if ($deletedUser) {
-                    $deletedUser->update(['email' => $client->email . '.deleted_' . time()]);
-                }
-                
                 $user = $client->user;
-                
+    
                 if (!$user) {
+                    $existingUser = User::where('email', $client->email)->first();
+    
+                    if ($existingUser) {
+                        DB::rollBack();
+                        return response()->json([
+                            'message' => 'Email already registered as a user.',
+                        ], 422);
+                    }
+    
+                    $deletedUser = User::withTrashed()->where('email', $client->email)->first();
+    
+                    if ($deletedUser) {
+                        $deletedUser->update(['email' => $client->email . '.deleted_' . time()]);
+                    }
+    
                     $randomPassword = Str::random(8);
-                    
                     $userData = [
                         'name'     => $client->name,
                         'email'    => $client->email,
                         'password' => bcrypt($randomPassword),
                     ];
-                    
                     $user = User::create($userData);
+    
                     $client->update(['user_id' => $user->id]);
-                    
-                    $user->notify(new UserPassword($randomPassword));
-                }
-                
-                $user->update([
-                    'name'   => $client->name,
-                    'email'  => $client->email,
-                ]);
 
-                $roleClient = Role::where('name', 'Client')->first();
-                $user->assignRole($roleClient);
+                    $roleClient = Role::where('name', 'Client')->first();
+                    $user->assignRole($roleClient);
+    
+                    $user->notify(new UserPassword($randomPassword));
+                } else {
+                    if ($client->email !== $user->email) {
+                        $existingUser = User::where('email', $client->email)->first();
+    
+                        if ($existingUser) {
+                            DB::rollBack();
+                            return response()->json([
+                                'message' => 'Email already registered as a user.',
+                            ], 422);
+                        }
+    
+                        $deletedUser = User::withTrashed()->where('email', $client->email)->first();
+    
+                        if ($deletedUser) {
+                            $deletedUser->update(['email' => $client->email . '.deleted_' . time()]);
+                        }
+    
+                        $user->update(['email' => $client->email]);
+                    }
+                }
             }
-                
-                
-            if (!empty($data['address']) && !empty($data['address']['street'])) {
+    
+            if (!empty($data['address'])) {
                 $address = $data['address'];
                 Address::updateOrCreate(
                     [
-                        'addressable_id'      => $client->id,
-                        'addressable_type'    => Client::class
+                        'addressable_id'   => $client->id,
+                        'addressable_type' => Client::class
                     ],
                     [
-                        'addressable_id'      => $client->id,
-                        'addressable_type'    => Client::class,
-                        'street'             => $address['street'],
-                        'district'             => $address['district'],
-                        'complement'             => $address['complement'],
-                        'city_id'             => $address['city_id'],
-                        'state_id'             => $address['state_id'],
-                        'number'             => $address['number'],
-                        'zip_code'             => $address['zip_code'],
-                        'reference'             => $address['reference'],
-                        ]
-                    );
-                }
-                
-                DB::commit();
-                
-                return response()->json(new ClientResource($client), 200);
-            } catch (\Exception $e) {
-                DB::rollBack();
-
-                return response()->json(['error' => $e->getMessage()], 500);
+                        'addressable_id'   => $client->id,
+                        'addressable_type' => Client::class,
+                        'street'           => $address['street'] ?? '',
+                        'district'         => $address['district'] ?? '',
+                        'complement'       => $address['complement'] ?? '',
+                        'city_id'          => $address['city_id'],
+                        'state_id'         => $address['state_id'],
+                        'number'           => $address['number'] ?? '',
+                        'zip_code'         => $address['zip_code'] ?? '',
+                        'reference'        => $address['reference'] ?? '',
+                    ]
+                );
             }
+            
+    
+    
+            DB::commit();
+    
+            return response()->json(new ClientResource($client), 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 422);
         }
+    }
+    
 
     public function destroy(Client $client)
     {
@@ -241,6 +255,7 @@ class ClientController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $client = Client::findOrFail($clientId);
+
 
         $query = $client->events()->getQuery();
 

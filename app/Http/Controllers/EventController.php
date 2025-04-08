@@ -348,8 +348,8 @@ class EventController extends Controller
             $event->officeEvents()->sync($officeArray);
         }
 
-        if (!empty($data['clients'])) {
-            $event->clients()->sync($data['clients']);
+        if (!empty($data['client_id'])) {
+            $event->clients()->sync($data['client_id']);
         }
 
         if (!empty($data['extra_sales'])) {
