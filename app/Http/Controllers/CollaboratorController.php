@@ -401,6 +401,10 @@ class CollaboratorController extends Controller
                 }
             }
 
+            if (!empty($data['removed_goal_ids'])) {
+                $collaborator->goals()->whereIn('id', $data['removed_goal_ids'])->delete();
+            }
+
             $this->syncQualifications($collaborator, $data);
 
             DB::commit();
