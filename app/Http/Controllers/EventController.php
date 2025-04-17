@@ -301,6 +301,10 @@ class EventController extends Controller
         }
 
         $data['is_medicine'] = $data['is_medicine'] ?? $event->is_medicine;
+
+        if (isset($data['closed_at'])) {
+            $event->closed_at = $data['closed_at'];
+        }
         
 
         $filteredBatches = isset($data['event_batches']) && is_array($data['event_batches'])
@@ -442,6 +446,13 @@ class EventController extends Controller
         $data['competing_company_id'] = $data['competing_company_id'] ?? null;
         $data['lost_reason_id'] = $data['lost_reason_id'] ?? null;
         $data['is_draft'] = false;
+
+        if (isset($data['event_status_id'])) {
+            $newStatus = EventStatus::find($data['event_status_id']);
+            if ($event->event_status_id !== $data['event_status_id'] && $newStatus && $newStatus->name === 'Fechado') {
+                $data['closed_at'] = Carbon::now();
+            }
+        }
 
         $event->update($data);
 
