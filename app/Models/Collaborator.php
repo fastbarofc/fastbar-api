@@ -161,5 +161,9 @@ class Collaborator extends Model implements AuditableInterface
     {
         return $this->belongsToMany(OfficeEvent::class, 'budget_office_collaborators');
     }
+
+    public function goals() {
+        return $this->hasMany(CollaboratorGoal::class);
+    }
 }
 

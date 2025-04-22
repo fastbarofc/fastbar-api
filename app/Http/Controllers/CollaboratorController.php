@@ -207,6 +207,19 @@ class CollaboratorController extends Controller
                 }
             }
 
+            if (!empty($data['goals'])) {
+                foreach ($data['goals'] as $goal) {
+                    $collaborator->goals()->updateOrCreate(
+                        ['id' => $goal['id']],
+                        ['type' => $goal['type'],
+                        'start_date' => $goal['start_date'],
+                        'end_date' => $goal['end_date'],
+                        'expected_contracts' => $goal['expected_contracts']
+                        ]
+                    );
+                }
+            }
+
             $this->syncQualifications($collaborator, $data);
             DB::commit();
 
@@ -373,6 +386,23 @@ class CollaboratorController extends Controller
 
             if (!empty($data['removed_pix_key_ids'])) {
                 PixKey::whereIn('id', $data['removed_pix_key_ids'])->delete();
+            }
+
+            if ($request->has('goals')) {
+                foreach ($request->goals as $goalData) {
+                    $collaborator->goals()->updateOrCreate(
+                        ['id' => $goalData['id']],
+                        ['type' => $goalData['type'],
+                        'start_date' => $goalData['start_date'],
+                        'end_date' => $goalData['end_date'],
+                        'expected_contracts' => $goalData['expected_contracts']
+                        ]
+                    );
+                }
+            }
+
+            if (!empty($data['removed_goal_ids'])) {
+                $collaborator->goals()->whereIn('id', $data['removed_goal_ids'])->delete();
             }
 
             $this->syncQualifications($collaborator, $data);
