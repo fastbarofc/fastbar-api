@@ -21,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $table->string('email')->nullable(false)->change();
+        Schema::table('ceremonials', function (Blueprint $table) {
+            $table->string('email')->nullable(false)->change();
+        });
     }
 };
