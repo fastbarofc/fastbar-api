@@ -35,7 +35,7 @@ class ReportController extends Controller
                     ->filter(fn($r) => $r->status === 'paid' || !is_null($r->paid_at))
                     ->sum('amount');
 
-                    $event->pending_value = $event->total_value - $event->paid_value - $event->discount;
+                    $event->pending_value = $event->total_value - $event->paid_value - $event->total_breaks;
 
                 return $event;
             });
@@ -43,6 +43,9 @@ class ReportController extends Controller
             
             
             $totalDiscounts = $events->sum('discount');
+            $totalCommissions = $events->sum(function ($event) {
+                return $event->commission ?? 0;
+            });
             $totalAdditional = $events->sum(function ($event) {
                 return $event->extraSales->sum(function ($item) {
                     return $item->quantity * $item->unit_value;
@@ -57,6 +60,8 @@ class ReportController extends Controller
                 return $event->receivables->where('status', 'paid')->sum('amount') ?? 0;
             });
             $totalPost = $events->sum('pending_value');
+            $totalCosts = $totalCommissions + $totalBreaks + $totalDiscounts;
+
             
             
             $data = [
@@ -74,6 +79,8 @@ class ReportController extends Controller
                     'total_breaks'     => $totalBreaks,
                     'total_payments'   => $totalPayments,
                     'total_post'       => $totalPost,
+                    'total_commissions' => $totalCommissions,
+                    'total_costs'      => $totalCosts,
                 ],
                 'events'  => $events,
                 'filters' => $request->all(),

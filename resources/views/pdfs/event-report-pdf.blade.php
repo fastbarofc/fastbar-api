@@ -66,6 +66,16 @@
             gap: 10px;
         }
         .footer { margin-top: 20px; text-align: center; font-size: 10px; }
+
+        .total-azul {
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .total-vermelho {
+            color: #dc3545;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -106,27 +116,27 @@
         <table class="summary-table">
             <tr>
                 <td><strong>Número de eventos:</strong> {{ $summary['total_events'] }}</td>
-                <td><strong>Total dos buffets:</strong> R$ {{ number_format($summary['total_buffets'], 2, ',', '.') }}</td>
+                <td><strong>Total dos buffets:</strong> <span class="total-azul">R$ {{ number_format($summary['total_buffets'], 2, ',', '.') }}</span></td>
             </tr>
             <tr>
-                <td><strong>Total das locações:</strong> R$ {{ number_format($summary['total_leases'], 2, ',', '.') }}</td>
-                <td><strong>Total dos seguros:</strong> R$ {{ number_format($summary['total_insurances'], 2, ',', '.') }}</td>
+                <td><strong>Total das locações:</strong> <span class="total-azul">R$ {{ number_format($summary['total_leases'], 2, ',', '.') }}</span></td>
+                <td><strong>Total dos seguros:</strong> <span class="total-azul">R$ {{ number_format($summary['total_insurances'], 2, ',', '.') }}</span></td>
             </tr>
             <tr>
-                <td><strong>Total dos eventos:</strong> R$ {{ number_format($summary['total_financial'], 2, ',', '.') }}</td>
-                <td><strong>Total de descontos:</strong> R$ {{ number_format($summary['total_discounts'], 2, ',', '.') }}</td>
+                <td><strong>Total dos eventos:</strong> <span class="total-azul">R$ {{ number_format($summary['total_financial'], 2, ',', '.') }}</span></td>
+                <td><strong>Total de descontos:</strong> <span class="total-vermelho">R$ {{ number_format($summary['total_discounts'], 2, ',', '.') }}</span></td>
             </tr>
             <tr>
-                <td><strong>Total de acréscimos:</strong> R$ {{ number_format($summary['total_additional'], 2, ',', '.') }}</td>
-                <td><strong>Total de comissões:</strong> R$ {{ number_format( 0, 2, ',', '.') }}</td>
+                <td><strong>Total de acréscimos:</strong> <span class="total-azul">R$ {{ number_format($summary['total_additional'], 2, ',', '.') }}</span></td>
+                <td><strong>Total de comissões:</strong> <span class="total-vermelho">R$ {{ number_format($summary['total_commissions'], 2, ',', '.') }}</span></td>
             </tr>
             <tr>
-                <td><strong>Total de quebras:</strong> R$ {{ number_format($summary['total_breaks'], 2, ',', '.') }}</td>
-                <td><strong>Total de custos:</strong> R$ {{ number_format( 0, 2, ',', '.') }}</td>
+                <td><strong>Total de quebras:</strong> <span class="total-vermelho">R$ {{ number_format($summary['total_breaks'], 2, ',', '.') }}</span></td>
+                <td><strong>Total de custos:</strong> <span class="total-vermelho">R$ {{ number_format($summary['total_costs'], 2, ',', '.') }}</span></td>
             </tr>
             <tr>
-                <td><strong>Total de pós:</strong> R$ {{ number_format($summary['total_post'], 2, ',', '.') }}</td>
-                <td><strong>Total de pagamentos:</strong> R$ {{ number_format($summary['total_payments'], 2, ',', '.') }}</td>
+                <td><strong>Total de pós:</strong> <span class="total-azul">R$ {{ number_format($summary['total_post'], 2, ',', '.') }}</span></td>
+                <td><strong>Total de pagamentos:</strong> <span class="total-azul">R$ {{ number_format($summary['total_payments'], 2, ',', '.') }}</span></td>
             </tr>
         </table>
     </div>
@@ -142,8 +152,14 @@
         
         <div class="event-data">
             <div class="event-grid">
-                <div class="event-item"><strong>Local:</strong> {{ $event->eventPlace->name ?? '-' }}</div>
-                <div class="event-item"><strong>Cliente:</strong> {{ $event->client->name ?? '-' }}</div>
+            <div class="event-item">
+                <strong>Local:</strong> 
+                {{ $event->eventPlace->name ?? '-' }}
+                @if($event->eventPlace?->address?->city?->name)
+                    ({{ $event->eventPlace->address->city->name }})
+                @endif
+            </div>
+                <div class="event-item"><strong>Cliente:</strong> ({{ $event->client->id }}) {{ $event->client->name ?? '-' }}</div>
                 <div class="event-item"><strong>Responsável:</strong> {{ $event->collaborator->name ?? '-' }}</div>
                 <div class="event-item"><strong>Status:</strong> {{ $event->eventStatus->name ?? '-' }}</div>
             </div>
@@ -158,7 +174,7 @@
             <div class="event-grid">
                 <div class="event-item"><strong>Cortesias:</strong> {{ ($event->parthenon_courtesies ?? 0) + ($event->partner_courtesies ?? 0) }}</div>
                 <div class="event-item"><strong>Seguro Unit.:</strong> R$ {{ number_format($event->unit_insurance ?? 0, 2, ',', '.') }}</div>
-                <div class="event-item"><strong>Comissões:</strong> R$ {{ number_format( 0, 2, ',', '.') }}</div>
+                <div class="event-item"><strong>Comissões:</strong> R$ {{ number_format($event->commissions_value ?? 0, 2, ',', '.') }}</div>
                 <div class="event-item"><strong>Buffet:</strong> R$ {{ number_format($event->buffet_value ?? 0, 2, ',', '.') }}</div>
             </div>
             
@@ -174,7 +190,14 @@
             <div class="financial-grid">
                 <div class="event-item"><strong>Conv. Pres.:</strong> {{ $event->present_guests ?? 0 }}</div>
                 <div class="event-item"><strong>Desconto:</strong> R$ {{ number_format($event->discount ?? 0, 2, ',', '.') }}</div>
-                <div class="event-item"><strong>Custos:</strong> R$ {{ number_format( 0, 2, ',', '.') }}</div>
+                <div class="event-item"><strong>Custos:</strong> 
+                    R$ {{ 
+                        number_format(
+                            ($event->commissions_value ?? 0) + 
+                            ($event->breakItems->sum(fn($item) => $item->pivot->quantity * $item->pivot->value)) + 
+                            ($event->discount ?? 0), 2, ',', '.')
+                    }}
+                </div>
                 <div class="event-item"><strong>Total Pós:</strong> R$ {{ number_format($event->pending_value ?? 0, 2, ',', '.') }}</div>
                 <div class="event-item"><strong>A Pagar:</strong> R$ {{ number_format(($event->total_value ?? 0) - ($event->paid_value ?? 0), 2, ',', '.') }}</div>
                 <div class="event-item"><strong>Total</strong> R$ {{ number_format($event->total_value ?? 0, 2, ',', '.') }}</div>
