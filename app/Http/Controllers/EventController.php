@@ -44,6 +44,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller
 {
@@ -1080,6 +1081,218 @@ private function generateReceivables(Event $event, PaymentPlan $plan)
     }
 
 }
+
+public function duplicate(Event $event)
+{
+    DB::beginTransaction();
+
+    try {
+        $event->load([
+            'materials',
+            'eventBatches',
+            'extraSales',
+            'eventNotes',
+            'paymentPlan',
+            'tastingEvents',
+            'parentEvents',
+            'officeEvents',
+            'utensils',
+            'officeBudgets',
+            'clients',
+            'eventKits'
+
+
+        ]);
+
+        $newEventData = $event->toArray();
+        unset($newEventData['id'], $newEventData['created_at'], $newEventData['updated_at']);
+        
+        $newEventData['name'] = 'Cópia de ' . $event->name;
+        $newEventData['is_draft'] = true;
+        $newEventData['collaborator_id'] = auth()->user()->collaborator->id;
+        $newEventData['contract_body'] = ContractTemplate::first()?->content ?? null;
+
+        $newEvent = Event::create($newEventData);
+
+        if ($event->eventBatches->isNotEmpty()) {
+            foreach ($event->eventBatches as $batch) {
+                EventBatch::create([
+                    'event_id' => $newEvent->id,
+                    'name' => $batch->name,
+                    'guests' => $batch->guests,
+                    'value' => $batch->value,
+                    'discount' => $batch->discount,
+                    'total_value' => $batch->total_value,
+                    'status' => $batch->status,
+                    'unit_value' => $batch->unit_value,
+                ]);
+            }
+        }
+
+        if ($event->materials->isNotEmpty()) {
+            $materialsData = [];
+            foreach ($event->materials as $material) {
+                $materialsData[$material->id] = [
+                    'selected' => $material->pivot->selected === '-1' ? null : $material->pivot->selected,
+                    'quantity' => $material->pivot->quantity ?? 0
+                ];
+            }
+            $newEvent->materials()->sync($materialsData);
+        }
+
+        if ($event->eventNotes->isNotEmpty()) {
+            foreach ($event->eventNotes as $note) {
+                $noteData = [
+                    'event_id' => $newEvent->id,
+                    'text' => $note->text,
+                    'user_id' => auth()->user()->collaborator->id,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+                
+                
+                EventNote::create($noteData);
+            }
+        }
+
+        if ($event->extraSales->isNotEmpty()) {
+            foreach ($event->extraSales as $sale) {
+                ExtraSale::create([
+                    'event_id' => $newEvent->id,
+                    'description' => $sale->description,
+                    'unit_value' => $sale->unit_value,
+                    'quantity' => $sale->quantity,
+                    'unit_id' => $sale->unit_id
+                ]);
+            }
+        }
+
+        if ($event->paymentPlan) {
+            $paymentPlanData = $event->paymentPlan->toArray();
+            unset($paymentPlanData['id']);
+            
+            $newPaymentPlan = $newEvent->paymentPlan()->create($paymentPlanData);
+            $this->generateReceivables($newEvent, $newPaymentPlan);
+        }
+
+        if ($event->utensils->isNotEmpty()) {
+            $newEvent->utensils()->sync($event->utensils->pluck('id'));
+        }
+
+        if ($event->officeEvents->isNotEmpty()) {
+            $officeData = [];
+            foreach ($event->officeEvents as $office) {
+                $officeData[$office->id] = ['quantity' => $office->pivot->quantity ?? 0];
+            }
+            $newEvent->officeEvents()->sync($officeData);
+        }
+
+        if ($event->officeBudgets->isNotEmpty()) {
+            $newEvent->officeBudgets()->sync($event->officeBudgets->pluck('id'));
+        }
+
+        if ($event->tastingEvents->isNotEmpty()) {
+            $newEvent->tastingEvents()->sync($event->tastingEvents->pluck('id'));
+        }
+
+        if ($event->parentEvents->isNotEmpty()) {
+            $newEvent->parentEvents()->sync($event->parentEvents->pluck('id'));
+        }
+
+        if ($event->clients->isNotEmpty()) {
+            $legalRepresentativesIds = $event->clients
+                ->where('type', 'pf')
+                ->pluck('id')
+                ->toArray();
+            
+            if (!empty($legalRepresentativesIds)) {
+                $newEvent->clients()->syncWithoutDetaching($legalRepresentativesIds);
+            }
+        }
+
+        if (EventKit::where('event_id', $event->id)->exists()) {
+            $this->duplicateEventKits($event, $newEvent);
+        } 
+
+        EventStatusHistory::create([
+            'event_id' => $newEvent->id,
+            'event_status_id' => $newEvent->event_status_id,
+            'collaborator_id' => auth()->user()->collaborator->id
+        ]);
+
+        DB::commit();
+
+        return response()->json(new EventResource($newEvent->load([
+            'materials',
+            'eventBatches',
+            'extraSales',
+            'eventNotes',
+            'paymentPlan',
+            'tastingEvents',
+            'parentEvents'
+        ])), 201);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'message' => 'Erro ao duplicar evento',
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+}
+
+private function duplicateEventKits(Event $originalEvent, Event $newEvent)
+{
+    $rootKits = EventKit::where('event_id', $originalEvent->id)
+                        ->whereNull('event_kit_id')
+                        ->with(['eventKits', 'products'])
+                        ->get();
+
+    Log::info('Root Kits: ' . json_encode($rootKits));
+    $kitIdMap = [];
+
+    foreach ($rootKits as $rootKit) {
+        $newRootKit = $this->duplicateSingleKit($rootKit, $newEvent->id, null, $kitIdMap);
+        $kitIdMap[$rootKit->id] = $newRootKit->id;
+    }
+}
+
+private function duplicateSingleKit(EventKit $originalKit, $newEventId, $newParentKitId, &$kitIdMap)
+{
+    $newKit = EventKit::create([
+        'name' => $originalKit->name,
+        'event_id' => $newEventId,
+        'event_kit_id' => $newParentKitId,
+        'value' => $originalKit->value,
+        'themed_table' => $originalKit->themed_table,
+        'ordination' => $originalKit->ordination,
+        'observation' => $originalKit->observation,
+        'optional' => $originalKit->optional,
+        'checklist' => $originalKit->checklist,
+    ]);
+
+    foreach ($originalKit->products as $product) {
+        $newKit->products()->attach($product->id, [
+            'value' => $product->pivot->value,
+            'ordination' => $product->pivot->ordination,
+            'optional' => $product->pivot->optional,
+            'average consumption' => $product->pivot->{'average consumption'},
+            'quantity' => $product->pivot->quantity,
+            'comments' => $product->pivot->comments,
+            'checklist' => $product->pivot->checklist,
+            'observation' => $product->pivot->observation,
+        ]);
+    }
+
+    foreach ($originalKit->eventKits as $subKit) {
+        $newSubKit = $this->duplicateSingleKit($subKit, $newEventId, $newKit->id, $kitIdMap);
+        $kitIdMap[$subKit->id] = $newSubKit->id;
+    }
+
+    return $newKit;
+}
+
 
 
 

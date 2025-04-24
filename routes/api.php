@@ -242,5 +242,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('companies', CompanyController::class);
     Route::resource('financial-operations', FinancialOperationController::class);
     Route::resource('cost-centers', CostCenterController::class);
+
+    Route::get('/events/{event}/duplicate', [EventController::class, 'duplicate']);
+
+
   
 });
