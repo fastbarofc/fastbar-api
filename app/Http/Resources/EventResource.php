@@ -32,6 +32,7 @@ class EventResource extends JsonResource
             'duration'           => $this->duration,
             'date'               => $this->date ? Carbon::parse($this->date)->format('Y-m-d') : null,
             'time'               => $this->time ? Carbon::createFromFormat(strlen($this->time) == 5 ? 'H:i' : 'H:i:s', $this->time)->format('H:i') : null,
+            'closed_at' => $this->closed_at ? $this->closed_at->format('Y-m-d H:i:s') : null,
             'duration_after'     => $this->duration_after,
             'contract_body'      => $this->contract_body,
             'parthenon_courtesies' => $this->parthenon_courtesies,

@@ -54,12 +54,14 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
             'unit_discount',
             'min_guests',
             'is_medicine',
+            'closed_at',
         ];
 
     protected $casts = [
         'date' => 'date:Y-m-d',
         'time' => 'string',
         'is_medicine' => 'boolean',
+        'closed_at' => 'datetime',
     ];
 
     protected static $sortableFields = [

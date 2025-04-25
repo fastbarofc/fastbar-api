@@ -53,6 +53,7 @@ use App\Http\Controllers\FinancialOperationController;
 use App\Http\Controllers\CostCenterController;
 use App\Http\Controllers\PayableController;
 use App\Http\Controllers\ReceivableController;
+use App\Http\Controllers\ReportController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -228,6 +229,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
     Route::post('/events/generate-event-items-checklist/{event}', [EventController::class, 'generateEventItemChecklist']);
     Route::get('/events/{event}/check-if-has-scheduled-events', [EventController::class, 'checkIfHasScheduledEvents']);
+    Route::post('/reports/events/pdf', [ReportController::class, 'generatePdfReport']);
 
     Route::post('/contract-template/save', [ContractTemplateController::class, 'save']);
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
