@@ -41,7 +41,7 @@ class StoreEventRequest extends FormRequest
             'legal_representatives.*'          => 'exists:clients,id',
             'min_guests' => 'nullable|integer|min:1',
             'is_medicine' => 'nullable|boolean',
-            'old_system_id' => 'nullable|unique:events,old_system_id',
+            'old_system_id' => 'nullable',
 
 
         ];
@@ -93,7 +93,6 @@ class StoreEventRequest extends FormRequest
             'min_guests.integer' => 'O campo convidados mínimos deve conter apenas números inteiros',
             'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
             'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
-            'old_system_id.unique' => 'O ID do sistema antigo já está em uso.',
         ];
     }
 }

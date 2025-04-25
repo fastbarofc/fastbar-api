@@ -1108,7 +1108,7 @@ public function duplicate(Event $event)
         unset($newEventData['id'], $newEventData['created_at'], $newEventData['updated_at']);
         
         $newEventData['name'] = 'Cópia de ' . $event->name;
-        $newEventData['is_draft'] = true;
+        $newEventData['event_status_id'] = EventStatus::where('name', 'Aberto')->value('id');
         $newEventData['collaborator_id'] = auth()->user()->collaborator->id;
         $newEventData['contract_body'] = ContractTemplate::first()?->content ?? null;
 
@@ -1246,13 +1246,13 @@ private function duplicateEventKits(Event $originalEvent, Event $newEvent)
 {
     $rootKits = EventKit::where('event_id', $originalEvent->id)
                         ->whereNull('event_kit_id')
-                        ->with(['eventKits', 'products'])
                         ->get();
 
-    Log::info('Root Kits: ' . json_encode($rootKits));
     $kitIdMap = [];
 
     foreach ($rootKits as $rootKit) {
+        $rootKit->load(['products', 'eventKits.products']);
+        
         $newRootKit = $this->duplicateSingleKit($rootKit, $newEvent->id, null, $kitIdMap);
         $kitIdMap[$rootKit->id] = $newRootKit->id;
     }
@@ -1272,8 +1272,11 @@ private function duplicateSingleKit(EventKit $originalKit, $newEventId, $newPare
         'checklist' => $originalKit->checklist,
     ]);
 
+    $originalKit->load('products');
+    
+    $productsData = [];
     foreach ($originalKit->products as $product) {
-        $newKit->products()->attach($product->id, [
+        $productsData[$product->id] = [
             'value' => $product->pivot->value,
             'ordination' => $product->pivot->ordination,
             'optional' => $product->pivot->optional,
@@ -1282,9 +1285,15 @@ private function duplicateSingleKit(EventKit $originalKit, $newEventId, $newPare
             'comments' => $product->pivot->comments,
             'checklist' => $product->pivot->checklist,
             'observation' => $product->pivot->observation,
-        ]);
+        ];
+    }
+    
+    if (!empty($productsData)) {
+        $newKit->products()->sync($productsData);
     }
 
+    $originalKit->load('eventKits');
+    
     foreach ($originalKit->eventKits as $subKit) {
         $newSubKit = $this->duplicateSingleKit($subKit, $newEventId, $newKit->id, $kitIdMap);
         $kitIdMap[$subKit->id] = $newSubKit->id;
