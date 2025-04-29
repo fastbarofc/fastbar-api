@@ -1110,7 +1110,6 @@ public function duplicate(Event $event)
         $newEventData['name'] = 'Cópia de ' . $event->name;
         $newEventData['event_status_id'] = EventStatus::where('name', 'Aberto')->value('id');
         $newEventData['collaborator_id'] = auth()->user()->collaborator->id;
-        $newEventData['contract_body'] = ContractTemplate::first()?->content ?? null;
 
         $newEvent = Event::create($newEventData);
 
