@@ -263,7 +263,4 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
     {
         return $this->morphMany(Receivable::class, 'receivableable');
     }
-    
-
-
 }
