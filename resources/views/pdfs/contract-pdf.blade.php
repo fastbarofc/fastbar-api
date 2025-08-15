@@ -185,7 +185,8 @@
     '{{ duracao_evento }}' => $contract->properties['duration'],
     '{{ numero_convidados }}' => $contract->properties['event_guests'] ?? 'Número de convidados não informado',
     '{{ data_assinatura }}' => \Carbon\Carbon::parse($contract->created_at)->format('d/m/Y'),
-    '{{ preco }}' => 'R$ ' . str_replace('.', ',' ,$contract->properties['sub_total']) ?? 'Preço não informado',
+    '{{ preco }}' => currencyMask($contract->properties['total_value']) ?? 'Preço não informado',
+    '{{ forma_pagamento }}' => $contract->properties['payment_plan']['payment_method'] ?? 'Não informado',
 ];
 
 $contractBody = $contract->body;

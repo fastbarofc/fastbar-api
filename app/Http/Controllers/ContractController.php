@@ -79,7 +79,7 @@ class ContractController extends Controller
 
         $data['properties'] = [];
 
-        $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date', 'time', 'duration', 'lease', 'buffet_value', 'event_guests', 'sub_total']);
+        $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date', 'time', 'duration', 'lease', 'buffet_value', 'event_guests', 'sub_total', 'total_value', 'payment_method']);
 
         $properties['date'] = $event->date;
         if (empty($event->time)) {
@@ -123,6 +123,15 @@ class ContractController extends Controller
         $properties['materials'] = $this->getContractMaterials($event) ?? [];
         $properties['collaborators'] = $this->getContractCollaborators($event) ?? [];
         $properties['event_kits'] = $this->getContractKits($event) ?? [];
+
+        $properties['payment_plan'] = [
+            'payment_method' => $event->paymentPlan?->paymentMethod?->name ?? null,
+            'total_amount' => $event->paymentPlan?->total_amount ?? null,
+            'down_payment' => $event->paymentPlan?->down_payment ?? null,
+            'num_installments' => $event->paymentPlan?->num_installments ?? null,
+            'installment_amount' => $event->paymentPlan?->installment_amount ?? null,
+            'due_day' => $event->paymentPlan?->due_day ?? null,
+        ];
 
         $data['properties'] = $properties;
 
@@ -312,6 +321,15 @@ class ContractController extends Controller
         $properties['event_gifts'] = $eventGifts->toArray();
         $properties['extra_sales'] = $extraSales->toArray();
         $properties['office_events'] = $officeEvents->toArray();
+
+        $properties['payment_plan'] = [
+            'payment_method' => $event->paymentPlan?->paymentMethod?->name ?? null,
+            'total_amount' => $event->paymentPlan?->total_amount ?? null,
+            'down_payment' => $event->paymentPlan?->down_payment ?? null,
+            'num_installments' => $event->paymentPlan?->num_installments ?? null,
+            'installment_amount' => $event->paymentPlan?->installment_amount ?? null,
+            'due_day' => $event->paymentPlan?->due_day ?? null,
+        ];
 
         $newData['properties'] = $properties;
 

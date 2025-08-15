@@ -825,7 +825,6 @@ class EventController extends Controller
 
     public function generateEventChecklist(Event $event)
     {
-        // Carrega os relacionamentos necessários
         $event->load([
             'eventStatus',
             'client',
@@ -864,7 +863,6 @@ class EventController extends Controller
 
     public function generateClosure(Event $event)
     {
-        // Carrega os relacionamentos necessários
         $event->load([
             'eventStatus',
             'eventPlace',
@@ -904,7 +902,6 @@ class EventController extends Controller
 
     public function generateSummary(Event $event)
     {
-        // Carrega os relacionamentos necessários
         $event->load([
             'eventStatus',
             'clients',
@@ -941,7 +938,6 @@ class EventController extends Controller
     }
 
     public function generateBuffetContract(Event $event) {
-        // Carrega os relacionamentos necessários
         $event->load([
             'eventStatus',
             'client',
@@ -966,7 +962,6 @@ class EventController extends Controller
     }
 
     public function generateEventItemChecklist(Event $event) {
-        // Carrega os relacionamentos necessários
         $event->load([
             'eventStatus'
         ]);
@@ -985,7 +980,6 @@ class EventController extends Controller
     }
 
     public function generateLeaseContract(Event $event) {
-        // Carrega os relacionamentos necessários
         $event->load([
             'eventStatus',
             'client'
@@ -1008,7 +1002,6 @@ class EventController extends Controller
     }
 
     public function generateMenu(Event $event) {
-        // Carrega os relacionamentos necessários
         $event->load([
             'eventStatus',
             'client',
@@ -1044,7 +1037,6 @@ class EventController extends Controller
     }
 
     public function generateCollaborators(Event $event) {
-        // Carrega os relacionamentos necessários
         $event->load([
             'eventStatus',
             'client',

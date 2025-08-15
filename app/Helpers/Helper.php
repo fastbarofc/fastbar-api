@@ -6,7 +6,7 @@ function slug($text) {
 }
 
 
-function brl($value) {
+function currencyMask($value) {
     if ($value === null || $value === '') {
         return 'Não informado';
     }
