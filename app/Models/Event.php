@@ -264,6 +264,38 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
         return $this->morphMany(Receivable::class, 'receivableable');
     }
     
+    public function getEventTotalValueAttribute(): float
+{
+    $eventGuests = (int) $this->event_guests;
+    $parthenonCourtesies = (int) $this->parthenon_courtesies;
+    $partnerCourtesies = (int) $this->partner_courtesies;
+    $discount = (float) $this->discount;
+    $unitDiscount = (float) $this->unit_discount;
+    $unitInsurance = (float) $this->unit_insurance;
+    $guestUnitValue = (float) $this->guest_unit_value;
+    $lease = (float) $this->lease;
+    $excessUnitValue = (float) $this->excess_unit_value;
+    $presentGuests = (int) $this->present_guests;
 
+    $buffetValue = $eventGuests * ($guestUnitValue - $unitDiscount) + $eventGuests * $unitInsurance;
 
+    $subTotal = $buffetValue + $lease - $discount;
+
+    $totalGuests = $eventGuests + $parthenonCourtesies + $partnerCourtesies;
+
+    $eventTotalValue = $subTotal;
+
+    foreach ($this->eventBatches as $batch) {
+        $guests = (int) $batch->guests;
+        $batchUnitValue = (float) $batch->unit_value;
+        $eventTotalValue += $guests * $batchUnitValue;
+        $totalGuests += $guests;
+    }
+
+    if ($totalGuests < $presentGuests) {
+        $eventTotalValue += ($presentGuests - $totalGuests) * $excessUnitValue;
+    }
+
+    return $eventTotalValue;
+}
 }

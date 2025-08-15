@@ -791,6 +791,13 @@ class EventController extends Controller
 
     public function generateBudget(Event $event)
     {
+        $event->load([
+            'client',
+            'eventPlace',
+            'eventKits',
+            'eventBatches'
+        ]);
+
         $date = Carbon::now()->format('d/m/Y');
         $client = $event->client;
         $place = $event->eventPlace;
@@ -812,13 +819,23 @@ class EventController extends Controller
             $pdfUrl = FileService::generatePdf($viewContent, $fileName, $footer, $header);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
     }
 
     public function generateEventChecklist(Event $event)
     {
-        if ($event->status && $event->status->name !== 'Fechado') {
+        // Carrega os relacionamentos necessários
+        $event->load([
+            'eventStatus',
+            'client',
+            'eventPlace',
+            'eventKits',
+            'eventBatches',
+            'clients'
+        ]);
+
+        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
         $client = $event->client;
@@ -841,13 +858,22 @@ class EventController extends Controller
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
     }
 
     public function generateClosure(Event $event)
     {
-        if ($event->status && $event->status->name !== 'Fechado') {
+        // Carrega os relacionamentos necessários
+        $event->load([
+            'eventStatus',
+            'eventPlace',
+            'clients',
+            'eventBatches',
+            'extraSales'
+        ]);
+
+        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
         $place = $event->eventPlace;
@@ -872,13 +898,22 @@ class EventController extends Controller
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
     }
 
     public function generateSummary(Event $event)
     {
-        if ($event->status && $event->status->name !== 'Fechado') {
+        // Carrega os relacionamentos necessários
+        $event->load([
+            'eventStatus',
+            'clients',
+            'eventKits',
+            'eventBatches',
+            'materials'
+        ]);
+
+        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
         $responsibles = $event->clients->pluck('name')->implode(', ');
@@ -901,12 +936,20 @@ class EventController extends Controller
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
     }
 
     public function generateBuffetContract(Event $event) {
-        if ($event->status && $event->status->name !== 'Fechado') {
+        // Carrega os relacionamentos necessários
+        $event->load([
+            'eventStatus',
+            'client',
+            'eventPlace',
+            'paymentPlan.paymentMethod'
+        ]);
+
+        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
         $client = $event->client;
@@ -918,12 +961,17 @@ class EventController extends Controller
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
     }
 
     public function generateEventItemChecklist(Event $event) {
-        if ($event->status && $event->status->name !== 'Fechado') {
+        // Carrega os relacionamentos necessários
+        $event->load([
+            'eventStatus'
+        ]);
+
+        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
         $fileName = 'check-list-itens-evento-' . $event->id;
@@ -932,12 +980,18 @@ class EventController extends Controller
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
     }
 
     public function generateLeaseContract(Event $event) {
-        if ($event->status && $event->status->name !== 'Fechado') {
+        // Carrega os relacionamentos necessários
+        $event->load([
+            'eventStatus',
+            'client'
+        ]);
+
+        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
 
@@ -949,12 +1003,21 @@ class EventController extends Controller
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
     }
 
     public function generateMenu(Event $event) {
-        if ($event->status && $event->status->name !== 'Fechado') {
+        // Carrega os relacionamentos necessários
+        $event->load([
+            'eventStatus',
+            'client',
+            'eventPlace',
+            'eventKits',
+            'eventBatches'
+        ]);
+
+        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
         $date = Carbon::now()->format('d/m/Y');
@@ -976,12 +1039,19 @@ class EventController extends Controller
             $pdfUrl = FileService::generatePdf(viewContent: $viewContent, fileName: $fileName, footerContent: $header, headerContent: $header);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
     }
 
     public function generateCollaborators(Event $event) {
-        if ($event->status && $event->status->name !== 'Fechado') {
+        // Carrega os relacionamentos necessários
+        $event->load([
+            'eventStatus',
+            'client',
+            'eventPlace'
+        ]);
+
+        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
 
@@ -995,7 +1065,7 @@ class EventController extends Controller
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
     }
 

@@ -145,7 +145,7 @@
         <tr>
             <td style="border: 1px solid #000;"><strong>02</strong></td>
             <td style="border: 1px solid #000;"><strong>Contratante</strong></td>
-            <td style="border: 1px solid #000;"><strong>Nome: {{ $client->name ?? 'Não informado' }}</strong>, nacionalidade: {{ $client->nationality ?? 'Não informado' }}, estado civil: {{ $client->civil_status ?? 'Não informado' }}, profissão: {{ $client->profession ?? 'Não informado' }}, inscrito(a) no CPF sob o n. {{ $client->cpf ?? 'Não informado' }} e portador(a) da CI de n. {{ $client->rg ?? 'Não informado' }}, residente e domiciliado(a) na Rua {{ $client->address['street'] ?? 'Não informado' }}, nº {{ $client->address['number'] ?? 'Não informado' }}{{ $client->address['complement'] ? ', ' . $client->address['complement'] : '' }}, Bairro {{ $client->address['district'] ?? 'Não informado' }}, CEP {{ $client->address['zip_code'] ?? 'Não informado' }}.</td>
+            <td style="border: 1px solid #000;"><strong>Nome: {{ $client->name ?? 'Não informado' }}</strong>, inscrito(a) no CPF sob o n. {{ $client->cpf ?? 'Não informado' }} e portador(a) da CI de n. {{ $client->rg ?? 'Não informado' }}, residente e domiciliado(a) na Rua {{ $client->address['street'] ?? 'Não informado' }}, nº {{ $client->address['number'] ?? 'Não informado' }}{{ $client->address['complement'] ? ', ' . $client->address['complement'] : '' }}, Bairro {{ $client->address['district'] ?? 'Não informado' }}, CEP {{ $client->address['zip_code'] ?? 'Não informado' }}.</td>
         </tr>
 
         <tr>
@@ -168,12 +168,12 @@
         <tr>
             <td style="border: 1px solid #000;"><strong>05</strong></td>
             <td style="border: 1px solid #000;"><strong>Preço</strong></td>
-            <td style="border: 1px solid #000;"></td>
+            <td style="border: 1px solid #000;">{{ brl($event->event_total_value) }}</td>
         </tr>
         <tr>
             <td style="border: 1px solid #000;"><strong>06</strong></td>
             <td style="border: 1px solid #000;"><strong>Forma de Pagamento</strong></td>
-            <td style="border: 1px solid #000;"></td>
+            <td style="border: 1px solid #000;">{{$event->paymentPlan?->paymentMethod?->name ?? 'Não informado'}}</td>
         </tr>
         <tr>
             <td style="border: 1px solid #000;"><strong>07</strong></td>
@@ -414,8 +414,8 @@
 
     <div style="white-space: pre-line;">
     <ul>
-    <li><u><strong>CONTRATADA:</strong></u></li><br><br><br>
-    <li><u><strong>CONTRATANTE:</strong></u></li><br><br><br>
+    <li><u><strong>CONTRATADA:</strong></u> <span style="margin-left: 20px;">_________________________________________________</span></li><br><br>
+    <li><u><strong>CONTRATANTE:</strong></u> <span style="margin-left: 20px;">_________________________________________________</span></li><br><br>
     <li><u><strong>Testemunhas:</strong></u><br><br>
         ______________________________________<span style="margin-left: 50px;"></span>______________________________________
         <table class="summary-table" style="width: 80%; border-collapse: collapse;">
