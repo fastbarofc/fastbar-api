@@ -67,7 +67,6 @@ class PurchaseOrderController extends Controller
                 'cost_center_id' => $request->cost_center_id,
             ]);
 
-            // Sync products with pivot data
             $productsToSync = [];
             foreach ($request->products as $product) {
                 $productsToSync[$product['product_id']] = [
@@ -113,7 +112,6 @@ class PurchaseOrderController extends Controller
 
             $purchaseOrder->update($updateData);
 
-            // Update products if provided
             if ($request->has('products')) {
                 $productsToSync = [];
                 foreach ($request->products as $product) {
@@ -144,10 +142,8 @@ class PurchaseOrderController extends Controller
         try {
             DB::beginTransaction();
 
-            // Detach all products
             $purchaseOrder->products()->detach();
             
-            // Delete the purchase order
             $purchaseOrder->delete();
 
             DB::commit();

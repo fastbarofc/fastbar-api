@@ -54,6 +54,8 @@ use App\Http\Controllers\CostCenterController;
 use App\Http\Controllers\PayableController;
 use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\PurchaseRequestController;
+use App\Http\Controllers\PurchaseOrderController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -244,6 +246,10 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('companies', CompanyController::class);
     Route::resource('financial-operations', FinancialOperationController::class);
     Route::resource('cost-centers', CostCenterController::class);
+
+    // Purchase module routes
+    Route::resource('purchase-requests', PurchaseRequestController::class);
+    Route::resource('purchase-orders', PurchaseOrderController::class);
 
     Route::get('/events/{event}/duplicate', [EventController::class, 'duplicate']);
 

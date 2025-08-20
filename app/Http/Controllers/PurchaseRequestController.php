@@ -68,7 +68,6 @@ class PurchaseRequestController extends Controller
                 'status' => $request->status ?? PurchaseRequest::STATUS_NOT_CONFIRMED,
             ]);
 
-            // Sync products with pivot data
             $productsToSync = [];
             foreach ($request->products as $product) {
                 $productsToSync[$product['product_id']] = [
@@ -113,7 +112,6 @@ class PurchaseRequestController extends Controller
 
             $purchaseRequest->update($updateData);
 
-            // Update products if provided
             if ($request->has('products')) {
                 $productsToSync = [];
                 foreach ($request->products as $product) {
@@ -142,10 +140,8 @@ class PurchaseRequestController extends Controller
         try {
             DB::beginTransaction();
 
-            // Detach all products
             $purchaseRequest->products()->detach();
             
-            // Delete the purchase request
             $purchaseRequest->delete();
 
             DB::commit();

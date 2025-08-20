@@ -10,34 +10,18 @@ class PurchaseRequestResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'company_id' => $this->company_id,
-            'company' => $this->whenLoaded('company', function () {
-                return new CompanyResource($this->company);
-            }),
+            'id'           => $this->id,
+            'company_id'   => $this->company_id,
+            'company'      => CompanyResource::make($this->whenLoaded('company')),
             'requester_id' => $this->requester_id,
-            'requester' => $this->whenLoaded('requester', function () {
-                return new UserResource($this->requester);
-            }),
-            'sector_id' => $this->sector_id,
-            'sector' => $this->whenLoaded('sector', function () {
-                return new SectorResource($this->sector);
-            }),
-            'expected_date' => $this->expected_date ? $this->expected_date->format('Y-m-d') : null,
-            'status' => $this->status,
-            'products' => $this->whenLoaded('products', function () {
-                return $this->products->map(function ($product) {
-                    return [
-                        'id' => $product->id,
-                        'name' => $product->name,
-                        'factor' => $product->pivot->factor,
-                        'reference' => $product->pivot->reference,
-                        'quantity' => $product->pivot->quantity,
-                    ];
-                });
-            }),
-            'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
-            'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
+            'requester'    => UserResource::make($this->whenLoaded('requester')),
+            'sector_id'    => $this->sector_id,
+            'sector'       => SectorResource::make($this->whenLoaded('sector')),
+            'expected_date'=> optional($this->expected_date)->format('Y-m-d'),
+            'status'       => $this->status,
+            'products'     => PurchaseRequestProductResource::collection($this->whenLoaded('purchaseRequestProducts')),
+            'created_at'   => $this->created_at->format('Y-m-d H:i:s'),
+            'updated_at'   => $this->updated_at->format('Y-m-d H:i:s'),
         ];
     }
 } 
