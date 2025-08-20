@@ -1,0 +1,161 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StorePurchaseOrderRequest;
+use App\Http\Requests\UpdatePurchaseOrderRequest;
+use App\Http\Resources\PurchaseOrderResource;
+use App\Models\PurchaseOrder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class PurchaseOrderController extends Controller
+{
+    public function __construct()
+    {
+        $this->authorizeResource(PurchaseOrderController::class, 'purchaseOrder');
+    }
+
+    public function index(Request $request)
+    {
+        $perPage = $request->input('per_page', 10);
+
+        $query = PurchaseOrder::with(['company', 'financialOperation', 'costCenter', 'products']);
+
+        if ($request->input('filter_by')) {
+            $filterable = $request->input('filter_by');
+            if ($filterable && $filterable !== '[]') {
+                $filterableArray = json_decode($filterable, true);
+                foreach ($filterableArray as $filter) {
+                    $field = array_keys($filter)[0];
+                    $value = $filter[$field];
+                    $query->filterByField($field, $value);
+                }
+            }
+        }
+
+        if ($request->input('order_by')) {
+            $sortableField = $request->input('order_by');
+            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+            $query->orderByField($sortableField, $direction);
+        }
+
+        $purchaseOrders = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => PurchaseOrderResource::collection($purchaseOrders),
+            'pagination' => [
+                'page' => $purchaseOrders->currentPage(),
+                'total_pages' => $purchaseOrders->lastPage(),
+                'per_page' => $purchaseOrders->perPage(),
+                'total' => $purchaseOrders->total(),
+            ],
+            'sortable_fields' => PurchaseOrder::sortableFields(),
+            'filterable_fields' => PurchaseOrder::filterableFields()
+        ], 200);
+    }
+
+    public function store(StorePurchaseOrderRequest $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $purchaseOrder = PurchaseOrder::create([
+                'company_id' => $request->company_id,
+                'price' => $request->price,
+                'financial_operation_id' => $request->financial_operation_id,
+                'cost_center_id' => $request->cost_center_id,
+            ]);
+
+            // Sync products with pivot data
+            $productsToSync = [];
+            foreach ($request->products as $product) {
+                $productsToSync[$product['product_id']] = [
+                    'purchase_request_id' => $product['purchase_request_id'],
+                    'factor' => $product['factor'] ?? null,
+                    'reference' => $product['reference'] ?? null,
+                    'quantity' => $product['quantity'],
+                    'price' => $product['price'],
+                ];
+            }
+            $purchaseOrder->products()->sync($productsToSync);
+
+            DB::commit();
+
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'products']);
+
+            return response()->json(new PurchaseOrderResource($purchaseOrder), 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Erro ao criar ordem de compra.'], 500);
+        }
+    }
+
+    public function show(PurchaseOrder $purchaseOrder)
+    {
+        $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'products']);
+        return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
+    }
+
+    public function update(UpdatePurchaseOrderRequest $request, PurchaseOrder $purchaseOrder)
+    {
+        try {
+            DB::beginTransaction();
+
+            $updateData = array_filter([
+                'company_id' => $request->company_id,
+                'price' => $request->price,
+                'financial_operation_id' => $request->financial_operation_id,
+                'cost_center_id' => $request->cost_center_id,
+            ], function ($value) {
+                return $value !== null;
+            });
+
+            $purchaseOrder->update($updateData);
+
+            // Update products if provided
+            if ($request->has('products')) {
+                $productsToSync = [];
+                foreach ($request->products as $product) {
+                    $productsToSync[$product['product_id']] = [
+                        'purchase_request_id' => $product['purchase_request_id'],
+                        'factor' => $product['factor'] ?? null,
+                        'reference' => $product['reference'] ?? null,
+                        'quantity' => $product['quantity'],
+                        'price' => $product['price'],
+                    ];
+                }
+                $purchaseOrder->products()->sync($productsToSync);
+            }
+
+            DB::commit();
+
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'products']);
+
+            return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Erro ao atualizar ordem de compra.'], 500);
+        }
+    }
+
+    public function destroy(PurchaseOrder $purchaseOrder)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Detach all products
+            $purchaseOrder->products()->detach();
+            
+            // Delete the purchase order
+            $purchaseOrder->delete();
+
+            DB::commit();
+
+            return response()->json(null, 204);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Erro ao excluir ordem de compra.'], 500);
+        }
+    }
+} 
