@@ -14,9 +14,7 @@ class PurchaseRequestSeeder extends Seeder
      */
     public function run(): void
     {
-        // Criar 10 pedidos de compra
         PurchaseRequest::factory(10)->create()->each(function ($purchaseRequest) {
-            // Para cada pedido de compra, anexar de 1 a 5 produtos
             $products = Product::inRandomOrder()->take(rand(1, 5))->get();
             
             $productsToAttach = [];

@@ -15,9 +15,7 @@ class PurchaseOrderSeeder extends Seeder
      */
     public function run(): void
     {
-        // Criar 5 ordens de compra
         PurchaseOrder::factory(5)->create()->each(function ($purchaseOrder) {
-            // Para cada ordem de compra, anexar de 1 a 3 produtos
             $products = Product::inRandomOrder()->take(rand(1, 3))->get();
             $purchaseRequests = PurchaseRequest::inRandomOrder()->take(3)->get();
             
