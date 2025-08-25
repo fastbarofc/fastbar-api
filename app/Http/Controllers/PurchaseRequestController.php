@@ -19,7 +19,7 @@ class PurchaseRequestController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('per_page', 30);
 
         $query = PurchaseRequest::with(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
 
@@ -155,7 +155,7 @@ class PurchaseRequestController extends Controller
 
     public function products(PurchaseRequest $purchaseRequest)
     {
-        $purchaseRequest->load(['purchaseRequestProducts.product']);
+        $purchaseRequest->load(['purchaseRequestProducts.product.unit']);
         
         return response()->json([
             'data' => PurchaseRequestProductResource::collection($purchaseRequest->purchaseRequestProducts)

@@ -18,7 +18,7 @@ class PurchaseOrderController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('per_page', 30);
 
         $query = PurchaseOrder::with(['company', 'financialOperation', 'costCenter', 'products']);
 
@@ -92,7 +92,7 @@ class PurchaseOrderController extends Controller
 
     public function show(PurchaseOrder $purchaseOrder)
     {
-        $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'products']);
+        $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'purchaseOrderProducts.product']);
         return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
     }
 
