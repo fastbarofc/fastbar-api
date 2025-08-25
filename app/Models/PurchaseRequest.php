@@ -66,14 +66,6 @@ class PurchaseRequest extends Model implements AuditableInterface
         return $this->belongsTo(Sector::class);
     }
 
-    public function products()
-    {
-        return $this->belongsToMany(Product::class, 'purchase_request_product')
-            ->using(PurchaseRequestProduct::class)
-            ->withPivot(['factor', 'reference', 'quantity'])
-            ->withTimestamps();
-    }
-
     public function purchaseOrderProducts()
     {
         return $this->hasMany(PurchaseOrderProduct::class);

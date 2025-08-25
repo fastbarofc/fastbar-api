@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class UpdatePurchaseRequestRequest extends FormRequest
 {
@@ -17,7 +18,6 @@ class UpdatePurchaseRequestRequest extends FormRequest
     {
         return [
             'company_id' => 'nullable|integer|exists:companies,id',
-            'requester_id' => 'nullable|integer|exists:users,id',
             'sector_id' => 'nullable|integer|exists:sectors,id',
             'expected_date' => 'nullable|date|after_or_equal:today',
             'status' => 'nullable|string|in:not_confirmed,confirmed,authorized',
@@ -29,13 +29,27 @@ class UpdatePurchaseRequestRequest extends FormRequest
         ];
     }
 
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($validator) {
+            $status = $this->input('status');
+
+            if (in_array($status, ['confirmed', 'authorized'])) {
+                if ($this->filled('products')) {
+                    $validator->errors()->add(
+                        'products',
+                        'Não é permitido editar pedido de compra quando o status é confirmado ou autorizado.'
+                    );
+                }
+            }
+        });
+    }
+
     public function messages(): array
     {
         return [
             'company_id.integer' => 'O campo empresa deve ser um número inteiro.',
             'company_id.exists' => 'A empresa selecionada não existe.',
-            'requester_id.integer' => 'O campo solicitante deve ser um número inteiro.',
-            'requester_id.exists' => 'O solicitante selecionado não existe.',
             'sector_id.integer' => 'O campo setor deve ser um número inteiro.',
             'sector_id.exists' => 'O setor selecionado não existe.',
             'expected_date.date' => 'O campo data prevista deve ser uma data válida.',

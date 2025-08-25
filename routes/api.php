@@ -247,8 +247,9 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('financial-operations', FinancialOperationController::class);
     Route::resource('cost-centers', CostCenterController::class);
 
-    // Purchase module routes
     Route::resource('purchase-requests', PurchaseRequestController::class);
+    Route::get('purchase-requests/{purchaseRequest}/products', [PurchaseRequestController::class, 'products'])->name('purchase-requests.products');
+    
     Route::resource('purchase-orders', PurchaseOrderController::class);
 
     Route::get('/events/{event}/duplicate', [EventController::class, 'duplicate']);

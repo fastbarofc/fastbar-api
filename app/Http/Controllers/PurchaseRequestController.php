@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePurchaseRequestRequest;
 use App\Http\Requests\UpdatePurchaseRequestRequest;
 use App\Http\Resources\PurchaseRequestResource;
+use App\Http\Resources\PurchaseRequestProductResource;
 use App\Models\PurchaseRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,7 @@ class PurchaseRequestController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = PurchaseRequest::with(['company', 'requester', 'sector', 'products']);
+        $query = PurchaseRequest::with(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -62,25 +63,24 @@ class PurchaseRequestController extends Controller
 
             $purchaseRequest = PurchaseRequest::create([
                 'company_id' => $request->company_id,
-                'requester_id' => $request->requester_id,
+                'requester_id' => auth()->user()->id,
                 'sector_id' => $request->sector_id,
                 'expected_date' => $request->expected_date,
                 'status' => $request->status ?? PurchaseRequest::STATUS_NOT_CONFIRMED,
             ]);
 
-            $productsToSync = [];
             foreach ($request->products as $product) {
-                $productsToSync[$product['product_id']] = [
+                $purchaseRequest->purchaseRequestProducts()->create([
+                    'product_id' => $product['product_id'],
                     'factor' => $product['factor'] ?? null,
                     'reference' => $product['reference'] ?? null,
                     'quantity' => $product['quantity'],
-                ];
+                ]);
             }
-            $purchaseRequest->products()->sync($productsToSync);
 
             DB::commit();
 
-            $purchaseRequest->load(['company', 'requester', 'sector', 'products']);
+            $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
 
             return response()->json(new PurchaseRequestResource($purchaseRequest), 201);
         } catch (\Exception $e) {
@@ -91,7 +91,7 @@ class PurchaseRequestController extends Controller
 
     public function show(PurchaseRequest $purchaseRequest)
     {
-        $purchaseRequest->load(['company', 'requester', 'sector', 'products']);
+        $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
         return response()->json(new PurchaseRequestResource($purchaseRequest), 200);
     }
 
@@ -102,7 +102,6 @@ class PurchaseRequestController extends Controller
 
             $updateData = array_filter([
                 'company_id' => $request->company_id,
-                'requester_id' => $request->requester_id,
                 'sector_id' => $request->sector_id,
                 'expected_date' => $request->expected_date,
                 'status' => $request->status,
@@ -113,20 +112,21 @@ class PurchaseRequestController extends Controller
             $purchaseRequest->update($updateData);
 
             if ($request->has('products')) {
-                $productsToSync = [];
+                $purchaseRequest->purchaseRequestProducts()->delete();
+                
                 foreach ($request->products as $product) {
-                    $productsToSync[$product['product_id']] = [
+                    $purchaseRequest->purchaseRequestProducts()->create([
+                        'product_id' => $product['product_id'],
                         'factor' => $product['factor'] ?? null,
                         'reference' => $product['reference'] ?? null,
                         'quantity' => $product['quantity'],
-                    ];
+                    ]);
                 }
-                $purchaseRequest->products()->sync($productsToSync);
             }
 
             DB::commit();
 
-            $purchaseRequest->load(['company', 'requester', 'sector', 'products']);
+            $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
 
             return response()->json(new PurchaseRequestResource($purchaseRequest), 200);
         } catch (\Exception $e) {
@@ -140,7 +140,7 @@ class PurchaseRequestController extends Controller
         try {
             DB::beginTransaction();
 
-            $purchaseRequest->products()->detach();
+            $purchaseRequest->purchaseRequestProducts()->delete();
             
             $purchaseRequest->delete();
 
@@ -151,5 +151,14 @@ class PurchaseRequestController extends Controller
             DB::rollBack();
             return response()->json(['error' => 'Erro ao excluir pedido de compra.'], 500);
         }
+    }
+
+    public function products(PurchaseRequest $purchaseRequest)
+    {
+        $purchaseRequest->load(['purchaseRequestProducts.product']);
+        
+        return response()->json([
+            'data' => PurchaseRequestProductResource::collection($purchaseRequest->purchaseRequestProducts)
+        ], 200);
     }
 } 

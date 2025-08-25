@@ -17,7 +17,6 @@ class StorePurchaseRequestRequest extends FormRequest
     {
         return [
             'company_id' => 'required|integer|exists:companies,id',
-            'requester_id' => 'required|integer|exists:users,id',
             'sector_id' => 'required|integer|exists:sectors,id',
             'expected_date' => 'required|date|after_or_equal:today',
             'status' => 'nullable|string|in:not_confirmed,confirmed,authorized',
@@ -35,9 +34,6 @@ class StorePurchaseRequestRequest extends FormRequest
             'company_id.required' => 'O campo empresa é obrigatório.',
             'company_id.integer' => 'O campo empresa deve ser um número inteiro.',
             'company_id.exists' => 'A empresa selecionada não existe.',
-            'requester_id.required' => 'O campo solicitante é obrigatório.',
-            'requester_id.integer' => 'O campo solicitante deve ser um número inteiro.',
-            'requester_id.exists' => 'O solicitante selecionado não existe.',
             'sector_id.required' => 'O campo setor é obrigatório.',
             'sector_id.integer' => 'O campo setor deve ser um número inteiro.',
             'sector_id.exists' => 'O setor selecionado não existe.',
