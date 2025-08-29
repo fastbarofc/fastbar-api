@@ -18,6 +18,7 @@ class ProductResource extends JsonResource
             'product_group_id'=> $this->product_group_id,
             'barcode'=> $this->barcode,
             'unit_id'=> $this->unit_id,
+            'unit'=> UnitResource::make($this->whenLoaded('unit')),
             'weight'=> $this->weight,
             'manufacturer'=> $this->manufacturer,
             'value'=> $this->value,
