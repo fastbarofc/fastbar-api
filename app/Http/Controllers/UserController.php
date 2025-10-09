@@ -104,6 +104,7 @@ class UserController extends Controller
 
 public function updateProfile(UpdateProfileRequest $request)
 {
+    /** @var \App\Models\User $user */
     $user = auth()->user();
 
     if (!$user) {
@@ -124,7 +125,9 @@ public function updateProfile(UpdateProfileRequest $request)
     ], 200);
 }
 
-public function changePassword(Request $request) {
+public function changePassword(Request $request)
+{    
+    /** @var \App\Models\User $user */
     $user = auth()->user();
 
     if (!$user) {

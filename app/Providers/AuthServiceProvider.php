@@ -105,7 +105,7 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
-        $this->registerPermissions();    
+        // $this->registerPermissions(); // Desabilitado - permissões não são mais criadas automaticamente
 
         Gate::before(function ($user, $ability) {
             if ($user->isAdmin()) {
@@ -124,27 +124,27 @@ class AuthServiceProvider extends ServiceProvider
      * Register any permissions.
      */
     public function registerPermissions(): void
-{
-    $databaseName = env('DB_DATABASE');
-    if (empty($databaseName)) {
-        return;
-    }
+    {
+        $databaseName = env('DB_DATABASE');
+        if (empty($databaseName)) {
+            return;
+        }
 
-    $tables = DB::select('SHOW TABLES');
+        $tables = DB::select('SHOW TABLES');
 
-    if (empty($tables)) {
-        return;
-    }
-    $tables = array_map(function ($object) use ($databaseName) {
-        $property = 'Tables_in_' . $databaseName;
-        return $object->$property; 
-    }, $tables);
+        if (empty($tables)) {
+            return;
+        }
+        $tables = array_map(function ($object) use ($databaseName) {
+            $property = 'Tables_in_' . $databaseName;
+            return $object->$property;
+        }, $tables);
 
-    foreach ($tables as $table) {
-        $table = str_replace('_', '-', $table);
-        $this->createPermissionsForTable($table);
+        foreach ($tables as $table) {
+            $table = str_replace('_', '-', $table);
+            $this->createPermissionsForTable($table);
+        }
     }
-}
 
     private function createPermissionsForTable($table)
     {

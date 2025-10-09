@@ -6,6 +6,7 @@ use App\Http\Requests\StoreRoleRequest;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use App\Http\Resources\RoleResource;
+use App\Http\Resources\PermissionResource;
 use App\Http\Requests\SyncPermissionUserRequest;
 use App\Http\Requests\UpdateRoleRequest;
 use Illuminate\Support\Facades\Log;
@@ -78,6 +79,14 @@ class RoleController extends Controller
     {
         $role->delete();
         return response([], 204);
+    }
+
+    public function permissions(Role $role)
+    {
+        $permissions = $role->permissions;
+        return response()->json([
+            'data' => PermissionResource::collection($permissions)
+        ], 200);
     }
 
     public function syncPermissions(SyncPermissionUserRequest $request, Role $role)

@@ -88,6 +88,7 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::resource('collaborators', CollaboratorController::class);
 
     Route::resource('roles', RoleController::class);
+    Route::get('roles/{role}/permissions', [RoleController::class, 'permissions'])->name('roles.permissions');
     Route::post('roles/{role}/sync-permissions', [RoleController::class, 'syncPermissions'])->name('roles.sync-permissions');
 
     Route::resource('permissions', PermissionController::class)->only(['index', 'show']);
