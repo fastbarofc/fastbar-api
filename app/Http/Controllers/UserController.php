@@ -16,7 +16,8 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(UserController::class, 'user');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(UserController::class, 'user');
     }
 
     public function index(Request $request)

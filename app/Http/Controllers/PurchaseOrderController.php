@@ -13,7 +13,8 @@ class PurchaseOrderController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(PurchaseOrderController::class, 'purchaseOrder');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(PurchaseOrderController::class, 'purchaseOrder');
     }
 
     public function index(Request $request)

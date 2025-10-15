@@ -12,7 +12,8 @@ class CompetingCompanyController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(CompetingCompanyController::class, 'competing_company');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(CompetingCompanyController::class, 'competing_company');
     }
 
     public function index(Request $request)

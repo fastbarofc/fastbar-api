@@ -80,7 +80,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('clients/{client}/events', [ClientController::class, 'clientEvents'])->name('clients.events');
 });
 
-Route::group(['middleware' => ['auth:api', 'admin']], function () {
+Route::group(['middleware' => ['auth:api']], function () {
     Route::resource('users', UserController::class)->except(['store']);
     Route::post('users/{user}/sync-roles', [UserController::class, 'syncRoles'])->name('users.sync-roles');
     Route::post('users/{user}/sync-permissions', [UserController::class, 'syncPermissions'])->name('users.sync-permissions');

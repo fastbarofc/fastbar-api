@@ -22,7 +22,8 @@ class ContractController extends Controller
 
     public function __construct()
     {
-        $this->authorizeResource(ContractController::class, 'contract');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(ContractController::class, 'contract');
     }
 
     public function index(Request $request)

@@ -12,7 +12,8 @@ class MaterialController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(MaterialController::class, 'material');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(MaterialController::class, 'material');
     }
 
     public function index(Request $request)

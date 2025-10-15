@@ -12,7 +12,8 @@ class LostReasonController extends Controller
 {
      public function __construct()
     {
-        $this->authorizeResource(LostReasonController::class, 'lost_reason');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(LostReasonController::class, 'lost_reason');
     }
 
     public function index(Request $request)

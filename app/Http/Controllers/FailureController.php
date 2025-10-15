@@ -12,7 +12,8 @@ class FailureController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(Failure::class, 'failure');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(Failure::class, 'failure');
     }
 
     public function index(Request $request)

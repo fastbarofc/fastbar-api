@@ -12,7 +12,8 @@ class SectorOfficeController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(SectorOfficeController::class, 'sectorOffice');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(SectorOfficeController::class, 'sectorOffice');
     }
     
     public function index(Request $request)

@@ -31,13 +31,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
 
-        $permissions = [];
-         if ($user->isAdmin()) {
-            $permissions = Permission::pluck('name')->toArray();
-        } else {
-            $permissions = ['read-customer', 'create-customer', 'update-customer', 'delete-customer'];
-        }
-        
+        $permissions = $user->getPermissionsViaRoles()->pluck('slug')->toArray() ?? [];
 
         $response = [
             'id' => $user->id,
@@ -46,6 +40,8 @@ class AuthController extends Controller
             'created_at' => $user->created_at,
             'updated_at' => $user->updated_at,
             'token' => $token,
+            'role' => $user->roles->pluck('name')->first(),
+            'is_employee' => $user->is_employee,
             'permissions' => $permissions
         ];
 

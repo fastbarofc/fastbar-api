@@ -14,7 +14,8 @@ class KitController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(KitController::class, 'kit');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(KitController::class, 'kit');
     }
 
     public function index(Request $request)

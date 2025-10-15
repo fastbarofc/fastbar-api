@@ -12,7 +12,8 @@ class ProductGroupController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(ProductGroupController::class, 'productGroup');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(ProductGroupController::class, 'productGroup');
     }
 
     public function index(Request $request)

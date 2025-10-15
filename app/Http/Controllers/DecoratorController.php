@@ -12,7 +12,8 @@ class DecoratorController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(DecoratorController::class, 'decorator');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(DecoratorController::class, 'decorator');
     }
 
     public function index(Request $request)

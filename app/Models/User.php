@@ -22,7 +22,8 @@ class User extends Authenticatable implements AuditableInterface
         'name',
         'email',
         'password',
-        'active'
+        'active',
+        'is_employee'
     ];
 
     protected static $sortableFields = [

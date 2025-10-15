@@ -12,7 +12,8 @@ class ParthenonBankAccountController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(ParthenonBankAccount::class, 'parthernon_bank_account');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(ParthenonBankAccount::class, 'parthernon_bank_account');
     }
 
     public function index(Request $request)

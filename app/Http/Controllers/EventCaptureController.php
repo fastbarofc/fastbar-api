@@ -12,7 +12,8 @@ class EventCaptureController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(EventCaptureController::class, 'eventCapture');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(EventCaptureController::class, 'eventCapture');
     }
 
     public function index(Request $request)
