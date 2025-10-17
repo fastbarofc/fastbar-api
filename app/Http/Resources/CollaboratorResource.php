@@ -29,6 +29,7 @@ class CollaboratorResource extends JsonResource
             'has_login'      => $this->has_login,
             'active'         => $this->active,
             'user_id'        => $this->user_id,
+            'role_id'        => $this->user?->roles?->first()?->id,
             'file_id'=> $this->file_id,
             'file_path'      => $this->file ? asset('storage/' . $this->file->path) : null,
             'qualifications' => Qualification::all()->map(function ($qualification) {

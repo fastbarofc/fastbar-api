@@ -48,6 +48,7 @@ class UpdateCollaboratorRequest extends FormRequest
             'has_login'  => 'nullable|boolean',
             'active'     => 'nullable|boolean',
             'user_id'    => 'nullable|exists:users,id',
+            'role_id'    => 'nullable|exists:roles,id',
             'pix_keys'   => 'nullable|array',
             'bank_details' => 'nullable|array',
             'qualifications' => 'nullable|array',
@@ -93,8 +94,7 @@ class UpdateCollaboratorRequest extends FormRequest
             'sector_office_id.exists'        => 'O campo cargo deve ser um cargo válido.',
             'has_login.boolean'       => 'O campo possui login deve ser um booleano.',
             'active.boolean'         => 'O campo ativo deve ser um booleano.',
-            'password.string'         => 'O campo senha deve ser uma string.',
-            'password.min'            => 'O campo senha deve ter no mínimo 8 caracteres.'
+            'role_id.exists'         => 'O perfil selecionado não é válido.',
         ];
     }
 

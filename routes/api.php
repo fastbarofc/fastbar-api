@@ -85,6 +85,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('users/{user}/sync-roles', [UserController::class, 'syncRoles'])->name('users.sync-roles');
     Route::post('users/{user}/sync-permissions', [UserController::class, 'syncPermissions'])->name('users.sync-permissions');
 
+    Route::put('collaborators/{collaborator}/change-password', [CollaboratorController::class, 'changePassword'])->name('collaborators.change-password');
     Route::resource('collaborators', CollaboratorController::class);
 
     Route::resource('roles', RoleController::class);

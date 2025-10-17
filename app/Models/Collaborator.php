@@ -30,8 +30,7 @@ class Collaborator extends Model implements AuditableInterface
         'active',
         'user_id',
         'file_id',
-
-
+        'has_login',
     ];
 
     protected $casts = [

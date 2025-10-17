@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCollaboratorRequest;
 use App\Http\Requests\UpdateCollaboratorRequest;
+use App\Http\Requests\ChangeCollaboratorPasswordRequest;
 use App\Http\Resources\CollaboratorResource;
 use Spatie\Permission\Models\Role;
 use App\Models\Collaborator;
@@ -140,19 +141,19 @@ class CollaboratorController extends Controller
                     $deletedUser->update(['email' => $collaborator->email . '.deleted_' . time()]);
                 }
     
-
                 $randomPassword = Str::random(8);
                 $userData = [
                     'name'     => $collaborator->name,
                     'email'    => $collaborator->email,
                     'password' => bcrypt($randomPassword),
+                    'is_employee' => true,
                 ];
                 $user = User::create($userData);
     
                 $collaborator->update(['user_id' => $user->id]);
     
-                $roleAdmin = Role::where('name', 'Admin')->first();
-                $user->assignRole($roleAdmin);
+                $role = Role::findOrFail($data['role_id']);
+                $user->assignRole($role);
     
                 $user->notify(new UserPassword($randomPassword));
             }
@@ -293,8 +294,8 @@ class CollaboratorController extends Controller
     
                     $collaborator->update(['user_id' => $user->id]);
     
-                    $roleAdmin = Role::where('name', 'Admin')->first();
-                    $user->assignRole($roleAdmin);
+                    $role = Role::findOrFail($data['role_id']);
+                    $user->assignRole($role);
     
                     $user->notify(new UserPassword($randomPassword));
                 } else {
@@ -315,6 +316,12 @@ class CollaboratorController extends Controller
                         }
     
                         $user->update(['email' => $collaborator->email]);
+                    }
+
+                    if (!empty($data['role_id'])) {
+                        $user->syncRoles([]);
+                        $role = Role::findOrFail($data['role_id']);
+                        $user->assignRole($role);
                     }
                 }
             }
@@ -454,5 +461,26 @@ class CollaboratorController extends Controller
         }
 
         return response()->json(['message' => 'Qualificações atualizadas com sucesso!']);
+    }
+
+    public function changePassword(ChangeCollaboratorPasswordRequest $request, Collaborator $collaborator)
+    {
+        try {
+            if (!$collaborator->user) {
+                return response()->json([
+                    'message' => 'Este colaborador não possui um usuário associado.',
+                ], 422);
+            }
+
+            $collaborator->user->update([
+                'password' => bcrypt($request->password),
+            ]);
+
+            return response()->json([
+                'message' => 'Senha alterada com sucesso!',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

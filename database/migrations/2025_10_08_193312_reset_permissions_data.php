@@ -27,6 +27,8 @@ return new class extends Migration
         
             // Colaboradores
             ['slug' => 'colaboradores-visualizar', 'name' => 'Visualizar Colaboradores'],
+            ['slug' => 'colaboradores-trocar-senha', 'name' => 'Trocar senha de Colaborador'],
+            ['slug' => 'colaboradores-alterar-grupo-usuario', 'name' => 'Editar grupo de usuário de Colaboradores'],
             ['slug' => 'colaboradores-criar', 'name' => 'Criar Colaboradores'],
             ['slug' => 'colaboradores-editar', 'name' => 'Editar Colaboradores'],
             ['slug' => 'colaboradores-excluir', 'name' => 'Excluir Colaboradores'],

@@ -19,14 +19,16 @@ class UserSeeder extends Seeder
         $userAdmin = User::factory()
             ->state([
                 'name' => 'Admin',
-                'email' => 'admin@gmail.com.br'
+                'email' => 'admin@gmail.com.br',
+                'is_employee' => true,
             ])
             ->create();
 
         $collaborator = Collaborator::factory()
             ->state([
                 'name' => 'Admin',
-                'user_id' => $userAdmin->id
+                'user_id' => $userAdmin->id,
+                'has_login' => true,
             ])
             ->create();
             
