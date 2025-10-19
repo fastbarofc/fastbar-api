@@ -18,6 +18,8 @@ class SectorOfficeController extends Controller
     
     public function index(Request $request)
     {
+        $perPage = $request->input('per_page', 10);
+
         $query = SectorOffice::query();
 
         if ($request->input('filter_by')) {
@@ -32,16 +34,28 @@ class SectorOfficeController extends Controller
             }
         }
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
         }
 
-        $sectorOffices = $query->get();
+        if ($perPage != 0) {
+            $sectorOffices = $query->paginate($perPage);
+            $pagination = [
+                'page' => $sectorOffices->currentPage(),
+                'total_pages' => $sectorOffices->lastPage(),
+                'per_page' => $sectorOffices->perPage(),
+                'total' => $sectorOffices->total(),
+            ];
+        } else {
+            $sectorOffices = $query->get();
+            $pagination = null;
+        }
 
         return response()->json([
             'data' => SectorOfficeResource::collection($sectorOffices),
+            'pagination' => $pagination,
             'sortable_fields' => SectorOffice::sortableFields(),
             'filterable_fields' => SectorOffice::filterableFields()
         ], 200);

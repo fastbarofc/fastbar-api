@@ -15,6 +15,8 @@ class SectorOffice extends Model implements AuditableInterface
 {
     use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
 
+    protected $table = 'sector_offices';
+
     protected $fillable = [
         'sector_id', 
         'name',
@@ -29,6 +31,10 @@ class SectorOffice extends Model implements AuditableInterface
     protected static $filterableFields = [
         'name',
         'sector_id'
+    ];
+
+    protected static $searchableFields = [
+        'name'
     ];
 
     public function sluggable(): array

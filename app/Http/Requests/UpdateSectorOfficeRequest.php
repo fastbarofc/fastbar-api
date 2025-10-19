@@ -16,7 +16,7 @@ class UpdateSectorOfficeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'nullable|string|max:255|unique:offices,name,' . $this->route('office')->id,
+            'name' => 'nullable|string|max:255|unique:sector_offices,name,' . $this->route('sector_office')->id,
         ];
     }
 

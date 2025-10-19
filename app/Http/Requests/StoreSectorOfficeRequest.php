@@ -17,7 +17,7 @@ class StoreSectorOfficeRequest extends FormRequest
     {
         return [
             'sector_id' => 'required|exists:sectors,id',
-            'name'      => 'required|string|max:255|unique:offices',
+            'name'      => 'required|string|max:255|unique:sector_offices',
         ];
     }
 
