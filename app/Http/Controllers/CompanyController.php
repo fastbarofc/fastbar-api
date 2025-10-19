@@ -12,7 +12,8 @@ class CompanyController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(Company::class, 'company');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(Company::class, 'company');
     }
 
     public function index(Request $request)

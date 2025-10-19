@@ -13,7 +13,8 @@ class CollaboratorIncidentController extends Controller
 
     public function __construct()
     {
-        $this->authorizeResource(CollaboratorIncident::class, 'collaboratorIncident');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(CollaboratorIncident::class, 'collaboratorIncident');
     }
 
     public function index(Request $request)

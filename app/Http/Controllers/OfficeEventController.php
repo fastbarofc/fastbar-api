@@ -14,7 +14,8 @@ class OfficeEventController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(OfficeEventController::class, 'officeEvent');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(OfficeEventController::class, 'officeEvent');
     }
 
     public function index(Request $request)

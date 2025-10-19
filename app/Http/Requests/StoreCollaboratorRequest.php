@@ -58,6 +58,7 @@ class StoreCollaboratorRequest extends FormRequest
                 'email',
                 Rule::unique('users')->whereNull('deleted_at'),
             ];
+            $data['role_id'] = 'required|exists:roles,id';
         }
         if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
             $this->validateAddress($this->request->all()['address']);
@@ -97,6 +98,8 @@ class StoreCollaboratorRequest extends FormRequest
             'has_login.boolean'      => 'O campo possui login deve ser um booleano.',
             'active.required'        => 'O campo ativo é obrigatório.',
             'active.boolean'         => 'O campo ativo deve ser um booleano.',
+            'role_id.required'       => 'O campo perfil é obrigatório quando o colaborador possui login.',
+            'role_id.exists'         => 'O perfil selecionado não é válido.',
         ];
     }
 

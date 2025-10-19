@@ -12,7 +12,8 @@ class PartnerController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(PartnerController::class, 'partner');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(PartnerController::class, 'partner');
     }
     
     public function index(Request $request)

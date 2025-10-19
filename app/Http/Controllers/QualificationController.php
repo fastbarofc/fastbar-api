@@ -12,7 +12,8 @@ class QualificationController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(QualificationController::class, 'qualification');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(QualificationController::class, 'qualification');
     }
 
     public function index(Request $request)

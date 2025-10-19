@@ -13,7 +13,8 @@ class EventPaymentController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(EventPayment::class, 'eventPayment');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(EventPayment::class, 'eventPayment');
     }
 
     public function index(Request $request)

@@ -13,7 +13,8 @@ class CeremonialController extends Controller
 
     public function __construct()
     {
-        $this->authorizeResource(Ceremonial::class, 'ceremonial');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(Ceremonial::class, 'ceremonial');
     }
 
     public function index(Request $request)

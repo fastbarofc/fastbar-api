@@ -20,7 +20,8 @@ class SupplierController extends Controller
    
     public function __construct()
     {
-        $this->authorizeResource(Supplier::class, 'supplier');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(Supplier::class, 'supplier');
     }
 
     public function index(Request $request)

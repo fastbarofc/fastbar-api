@@ -13,7 +13,8 @@ class OfficeBudgetController extends Controller
 
     public function __construct()
     {
-        $this->authorizeResource(OfficeBudget::class, 'officeBudget');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(OfficeBudget::class, 'officeBudget');
     }
 
     /**

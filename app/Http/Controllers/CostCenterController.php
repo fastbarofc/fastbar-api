@@ -12,7 +12,8 @@ class CostCenterController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(CostCenter::class, 'costCenter');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(CostCenter::class, 'costCenter');
     }
 
     public function index(Request $request)

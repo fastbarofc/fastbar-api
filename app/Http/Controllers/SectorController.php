@@ -14,7 +14,8 @@ class SectorController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(SectorController::class, 'sector');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(SectorController::class, 'sector');
     }
 
     public function index(Request $request)

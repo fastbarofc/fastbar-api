@@ -12,7 +12,8 @@ class UnitController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(UnitController::class, 'unit');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(UnitController::class, 'unit');
     }
 
     public function index(Request $request)

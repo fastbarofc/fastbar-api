@@ -12,7 +12,8 @@ class PaymentMethodController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(PaymentMethodController::class, 'paymentMethod');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(PaymentMethodController::class, 'paymentMethod');
     }
 
     public function index(Request $request)

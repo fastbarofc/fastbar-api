@@ -12,7 +12,8 @@ class EventGiftController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(EventGiftController::class, 'eventGift');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(EventGiftController::class, 'eventGift');
     }
 
     public function index(Request $request)

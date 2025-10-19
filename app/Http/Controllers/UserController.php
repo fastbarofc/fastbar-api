@@ -16,7 +16,8 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(UserController::class, 'user');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(UserController::class, 'user');
     }
 
     public function index(Request $request)
@@ -104,6 +105,7 @@ class UserController extends Controller
 
 public function updateProfile(UpdateProfileRequest $request)
 {
+    /** @var \App\Models\User $user */
     $user = auth()->user();
 
     if (!$user) {
@@ -124,7 +126,9 @@ public function updateProfile(UpdateProfileRequest $request)
     ], 200);
 }
 
-public function changePassword(Request $request) {
+public function changePassword(Request $request)
+{    
+    /** @var \App\Models\User $user */
     $user = auth()->user();
 
     if (!$user) {

@@ -24,9 +24,9 @@ class SyncPermissionUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'permissions.required' => 'O campo permissions é obrigatório',
-            'permissions.array'    => 'O campo permissions deve ser um array',
-            'permissions.exists'   => 'O campo permissions deve conter ids válidos'
+            'permissions.required' => 'O campo permissões é obrigatório',
+            'permissions.array'    => 'O campo permissões deve ser um array',
+            'permissions.exists'   => 'O campo permissões deve conter ids válidos'
         ];
     }
 }

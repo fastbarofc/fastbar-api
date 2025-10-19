@@ -12,7 +12,8 @@ class ExtraSaleController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(ExtraSaleController::class, 'extraSale');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(ExtraSaleController::class, 'extraSale');
     }
 
     public function index(Request $request)

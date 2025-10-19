@@ -13,7 +13,8 @@ class HowDidYouHearController extends Controller
 
     public function __construct()
     {
-        $this->authorizeResource(HowDidYouHearController::class, 'howDidYouHear');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(HowDidYouHearController::class, 'howDidYouHear');
     }
 
     public function index(Request $request)

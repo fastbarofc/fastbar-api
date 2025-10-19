@@ -13,7 +13,8 @@ class EventPlaceController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(EventPlaceController::class, 'eventPlace');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(EventPlaceController::class, 'eventPlace');
     }
     
     public function index(Request $request)

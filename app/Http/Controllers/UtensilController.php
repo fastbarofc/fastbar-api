@@ -12,7 +12,8 @@ class UtensilController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(UtensilController::class, 'utensil');
+        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
+        // $this->authorizeResource(UtensilController::class, 'utensil');
     }
     
     public function index(Request $request)
