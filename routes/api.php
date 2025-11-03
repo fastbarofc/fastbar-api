@@ -56,6 +56,8 @@ use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\StockMovementController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -248,6 +250,11 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::resource('companies', CompanyController::class);
     Route::resource('financial-operations', FinancialOperationController::class);
     Route::resource('cost-centers', CostCenterController::class);
+
+    Route::resource('departments', DepartmentController::class);
+
+    Route::get('stock', [StockMovementController::class, 'getStock'])->name('stock.index');
+    Route::resource('stock-movements', StockMovementController::class)->only(['index', 'show']);
 
     Route::resource('purchase-requests', PurchaseRequestController::class);
     Route::get('purchase-requests/{purchaseRequest}/products', [PurchaseRequestController::class, 'products'])->name('purchase-requests.products');

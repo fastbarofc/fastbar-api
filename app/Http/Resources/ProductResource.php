@@ -16,6 +16,7 @@ class ProductResource extends JsonResource
             'file_id'=> $this->file_id,
             'file_path'      => $this->file ? asset('storage/' . $this->file->path) : null,
             'product_group_id'=> $this->product_group_id,
+            'product_group'=> ProductGroupResource::make($this->whenLoaded('productGroup')),
             'barcode'=> $this->barcode,
             'unit_id'=> $this->unit_id,
             'unit'=> UnitResource::make($this->whenLoaded('unit')),

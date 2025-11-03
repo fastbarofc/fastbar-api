@@ -44,11 +44,9 @@ class ProductController extends Controller
             }
         }
 
-        if($request->input('order_by')) {
-            $sorteableField = $request->input('order_by');
-            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderByField($sorteableField, $direction);
-        }
+        $sorteableField = $request->input('order_by', 'name');
+        $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
+        $query->orderByField($sorteableField, $direction);
 
         $products = $query->paginate($perPage);
 
