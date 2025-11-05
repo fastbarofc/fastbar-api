@@ -289,6 +289,7 @@ class CollaboratorController extends Controller
                         'name'     => $collaborator->name,
                         'email'    => $collaborator->email,
                         'password' => bcrypt($randomPassword),
+                        'is_employee' => true,
                     ];
                     $user = User::create($userData);
     
