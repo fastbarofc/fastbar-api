@@ -23,4 +23,25 @@ class CostCenter extends Model
     protected $casts = [
         'account' => 'string',
     ];
+
+    protected static $sortableFields = [
+        'id',
+        'code',
+        'description',
+        'account',
+        'created_at',
+    ];
+
+    protected static $filterableFields = [
+        'id',
+        'code',
+        'description',
+        'account',
+    ];
+
+    protected static $searchableFields = [
+        'code',
+        'description',
+        'account',
+    ];
 }

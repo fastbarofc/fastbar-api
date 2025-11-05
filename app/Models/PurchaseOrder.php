@@ -49,7 +49,7 @@ class PurchaseOrder extends Model implements AuditableInterface
     ];
 
     protected static $searchableFields = [
-        'price',
+        'id',
         'status',
     ];
 

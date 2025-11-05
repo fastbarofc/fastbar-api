@@ -24,4 +24,27 @@ class Company extends Model
     protected $casts = [
         'type' => 'string',
     ];
+
+    protected static $sortableFields = [
+        'id',
+        'internal_name',
+        'legal_name',
+        'trade_name',
+        'type',
+        'created_at',
+    ];
+
+    protected static $filterableFields = [
+        'id',
+        'internal_name',
+        'legal_name',
+        'trade_name',
+        'type',
+    ];
+
+    protected static $searchableFields = [
+        'internal_name',
+        'legal_name',
+        'trade_name',
+    ];
 }
