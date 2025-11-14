@@ -181,6 +181,18 @@ class EventController extends Controller
     {
         $data = $request->all();
 
+        $consumptionReport = $data['post_event_consumption_report'] ?? null;
+        $consumptionReportFileName = $data['post_event_consumption_report_file_name'] ?? null;
+        $consumptionReportRemove = (bool) ($data['post_event_consumption_report_remove'] ?? false);
+
+        unset(
+            $data['post_event_consumption_report'],
+            $data['post_event_consumption_report_file_name'],
+            $data['post_event_consumption_report_file_id'],
+            $data['post_event_consumption_report_file_url'],
+            $data['post_event_consumption_report_remove']
+        );
+
         $data['collaborator_id'] = auth()->user()->collaborator->id;
         $data['contract_body'] = ContractTemplate::first()?->content ?? null;
         $data['is_medicine'] = $data['is_medicine'] ?? false;
@@ -267,6 +279,8 @@ class EventController extends Controller
 
         EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
 
+        $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
+
         return response()->json(new EventResource($event), 201);
     }
 
@@ -289,6 +303,7 @@ class EventController extends Controller
             'paymentPlan.paymentMethod',
             'receivables',
             'receivables.paymentMethod',
+            'postEventConsumptionReportFile',
         ]);
 
         return response()->json(new EventResource($event), 200);
@@ -297,6 +312,18 @@ class EventController extends Controller
     public function update(UpdateEventRequest $request, Event $event)
     {
         $data = $request->all();
+
+        $consumptionReport = $data['post_event_consumption_report'] ?? null;
+        $consumptionReportFileName = $data['post_event_consumption_report_file_name'] ?? null;
+        $consumptionReportRemove = (bool) ($data['post_event_consumption_report_remove'] ?? false);
+
+        unset(
+            $data['post_event_consumption_report'],
+            $data['post_event_consumption_report_file_name'],
+            $data['post_event_consumption_report_file_id'],
+            $data['post_event_consumption_report_file_url'],
+            $data['post_event_consumption_report_remove']
+        );
 
         if (isset($data['event_type_id']) && $data['event_type_id'] !== 7) {
             $data['is_medicine'] = false;
@@ -465,6 +492,9 @@ class EventController extends Controller
                 'collaborator_id' => auth()->user()->collaborator->id
             ]);
         }
+
+        $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
+
         return response()->json(new EventResource($event), 200);
     }
 
@@ -1112,6 +1142,31 @@ class EventController extends Controller
     return response()->json([
         'conflicting_events' => $conflictingEvents,
     ]);
+}
+
+private function handleConsumptionReport(Event $event, ?string $fileData, ?string $originalName, bool $removeRequested = false): void
+{
+    $shouldSave = false;
+
+    if ($fileData) {
+        if ($event->postEventConsumptionReportFile) {
+            FileService::delete($event->postEventConsumptionReportFile);
+            $event->post_event_consumption_report_file_id = null;
+        }
+
+        $file = FileService::saveBase64File('events/consumption-reports', $fileData, $originalName);
+        $event->post_event_consumption_report_file_id = $file->id;
+        $shouldSave = true;
+    } elseif ($removeRequested && $event->postEventConsumptionReportFile) {
+        FileService::delete($event->postEventConsumptionReportFile);
+        $event->post_event_consumption_report_file_id = null;
+        $shouldSave = true;
+    }
+
+    if ($shouldSave) {
+        $event->save();
+        $event->load('postEventConsumptionReportFile');
+    }
 }
 
 private function generateReceivables(Event $event, PaymentPlan $plan)

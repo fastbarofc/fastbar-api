@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Models\File;
 
     class Event extends Model implements AuditableInterface
     {
@@ -37,6 +38,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
             'duration',
             'duration_after',      
             'contract_body',
+            'post_event_consumption_report_file_id',
             'parthenon_courtesies',
             'partner_courtesies',
             'unit_insurance',
@@ -253,6 +255,11 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
     public function contractTemplates()
     {
         return $this->hasMany(ContractTemplate::class);
+    }
+
+    public function postEventConsumptionReportFile()
+    {
+        return $this->belongsTo(File::class, 'post_event_consumption_report_file_id');
     }
 
     public function paymentPlan() {

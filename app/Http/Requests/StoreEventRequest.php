@@ -42,6 +42,10 @@ class StoreEventRequest extends FormRequest
             'min_guests' => 'nullable|integer|min:1',
             'is_medicine' => 'nullable|boolean',
             'old_system_id' => 'nullable',
+            'post_event_consumption_report' => 'nullable|string',
+            'post_event_consumption_report_file_id' => 'nullable|exists:files,id',
+            'post_event_consumption_report_file_name' => 'nullable|string|max:255',
+            'post_event_consumption_report_remove' => 'nullable|boolean',
 
 
         ];
