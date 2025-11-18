@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Throwable;
 
 class ImportProducts extends Command
@@ -51,7 +50,8 @@ class ImportProducts extends Command
             $count = 0;
 
             foreach ($rows as $row) {
-                if (Product::where('code', $row['code'])->exists()) {
+                $code = trim($row['code'] ?? '');
+                if (empty($code) || Product::where('barcode', $code)->exists()) {
                     continue;
                 }
 
@@ -67,16 +67,13 @@ class ImportProducts extends Command
                 $value = is_numeric($row['value'] ?? null) ? (float)$row['value'] : 0;
 
                 Product::create([
-                    'id' => Str::uuid(),
-                    'code' => trim($row['code']),
+                    'code' => trim($row['code'] ?? ''),
                     'name' => trim($row['name']),
                     'unit_id' => (int)$unitId,
                     'value' => $value,
                     'marketable' => false,
                     'display_checklist' => false,
                     'own_production' => false,
-                    'created_at' => now(),
-                    'updated_at' => now(),
                 ]);
 
                 $count++;
