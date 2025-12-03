@@ -96,12 +96,10 @@ class UpdateEventRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
-            // Validação financeira
             if ($this->requiresFinancialValidation()) {
                 $this->validateFinancialFields($validator);
             }
 
-            // Validação de materiais
             $this->validateMaterials($validator);
         });
     }
