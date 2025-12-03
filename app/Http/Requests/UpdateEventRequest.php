@@ -5,8 +5,10 @@ namespace App\Http\Requests;
 use App\Models\Event;
 use App\Models\EventStatus;
 use App\Models\EventType;
+use App\Models\Material;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Validator;
 
 class UpdateEventRequest extends FormRequest
@@ -94,27 +96,106 @@ class UpdateEventRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
-            if (!$this->requiresFinancialValidation()) {
-                return;
+            // Validação financeira
+            if ($this->requiresFinancialValidation()) {
+                $this->validateFinancialFields($validator);
             }
 
-            $paymentPlan = $this->input('payment_plan', []);
-
-            $requiredFields = [
-                'total_amount' => 'O valor total é obrigatório para eventos no status Contrato.',
-                'num_installments' => 'O número de parcelas é obrigatório para eventos no status Contrato.',
-                'installment_amount' => 'O valor das parcelas é obrigatório para eventos no status Contrato.',
-                'payment_method_id' => 'O método de pagamento é obrigatório para eventos no status Contrato.',
-                'due_day' => 'O dia de vencimento é obrigatório para eventos no status Contrato.',
-            ];
-
-            foreach ($requiredFields as $field => $message) {
-                $value = Arr::get($paymentPlan, $field);
-                if ($this->isEmptyFinancialValue($value)) {
-                    $validator->errors()->add("payment_plan.{$field}", $message);
-                }
-            }
+            // Validação de materiais
+            $this->validateMaterials($validator);
         });
+    }
+
+    private function validateFinancialFields(Validator $validator): void
+    {
+        $paymentPlan = $this->input('payment_plan', []);
+
+        $requiredFields = [
+            'total_amount' => 'O valor total é obrigatório para eventos no status Contrato.',
+            'num_installments' => 'O número de parcelas é obrigatório para eventos no status Contrato.',
+            'installment_amount' => 'O valor das parcelas é obrigatório para eventos no status Contrato.',
+            'payment_method_id' => 'O método de pagamento é obrigatório para eventos no status Contrato.',
+            'due_day' => 'O dia de vencimento é obrigatório para eventos no status Contrato.',
+        ];
+
+        foreach ($requiredFields as $field => $message) {
+            $value = Arr::get($paymentPlan, $field);
+            if ($this->isEmptyFinancialValue($value)) {
+                $validator->errors()->add("payment_plan.{$field}", $message);
+            }
+        }
+    }
+
+    private function validateMaterials(Validator $validator): void
+    {
+        $materials = $this->input('materials', []);
+
+        if (empty($materials)) {
+            return;
+        }
+
+        $event = $this->route('event');
+        if (!$event instanceof Event) {
+            return;
+        }
+
+        foreach ($materials as $materialData) {
+            if (empty($materialData['id']) || empty($materialData['quantity']) || $materialData['quantity'] <= 0) {
+                continue;
+            }
+
+            $material = Material::find($materialData['id']);
+            if (!$material) {
+                continue;
+            }
+
+            $requestedQuantity = (int) $materialData['quantity'];
+            $totalQuantity = $material->quantity;
+
+            $usedQuantity = $this->getUsedQuantityForMaterial($material->id, $event->id);
+            $totalUsedAfterUpdate = $usedQuantity + $requestedQuantity;
+
+            if ($totalUsedAfterUpdate > $totalQuantity) {
+                $maxAllowedQuantity = $totalQuantity - $usedQuantity;
+
+                $validator->errors()->add(
+                    'materials',
+                    "O material '{$material->description}' possui apenas {$maxAllowedQuantity} unidade(s) disponível(is), mas você está tentando usar {$requestedQuantity}."
+                );
+            }
+        }
+    }
+
+    private function getUsedQuantityForMaterial(int $materialId, ?int $excludeEventId = null): int
+    {
+        $inactiveStatusNames = ['Concluído', 'Descartado', 'Cancelado', 'Fechou com o concorrente'];
+        $inactiveStatusIds = EventStatus::whereIn('name', $inactiveStatusNames)->pluck('id')->toArray();
+
+        $query = DB::table('event_material')
+            ->join('events', 'event_material.event_id', '=', 'events.id')
+            ->where('event_material.material_id', $materialId)
+            ->whereNotIn('events.event_status_id', $inactiveStatusIds)
+            ->whereNull('events.deleted_at')
+            ->whereNull('event_material.deleted_at');
+
+        if ($excludeEventId) {
+            $query->where('events.id', '!=', $excludeEventId);
+        }
+
+        $usedQuantity = $query->sum('event_material.quantity');
+
+        return (int) $usedQuantity;
+    }
+
+    private function getCurrentEventMaterialQuantity(int $eventId, int $materialId): int
+    {
+        $quantity = DB::table('event_material')
+            ->where('event_id', $eventId)
+            ->where('material_id', $materialId)
+            ->whereNull('deleted_at')
+            ->value('quantity');
+
+        return (int) ($quantity ?? 0);
     }
 
     private function requiresFinancialValidation(): bool

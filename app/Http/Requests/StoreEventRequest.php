@@ -2,8 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Models\EventStatus;
+use App\Models\Material;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Validator as ValidationValidator;
 
 class StoreEventRequest extends FormRequest
 {
@@ -98,5 +102,64 @@ class StoreEventRequest extends FormRequest
             'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
             'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
         ];
+    }
+
+    public function withValidator(ValidationValidator $validator): void
+    {
+        $validator->after(function (ValidationValidator $validator) {
+            $this->validateMaterials($validator);
+        });
+    }
+
+    private function validateMaterials(ValidationValidator $validator): void
+    {
+        $materials = $this->input('materials', []);
+
+        if (empty($materials)) {
+            return;
+        }
+
+        foreach ($materials as $materialData) {
+            if (empty($materialData['id']) || empty($materialData['quantity']) || $materialData['quantity'] <= 0) {
+                continue;
+            }
+
+            $material = Material::find($materialData['id']);
+            if (!$material) {
+                continue;
+            }
+
+            $requestedQuantity = (int) $materialData['quantity'];
+            $totalQuantity = $material->quantity;
+
+            $usedQuantity = $this->getUsedQuantityForMaterial($material->id);
+
+            $totalUsedAfterCreate = $usedQuantity + $requestedQuantity;
+
+            if ($totalUsedAfterCreate > $totalQuantity) {
+                $maxAllowedQuantity = $totalQuantity - $usedQuantity;
+
+                $validator->errors()->add(
+                    'materials',
+                    "O material '{$material->description}' possui apenas {$maxAllowedQuantity} unidade(s) disponível(is), mas você está tentando usar {$requestedQuantity}."
+                );
+            }
+        }
+    }
+
+    private function getUsedQuantityForMaterial(int $materialId): int
+    {
+        $inactiveStatusNames = ['Concluído', 'Descartado', 'Cancelado', 'Fechou com o concorrente'];
+        $inactiveStatusIds = EventStatus::whereIn('name', $inactiveStatusNames)->pluck('id')->toArray();
+
+        $usedQuantity = DB::table('event_material')
+            ->join('events', 'event_material.event_id', '=', 'events.id')
+            ->where('event_material.material_id', $materialId)
+            ->whereNotIn('events.event_status_id', $inactiveStatusIds)
+            ->whereNull('events.deleted_at')
+            ->whereNull('event_material.deleted_at')
+            ->sum('event_material.quantity');
+
+        return (int) $usedQuantity;
     }
 }

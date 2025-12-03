@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreMaterialRequest;
 use App\Http\Requests\UpdateMaterialRequest;
 use App\Http\Resources\MaterialResource;
+use App\Models\EventStatus;
 use App\Models\Material;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MaterialController extends Controller
 {
@@ -39,7 +41,7 @@ class MaterialController extends Controller
             }
         }
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -79,6 +81,26 @@ class MaterialController extends Controller
 
     public function destroy(Material $material)
     {
+        $inactiveStatusNames = ['Concluído', 'Descartado', 'Cancelado', 'Fechou com o concorrente'];
+        $inactiveStatusIds = EventStatus::whereIn('name', $inactiveStatusNames)->pluck('id')->toArray();
+
+        $activeEvents = DB::table('event_material')
+            ->join('events', 'event_material.event_id', '=', 'events.id')
+            ->where('event_material.material_id', $material->id)
+            ->whereNotIn('events.event_status_id', $inactiveStatusIds)
+            ->whereNull('events.deleted_at')
+            ->whereNull('event_material.deleted_at')
+            ->where('event_material.quantity', '>', 0)
+            ->pluck('events.id')
+            ->toArray();
+
+        if (!empty($activeEvents)) {
+            return response()->json([
+                'message' => 'Não é possível excluir o material enquanto houver eventos ativos utilizando-o.',
+                'event_ids' => $activeEvents
+            ], 422);
+        }
+
         $material->delete();
         return response()->json([], 204);
     }
