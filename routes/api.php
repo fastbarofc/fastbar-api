@@ -141,6 +141,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('events/{event}/materials', [EventController::class, 'materials'])->name('events.materials');
     Route::get('events/{event}/extra-sales', [EventController::class, 'extraSales'])->name('events.extra-sales');
     Route::put('events/{event}/extra-sales', [EventController::class, 'updateExtraSales'])->name('events.update-extra-sales');
+    Route::put('events/{event}/installments', [EventController::class, 'updateInstallments'])->name('events.update-installments');
     Route::get('events/{event}/event-kits', [EventController::class, 'eventKits'])->name('events.event-kits');
     Route::get('events/{event}/contracts', [EventController::class, 'resetContract'])->name('events.reset-contract');
     Route::get('events/{event}/office-events', [EventController::class, 'officeEvents'])->name('events.office-events');

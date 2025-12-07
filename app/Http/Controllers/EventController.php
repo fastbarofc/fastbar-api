@@ -17,7 +17,9 @@ use App\Models\ExtraSale;
 use App\Models\EventKit;
 use App\Models\Contract;
 use App\Models\EventType;
+use App\Models\Installment;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use App\Http\Resources\EventCalendarResource;
 use App\Models\Ceremonial;
 use App\Models\Client;
@@ -301,6 +303,7 @@ class EventController extends Controller
             'eventNotes', 
             'paymentPlan',
             'paymentPlan.paymentMethod',
+            'paymentPlan.installments',
             'receivables',
             'receivables.paymentMethod',
             'postEventConsumptionReportFile',
@@ -452,7 +455,8 @@ class EventController extends Controller
         if (!empty(array_filter($data['payment_plan'], fn($value) => $value !== null && $value !== '' && $value !== 0))) {
 
             $paymentPlanData = $data['payment_plan'];
-            unset($paymentPlanData['id']);
+            $installmentsData = $paymentPlanData['installments'] ?? null;
+            unset($paymentPlanData['installments'], $paymentPlanData['id']);
             
             if ($event->paymentPlan) {
                 $event->paymentPlan()->update($paymentPlanData);
@@ -461,13 +465,17 @@ class EventController extends Controller
             else {
                 $plan = $event->paymentPlan()->create($paymentPlanData);
             }
-    
-            $event->receivables()
-                ->where('receivableable_type', get_class($event))
-                ->where('receivableable_id', $event->id)
-                ->delete();
-    
-            $this->generateReceivables($event, $plan);
+
+            if ($installmentsData && is_array($installmentsData) && !empty($installmentsData)) {
+                $this->updateInstallments($event, $plan, $installmentsData);
+            } else {
+                $event->receivables()
+                    ->where('receivableable_type', get_class($event))
+                    ->where('receivableable_id', $event->id)
+                    ->delete();
+        
+                $this->generateReceivables($event, $plan);
+            }
         }
         
         
@@ -1187,6 +1195,9 @@ private function generateReceivables(Event $event, PaymentPlan $plan)
         ]);
     }
     
+    // Delete existing installments before creating new ones
+    $plan->installments()->delete();
+    
     for ($i = 1; $i <= $plan->num_installments; $i++) {
         $dueMonth = $currentMonth + $i;
         $dueYear = $currentYear;
@@ -1197,6 +1208,13 @@ private function generateReceivables(Event $event, PaymentPlan $plan)
         }
         
         $dueDate = \Carbon\Carbon::create($dueYear, $dueMonth, $plan->due_day);
+        
+        // Create installment record
+        $plan->installments()->create([
+            'installment_number' => $i,
+            'amount' => $plan->installment_amount,
+            'due_date' => $dueDate->format('Y-m-d'),
+        ]);
         
         $event->receivables()->create([
             'description' => 'Parcela ' . $i . '/' . $plan->num_installments . ' - ' . $event->name,
@@ -1430,9 +1448,57 @@ private function duplicateSingleKit(EventKit $originalKit, $newEventId, $newPare
     return $newKit;
 }
 
+private function updateInstallments(Event $event, $plan, array $installmentsData): void
+{
+    if (!$plan || !$event->paymentPlan) {
+        return;
+    }
 
+    $installmentIds = collect($installmentsData)->pluck('id')->filter()->toArray();
+    
+    $existingInstallments = $plan->installments()
+        ->whereIn('id', $installmentIds)
+        ->orderBy('installment_number')
+        ->get()
+        ->keyBy('id');
 
+    $previousDueDate = null;
+    
+    foreach ($installmentsData as $installmentData) {
+        if (!isset($installmentData['id']) || !isset($installmentData['due_date'])) {
+            continue;
+        }
 
+        $installment = $existingInstallments->get($installmentData['id']);
+        
+        if (!$installment || $installment->payment_plan_id != $plan->id) {
+            continue;
+        }
 
+        $newDueDate = \Carbon\Carbon::parse($installmentData['due_date']);
+        
+        if ($previousDueDate && $newDueDate->lt($previousDueDate)) {
+            $validator = \Illuminate\Support\Facades\Validator::make([], []);
+            $validator->errors()->add('installments', 'A data de vencimento da parcela ' . $installment->installment_number . ' não pode ser anterior à parcela anterior.');
+            throw new ValidationException($validator);
+        }
+
+        $installment->due_date = $newDueDate->format('Y-m-d');
+        $installment->save();
+
+        $receivable = $event->receivables()
+            ->where('receivableable_type', get_class($event))
+            ->where('receivableable_id', $event->id)
+            ->where('description', 'like', '%Parcela ' . $installment->installment_number . '/' . $plan->num_installments . '%')
+            ->first();
+
+        if ($receivable) {
+            $receivable->due_date = $newDueDate->format('Y-m-d');
+            $receivable->save();
+        }
+
+        $previousDueDate = $newDueDate;
+    }
+}
 
 }
