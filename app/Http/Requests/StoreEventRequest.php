@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\EventStatus;
 use App\Models\Material;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -149,13 +148,16 @@ class StoreEventRequest extends FormRequest
 
     private function getUsedQuantityForMaterial(int $materialId): int
     {
-        $inactiveStatusNames = ['Concluído', 'Descartado', 'Cancelado', 'Fechou com o concorrente'];
-        $inactiveStatusIds = EventStatus::whereIn('name', $inactiveStatusNames)->pluck('id')->toArray();
+        $eventDate = $this->input('date');
+
+        if (!$eventDate) {
+            return 0;
+        }
 
         $usedQuantity = DB::table('event_material')
             ->join('events', 'event_material.event_id', '=', 'events.id')
             ->where('event_material.material_id', $materialId)
-            ->whereNotIn('events.event_status_id', $inactiveStatusIds)
+            ->where('events.date', $eventDate)
             ->whereNull('events.deleted_at')
             ->whereNull('event_material.deleted_at')
             ->sum('event_material.quantity');
