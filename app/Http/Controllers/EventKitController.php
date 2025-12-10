@@ -125,7 +125,6 @@ class EventKitController extends Controller
         $eventKitId = $this->checkKitParent(null, $kit, $data['event_id']);
         $ordination = $this->getProductOrdination($eventKitId);
 
-        // Buscar o produto no kit original para copiar os valores do pivot
         $kitProduct = $kit->products()->where('product_id', $data['id'])->first();
 
         $pivotData = [
@@ -213,7 +212,6 @@ class EventKitController extends Controller
                     $product = Product::find($child['data']['id']);
                     $ordination = $this->getProductOrdination($eventKit->id);
 
-                    // Buscar o produto no kit original para copiar os valores do pivot
                     $kitProduct = $kit->products()->where('product_id', $child['data']['id'])->first();
 
                     $pivotData = [
@@ -230,7 +228,6 @@ class EventKitController extends Controller
                 $data['event_id'] = $eventKit->event_id;
                 $data['event_kit_id'] = $eventKit->id;
 
-                // Buscar o kit original para copiar os valores
                 $originalKit = Kit::find($child['data']['id']);
                 if ($originalKit) {
                     $data['themed_table'] = $originalKit->themed_table ?? false;

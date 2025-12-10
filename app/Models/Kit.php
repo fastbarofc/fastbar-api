@@ -112,14 +112,12 @@ class Kit extends Model implements AuditableInterface
                 'type' => $item['type']
             ];
 
-            // Adiciona campos específicos de produtos
             if ($item['type'] == 'product') {
                 $data['optional'] = (bool)($item['optional'] ?? false);
                 $data['checklist'] = (bool)($item['checklist'] ?? false);
                 $data['observation'] = $item['observation'] ?? null;
             }
 
-            // Adiciona campos específicos de kits
             if ($item['type'] == 'kit') {
                 $data['themed_table'] = (bool)($item['themed_table'] ?? false);
                 $data['optional'] = (bool)($item['optional'] ?? false);
