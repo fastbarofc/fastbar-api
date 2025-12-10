@@ -19,6 +19,10 @@ class UpdateKitRequest extends FormRequest
         return [
             'kit_id'          => 'nullable|numeric',
             'name'         => ['nullable', 'string', 'max:255', Rule::unique('kits', 'name')->ignore($this->route('kit')->id)->whereNull('deleted_at')->where('kit_id', $this->kit_id)],
+            'themed_table' => 'nullable|boolean',
+            'optional'     => 'nullable|boolean',
+            'checklist'    => 'nullable|boolean',
+            'observation'  => 'nullable|string|max:255',
         ];
     }
 

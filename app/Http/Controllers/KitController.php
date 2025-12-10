@@ -249,10 +249,10 @@ class KitController extends Controller
     public function shiftProductsDownward(Product $movingProduct, Product $destinationProduct, Kit $parentKit)
     {
         $productsToShift = $parentKit->products()
-        ->whereBetween('ordination', [$movingProduct->pivot->ordination + 1, $destinationProduct->pivot->ordination])
-        ->get()
-        ->sortBy('ordination')
-        ->values();
+            ->whereBetween('ordination', [$movingProduct->pivot->ordination + 1, $destinationProduct->pivot->ordination])
+            ->get()
+            ->sortBy('ordination')
+            ->values();
 
         foreach ($productsToShift as $product) {
             $product->pivot->ordination = $product->pivot->ordination - 1;
@@ -345,5 +345,26 @@ class KitController extends Controller
     {
         $children = $kit->children;
         return response()->json($children, 200);
+    }
+
+    public function updateProductKit(Request $request)
+    {
+        $data = $request->all();
+        unset($data['name']);
+        unset($data['type']);
+        $product = Product::find($data['id']);
+
+        if (!$product) {
+            return response()->json(['message' => 'Produto não encontrado'], 404);
+        }
+
+        if (!isset($data['kit_id'])) {
+            return response()->json(['message' => 'Kit ID é obrigatório'], 400);
+        }
+
+        unset($data['id']);
+        unset($data['themed_table']);
+        $product->kits()->updateExistingPivot($data['kit_id'], $data);
+        return response()->json(['message' => 'Alterado com sucesso.'], 200);
     }
 }
