@@ -79,8 +79,8 @@ class Kit extends Model implements AuditableInterface
                 $item['kit_id'] = $this->id;
                 $item['type'] = 'product';
                 $item['ordination'] = $item->pivot->ordination;
-                $item['optional'] = $item->pivot->optional ?? false;
-                $item['checklist'] = $item->pivot->checklist ?? false;
+                $item['optional'] = (bool)($item->pivot->optional ?? false);
+                $item['checklist'] = (bool)($item->pivot->checklist ?? false);
                 $item['observation'] = $item->pivot->observation;
                 return $item;
             });
@@ -114,16 +114,16 @@ class Kit extends Model implements AuditableInterface
 
             // Adiciona campos específicos de produtos
             if ($item['type'] == 'product') {
-                $data['optional'] = $item['optional'] ?? false;
-                $data['checklist'] = $item['checklist'] ?? false;
+                $data['optional'] = (bool)($item['optional'] ?? false);
+                $data['checklist'] = (bool)($item['checklist'] ?? false);
                 $data['observation'] = $item['observation'] ?? null;
             }
 
             // Adiciona campos específicos de kits
             if ($item['type'] == 'kit') {
-                $data['themed_table'] = $item['themed_table'] ?? false;
-                $data['optional'] = $item['optional'] ?? false;
-                $data['checklist'] = $item['checklist'] ?? false;
+                $data['themed_table'] = (bool)($item['themed_table'] ?? false);
+                $data['optional'] = (bool)($item['optional'] ?? false);
+                $data['checklist'] = (bool)($item['checklist'] ?? false);
                 $data['observation'] = $item['observation'] ?? null;
             }
 
