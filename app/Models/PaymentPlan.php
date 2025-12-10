@@ -27,4 +27,8 @@ class PaymentPlan extends Model
     public function paymentMethod() {
         return $this->belongsTo(PaymentMethod::class);
     }
+
+    public function installments() {
+        return $this->hasMany(Installment::class);
+    }
 }
