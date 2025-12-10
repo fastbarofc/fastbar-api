@@ -103,10 +103,6 @@ class EventKitController extends Controller
 
         $data = $request->all();
 
-        $data['themed_table'] = false;
-        $data['optional'] = false;
-        $data['checklist'] = false;
-
         if (empty($data['type']) || $data['type'] != 'product') {
             $eventKitId = $this->checkKitParent(null, $kit, $data['event_id']);
             $eventKit = EventKit::find($eventKitId);
@@ -128,7 +124,17 @@ class EventKitController extends Controller
         $kit = Kit::find($data['kit_id']);
         $eventKitId = $this->checkKitParent(null, $kit, $data['event_id']);
         $ordination = $this->getProductOrdination($eventKitId);
-        $product->eventKits()->attach($eventKitId, ['ordination' => $ordination]);
+
+        $kitProduct = $kit->products()->where('product_id', $data['id'])->first();
+
+        $pivotData = [
+            'ordination' => $ordination,
+            'optional' => $kitProduct ? ($kitProduct->pivot->optional ?? false) : false,
+            'checklist' => $kitProduct ? ($kitProduct->pivot->checklist ?? false) : false,
+            'observation' => $kitProduct ? ($kitProduct->pivot->observation ?? null) : null,
+        ];
+
+        $product->eventKits()->attach($eventKitId, $pivotData);
         $eventKit = EventKit::find($eventKitId);
         while (!empty($eventKit->event_kit_id)) {
             $eventKit = EventKit::find($eventKit->event_kit_id);
@@ -186,10 +192,11 @@ class EventKitController extends Controller
                 'name' => $kit->name,
                 'event_id' => $eventId,
                 'event_kit_id' => $parentId,
-                'ordination' => EventKit::where('event_kit_id', $parentId)->where('event_id', $kit->event_id)->count() + 1,
-                'themed_table' => false,
-                'optional' => false,
-                'checklist' => false
+                'ordination' => EventKit::where('event_kit_id', $parentId)->where('event_id', $eventId)->count() + 1,
+                'themed_table' => $kit->themed_table ?? false,
+                'optional' => $kit->optional ?? false,
+                'checklist' => $kit->checklist ?? false,
+                'observation' => $kit->observation ?? null,
             ]);
         }
 
@@ -204,19 +211,40 @@ class EventKitController extends Controller
                 if ($child['data']['type'] == 'product') {
                     $product = Product::find($child['data']['id']);
                     $ordination = $this->getProductOrdination($eventKit->id);
-                    $product->eventKits()->attach($eventKit->id, ['ordination' => $ordination]);
+
+                    $kitProduct = $kit->products()->where('product_id', $child['data']['id'])->first();
+
+                    $pivotData = [
+                        'ordination' => $ordination,
+                        'optional' => $kitProduct ? ($kitProduct->pivot->optional ?? false) : ($child['data']['optional'] ?? false),
+                        'checklist' => $kitProduct ? ($kitProduct->pivot->checklist ?? false) : ($child['data']['checklist'] ?? false),
+                        'observation' => $kitProduct ? ($kitProduct->pivot->observation ?? null) : ($child['data']['observation'] ?? null),
+                    ];
+
+                    $product->eventKits()->attach($eventKit->id, $pivotData);
                     continue;
                 }
                 $data = $child['data'];
                 $data['event_id'] = $eventKit->event_id;
                 $data['event_kit_id'] = $eventKit->id;
-                $data['themed_table'] = false;
-                $data['checklist'] = false;
-                $data['optional'] = false;
+
+                $originalKit = Kit::find($child['data']['id']);
+                if ($originalKit) {
+                    $data['themed_table'] = $originalKit->themed_table ?? false;
+                    $data['optional'] = $originalKit->optional ?? false;
+                    $data['checklist'] = $originalKit->checklist ?? false;
+                    $data['observation'] = $originalKit->observation ?? null;
+                } else {
+                    $data['themed_table'] = $child['data']['themed_table'] ?? false;
+                    $data['optional'] = $child['data']['optional'] ?? false;
+                    $data['checklist'] = $child['data']['checklist'] ?? false;
+                    $data['observation'] = $child['data']['observation'] ?? null;
+                }
+
                 $data['ordination'] = EventKit::where('event_kit_id', $data['event_kit_id'])->where('event_id', $data['event_id'])->get()->count() + 1;
                 $newEventKit = EventKit::create($data);
                 $newKit = Kit::find($child['data']['id']);
-                if ($kit && $kit->has_children) {
+                if ($newKit && $newKit->has_children) {
                     $this->transformKitToEventKit($newKit, $newEventKit);
                 }
             }
