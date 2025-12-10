@@ -1466,7 +1466,6 @@ class EventController extends Controller
 
         $installmentIds = collect($existingInstallmentsData)->pluck('id')->filter()->toArray();
 
-        // Buscar apenas installments não deletados para comparação
         $allExistingInstallments = Installment::where('payment_plan_id', $plan->id)
             ->orderBy('installment_number')
             ->get()
@@ -1542,7 +1541,6 @@ class EventController extends Controller
             $previousDueDate = $newDueDate;
         }
 
-        // Buscar o maior installment_number considerando apenas parcelas não deletadas
         $maxInstallmentNumber = Installment::where('payment_plan_id', $plan->id)
             ->max('installment_number') ?? 0;
 
@@ -1566,24 +1564,20 @@ class EventController extends Controller
                 $installmentNumber = $maxInstallmentNumber;
             }
 
-            // Verificar se já existe uma parcela (incluindo soft-deleted) com o mesmo installment_number
             $existingInstallment = Installment::withTrashed()
                 ->where('payment_plan_id', $plan->id)
                 ->where('installment_number', $installmentNumber)
                 ->first();
 
             if ($existingInstallment) {
-                // Se a parcela existe e está soft-deleted, restaurar e atualizar
                 if ($existingInstallment->trashed()) {
                     $existingInstallment->restore();
                 }
 
-                // Atualizar a parcela existente em vez de criar uma nova
                 $existingInstallment->due_date = $newDueDate->format('Y-m-d');
                 $existingInstallment->amount = $plan->installment_amount;
                 $existingInstallment->save();
 
-                // Atualizar ou criar o receivable correspondente
                 $receivable = $event->receivables()
                     ->where('receivableable_type', get_class($event))
                     ->where('receivableable_id', $event->id)
@@ -1606,7 +1600,6 @@ class EventController extends Controller
                     ]);
                 }
             } else {
-                // Criar nova parcela apenas se não existir
                 $newInstallment = Installment::create([
                     'payment_plan_id' => $plan->id,
                     'installment_number' => $installmentNumber,
