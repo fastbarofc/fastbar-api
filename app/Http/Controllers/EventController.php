@@ -41,6 +41,8 @@ use App\Models\Partner;
 use App\Models\PaymentPlan;
 
 use App\Services\FileService;
+use App\Services\EventHistoryService;
+use App\Http\Resources\EventHistoryResource;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -51,8 +53,9 @@ use Illuminate\Support\Facades\Validator;
 
 class EventController extends Controller
 {
-    public function __construct()
+    public function __construct(protected EventHistoryService $historyService)
     {
+        $this->historyService = $historyService;
         // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
         // $this->authorizeResource(EventController::class, 'event');
     }
@@ -284,6 +287,11 @@ class EventController extends Controller
 
         $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
 
+        // Registra a criação no histórico
+        if (!$request->is_draft) {
+            $this->historyService->logEventCreation($event);
+        }
+
         return response()->json(new EventResource($event), 201);
     }
 
@@ -315,7 +323,20 @@ class EventController extends Controller
 
     public function update(UpdateEventRequest $request, Event $event)
     {
+        // Captura apenas os atributos do model, sem relacionamentos carregados
+        $originalData = $event->getAttributes();
+
         $data = $request->all();
+
+        // Captura dados originais dos relacionamentos para histórico
+        $originalRelationships = [
+            'event_batches' => $event->eventBatches->toArray(),
+            'event_notes' => $event->eventNotes->toArray(),
+            'payment_plan' => $event->paymentPlan ? $event->paymentPlan->toArray() : null,
+            'extra_sales' => $event->extraSales->toArray(),
+            'event_kits' => $event->eventKits->toArray(),
+        ];
+        $originalDataWithRelationships = array_merge($originalData, $originalRelationships);
 
         $consumptionReport = $data['post_event_consumption_report'] ?? null;
         $consumptionReportFileName = $data['post_event_consumption_report_file_name'] ?? null;
@@ -503,6 +524,12 @@ class EventController extends Controller
         }
 
         $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
+
+        // Atualiza o model com os dados do banco antes de comparar
+        $event->refresh();
+
+        // Registra as alterações no histórico (passa os dados originais com relacionamentos e os dados do request)
+        $this->historyService->logEventUpdate($event, $originalDataWithRelationships, $data);
 
         return response()->json(new EventResource($event), 200);
     }
@@ -1620,5 +1647,24 @@ class EventController extends Controller
 
             $previousDueDate = $newDueDate;
         }
+    }
+
+    /**
+     * Retorna o histórico de alterações de um evento
+     */
+    public function history(Request $request, Event $event)
+    {
+        $perPage = $request->input('per_page', 15);
+        $histories = $this->historyService->getEventHistory($event->id, $perPage);
+
+        return response()->json([
+            'data' => EventHistoryResource::collection($histories),
+            'pagination' => [
+                'page' => $histories->currentPage(),
+                'total_pages' => $histories->lastPage(),
+                'per_page' => $histories->perPage(),
+                'total' => $histories->total(),
+            ],
+        ], 200);
     }
 }

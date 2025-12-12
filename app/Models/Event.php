@@ -14,50 +14,50 @@ use OwenIt\Auditing\Auditable;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use App\Models\File;
 
-    class Event extends Model implements AuditableInterface
-    {
-        use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
+class Event extends Model implements AuditableInterface
+{
+    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
-        protected $fillable = [
-            'name',
-            'old_system_id',
-            'client_id',
-            'event_id', 
-            'invoice_client_id',
-            'collaborator_id',
-            'event_type_id',
-            'event_place_id',
-            'event_status_id',
-            'partner_id',
-            'decorator_id',
-            'event_capture_id',
-            'ceremonial_id',
-            'lease',
-            'date',
-            'time',
-            'duration',
-            'duration_after',      
-            'contract_body',
-            'post_event_consumption_report_file_id',
-            'parthenon_courtesies',
-            'partner_courtesies',
-            'unit_insurance',
-            'competing_company_id',
-            'lost_reason_id',
-            'is_draft',
-            'total_value',
-            'buffet_value',
-            'sub_total',
-            'event_guests',
-            'present_guests',
-            'guest_unit_value',
-            'excess_unit_value',
-            'discount',
-            'unit_discount',
-            'min_guests',
-            'is_medicine',
-            'closed_at',
-        ];
+    protected $fillable = [
+        'name',
+        'old_system_id',
+        'client_id',
+        'event_id',
+        'invoice_client_id',
+        'collaborator_id',
+        'event_type_id',
+        'event_place_id',
+        'event_status_id',
+        'partner_id',
+        'decorator_id',
+        'event_capture_id',
+        'ceremonial_id',
+        'lease',
+        'date',
+        'time',
+        'duration',
+        'duration_after',
+        'contract_body',
+        'post_event_consumption_report_file_id',
+        'parthenon_courtesies',
+        'partner_courtesies',
+        'unit_insurance',
+        'competing_company_id',
+        'lost_reason_id',
+        'is_draft',
+        'total_value',
+        'buffet_value',
+        'sub_total',
+        'event_guests',
+        'present_guests',
+        'guest_unit_value',
+        'excess_unit_value',
+        'discount',
+        'unit_discount',
+        'min_guests',
+        'is_medicine',
+        'closed_at',
+    ];
 
     protected $casts = [
         'date' => 'date:Y-m-d',
@@ -96,20 +96,20 @@ use App\Models\File;
     ];
 
     public function scopeOrderByRelation(Builder $query, $relation, $field, $direction = 'asc')
-{
-    $relatedModel = $this->{$relation}()->getRelated();
-    
-    $relatedTable = $relatedModel->getTable();
+    {
+        $relatedModel = $this->{$relation}()->getRelated();
 
-    $foreignKey = $this->{$relation}()->getForeignKeyName();
+        $relatedTable = $relatedModel->getTable();
+
+        $foreignKey = $this->{$relation}()->getForeignKeyName();
 
 
-    $query->select("{$this->getTable()}.*")
-          ->leftJoin("{$relatedTable}", "{$relatedTable}.id", '=', "{$this->getTable()}.{$foreignKey}")
-          ->orderBy("{$relatedTable}.{$field}", $direction);
+        $query->select("{$this->getTable()}.*")
+            ->leftJoin("{$relatedTable}", "{$relatedTable}.id", '=', "{$this->getTable()}.{$foreignKey}")
+            ->orderBy("{$relatedTable}.{$field}", $direction);
 
-    return $query->groupBy("{$this->getTable()}.id");
-}
+        return $query->groupBy("{$this->getTable()}.id");
+    }
 
 
 
@@ -119,42 +119,42 @@ use App\Models\File;
         static::addGlobalScope(new EventScope());
     }
 
-    public function client() 
+    public function client()
     {
         return $this->belongsTo(Client::class);
     }
 
-    public function invoiceClient() 
+    public function invoiceClient()
     {
         return $this->belongsTo(Client::class, 'invoice_client_id');
     }
 
-    public function partner() 
+    public function partner()
     {
         return $this->belongsTo(Partner::class);
     }
 
-    public function decorator() 
+    public function decorator()
     {
         return $this->belongsTo(Decorator::class);
     }
 
-    public function ceremonial() 
+    public function ceremonial()
     {
         return $this->belongsTo(Ceremonial::class);
     }
 
-    public function collaborator() 
+    public function collaborator()
     {
         return $this->belongsTo(Collaborator::class);
     }
 
-    public function eventType() 
+    public function eventType()
     {
         return $this->belongsTo(EventType::class);
     }
 
-    public function eventPlace() 
+    public function eventPlace()
     {
         return $this->belongsTo(EventPlace::class);
     }
@@ -164,7 +164,8 @@ use App\Models\File;
         return $this->belongsToMany(OfficeEvent::class, 'event_office_event')->withPivot(['quantity']);
     }
 
-    public function eventGifts() {
+    public function eventGifts()
+    {
         return $this->hasMany(EventGift::class);
     }
 
@@ -173,15 +174,18 @@ use App\Models\File;
         return $this->belongsToMany(Material::class, 'event_material')->withPivot(['quantity', 'selected']);
     }
 
-    public function extraSales() {
+    public function extraSales()
+    {
         return $this->hasMany(ExtraSale::class);
     }
 
-    public function eventKits() {
+    public function eventKits()
+    {
         return $this->hasMany(EventKit::class);
     }
 
-    public function contracts() {
+    public function contracts()
+    {
         return $this->hasMany(Contract::class);
     }
 
@@ -230,23 +234,26 @@ use App\Models\File;
         return $this->hasMany(EventStatusHistory::class);
     }
 
-    public function breakItems() 
+    public function histories()
+    {
+        return $this->hasMany(EventHistory::class);
+    }
+
+    public function breakItems()
     {
         return $this->belongsToMany(BreakItem::class, 'event_break_item')->withPivot('quantity', 'value', 'unit_id');
-
     }
 
     public function failures()
     {
         return $this->belongsToMany(Failure::class, 'event_failure')->withPivot('deduct');
-
     }
 
-    public function tastingEvents() 
+    public function tastingEvents()
     {
         return $this->belongsToMany(Event::class, 'event_event_tasting', 'event_id', 'related_event_id');
     }
-    
+
     public function parentEvents()
     {
         return $this->belongsToMany(Event::class, 'event_event_tasting', 'related_event_id', 'event_id');
@@ -262,7 +269,8 @@ use App\Models\File;
         return $this->belongsTo(File::class, 'post_event_consumption_report_file_id');
     }
 
-    public function paymentPlan() {
+    public function paymentPlan()
+    {
         return $this->hasOne(PaymentPlan::class);
     }
 
