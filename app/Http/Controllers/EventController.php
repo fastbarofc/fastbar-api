@@ -453,29 +453,36 @@ class EventController extends Controller
         }
 
 
-        if (!empty(array_filter($data['payment_plan'], fn($value) => $value !== null && $value !== '' && $value !== 0))) {
+        if (!empty($data['payment_plan'])) {
 
             $paymentPlanData = $data['payment_plan'];
-            $installmentsData = $paymentPlanData['installments'] ?? null;
-            unset($paymentPlanData['installments'], $paymentPlanData['id']);
 
-            if ($event->paymentPlan) {
-                $plan = $event->paymentPlan;
-                $plan->update($paymentPlanData);
-                $plan->refresh();
+            if ($this->isPaymentPlanEffectivelyEmpty($paymentPlanData)) {
+                unset($data['payment_plan']);
             } else {
-                $plan = $event->paymentPlan()->create($paymentPlanData);
-            }
+                $installmentsData = $paymentPlanData['installments'] ?? null;
+                unset($paymentPlanData['installments'], $paymentPlanData['id']);
 
-            if ($installmentsData && is_array($installmentsData) && !empty($installmentsData)) {
-                $this->updateInstallments($event, $plan, $installmentsData);
-            } else {
-                $event->receivables()
-                    ->where('receivableable_type', get_class($event))
-                    ->where('receivableable_id', $event->id)
-                    ->delete();
+                $this->ensureCompletePaymentPlan($paymentPlanData);
 
-                $this->generateReceivables($event, $plan);
+                if ($event->paymentPlan) {
+                    $plan = $event->paymentPlan;
+                    $plan->update($paymentPlanData);
+                    $plan->refresh();
+                } else {
+                    $plan = $event->paymentPlan()->create($paymentPlanData);
+                }
+
+                if ($installmentsData && is_array($installmentsData) && !empty($installmentsData)) {
+                    $this->updateInstallments($event, $plan, $installmentsData);
+                } else {
+                    $event->receivables()
+                        ->where('receivableable_type', get_class($event))
+                        ->where('receivableable_id', $event->id)
+                        ->delete();
+
+                    $this->generateReceivables($event, $plan);
+                }
             }
         }
 
@@ -1461,6 +1468,9 @@ class EventController extends Controller
             return;
         }
 
+        $this->validateInstallmentTotals($plan, $installmentsData);
+        $this->updatePlanInstallmentAmount($plan, $installmentsData);
+
         $existingInstallmentsData = array_filter($installmentsData, fn($data) => isset($data['id']) && $data['id'] !== null);
         $newInstallmentsData = array_filter($installmentsData, fn($data) => !isset($data['id']) || $data['id'] === null);
 
@@ -1523,7 +1533,8 @@ class EventController extends Controller
             }
 
             $installment->due_date = $newDueDate->format('Y-m-d');
-            $installment->amount = $plan->installment_amount;
+            $amount = $this->resolveInstallmentAmount($plan, $installmentData);
+            $installment->amount = $amount;
             $installment->save();
 
             $receivable = $event->receivables()
@@ -1534,7 +1545,7 @@ class EventController extends Controller
 
             if ($receivable) {
                 $receivable->due_date = $newDueDate->format('Y-m-d');
-                $receivable->amount = $plan->installment_amount;
+                $receivable->amount = $amount;
                 $receivable->save();
             }
 
@@ -1575,7 +1586,8 @@ class EventController extends Controller
                 }
 
                 $existingInstallment->due_date = $newDueDate->format('Y-m-d');
-                $existingInstallment->amount = $plan->installment_amount;
+                $amount = $this->resolveInstallmentAmount($plan, $installmentData);
+                $existingInstallment->amount = $amount;
                 $existingInstallment->save();
 
                 $receivable = $event->receivables()
@@ -1586,12 +1598,12 @@ class EventController extends Controller
 
                 if ($receivable) {
                     $receivable->due_date = $newDueDate->format('Y-m-d');
-                    $receivable->amount = $plan->installment_amount;
+                    $receivable->amount = $amount;
                     $receivable->save();
                 } else {
                     $event->receivables()->create([
                         'description' => 'Parcela ' . $installmentNumber . '/' . $plan->num_installments . ' - ' . $event->name,
-                        'amount' => $plan->installment_amount,
+                        'amount' => $amount,
                         'due_date' => $newDueDate->format('Y-m-d'),
                         'status' => 'pending',
                         'payment_method_id' => $plan->payment_method_id,
@@ -1603,13 +1615,13 @@ class EventController extends Controller
                 $newInstallment = Installment::create([
                     'payment_plan_id' => $plan->id,
                     'installment_number' => $installmentNumber,
-                    'amount' => $plan->installment_amount,
+                    'amount' => $this->resolveInstallmentAmount($plan, $installmentData),
                     'due_date' => $newDueDate->format('Y-m-d'),
                 ]);
 
                 $event->receivables()->create([
                     'description' => 'Parcela ' . $installmentNumber . '/' . $plan->num_installments . ' - ' . $event->name,
-                    'amount' => $plan->installment_amount,
+                    'amount' => $this->resolveInstallmentAmount($plan, $installmentData),
                     'due_date' => $newDueDate->format('Y-m-d'),
                     'status' => 'pending',
                     'payment_method_id' => $plan->payment_method_id,
@@ -1620,5 +1632,89 @@ class EventController extends Controller
 
             $previousDueDate = $newDueDate;
         }
+    }
+
+    private function resolveInstallmentAmount(PaymentPlan $plan, array $installmentData): float
+    {
+        $amount = $installmentData['amount'] ?? $plan->installment_amount ?? 0;
+        return round((float) $amount, 2);
+    }
+
+    private function validateInstallmentTotals(PaymentPlan $plan, array $installmentsData): void
+    {
+        if ($plan->total_amount === null) {
+            return;
+        }
+
+        $installmentSum = collect($installmentsData)
+            ->map(fn($data) => $this->resolveInstallmentAmount($plan, $data))
+            ->sum();
+
+        $expectedTotal = round((float) $plan->total_amount, 2);
+        $downPayment = round((float) ($plan->down_payment ?? 0), 2);
+        $calculatedTotal = round($installmentSum + $downPayment, 2);
+
+        if (abs($calculatedTotal - $expectedTotal) > 0.01) {
+            $validator = Validator::make([], []);
+            $validator->errors()->add(
+                'payment_plan.total_amount',
+                'A soma das parcelas (considerando a entrada) deve ser igual ao valor total.'
+            );
+
+            throw new ValidationException($validator);
+        }
+    }
+
+    private function updatePlanInstallmentAmount(PaymentPlan $plan, array $installmentsData): void
+    {
+        $count = count($installmentsData);
+
+        if ($count === 0 || $plan->num_installments === 0) {
+            return;
+        }
+
+        $installmentSum = collect($installmentsData)
+            ->map(fn($data) => $this->resolveInstallmentAmount($plan, $data))
+            ->sum();
+
+        if ($count === (int) $plan->num_installments) {
+            $plan->installment_amount = round($installmentSum / $plan->num_installments, 2);
+            $plan->save();
+        }
+    }
+
+    private function ensureCompletePaymentPlan(array $paymentPlanData): void
+    {
+        $requiredFields = ['num_installments', 'payment_method_id', 'due_day'];
+
+        $hasRequired = collect($requiredFields)->every(function ($field) use ($paymentPlanData) {
+            $value = $paymentPlanData[$field] ?? null;
+            return $value !== null && $value !== '' && $value !== 0 && $value !== '0';
+        });
+
+        if (!$hasRequired) {
+            $validator = Validator::make([], []);
+            $validator->errors()->add(
+                'payment_plan.total_amount',
+                'Preencha todos os campos de pagamento ou deixe todos vazios.'
+            );
+            throw new ValidationException($validator);
+        }
+    }
+
+    private function isPaymentPlanEffectivelyEmpty(array $paymentPlanData): bool
+    {
+        $meaningfulFields = ['num_installments', 'payment_method_id', 'due_day', 'down_payment', 'installment_amount'];
+
+        $hasMeaningful = collect($meaningfulFields)->contains(function ($field) use ($paymentPlanData) {
+            $value = $paymentPlanData[$field] ?? null;
+            return !($value === null || $value === '' || $value === 0 || $value === '0');
+        });
+
+        if ($hasMeaningful) {
+            return false;
+        }
+
+        return true;
     }
 }
