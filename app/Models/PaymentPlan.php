@@ -10,12 +10,22 @@ class PaymentPlan extends Model
     use HasFactory;
 
     protected $fillable = [
-        'event_id', 'total_amount', 'down_payment',
-        'num_installments', 'installment_amount',
-        'payment_method_id', 'due_day'
+        'event_id',
+        'total_amount',
+        'down_payment',
+        'down_payment_due_date',
+        'num_installments',
+        'installment_amount',
+        'payment_method_id',
+        'due_day'
     ];
 
-    public function event() {
+    protected $casts = [
+        'down_payment_due_date' => 'date',
+    ];
+
+    public function event()
+    {
         return $this->belongsTo(Event::class);
     }
 
@@ -24,11 +34,13 @@ class PaymentPlan extends Model
         return $this->hasMany(Receivable::class);
     }
 
-    public function paymentMethod() {
+    public function paymentMethod()
+    {
         return $this->belongsTo(PaymentMethod::class);
     }
 
-    public function installments() {
+    public function installments()
+    {
         return $this->hasMany(Installment::class);
     }
 }

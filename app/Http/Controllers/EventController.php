@@ -463,6 +463,11 @@ class EventController extends Controller
                 $installmentsData = $paymentPlanData['installments'] ?? null;
                 unset($paymentPlanData['installments'], $paymentPlanData['id']);
 
+                $downPayment = $paymentPlanData['down_payment'] ?? null;
+                if (!$downPayment || (float) $downPayment <= 0) {
+                    $paymentPlanData['down_payment_due_date'] = null;
+                }
+
                 $this->ensureCompletePaymentPlan($paymentPlanData);
 
                 if ($event->paymentPlan) {
@@ -1197,10 +1202,14 @@ class EventController extends Controller
         $currentMonth = $today->month;
 
         if ($plan->down_payment > 0) {
+            $downPaymentDueDate = $plan->down_payment_due_date
+                ? $plan->down_payment_due_date->format('Y-m-d')
+                : $today->format('Y-m-d');
+
             $event->receivables()->create([
                 'description' => 'Entrada - ' . $event->name,
                 'amount' => $plan->down_payment,
-                'due_date' => $today->format('Y-m-d'),
+                'due_date' => $downPaymentDueDate,
                 'status' => 'pending',
                 'payment_method_id' => $plan->payment_method_id,
                 'receivableable_type' => get_class($event),
@@ -1326,6 +1335,11 @@ class EventController extends Controller
             if ($event->paymentPlan) {
                 $paymentPlanData = $event->paymentPlan->toArray();
                 unset($paymentPlanData['id']);
+
+                $downPayment = $paymentPlanData['down_payment'] ?? null;
+                if (!$downPayment || (float) $downPayment <= 0) {
+                    $paymentPlanData['down_payment_due_date'] = null;
+                }
 
                 $newPaymentPlan = $newEvent->paymentPlan()->create($paymentPlanData);
                 $this->generateReceivables($newEvent, $newPaymentPlan);
@@ -1655,10 +1669,15 @@ class EventController extends Controller
         $calculatedTotal = round($installmentSum + $downPayment, 2);
 
         if (abs($calculatedTotal - $expectedTotal) > 0.01) {
+            $difference = round($expectedTotal - $calculatedTotal, 2);
+            $differenceText = $difference > 0
+                ? "faltam R$ " . number_format(abs($difference), 2, ',', '.')
+                : "há excesso de R$ " . number_format(abs($difference), 2, ',', '.');
+
             $validator = Validator::make([], []);
             $validator->errors()->add(
                 'payment_plan.total_amount',
-                'A soma das parcelas (considerando a entrada) deve ser igual ao valor total.'
+                "A soma das parcelas (considerando a entrada) deve ser igual ao valor total. Atualmente {$differenceText}"
             );
 
             throw new ValidationException($validator);
@@ -1699,6 +1718,20 @@ class EventController extends Controller
                 'Preencha todos os campos de pagamento ou deixe todos vazios.'
             );
             throw new ValidationException($validator);
+        }
+
+        $downPayment = $paymentPlanData['down_payment'] ?? null;
+        $downPaymentDueDate = $paymentPlanData['down_payment_due_date'] ?? null;
+
+        if ($downPayment && (float) $downPayment > 0) {
+            if (!$downPaymentDueDate || trim($downPaymentDueDate) === '') {
+                $validator = Validator::make([], []);
+                $validator->errors()->add(
+                    'payment_plan.down_payment_due_date',
+                    'A data de vencimento da entrada é obrigatória quando há valor de entrada.'
+                );
+                throw new ValidationException($validator);
+            }
         }
     }
 
