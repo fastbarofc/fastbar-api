@@ -18,14 +18,31 @@ class Kit extends Model implements AuditableInterface
         'kit_id',
         'name',
         'ordination',
+        'themed_table',
+        'optional',
+        'checklist',
+        'observation',
+    ];
+
+    protected $casts = [
+        'optional' => 'boolean',
+        'themed_table' => 'boolean',
+        'checklist' => 'boolean',
     ];
 
     protected static $sortableFields = [
         'name',
+        'themed_table',
+        'optional',
+        'checklist',
+        'observation',
     ];
 
     protected static $filterableFields = [
         'name',
+        'themed_table',
+        'optional',
+        'checklist',
     ];
 
     public function kit()
@@ -40,7 +57,7 @@ class Kit extends Model implements AuditableInterface
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'kit_product')->withPivot(['value', 'optional', 'ordination']);
+        return $this->belongsToMany(Product::class, 'kit_product')->withPivot(['value', 'optional', 'ordination', 'checklist', 'observation']);
     }
 
     public function getHasChildrenAttribute()
@@ -52,7 +69,7 @@ class Kit extends Model implements AuditableInterface
     {
         $products = $this->products;
         $kits = $this->kits;
-        
+
         if (!$products && !$kits) {
             return [];
         }
@@ -62,6 +79,9 @@ class Kit extends Model implements AuditableInterface
                 $item['kit_id'] = $this->id;
                 $item['type'] = 'product';
                 $item['ordination'] = $item->pivot->ordination;
+                $item['optional'] = (bool)($item->pivot->optional ?? false);
+                $item['checklist'] = (bool)($item->pivot->checklist ?? false);
+                $item['observation'] = $item->pivot->observation;
                 return $item;
             });
         }
@@ -84,21 +104,36 @@ class Kit extends Model implements AuditableInterface
         }
 
         return $children->map(function ($item) use ($getChild) {
+            $data = [
+                'id' => $item['id'],
+                'kit_id' => $item['kit_id'],
+                'name' => $item['name'],
+                'ordination' => $item['ordination'],
+                'type' => $item['type']
+            ];
+
+            if ($item['type'] == 'product') {
+                $data['optional'] = (bool)($item['optional'] ?? false);
+                $data['checklist'] = (bool)($item['checklist'] ?? false);
+                $data['observation'] = $item['observation'] ?? null;
+            }
+
+            if ($item['type'] == 'kit') {
+                $data['themed_table'] = (bool)($item['themed_table'] ?? false);
+                $data['optional'] = (bool)($item['optional'] ?? false);
+                $data['checklist'] = (bool)($item['checklist'] ?? false);
+                $data['observation'] = $item['observation'] ?? null;
+            }
+
             return [
-                'data' => [
-                    'id' => $item['id'],
-                    'kit_id' => $item['kit_id'],
-                    'name' => $item['name'],
-                    'ordination' => $item['ordination'],
-                    'type' => $item['type']
-                ],
+                'data' => $data,
                 'children' => $getChild ? $item['children'] : (!empty($item['children']) &&  !empty($item['children'][0]) ? [[]] : [])
             ];
         })->sortBy(function ($item) {
             if (is_null($item['data']['ordination'])) {
-                return $item['data']['name']; 
+                return $item['data']['name'];
             }
-            return $item['data']['ordination']; 
+            return $item['data']['ordination'];
         })->values();
     }
 }

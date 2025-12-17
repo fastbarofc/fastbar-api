@@ -44,7 +44,7 @@ class ProductController extends Controller
             }
         }
 
-        if($request->input('order_by')) {
+        if ($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
             $query->orderByField($sorteableField, $direction);
@@ -69,7 +69,7 @@ class ProductController extends Controller
     {
         $productData = $request->all();
         $product = Product::create($productData);
-    
+
         if ($request->has('photo') && !empty($request->photo)) {
             try {
                 $file = FileService::saveImage('products', $request->photo);
@@ -78,7 +78,7 @@ class ProductController extends Controller
                 return response()->json(['error' => $e->getMessage()], 400);
             }
         }
-    
+
         return response()->json(new ProductResource($product), 201);
     }
 
@@ -88,41 +88,40 @@ class ProductController extends Controller
     }
 
     public function update(UpdateProductRequest $request, Product $product)
-{
+    {
 
-    $productData = $request->except('photo');
+        $productData = $request->except('photo');
 
-    if ($request->filled('photo')) {
-        $photoUrl = $request->photo;
+        if ($request->filled('photo')) {
+            $photoUrl = $request->photo;
 
-        $photoPath = parse_url($photoUrl, PHP_URL_PATH);
-        $normalizedPhotoPath = str_replace('/storage//', '/', $photoPath);
+            $photoPath = parse_url($photoUrl, PHP_URL_PATH);
+            $normalizedPhotoPath = str_replace('/storage//', '/', $photoPath);
 
-        if (!isset($product->file_id) || $normalizedPhotoPath !== $product->file->path) {
-        try {
-            $file = FileService::saveImage('products', $request->photo);
-            $productData['file_id'] = $file->id;
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            if (!isset($product->file_id) || $normalizedPhotoPath !== $product->file->path) {
+                try {
+                    $file = FileService::saveImage('products', $request->photo);
+                    $productData['file_id'] = $file->id;
+                } catch (\Exception $e) {
+                    return response()->json(['error' => $e->getMessage()], 400);
+                }
+            }
+        } else {
+
+
+            if ($product->file_id) {
+                Storage::disk('public')->delete($product->file->path);
+
+                $product->file->delete();
+
+                $productData['file_id'] = null;
+            }
         }
-        }
-    } else {
 
+        $product->update($productData);
 
-        if ($product->file_id) {
-            Storage::disk('public')->delete($product->file->path);
-
-            $product->file->delete();
-
-            $productData['file_id'] = null;
-        }
-        
+        return response()->json(new ProductResource($product), 200);
     }
-
-    $product->update($productData);
-
-    return response()->json(new ProductResource($product), 200);
-}
 
     public function destroy(Product $product)
     {
@@ -155,7 +154,7 @@ class ProductController extends Controller
     }
 
     public function moveToEventKit(Request $request)
-    {        
+    {
         $newEventKit = EventKit::find($request->new_event_kit['id']);
         $oldEventKit = EventKit::find($request->old_event_kit['id']);
         $product = Product::find($request->product['id']);
@@ -199,9 +198,16 @@ class ProductController extends Controller
         }
 
         $ordination = $this->getProductOrdination($kit);
-        $kit->products()->attach($request->product_id, [
-            'ordination' => $ordination
-        ]);
+        $pivotData = [
+            'ordination' => $ordination,
+            'optional' => $request->input('optional', false),
+            'checklist' => $request->input('checklist', false),
+            'observation' => $request->input('observation'),
+        ];
+
+        $kit->products()->attach($request->product_id, $pivotData);
+
+        return response()->json(['message' => 'Produto adicionado ao kit com sucesso'], 200);
     }
 
     public function detachFromEventKit(Request $request)
@@ -217,17 +223,15 @@ class ProductController extends Controller
     }
 
     public function getFilePath(Product $product)
-{
-    $fileId = $product->file_id;
-    $file = File::find($fileId);
+    {
+        $fileId = $product->file_id;
+        $file = File::find($fileId);
 
-    if ($file) {
-        $photoUrl = asset('storage/' . $file->path); 
-        return response()->json(['photo_path' => $photoUrl]);
-    } else {
-        return response()->json(['photo_path' => null]);
+        if ($file) {
+            $photoUrl = asset('storage/' . $file->path);
+            return response()->json(['photo_path' => $photoUrl]);
+        } else {
+            return response()->json(['photo_path' => null]);
+        }
     }
-}
-
-
 }
