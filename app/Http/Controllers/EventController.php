@@ -287,7 +287,6 @@ class EventController extends Controller
 
         $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
 
-        // Registra a criação no histórico
         if (!$request->is_draft) {
             $this->historyService->logEventCreation($event);
         }
@@ -323,12 +322,10 @@ class EventController extends Controller
 
     public function update(UpdateEventRequest $request, Event $event)
     {
-        // Captura apenas os atributos do model, sem relacionamentos carregados
         $originalData = $event->getAttributes();
 
         $data = $request->all();
 
-        // Captura dados originais dos relacionamentos para histórico
         $originalRelationships = [
             'event_batches' => $event->eventBatches->toArray(),
             'event_notes' => $event->eventNotes->toArray(),
@@ -537,10 +534,8 @@ class EventController extends Controller
 
         $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
 
-        // Atualiza o model com os dados do banco antes de comparar
         $event->refresh();
 
-        // Registra as alterações no histórico (passa os dados originais com relacionamentos e os dados do request)
         $this->historyService->logEventUpdate($event, $originalDataWithRelationships, $data);
 
         return response()->json(new EventResource($event), 200);
@@ -1693,7 +1688,7 @@ class EventController extends Controller
             ],
         ], 200);
     }
-    
+
     private function resolveInstallmentAmount(PaymentPlan $plan, array $installmentData): float
     {
         $amount = $installmentData['amount'] ?? $plan->installment_amount ?? 0;
