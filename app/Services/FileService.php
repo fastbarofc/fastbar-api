@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use mikehaertl\tmp\File as MikeFile;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Facades\File as FileFacade;
+use Illuminate\Support\Str;
 
 class FileService
 {
@@ -32,6 +33,37 @@ class FileService
     ]);
 
     return $file;
+  }
+
+  public static function saveBase64File(string $path, string $fileData, ?string $originalName = null): File
+  {
+    if (!preg_match('/^data:(.*?);base64,(.*)$/', $fileData, $matches)) {
+      throw new \InvalidArgumentException('Formato de arquivo inválido.');
+    }
+
+    $mimeType = $matches[1];
+    $base64Content = base64_decode($matches[2]);
+
+    if ($base64Content === false) {
+      throw new \InvalidArgumentException('Não foi possível decodificar o arquivo.');
+    }
+
+    $extension = self::getExtensionFromMime($mimeType);
+
+    if (!$extension) {
+      throw new \InvalidArgumentException('Tipo de arquivo não suportado.');
+    }
+
+    $fileDirectory = "/{$path}/";
+    $fileName = self::resolveFileName($originalName, $extension);
+
+    Storage::disk('public')->put($fileDirectory . $fileName, $base64Content);
+
+    return File::create([
+      'name'      => $fileName,
+      'path'      => $fileDirectory . $fileName,
+      'extension' => $extension,
+    ]);
   }
 
   public static function download(File $file)
@@ -102,5 +134,33 @@ class FileService
       $architecture = 'amd64';
     }
     return $architecture;
+  }
+
+  private static function getExtensionFromMime(string $mimeType): ?string
+  {
+    $map = [
+      'image/png' => 'png',
+      'image/jpeg' => 'jpg',
+      'image/jpg' => 'jpg',
+      'application/pdf' => 'pdf',
+      'application/msword' => 'doc',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+    ];
+
+    return $map[$mimeType] ?? null;
+  }
+
+  private static function resolveFileName(?string $originalName, string $extension): string
+  {
+    if ($originalName) {
+      $nameWithoutExtension = pathinfo($originalName, PATHINFO_FILENAME);
+      $sanitized = Str::slug($nameWithoutExtension);
+
+      if (!empty($sanitized)) {
+        return $sanitized . '-' . uniqid('', false) . '.' . $extension;
+      }
+    }
+
+    return uniqid('', false) . '.' . $extension;
   }
 }

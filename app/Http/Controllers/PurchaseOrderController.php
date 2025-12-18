@@ -152,6 +152,8 @@ class PurchaseOrderController extends Controller
         }
     }
 
+    
+
     public function destroy(PurchaseOrder $purchaseOrder)
     {
         try {

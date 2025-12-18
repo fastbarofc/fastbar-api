@@ -17,7 +17,9 @@ use App\Models\ExtraSale;
 use App\Models\EventKit;
 use App\Models\Contract;
 use App\Models\EventType;
+use App\Models\Installment;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use App\Http\Resources\EventCalendarResource;
 use App\Models\Ceremonial;
 use App\Models\Client;
@@ -45,6 +47,7 @@ use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class EventController extends Controller
 {
@@ -55,80 +58,80 @@ class EventController extends Controller
     }
 
     public function index(Request $request)
-{
-    $query = Event::where('is_draft', false)->with([
-        'eventStatus',
-        'eventPlace',
-        'client',
-        'eventType',
-        'collaborator',
-        'eventKits'
-    ]);
+    {
+        $query = Event::where('is_draft', false)->with([
+            'eventStatus',
+            'eventPlace',
+            'client',
+            'eventType',
+            'collaborator',
+            'eventKits'
+        ]);
 
-    if ($request->input('filter_by')) {
-        $filterable = $request->input('filter_by');
-        if ($filterable && $filterable !== '[]') {
-            $filterableArray = json_decode($filterable, true);
-            
-            foreach ($filterableArray as $filter) {
-                $field = array_keys($filter)[0];
-                $value = $filter[$field];
-                $operator = $field == 'name' ? 'like' : '=';
-                $isDate = in_array($field, ['date']);
+        if ($request->input('filter_by')) {
+            $filterable = $request->input('filter_by');
+            if ($filterable && $filterable !== '[]') {
+                $filterableArray = json_decode($filterable, true);
 
-                if (str_contains($field, '.')) {
-                    [$relation, $relationField] = explode('.', $field);
-                    $query->whereHas($relation, function ($q) use ($relationField, $value, $operator) {
-                        $q->where($relationField, $operator, $operator === 'like' ? "%$value%" : $value);
-                    });
-                } elseif ($field === 'search') {
-                    $query->where(function($q) use ($value) {
-                        foreach (Event::searchableFields() as $searchableField) {
-                            $q->orWhere('events.' . $searchableField, 'like', "%$value%");
-                        }
-                    });
-                } else {
-                    if ($field === 'id') {
-                        $query->where('events.id', $value);
+                foreach ($filterableArray as $filter) {
+                    $field = array_keys($filter)[0];
+                    $value = $filter[$field];
+                    $operator = $field == 'name' ? 'like' : '=';
+                    $isDate = in_array($field, ['date']);
+
+                    if (str_contains($field, '.')) {
+                        [$relation, $relationField] = explode('.', $field);
+                        $query->whereHas($relation, function ($q) use ($relationField, $value, $operator) {
+                            $q->where($relationField, $operator, $operator === 'like' ? "%$value%" : $value);
+                        });
+                    } elseif ($field === 'search') {
+                        $query->where(function ($q) use ($value) {
+                            foreach (Event::searchableFields() as $searchableField) {
+                                $q->orWhere('events.' . $searchableField, 'like', "%$value%");
+                            }
+                        });
                     } else {
-                        $query->filterByField($field, $value, $operator, $isDate);
+                        if ($field === 'id') {
+                            $query->where('events.id', $value);
+                        } else {
+                            $query->filterByField($field, $value, $operator, $isDate);
+                        }
                     }
                 }
             }
         }
-    }
 
-    if ($request->input('order_by')) {
-        $sortField = $request->input('order_by');
-        $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
-    
-        if (str_contains($sortField, '.')) {
-            [$relation, $field] = explode('.', $sortField);
-            $query->orderByRelation($relation, $field, $direction);
-        } else {
-            $query->orderBy('events.' . $sortField, $direction); 
+        if ($request->input('order_by')) {
+            $sortField = $request->input('order_by');
+            $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
+
+            if (str_contains($sortField, '.')) {
+                [$relation, $field] = explode('.', $sortField);
+                $query->orderByRelation($relation, $field, $direction);
+            } else {
+                $query->orderBy('events.' . $sortField, $direction);
+            }
         }
+
+        $events = $query->paginate($request->input('per_page', 10));
+
+        return response()->json([
+            'data' => EventListResource::collection($events),
+            'pagination' => [
+                'page' => $events->currentPage(),
+                'total_pages' => $events->lastPage(),
+                'per_page' => $events->perPage(),
+                'total' => $events->total(),
+            ],
+            'sortable_fields' => Event::sortableFields(),
+            'filterable_fields' => Event::filterableFields(),
+            'event_types' => EventType::all(['id', 'name']),
+            'event_places' => EventPlace::all(['id', 'name']),
+            'event_statuses' => EventStatus::all(['id', 'name'])
+        ], 200);
     }
 
-    $events = $query->paginate($request->input('per_page', 10));
 
-    return response()->json([
-        'data' => EventListResource::collection($events),
-        'pagination' => [
-            'page' => $events->currentPage(),
-            'total_pages' => $events->lastPage(),
-            'per_page' => $events->perPage(),
-            'total' => $events->total(),
-        ],
-        'sortable_fields' => Event::sortableFields(),
-        'filterable_fields' => Event::filterableFields(),
-        'event_types' => EventType::all(['id', 'name']),
-        'event_places' => EventPlace::all(['id', 'name']),
-        'event_statuses' => EventStatus::all(['id', 'name'])
-    ], 200);
-}
-
-    
 
 
 
@@ -180,6 +183,18 @@ class EventController extends Controller
     public function store(StoreEventRequest $request)
     {
         $data = $request->all();
+
+        $consumptionReport = $data['post_event_consumption_report'] ?? null;
+        $consumptionReportFileName = $data['post_event_consumption_report_file_name'] ?? null;
+        $consumptionReportRemove = (bool) ($data['post_event_consumption_report_remove'] ?? false);
+
+        unset(
+            $data['post_event_consumption_report'],
+            $data['post_event_consumption_report_file_name'],
+            $data['post_event_consumption_report_file_id'],
+            $data['post_event_consumption_report_file_url'],
+            $data['post_event_consumption_report_remove']
+        );
 
         $data['collaborator_id'] = auth()->user()->collaborator->id;
         $data['contract_body'] = ContractTemplate::first()?->content ?? null;
@@ -267,6 +282,8 @@ class EventController extends Controller
 
         EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
 
+        $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
+
         return response()->json(new EventResource($event), 201);
     }
 
@@ -284,11 +301,13 @@ class EventController extends Controller
             'eventGifts',
             'extraSales',
             'eventBatches',
-            'eventNotes', 
+            'eventNotes',
             'paymentPlan',
             'paymentPlan.paymentMethod',
+            'paymentPlan.installments',
             'receivables',
             'receivables.paymentMethod',
+            'postEventConsumptionReportFile',
         ]);
 
         return response()->json(new EventResource($event), 200);
@@ -297,6 +316,18 @@ class EventController extends Controller
     public function update(UpdateEventRequest $request, Event $event)
     {
         $data = $request->all();
+
+        $consumptionReport = $data['post_event_consumption_report'] ?? null;
+        $consumptionReportFileName = $data['post_event_consumption_report_file_name'] ?? null;
+        $consumptionReportRemove = (bool) ($data['post_event_consumption_report_remove'] ?? false);
+
+        unset(
+            $data['post_event_consumption_report'],
+            $data['post_event_consumption_report_file_name'],
+            $data['post_event_consumption_report_file_id'],
+            $data['post_event_consumption_report_file_url'],
+            $data['post_event_consumption_report_remove']
+        );
 
         if (isset($data['event_type_id']) && $data['event_type_id'] !== 7) {
             $data['is_medicine'] = false;
@@ -307,13 +338,13 @@ class EventController extends Controller
         if (isset($data['closed_at'])) {
             $event->closed_at = $data['closed_at'];
         }
-        
+
 
         $filteredBatches = isset($data['event_batches']) && is_array($data['event_batches'])
-    ? array_filter($data['event_batches'], function ($batch) {
-        return isset($batch['guests']) && $batch['guests'] !== null;
-    })
-    : [];
+            ? array_filter($data['event_batches'], function ($batch) {
+                return isset($batch['guests']) && $batch['guests'] !== null;
+            })
+            : [];
 
 
         if (!empty($filteredBatches)) {
@@ -337,7 +368,7 @@ class EventController extends Controller
             }
         }
 
-        
+
 
         if (!empty($data['materials'])) {
             $materialsArray = collect($data['materials'])->mapWithKeys(function ($material) {
@@ -404,17 +435,17 @@ class EventController extends Controller
         if (!empty($data['related_tasting_events'])) {
             $relatedTastingEvents = $data['related_tasting_events'];
             $event->tastingEvents()->sync($relatedTastingEvents);
-        
+
             $tastingEvents = Event::findMany($relatedTastingEvents);
             foreach ($tastingEvents as $tastingEvent) {
                 $tastingEvent->parentEvents()->syncWithoutDetaching([$event->id]);
             }
         }
-        
+
         if (!empty($data['parent_events'])) {
             $parentEvents = $data['parent_events'];
             $event->parentEvents()->sync($parentEvents);
-        
+
             $mainEvents = Event::findMany($parentEvents);
             foreach ($mainEvents as $mainEvent) {
                 $mainEvent->tastingEvents()->syncWithoutDetaching([$event->id]);
@@ -422,28 +453,45 @@ class EventController extends Controller
         }
 
 
-        if (!empty(array_filter($data['payment_plan'], fn($value) => $value !== null && $value !== '' && $value !== 0))) {
+        if (!empty($data['payment_plan'])) {
 
             $paymentPlanData = $data['payment_plan'];
-            unset($paymentPlanData['id']);
-            
-            if ($event->paymentPlan) {
-                $event->paymentPlan()->update($paymentPlanData);
-                $plan = $event->paymentPlan;
-            } 
-            else {
-                $plan = $event->paymentPlan()->create($paymentPlanData);
+
+            if ($this->isPaymentPlanEffectivelyEmpty($paymentPlanData)) {
+                unset($data['payment_plan']);
+            } else {
+                $installmentsData = $paymentPlanData['installments'] ?? null;
+                unset($paymentPlanData['installments'], $paymentPlanData['id']);
+
+                $downPayment = $paymentPlanData['down_payment'] ?? null;
+                if (!$downPayment || (float) $downPayment <= 0) {
+                    $paymentPlanData['down_payment_due_date'] = null;
+                }
+
+                $this->ensureCompletePaymentPlan($paymentPlanData);
+
+                if ($event->paymentPlan) {
+                    $plan = $event->paymentPlan;
+                    $plan->update($paymentPlanData);
+                    $plan->refresh();
+                } else {
+                    $plan = $event->paymentPlan()->create($paymentPlanData);
+                }
+
+                if ($installmentsData && is_array($installmentsData) && !empty($installmentsData)) {
+                    $this->updateInstallments($event, $plan, $installmentsData);
+                } else {
+                    $event->receivables()
+                        ->where('receivableable_type', get_class($event))
+                        ->where('receivableable_id', $event->id)
+                        ->delete();
+
+                    $this->generateReceivables($event, $plan);
+                }
             }
-    
-            $event->receivables()
-                ->where('receivableable_type', get_class($event))
-                ->where('receivableable_id', $event->id)
-                ->delete();
-    
-            $this->generateReceivables($event, $plan);
         }
-        
-        
+
+
 
         $data['competing_company_id'] = $data['competing_company_id'] ?? null;
         $data['lost_reason_id'] = $data['lost_reason_id'] ?? null;
@@ -465,6 +513,9 @@ class EventController extends Controller
                 'collaborator_id' => auth()->user()->collaborator->id
             ]);
         }
+
+        $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
+
         return response()->json(new EventResource($event), 200);
     }
 
@@ -475,54 +526,54 @@ class EventController extends Controller
     }
 
     public function getFormData(Event $event)
-{
-    $eventCaptures = EventCapture::all();
-    $eventTypes = EventType::all();
-    $partners = Partner::all();
-    $decorators = Decorator::all();
-    $ceremonials = Ceremonial::all();
-    $eventStatuses = EventStatus::all();
-    $competingCompany = CompetingCompany::all();
-    $lostReason = LostReason::all();
+    {
+        $eventCaptures = EventCapture::all();
+        $eventTypes = EventType::all();
+        $partners = Partner::all();
+        $decorators = Decorator::all();
+        $ceremonials = Ceremonial::all();
+        $eventStatuses = EventStatus::all();
+        $competingCompany = CompetingCompany::all();
+        $lostReason = LostReason::all();
 
-    $clients = [];
-    $invoiceClients = [];
-    $collaborators = [];
-    $eventPlaces = [];
-    $relatedTastingEvents = [];
-    $parentEvents = [];
-    $hasTasting = false;
+        $clients = [];
+        $invoiceClients = [];
+        $collaborators = [];
+        $eventPlaces = [];
+        $relatedTastingEvents = [];
+        $parentEvents = [];
+        $hasTasting = false;
 
-    if ($event) {
-        $clients = Client::where('id', $event->client_id)->get();
-        $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
-        $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
-        $eventPlaces = EventPlace::where('id', $event->event_place_id)->get();
-        $hasTasting = $event->tastingEvents()->exists();
-        $parentEvents = Event::whereIn('id', $event->parentEvents()->pluck('events.id'))
-            ->get(['id', 'name']);
-        $relatedTastingEvents = Event::whereIn('id', $event->tastingEvents()->pluck('events.id'))
-            ->get(['id', 'name']);
+        if ($event) {
+            $clients = Client::where('id', $event->client_id)->get();
+            $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
+            $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
+            $eventPlaces = EventPlace::where('id', $event->event_place_id)->get();
+            $hasTasting = $event->tastingEvents()->exists();
+            $parentEvents = Event::whereIn('id', $event->parentEvents()->pluck('events.id'))
+                ->get(['id', 'name']);
+            $relatedTastingEvents = Event::whereIn('id', $event->tastingEvents()->pluck('events.id'))
+                ->get(['id', 'name']);
+        }
+
+        return response()->json([
+            'event_captures' => $eventCaptures,
+            'event_types' => $eventTypes,
+            'partners' => $partners,
+            'decorators' => $decorators,
+            'ceremonials' => $ceremonials,
+            'event_statuses' => $eventStatuses,
+            'event_places' => $eventPlaces,
+            'clients' => $clients,
+            'invoice_clients' => $invoiceClients,
+            'collaborators' => $collaborators,
+            'competing_companies' => $competingCompany,
+            'lost_reasons' => $lostReason,
+            'related_tasting_events' => $relatedTastingEvents,
+            'has_tasting' => $hasTasting,
+            'parent_events' => $parentEvents
+        ], 200);
     }
-
-    return response()->json([
-        'event_captures' => $eventCaptures,
-        'event_types' => $eventTypes,
-        'partners' => $partners,
-        'decorators' => $decorators,
-        'ceremonials' => $ceremonials,
-        'event_statuses' => $eventStatuses,
-        'event_places' => $eventPlaces,
-        'clients' => $clients,
-        'invoice_clients' => $invoiceClients,
-        'collaborators' => $collaborators,
-        'competing_companies' => $competingCompany,
-        'lost_reasons' => $lostReason,
-        'related_tasting_events' => $relatedTastingEvents,
-        'has_tasting' => $hasTasting,
-        'parent_events' => $parentEvents
-    ], 200);
-}
 
 
 
@@ -938,7 +989,8 @@ class EventController extends Controller
         }
     }
 
-    public function generateBuffetContract(Event $event) {
+    public function generateBuffetContract(Event $event)
+    {
         $event->load([
             'eventStatus',
             'client',
@@ -962,7 +1014,8 @@ class EventController extends Controller
         }
     }
 
-    public function generateEventItemChecklist(Event $event) {
+    public function generateEventItemChecklist(Event $event)
+    {
         $event->load([
             'eventStatus'
         ]);
@@ -980,7 +1033,8 @@ class EventController extends Controller
         }
     }
 
-    public function generateLeaseContract(Event $event) {
+    public function generateLeaseContract(Event $event)
+    {
         $event->load([
             'eventStatus',
             'client'
@@ -1002,7 +1056,8 @@ class EventController extends Controller
         }
     }
 
-    public function generateMenu(Event $event) {
+    public function generateMenu(Event $event)
+    {
         $event->load([
             'eventStatus',
             'client',
@@ -1037,7 +1092,8 @@ class EventController extends Controller
         }
     }
 
-    public function generateCollaborators(Event $event) {
+    public function generateCollaborators(Event $event)
+    {
         $event->load([
             'eventStatus',
             'client',
@@ -1053,7 +1109,7 @@ class EventController extends Controller
         $place = $event->eventPlace;
 
         $fileName = 'collaborators-' . $event->id;
-        $viewContent = view("/pdfs/collaborators-pdf" , compact(['event', 'date', 'client','place']));
+        $viewContent = view("/pdfs/collaborators-pdf", compact(['event', 'date', 'client', 'place']));
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
@@ -1072,312 +1128,626 @@ class EventController extends Controller
     }
 
     public function checkIfHasScheduledEvents(Event $event, Request $request)
-{
-    $eventId = $event->id;
-    $eventPlaceId = $request->input('event_place_id');
-    $eventDate = $request->input('date');
-    $status_id = $request->input('status_id');
+    {
+        $eventId = $event->id;
+        $eventPlaceId = $request->input('event_place_id');
+        $eventDate = $request->input('date');
+        $status_id = $request->input('status_id');
 
-    if (empty($eventDate) || empty($eventPlaceId)) {
-        return response()->json([
-            'conflicting_events' => [],
-        ]);
-    }
-
-    $blockedStatusIds = EventStatus::whereIn('name', ['Fechado', 'Pré-Reserva', 'Planejamento', 'Concluído'])
-        ->pluck('id')
-        ->toArray();   
-    
-    if (!in_array($status_id, $blockedStatusIds)) {
-         return response()->json([
-            'conflicting_events' => [],
-        ]);
-     }    
-
-    $conflictingEvents = Event::where('event_place_id', $eventPlaceId)
-        ->whereDate('date', $eventDate)
-        ->where('id', '<>', $eventId)
-        ->whereIn('event_status_id', $blockedStatusIds)
-        ->get(['id', 'name', 'event_status_id']);
-
-    $conflictingEvents = $conflictingEvents->map(function ($event) {
-        return [
-            'id' => $event->id,
-            'name' => $event->name,
-            'status' => EventStatus::where('id', $event->event_status_id)->value('name'),
-        ];
-    });
-
-
-    return response()->json([
-        'conflicting_events' => $conflictingEvents,
-    ]);
-}
-
-private function generateReceivables(Event $event, PaymentPlan $plan)
-{
-    $today = now();
-    $currentYear = $today->year;
-    $currentMonth = $today->month;
-    
-    if ($plan->down_payment > 0) {
-        $event->receivables()->create([
-            'description' => 'Entrada - ' . $event->name,
-            'amount' => $plan->down_payment,
-            'due_date' => $today->format('Y-m-d'),
-            'status' => 'pending',
-            'payment_method_id' => $plan->payment_method_id,
-            'receivableable_type' => get_class($event),
-            'receivableable_id' => $event->id,
-        ]);
-    }
-    
-    for ($i = 1; $i <= $plan->num_installments; $i++) {
-        $dueMonth = $currentMonth + $i;
-        $dueYear = $currentYear;
-        
-        if ($dueMonth > 12) {
-            $dueMonth -= 12;
-            $dueYear += 1;
+        if (empty($eventDate) || empty($eventPlaceId)) {
+            return response()->json([
+                'conflicting_events' => [],
+            ]);
         }
-        
-        $dueDate = \Carbon\Carbon::create($dueYear, $dueMonth, $plan->due_day);
-        
-        $event->receivables()->create([
-            'description' => 'Parcela ' . $i . '/' . $plan->num_installments . ' - ' . $event->name,
-            'amount' => $plan->installment_amount,
-            'due_date' => $dueDate->format('Y-m-d'),
-            'status' => 'pending',
-            'payment_method_id' => $plan->payment_method_id,
-            'receivableable_type' => get_class($event),
-            'receivableable_id' => $event->id,
+
+        $blockedStatusIds = EventStatus::whereIn('name', ['Fechado', 'Pré-Reserva', 'Planejamento', 'Concluído'])
+            ->pluck('id')
+            ->toArray();
+
+        if (!in_array($status_id, $blockedStatusIds)) {
+            return response()->json([
+                'conflicting_events' => [],
+            ]);
+        }
+
+        $conflictingEvents = Event::where('event_place_id', $eventPlaceId)
+            ->whereDate('date', $eventDate)
+            ->where('id', '<>', $eventId)
+            ->whereIn('event_status_id', $blockedStatusIds)
+            ->get(['id', 'name', 'event_status_id']);
+
+        $conflictingEvents = $conflictingEvents->map(function ($event) {
+            return [
+                'id' => $event->id,
+                'name' => $event->name,
+                'status' => EventStatus::where('id', $event->event_status_id)->value('name'),
+            ];
+        });
+
+
+        return response()->json([
+            'conflicting_events' => $conflictingEvents,
         ]);
     }
 
-}
+    private function handleConsumptionReport(Event $event, ?string $fileData, ?string $originalName, bool $removeRequested = false): void
+    {
+        $shouldSave = false;
 
-public function duplicate(Event $event)
-{
-    DB::beginTransaction();
+        if ($fileData) {
+            if ($event->postEventConsumptionReportFile) {
+                FileService::delete($event->postEventConsumptionReportFile);
+                $event->post_event_consumption_report_file_id = null;
+            }
 
-    try {
-        $event->load([
-            'materials',
-            'eventBatches',
-            'extraSales',
-            'eventNotes',
-            'paymentPlan',
-            'tastingEvents',
-            'parentEvents',
-            'officeEvents',
-            'utensils',
-            'officeBudgets',
-            'clients',
-            'eventKits'
+            $file = FileService::saveBase64File('events/consumption-reports', $fileData, $originalName);
+            $event->post_event_consumption_report_file_id = $file->id;
+            $shouldSave = true;
+        } elseif ($removeRequested && $event->postEventConsumptionReportFile) {
+            FileService::delete($event->postEventConsumptionReportFile);
+            $event->post_event_consumption_report_file_id = null;
+            $shouldSave = true;
+        }
+
+        if ($shouldSave) {
+            $event->save();
+            $event->load('postEventConsumptionReportFile');
+        }
+    }
+
+    private function generateReceivables(Event $event, PaymentPlan $plan)
+    {
+        $today = now();
+        $currentYear = $today->year;
+        $currentMonth = $today->month;
+
+        if ($plan->down_payment > 0) {
+            $downPaymentDueDate = $plan->down_payment_due_date
+                ? $plan->down_payment_due_date->format('Y-m-d')
+                : $today->format('Y-m-d');
+
+            $event->receivables()->create([
+                'description' => 'Entrada - ' . $event->name,
+                'amount' => $plan->down_payment,
+                'due_date' => $downPaymentDueDate,
+                'status' => 'pending',
+                'payment_method_id' => $plan->payment_method_id,
+                'receivableable_type' => get_class($event),
+                'receivableable_id' => $event->id,
+            ]);
+        }
+
+        $plan->installments()->delete();
+
+        for ($i = 1; $i <= $plan->num_installments; $i++) {
+            $dueMonth = $currentMonth + $i;
+            $dueYear = $currentYear;
+
+            if ($dueMonth > 12) {
+                $dueMonth -= 12;
+                $dueYear += 1;
+            }
+
+            $dueDate = \Carbon\Carbon::create($dueYear, $dueMonth, $plan->due_day);
+
+            $plan->installments()->create([
+                'installment_number' => $i,
+                'amount' => $plan->installment_amount,
+                'due_date' => $dueDate->format('Y-m-d'),
+            ]);
+
+            $event->receivables()->create([
+                'description' => 'Parcela ' . $i . '/' . $plan->num_installments . ' - ' . $event->name,
+                'amount' => $plan->installment_amount,
+                'due_date' => $dueDate->format('Y-m-d'),
+                'status' => 'pending',
+                'payment_method_id' => $plan->payment_method_id,
+                'receivableable_type' => get_class($event),
+                'receivableable_id' => $event->id,
+            ]);
+        }
+    }
+
+    public function duplicate(Event $event)
+    {
+        DB::beginTransaction();
+
+        try {
+            $event->load([
+                'materials',
+                'eventBatches',
+                'extraSales',
+                'eventNotes',
+                'paymentPlan',
+                'tastingEvents',
+                'parentEvents',
+                'officeEvents',
+                'utensils',
+                'officeBudgets',
+                'clients',
+                'eventKits'
 
 
+            ]);
+
+            $newEventData = $event->toArray();
+            unset($newEventData['id'], $newEventData['created_at'], $newEventData['updated_at']);
+
+            $newEventData['name'] = 'Cópia de ' . $event->name;
+            $newEventData['event_status_id'] = EventStatus::where('name', 'Aberto')->value('id');
+            $newEventData['collaborator_id'] = auth()->user()->collaborator->id;
+
+            $newEvent = Event::create($newEventData);
+
+            if ($event->eventBatches->isNotEmpty()) {
+                foreach ($event->eventBatches as $batch) {
+                    EventBatch::create([
+                        'event_id' => $newEvent->id,
+                        'name' => $batch->name,
+                        'guests' => $batch->guests,
+                        'value' => $batch->value,
+                        'discount' => $batch->discount,
+                        'total_value' => $batch->total_value,
+                        'status' => $batch->status,
+                        'unit_value' => $batch->unit_value,
+                    ]);
+                }
+            }
+
+            if ($event->materials->isNotEmpty()) {
+                $materialsData = [];
+                foreach ($event->materials as $material) {
+                    $materialsData[$material->id] = [
+                        'selected' => $material->pivot->selected === '-1' ? null : $material->pivot->selected,
+                        'quantity' => $material->pivot->quantity ?? 0
+                    ];
+                }
+                $newEvent->materials()->sync($materialsData);
+            }
+
+            if ($event->eventNotes->isNotEmpty()) {
+                foreach ($event->eventNotes as $note) {
+                    $noteData = [
+                        'event_id' => $newEvent->id,
+                        'text' => $note->text,
+                        'user_id' => auth()->user()->collaborator->id,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+
+
+                    EventNote::create($noteData);
+                }
+            }
+
+            if ($event->extraSales->isNotEmpty()) {
+                foreach ($event->extraSales as $sale) {
+                    ExtraSale::create([
+                        'event_id' => $newEvent->id,
+                        'description' => $sale->description,
+                        'unit_value' => $sale->unit_value,
+                        'quantity' => $sale->quantity,
+                        'unit_id' => $sale->unit_id
+                    ]);
+                }
+            }
+
+            if ($event->paymentPlan) {
+                $paymentPlanData = $event->paymentPlan->toArray();
+                unset($paymentPlanData['id']);
+
+                $downPayment = $paymentPlanData['down_payment'] ?? null;
+                if (!$downPayment || (float) $downPayment <= 0) {
+                    $paymentPlanData['down_payment_due_date'] = null;
+                }
+
+                $newPaymentPlan = $newEvent->paymentPlan()->create($paymentPlanData);
+                $this->generateReceivables($newEvent, $newPaymentPlan);
+            }
+
+            if ($event->utensils->isNotEmpty()) {
+                $newEvent->utensils()->sync($event->utensils->pluck('id'));
+            }
+
+            if ($event->officeEvents->isNotEmpty()) {
+                $officeData = [];
+                foreach ($event->officeEvents as $office) {
+                    $officeData[$office->id] = ['quantity' => $office->pivot->quantity ?? 0];
+                }
+                $newEvent->officeEvents()->sync($officeData);
+            }
+
+            if ($event->officeBudgets->isNotEmpty()) {
+                $newEvent->officeBudgets()->sync($event->officeBudgets->pluck('id'));
+            }
+
+            if ($event->tastingEvents->isNotEmpty()) {
+                $newEvent->tastingEvents()->sync($event->tastingEvents->pluck('id'));
+            }
+
+            if ($event->parentEvents->isNotEmpty()) {
+                $newEvent->parentEvents()->sync($event->parentEvents->pluck('id'));
+            }
+
+            if ($event->clients->isNotEmpty()) {
+                $legalRepresentativesIds = $event->clients
+                    ->where('type', 'pf')
+                    ->pluck('id')
+                    ->toArray();
+
+                if (!empty($legalRepresentativesIds)) {
+                    $newEvent->clients()->syncWithoutDetaching($legalRepresentativesIds);
+                }
+            }
+
+            if (EventKit::where('event_id', $event->id)->exists()) {
+                $this->duplicateEventKits($event, $newEvent);
+            }
+
+            EventStatusHistory::create([
+                'event_id' => $newEvent->id,
+                'event_status_id' => $newEvent->event_status_id,
+                'collaborator_id' => auth()->user()->collaborator->id
+            ]);
+
+            DB::commit();
+
+            return response()->json(new EventResource($newEvent->load([
+                'materials',
+                'eventBatches',
+                'extraSales',
+                'eventNotes',
+                'paymentPlan',
+                'tastingEvents',
+                'parentEvents'
+            ])), 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Erro ao duplicar evento',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
+    }
+
+    private function duplicateEventKits(Event $originalEvent, Event $newEvent)
+    {
+        $rootKits = EventKit::where('event_id', $originalEvent->id)
+            ->whereNull('event_kit_id')
+            ->get();
+
+        $kitIdMap = [];
+
+        foreach ($rootKits as $rootKit) {
+            $rootKit->load(['products', 'eventKits.products']);
+
+            $newRootKit = $this->duplicateSingleKit($rootKit, $newEvent->id, null, $kitIdMap);
+            $kitIdMap[$rootKit->id] = $newRootKit->id;
+        }
+    }
+
+    private function duplicateSingleKit(EventKit $originalKit, $newEventId, $newParentKitId, &$kitIdMap)
+    {
+        $newKit = EventKit::create([
+            'name' => $originalKit->name,
+            'event_id' => $newEventId,
+            'event_kit_id' => $newParentKitId,
+            'value' => $originalKit->value,
+            'themed_table' => $originalKit->themed_table,
+            'ordination' => $originalKit->ordination,
+            'observation' => $originalKit->observation,
+            'optional' => $originalKit->optional,
+            'checklist' => $originalKit->checklist,
         ]);
 
-        $newEventData = $event->toArray();
-        unset($newEventData['id'], $newEventData['created_at'], $newEventData['updated_at']);
-        
-        $newEventData['name'] = 'Cópia de ' . $event->name;
-        $newEventData['event_status_id'] = EventStatus::where('name', 'Aberto')->value('id');
-        $newEventData['collaborator_id'] = auth()->user()->collaborator->id;
+        $originalKit->load('products');
 
-        $newEvent = Event::create($newEventData);
+        $productsData = [];
+        foreach ($originalKit->products as $product) {
+            $productsData[$product->id] = [
+                'value' => $product->pivot->value,
+                'ordination' => $product->pivot->ordination,
+                'optional' => $product->pivot->optional,
+                'average consumption' => $product->pivot->{'average consumption'},
+                'quantity' => $product->pivot->quantity,
+                'comments' => $product->pivot->comments,
+                'checklist' => $product->pivot->checklist,
+                'observation' => $product->pivot->observation,
+            ];
+        }
 
-        if ($event->eventBatches->isNotEmpty()) {
-            foreach ($event->eventBatches as $batch) {
-                EventBatch::create([
-                    'event_id' => $newEvent->id,
-                    'name' => $batch->name,
-                    'guests' => $batch->guests,
-                    'value' => $batch->value,
-                    'discount' => $batch->discount,
-                    'total_value' => $batch->total_value,
-                    'status' => $batch->status,
-                    'unit_value' => $batch->unit_value,
+        if (!empty($productsData)) {
+            $newKit->products()->sync($productsData);
+        }
+
+        $originalKit->load('eventKits');
+
+        foreach ($originalKit->eventKits as $subKit) {
+            $newSubKit = $this->duplicateSingleKit($subKit, $newEventId, $newKit->id, $kitIdMap);
+            $kitIdMap[$subKit->id] = $newSubKit->id;
+        }
+
+        return $newKit;
+    }
+
+    private function updateInstallments(Event $event, $plan, array $installmentsData): void
+    {
+        if (!$plan) {
+            return;
+        }
+
+        if (empty($installmentsData)) {
+            $plan->installments()->delete();
+            return;
+        }
+
+        $this->validateInstallmentTotals($plan, $installmentsData);
+        $this->updatePlanInstallmentAmount($plan, $installmentsData);
+
+        $existingInstallmentsData = array_filter($installmentsData, fn($data) => isset($data['id']) && $data['id'] !== null);
+        $newInstallmentsData = array_filter($installmentsData, fn($data) => !isset($data['id']) || $data['id'] === null);
+
+        $installmentIds = collect($existingInstallmentsData)->pluck('id')->filter()->toArray();
+
+        $allExistingInstallments = Installment::where('payment_plan_id', $plan->id)
+            ->orderBy('installment_number')
+            ->get()
+            ->keyBy('id');
+
+        $installmentsToUpdate = [];
+        if (!empty($installmentIds)) {
+            $installmentsToUpdate = Installment::where('payment_plan_id', $plan->id)
+                ->whereIn('id', $installmentIds)
+                ->orderBy('installment_number')
+                ->get()
+                ->keyBy('id');
+        }
+
+        $installmentsToDelete = $allExistingInstallments->whereNotIn('id', $installmentIds);
+        foreach ($installmentsToDelete as $installmentToDelete) {
+            $event->receivables()
+                ->where('receivableable_type', get_class($event))
+                ->where('receivableable_id', $event->id)
+                ->where('description', 'like', '%Parcela ' . $installmentToDelete->installment_number . '/' . $plan->num_installments . '%')
+                ->delete();
+
+            $installmentToDelete->delete();
+        }
+
+        $previousDueDate = null;
+
+        foreach ($existingInstallmentsData as $installmentData) {
+            if (!isset($installmentData['id']) || !isset($installmentData['due_date'])) {
+                continue;
+            }
+
+            $installment = $installmentsToUpdate->get($installmentData['id']) ?? null;
+
+            if (!$installment) {
+                $installment = Installment::where('id', $installmentData['id'])
+                    ->where('payment_plan_id', $plan->id)
+                    ->first();
+
+                if (!$installment) {
+                    continue;
+                }
+            }
+
+            if ($installment->payment_plan_id != $plan->id) {
+                continue;
+            }
+
+            $newDueDate = \Carbon\Carbon::parse($installmentData['due_date']);
+
+            if ($previousDueDate && $newDueDate->lt($previousDueDate)) {
+                $validator = Validator::make([], []);
+                $validator->errors()->add('installments', 'A data de vencimento da parcela ' . $installment->installment_number . ' não pode ser anterior à parcela anterior.');
+                throw new ValidationException($validator);
+            }
+
+            $installment->due_date = $newDueDate->format('Y-m-d');
+            $amount = $this->resolveInstallmentAmount($plan, $installmentData);
+            $installment->amount = $amount;
+            $installment->save();
+
+            $receivable = $event->receivables()
+                ->where('receivableable_type', get_class($event))
+                ->where('receivableable_id', $event->id)
+                ->where('description', 'like', '%Parcela ' . $installment->installment_number . '/' . $plan->num_installments . '%')
+                ->first();
+
+            if ($receivable) {
+                $receivable->due_date = $newDueDate->format('Y-m-d');
+                $receivable->amount = $amount;
+                $receivable->save();
+            }
+
+            $previousDueDate = $newDueDate;
+        }
+
+        $maxInstallmentNumber = Installment::where('payment_plan_id', $plan->id)
+            ->max('installment_number') ?? 0;
+
+        foreach ($newInstallmentsData as $installmentData) {
+            if (!isset($installmentData['due_date'])) {
+                continue;
+            }
+
+            $newDueDate = Carbon::parse($installmentData['due_date']);
+
+            if ($previousDueDate && $newDueDate->lt($previousDueDate)) {
+                $validator = \Illuminate\Support\Facades\Validator::make([], []);
+                $validator->errors()->add('installments', 'A data de vencimento da nova parcela não pode ser anterior à parcela anterior.');
+                throw new ValidationException($validator);
+            }
+
+            if (isset($installmentData['installment_number'])) {
+                $installmentNumber = $installmentData['installment_number'];
+            } else {
+                $maxInstallmentNumber++;
+                $installmentNumber = $maxInstallmentNumber;
+            }
+
+            $existingInstallment = Installment::withTrashed()
+                ->where('payment_plan_id', $plan->id)
+                ->where('installment_number', $installmentNumber)
+                ->first();
+
+            if ($existingInstallment) {
+                if ($existingInstallment->trashed()) {
+                    $existingInstallment->restore();
+                }
+
+                $existingInstallment->due_date = $newDueDate->format('Y-m-d');
+                $amount = $this->resolveInstallmentAmount($plan, $installmentData);
+                $existingInstallment->amount = $amount;
+                $existingInstallment->save();
+
+                $receivable = $event->receivables()
+                    ->where('receivableable_type', get_class($event))
+                    ->where('receivableable_id', $event->id)
+                    ->where('description', 'like', '%Parcela ' . $installmentNumber . '/' . $plan->num_installments . '%')
+                    ->first();
+
+                if ($receivable) {
+                    $receivable->due_date = $newDueDate->format('Y-m-d');
+                    $receivable->amount = $amount;
+                    $receivable->save();
+                } else {
+                    $event->receivables()->create([
+                        'description' => 'Parcela ' . $installmentNumber . '/' . $plan->num_installments . ' - ' . $event->name,
+                        'amount' => $amount,
+                        'due_date' => $newDueDate->format('Y-m-d'),
+                        'status' => 'pending',
+                        'payment_method_id' => $plan->payment_method_id,
+                        'receivableable_type' => get_class($event),
+                        'receivableable_id' => $event->id,
+                    ]);
+                }
+            } else {
+                $newInstallment = Installment::create([
+                    'payment_plan_id' => $plan->id,
+                    'installment_number' => $installmentNumber,
+                    'amount' => $this->resolveInstallmentAmount($plan, $installmentData),
+                    'due_date' => $newDueDate->format('Y-m-d'),
+                ]);
+
+                $event->receivables()->create([
+                    'description' => 'Parcela ' . $installmentNumber . '/' . $plan->num_installments . ' - ' . $event->name,
+                    'amount' => $this->resolveInstallmentAmount($plan, $installmentData),
+                    'due_date' => $newDueDate->format('Y-m-d'),
+                    'status' => 'pending',
+                    'payment_method_id' => $plan->payment_method_id,
+                    'receivableable_type' => get_class($event),
+                    'receivableable_id' => $event->id,
                 ]);
             }
+
+            $previousDueDate = $newDueDate;
         }
-
-        if ($event->materials->isNotEmpty()) {
-            $materialsData = [];
-            foreach ($event->materials as $material) {
-                $materialsData[$material->id] = [
-                    'selected' => $material->pivot->selected === '-1' ? null : $material->pivot->selected,
-                    'quantity' => $material->pivot->quantity ?? 0
-                ];
-            }
-            $newEvent->materials()->sync($materialsData);
-        }
-
-        if ($event->eventNotes->isNotEmpty()) {
-            foreach ($event->eventNotes as $note) {
-                $noteData = [
-                    'event_id' => $newEvent->id,
-                    'text' => $note->text,
-                    'user_id' => auth()->user()->collaborator->id,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ];
-                
-                
-                EventNote::create($noteData);
-            }
-        }
-
-        if ($event->extraSales->isNotEmpty()) {
-            foreach ($event->extraSales as $sale) {
-                ExtraSale::create([
-                    'event_id' => $newEvent->id,
-                    'description' => $sale->description,
-                    'unit_value' => $sale->unit_value,
-                    'quantity' => $sale->quantity,
-                    'unit_id' => $sale->unit_id
-                ]);
-            }
-        }
-
-        if ($event->paymentPlan) {
-            $paymentPlanData = $event->paymentPlan->toArray();
-            unset($paymentPlanData['id']);
-            
-            $newPaymentPlan = $newEvent->paymentPlan()->create($paymentPlanData);
-            $this->generateReceivables($newEvent, $newPaymentPlan);
-        }
-
-        if ($event->utensils->isNotEmpty()) {
-            $newEvent->utensils()->sync($event->utensils->pluck('id'));
-        }
-
-        if ($event->officeEvents->isNotEmpty()) {
-            $officeData = [];
-            foreach ($event->officeEvents as $office) {
-                $officeData[$office->id] = ['quantity' => $office->pivot->quantity ?? 0];
-            }
-            $newEvent->officeEvents()->sync($officeData);
-        }
-
-        if ($event->officeBudgets->isNotEmpty()) {
-            $newEvent->officeBudgets()->sync($event->officeBudgets->pluck('id'));
-        }
-
-        if ($event->tastingEvents->isNotEmpty()) {
-            $newEvent->tastingEvents()->sync($event->tastingEvents->pluck('id'));
-        }
-
-        if ($event->parentEvents->isNotEmpty()) {
-            $newEvent->parentEvents()->sync($event->parentEvents->pluck('id'));
-        }
-
-        if ($event->clients->isNotEmpty()) {
-            $legalRepresentativesIds = $event->clients
-                ->where('type', 'pf')
-                ->pluck('id')
-                ->toArray();
-            
-            if (!empty($legalRepresentativesIds)) {
-                $newEvent->clients()->syncWithoutDetaching($legalRepresentativesIds);
-            }
-        }
-
-        if (EventKit::where('event_id', $event->id)->exists()) {
-            $this->duplicateEventKits($event, $newEvent);
-        } 
-
-        EventStatusHistory::create([
-            'event_id' => $newEvent->id,
-            'event_status_id' => $newEvent->event_status_id,
-            'collaborator_id' => auth()->user()->collaborator->id
-        ]);
-
-        DB::commit();
-
-        return response()->json(new EventResource($newEvent->load([
-            'materials',
-            'eventBatches',
-            'extraSales',
-            'eventNotes',
-            'paymentPlan',
-            'tastingEvents',
-            'parentEvents'
-        ])), 201);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json([
-            'message' => 'Erro ao duplicar evento',
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ], 500);
-    }
-}
-
-private function duplicateEventKits(Event $originalEvent, Event $newEvent)
-{
-    $rootKits = EventKit::where('event_id', $originalEvent->id)
-                        ->whereNull('event_kit_id')
-                        ->get();
-
-    $kitIdMap = [];
-
-    foreach ($rootKits as $rootKit) {
-        $rootKit->load(['products', 'eventKits.products']);
-        
-        $newRootKit = $this->duplicateSingleKit($rootKit, $newEvent->id, null, $kitIdMap);
-        $kitIdMap[$rootKit->id] = $newRootKit->id;
-    }
-}
-
-private function duplicateSingleKit(EventKit $originalKit, $newEventId, $newParentKitId, &$kitIdMap)
-{
-    $newKit = EventKit::create([
-        'name' => $originalKit->name,
-        'event_id' => $newEventId,
-        'event_kit_id' => $newParentKitId,
-        'value' => $originalKit->value,
-        'themed_table' => $originalKit->themed_table,
-        'ordination' => $originalKit->ordination,
-        'observation' => $originalKit->observation,
-        'optional' => $originalKit->optional,
-        'checklist' => $originalKit->checklist,
-    ]);
-
-    $originalKit->load('products');
-    
-    $productsData = [];
-    foreach ($originalKit->products as $product) {
-        $productsData[$product->id] = [
-            'value' => $product->pivot->value,
-            'ordination' => $product->pivot->ordination,
-            'optional' => $product->pivot->optional,
-            'average consumption' => $product->pivot->{'average consumption'},
-            'quantity' => $product->pivot->quantity,
-            'comments' => $product->pivot->comments,
-            'checklist' => $product->pivot->checklist,
-            'observation' => $product->pivot->observation,
-        ];
-    }
-    
-    if (!empty($productsData)) {
-        $newKit->products()->sync($productsData);
     }
 
-    $originalKit->load('eventKits');
-    
-    foreach ($originalKit->eventKits as $subKit) {
-        $newSubKit = $this->duplicateSingleKit($subKit, $newEventId, $newKit->id, $kitIdMap);
-        $kitIdMap[$subKit->id] = $newSubKit->id;
+    private function resolveInstallmentAmount(PaymentPlan $plan, array $installmentData): float
+    {
+        $amount = $installmentData['amount'] ?? $plan->installment_amount ?? 0;
+        return round((float) $amount, 2);
     }
 
-    return $newKit;
-}
+    private function validateInstallmentTotals(PaymentPlan $plan, array $installmentsData): void
+    {
+        if ($plan->total_amount === null) {
+            return;
+        }
 
+        $installmentSum = collect($installmentsData)
+            ->map(fn($data) => $this->resolveInstallmentAmount($plan, $data))
+            ->sum();
 
+        $expectedTotal = round((float) $plan->total_amount, 2);
+        $downPayment = round((float) ($plan->down_payment ?? 0), 2);
+        $calculatedTotal = round($installmentSum + $downPayment, 2);
 
+        if (abs($calculatedTotal - $expectedTotal) > 0.01) {
+            $difference = round($expectedTotal - $calculatedTotal, 2);
+            $differenceText = $difference > 0
+                ? "faltam R$ " . number_format(abs($difference), 2, ',', '.')
+                : "há excesso de R$ " . number_format(abs($difference), 2, ',', '.');
 
+            $validator = Validator::make([], []);
+            $validator->errors()->add(
+                'payment_plan.total_amount',
+                "A soma das parcelas (considerando a entrada) deve ser igual ao valor total. Atualmente {$differenceText}"
+            );
 
+            throw new ValidationException($validator);
+        }
+    }
 
+    private function updatePlanInstallmentAmount(PaymentPlan $plan, array $installmentsData): void
+    {
+        $count = count($installmentsData);
+
+        if ($count === 0 || $plan->num_installments === 0) {
+            return;
+        }
+
+        $installmentSum = collect($installmentsData)
+            ->map(fn($data) => $this->resolveInstallmentAmount($plan, $data))
+            ->sum();
+
+        if ($count === (int) $plan->num_installments) {
+            $plan->installment_amount = round($installmentSum / $plan->num_installments, 2);
+            $plan->save();
+        }
+    }
+
+    private function ensureCompletePaymentPlan(array $paymentPlanData): void
+    {
+        $requiredFields = ['num_installments', 'payment_method_id', 'due_day'];
+
+        $hasRequired = collect($requiredFields)->every(function ($field) use ($paymentPlanData) {
+            $value = $paymentPlanData[$field] ?? null;
+            return $value !== null && $value !== '' && $value !== 0 && $value !== '0';
+        });
+
+        if (!$hasRequired) {
+            $validator = Validator::make([], []);
+            $validator->errors()->add(
+                'payment_plan.total_amount',
+                'Preencha todos os campos de pagamento ou deixe todos vazios.'
+            );
+            throw new ValidationException($validator);
+        }
+
+        $downPayment = $paymentPlanData['down_payment'] ?? null;
+        $downPaymentDueDate = $paymentPlanData['down_payment_due_date'] ?? null;
+
+        if ($downPayment && (float) $downPayment > 0) {
+            if (!$downPaymentDueDate || trim($downPaymentDueDate) === '') {
+                $validator = Validator::make([], []);
+                $validator->errors()->add(
+                    'payment_plan.down_payment_due_date',
+                    'A data de vencimento da entrada é obrigatória quando há valor de entrada.'
+                );
+                throw new ValidationException($validator);
+            }
+        }
+    }
+
+    private function isPaymentPlanEffectivelyEmpty(array $paymentPlanData): bool
+    {
+        $meaningfulFields = ['num_installments', 'payment_method_id', 'due_day', 'down_payment', 'installment_amount'];
+
+        $hasMeaningful = collect($meaningfulFields)->contains(function ($field) use ($paymentPlanData) {
+            $value = $paymentPlanData[$field] ?? null;
+            return !($value === null || $value === '' || $value === 0 || $value === '0');
+        });
+
+        if ($hasMeaningful) {
+            return false;
+        }
+
+        return true;
+    }
 }

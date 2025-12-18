@@ -72,16 +72,16 @@ class Product extends Model implements AuditableInterface
         ];
     }
 
-    public function unit() 
+    public function unit()
     {
         return $this->belongsTo(Unit::class);
     }
 
     public function kits()
     {
-        return $this->belongsToMany(Kit::class, 'kit_product')->withPivot(['value', 'optional']);
+        return $this->belongsToMany(Kit::class, 'kit_product')->withPivot(['value', 'optional', 'ordination', 'checklist', 'observation']);
     }
-    
+
     public function eventKits()
     {
         return $this->belongsToMany(EventKit::class, 'event_kit_product')->withPivot(['event_id', 'value', 'ordination', 'optional', 'average consumption ', 'quantity', 'comments ']);

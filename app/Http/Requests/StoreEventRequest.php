@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Material;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Validator as ValidationValidator;
 
 class StoreEventRequest extends FormRequest
 {
@@ -42,6 +45,10 @@ class StoreEventRequest extends FormRequest
             'min_guests' => 'nullable|integer|min:1',
             'is_medicine' => 'nullable|boolean',
             'old_system_id' => 'nullable',
+            'post_event_consumption_report' => 'nullable|string',
+            'post_event_consumption_report_file_id' => 'nullable|exists:files,id',
+            'post_event_consumption_report_file_name' => 'nullable|string|max:255',
+            'post_event_consumption_report_remove' => 'nullable|boolean',
 
 
         ];
@@ -94,5 +101,67 @@ class StoreEventRequest extends FormRequest
             'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
             'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
         ];
+    }
+
+    public function withValidator(ValidationValidator $validator): void
+    {
+        $validator->after(function (ValidationValidator $validator) {
+            $this->validateMaterials($validator);
+        });
+    }
+
+    private function validateMaterials(ValidationValidator $validator): void
+    {
+        $materials = $this->input('materials', []);
+
+        if (empty($materials)) {
+            return;
+        }
+
+        foreach ($materials as $materialData) {
+            if (empty($materialData['id']) || empty($materialData['quantity']) || $materialData['quantity'] <= 0) {
+                continue;
+            }
+
+            $material = Material::find($materialData['id']);
+            if (!$material) {
+                continue;
+            }
+
+            $requestedQuantity = (int) $materialData['quantity'];
+            $totalQuantity = $material->quantity;
+
+            $usedQuantity = $this->getUsedQuantityForMaterial($material->id);
+
+            $totalUsedAfterCreate = $usedQuantity + $requestedQuantity;
+
+            if ($totalUsedAfterCreate > $totalQuantity) {
+                $maxAllowedQuantity = $totalQuantity - $usedQuantity;
+
+                $validator->errors()->add(
+                    'materials',
+                    "O material '{$material->description}' possui apenas {$maxAllowedQuantity} unidade(s) disponível(is), mas você está tentando usar {$requestedQuantity}."
+                );
+            }
+        }
+    }
+
+    private function getUsedQuantityForMaterial(int $materialId): int
+    {
+        $eventDate = $this->input('date');
+
+        if (!$eventDate) {
+            return 0;
+        }
+
+        $usedQuantity = DB::table('event_material')
+            ->join('events', 'event_material.event_id', '=', 'events.id')
+            ->where('event_material.material_id', $materialId)
+            ->where('events.date', $eventDate)
+            ->whereNull('events.deleted_at')
+            ->whereNull('event_material.deleted_at')
+            ->sum('event_material.quantity');
+
+        return (int) $usedQuantity;
     }
 }

@@ -35,6 +35,9 @@ class EventResource extends JsonResource
             'closed_at' => $this->closed_at ? $this->closed_at->format('Y-m-d H:i:s') : null,
             'duration_after'     => $this->duration_after,
             'contract_body'      => $this->contract_body,
+            'post_event_consumption_report_file_id' => $this->post_event_consumption_report_file_id,
+            'post_event_consumption_report_file_name' => $this->postEventConsumptionReportFile?->name,
+            'post_event_consumption_report_file_url' => $this->postEventConsumptionReportFile ? asset('storage/' . $this->postEventConsumptionReportFile->path) : null,
             'parthenon_courtesies' => $this->parthenon_courtesies,
             'partner_courtesies' => $this->partner_courtesies,
             'courtesies'         => $this->courtesies,
@@ -67,29 +70,19 @@ class EventResource extends JsonResource
             'extra_sales'        => $this->whenLoaded('extraSales'),
             'event_batches'      => $this->whenLoaded('eventBatches'),
             'event_notes'        => $this->whenLoaded('eventNotes', fn() => EventNoteResource::collection($this->eventNotes)),
-            'payment_plan' => $this->whenLoaded('paymentPlan', function() {
+            'payment_plan' => new PaymentPlanResource($this->whenLoaded('paymentPlan')),
+
+            'receivables' => $this->whenLoaded('receivables', function () {
+                return $this->receivables->map(function ($receivable) {
                     return [
-                        'total_amount' => $this->paymentPlan->total_amount,
-                        'down_payment' => $this->paymentPlan->down_payment,
-                        'num_installments' => $this->paymentPlan->num_installments,
-                        'installment_amount' => $this->paymentPlan->installment_amount,
-                        'payment_method_id' => $this->paymentPlan->payment_method_id,
-                        'due_day' => $this->paymentPlan->due_day,
-                        'payment_method' => $this->paymentPlan->paymentMethod,
+                        'description' => $receivable->description,
+                        'amount' => $receivable->amount,
+                        'due_date' => $receivable->due_date,
+                        'status' => $receivable->status,
+                        'payment_method' => $receivable->paymentMethod,
                     ];
-                }),
-                
-                'receivables' => $this->whenLoaded('receivables', function() {
-                    return $this->receivables->map(function($receivable) {
-                        return [
-                            'description' => $receivable->description,
-                            'amount' => $receivable->amount,
-                            'due_date' => $receivable->due_date,
-                            'status' => $receivable->status,
-                            'payment_method' => $receivable->paymentMethod,
-                        ];
-                    });
-                }),
+                });
+            }),
         ];
     }
 }

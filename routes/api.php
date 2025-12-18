@@ -58,6 +58,7 @@ use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\NotificationController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -113,9 +114,10 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::resource('event-captures', EventCaptureController::class);
 
     Route::get('kits/tree', [KitController::class, 'indexTree'])->name('kits.tree');
-    Route::resource('kits', KitController::class);
+    Route::put('kits/update-product', [KitController::class, 'updateProductKit'])->name('kits.update-product');
     Route::get('kits/{kit}/children', [KitController::class, 'children'])->name('kits.children');
     Route::post('kits/{movingItem}/change-ordination', [KitController::class, 'changeOrdination'])->name('kits.change-ordination');
+    Route::resource('kits', KitController::class);
 
     Route::put('event-kits/update-product', [EventKitController::class, 'updateProductEventKit'])->name('event-kits.update-product');
     Route::get('event-kits/tree', [EventKitController::class, 'indexTree'])->name('event-kits.tree');
@@ -142,15 +144,16 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('events/{event}/materials', [EventController::class, 'materials'])->name('events.materials');
     Route::get('events/{event}/extra-sales', [EventController::class, 'extraSales'])->name('events.extra-sales');
     Route::put('events/{event}/extra-sales', [EventController::class, 'updateExtraSales'])->name('events.update-extra-sales');
+    Route::put('events/{event}/installments', [EventController::class, 'updateInstallments'])->name('events.update-installments');
     Route::get('events/{event}/event-kits', [EventController::class, 'eventKits'])->name('events.event-kits');
     Route::get('events/{event}/contracts', [EventController::class, 'resetContract'])->name('events.reset-contract');
     Route::get('events/{event}/office-events', [EventController::class, 'officeEvents'])->name('events.office-events');
     Route::get('events/{event}/office-events/collaborators', [EventController::class, 'getOfficeEventsWithCollaboratorsForEvent']);
     Route::get('events/{eventId}/office-budgets/collaborators', [EventController::class, 'getOfficeBudgetsWithCollaboratorsForEvent']);
-    
+
     Route::post('events/{event}/legal-representatives', [EventController::class, 'attachLegalRepresentatives'])->name('events.attach-legal-representatives');
     Route::get('events/{event}/legal-representatives', [EventController::class, 'legalRepresentatives'])->name('events.legal-representatives');
-    
+
     Route::post('events/{event}/materials/{material}', [EventController::class, 'syncMaterials'])->name('events.sync-materials');
 
     Route::resource('event-batches', EventBatchController::class);
@@ -175,12 +178,12 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('office-events/{officeEventId}/detach-collaborator', [OfficeEventController::class, 'detachCollaborator'])->name('office-events.detach-collaborators');
 
     Route::resource('clients', ClientController::class);
-    
+
 
     Route::resource('contracts', ContractController::class);
-    
-    Route::post ('contracts/generate/{event}', [ContractController::class, 'storeGenerate'])->name('contracts.generate-pdf');
-    
+
+    Route::post('contracts/generate/{event}', [ContractController::class, 'storeGenerate'])->name('contracts.generate-pdf');
+
     Route::post('contracts/{contract}/to-sign', [ContractController::class, 'toSign'])->name('contracts.to-sign');
 
     Route::get('/contracts/{eventId}/check-signed', [ContractController::class, 'checkSignedContract']);
@@ -221,13 +224,13 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::resource('event-payments', EventPaymentController::class);
 
     Route::delete('/events/{event}/related-events', [EventController::class, 'clearRelatedEvents']);
-    Route::post('/events/{event}/legal-representative/{legalRepresentative}', [EventController::class, 'attachLegalRepresentative']);  
-    Route::delete('/events/{event}/legal-representative/{legalRepresentative}', [EventController::class, 'detachLegalRepresentative']);    
+    Route::post('/events/{event}/legal-representative/{legalRepresentative}', [EventController::class, 'attachLegalRepresentative']);
+    Route::delete('/events/{event}/legal-representative/{legalRepresentative}', [EventController::class, 'detachLegalRepresentative']);
     Route::post('/events/generate-budget/{event}', [EventController::class, 'generateBudget']);
     Route::post('/events/generate-letterhead-budget/{event}', [EventController::class, 'generateLetterheadBudget']);
     Route::post('/events/generate-buffet-contract/{event}', [EventController::class, 'generateBuffetContract']);
     Route::post('/events/generate-lease-contract/{event}', [EventController::class, 'generateLeaseContract']);
-    Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);    
+    Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
     Route::post('/events/generate-closure/{event}', [EventController::class, 'generateClosure']);
     Route::post('/events/generate-summary/{event}', [EventController::class, 'generateSummary']);
     Route::post('/events/generate-menu/{event}', [EventController::class, 'generateMenu']);
@@ -258,11 +261,13 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::resource('purchase-requests', PurchaseRequestController::class);
     Route::get('purchase-requests/{purchaseRequest}/products', [PurchaseRequestController::class, 'products'])->name('purchase-requests.products');
-    
+
     Route::resource('purchase-orders', PurchaseOrderController::class);
 
+    Route::get('/notifications/unread', [NotificationController::class, 'unread'])->name('notifications.unread');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+
     Route::get('/events/{event}/duplicate', [EventController::class, 'duplicate']);
-
-
-  
 });

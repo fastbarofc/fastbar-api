@@ -9,6 +9,18 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class PaymentMethodFactory extends Factory
 {
+    private static $paymentMethodNames = [
+        'Dinheiro',
+        'PIX',
+        'Cartão de Crédito',
+        'Cartão de Débito',
+        'Boleto Bancário',
+        'Transferência Bancária',
+        'Cheque',
+    ];
+
+    private static $index = 0;
+
     /**
      * Define the model's default state.
      *
@@ -16,9 +28,12 @@ class PaymentMethodFactory extends Factory
      */
     public function definition(): array
     {
+        $name = self::$paymentMethodNames[self::$index % count(self::$paymentMethodNames)];
+        self::$index++;
+
         return [
-            'name' => $this->faker->word,
-            'slug' => $this->faker->slug,
+            'name' => $name,
+            'slug' => \Illuminate\Support\Str::slug($name),
         ];
     }
 }
