@@ -13,15 +13,10 @@ class EventHistory extends Model
         'event_id',
         'user_id',
         'action',
-        'old_data',
-        'new_data',
         'changes',
-        'description',
     ];
 
     protected $casts = [
-        'old_data' => 'array',
-        'new_data' => 'array',
         'changes' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

@@ -16,10 +16,7 @@ return new class extends Migration
             $table->foreignId('event_id')->constrained('events')->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->enum('action', ['created', 'updated'])->default('updated');
-            $table->json('old_data')->nullable();
-            $table->json('new_data')->nullable();
             $table->json('changes')->nullable();
-            $table->text('description')->nullable();
             $table->timestamps();
 
             $table->index('event_id');

@@ -332,6 +332,20 @@ class EventController extends Controller
             'payment_plan' => $event->paymentPlan ? $event->paymentPlan->toArray() : null,
             'extra_sales' => $event->extraSales->toArray(),
             'event_kits' => $event->eventKits->toArray(),
+            'materials' => $event->materials->map(function ($material) {
+                return [
+                    'id' => $material->id,
+                    'description' => $material->description,
+                    'selected' => $material->pivot->selected === null ? '-1' : (string) $material->pivot->selected,
+                    'quantity' => (int) $material->pivot->quantity,
+                ];
+            })->toArray(),
+            'office_events' => $event->officeEvents->map(function ($office) {
+                return [
+                    'id' => $office->id,
+                    'quantity' => (int) $office->pivot->quantity,
+                ];
+            })->toArray(),
         ];
         $originalDataWithRelationships = array_merge($originalData, $originalRelationships);
 

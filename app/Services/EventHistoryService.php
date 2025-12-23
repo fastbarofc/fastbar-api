@@ -4,7 +4,21 @@ namespace App\Services;
 
 use App\Models\Event;
 use App\Models\EventHistory;
+use App\Models\Client;
+use App\Models\Collaborator;
+use App\Models\EventType;
+use App\Models\EventPlace;
+use App\Models\EventStatus;
+use App\Models\Partner;
+use App\Models\Decorator;
+use App\Models\Ceremonial;
+use App\Models\EventCapture;
+use App\Models\CompetingCompany;
+use App\Models\LostReason;
+use App\Models\Material;
+use App\Models\Unit;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class EventHistoryService
 {
@@ -16,24 +30,22 @@ class EventHistoryService
         'created_at',
         'updated_at',
         'deleted_at',
+        'old_system_id',
         // Relacionamentos carregados que não devem ser comparados diretamente
-        // (serão comparados através dos dados do request)
         'client',
         'invoice_client',
         'collaborator',
         'event_type',
+        'type',
         'event_place',
         'event_status',
+        'status',
         'partner',
         'decorator',
         'ceremonial',
         'event_capture',
-        'materials',
-        'event_gifts',
         'contracts',
-        'office_events',
-        'utensils',
-        'office_budgets',
+        'event_gifts',
         'receivables',
         'failures',
         'tasting_events',
@@ -41,47 +53,65 @@ class EventHistoryService
         'clients',
         'legal_representatives',
         'post_event_consumption_report_file',
+        'post_event_consumption_report',
+        'post_event_consumption_report_file_name',
+        'post_event_consumption_report_file_id',
+        'post_event_consumption_report_file_url',
+        'post_event_consumption_report_remove',
+        'has_tasting',
     ];
 
     /**
      * Mapeamento de nomes de campos para nomes amigáveis
      */
     private array $fieldLabels = [
-        'name' => 'Nome',
+        'name' => 'Nome do Evento',
         'client_id' => 'Cliente',
         'invoice_client_id' => 'Cliente da Nota Fiscal',
-        'collaborator_id' => 'Colaborador',
+        'collaborator_id' => 'Colaborador Responsável',
         'event_type_id' => 'Tipo de Evento',
         'event_place_id' => 'Local do Evento',
         'event_status_id' => 'Status do Evento',
         'partner_id' => 'Parceiro',
         'decorator_id' => 'Decorador',
-        'event_capture_id' => 'Captura do Evento',
+        'event_capture_id' => 'Forma de Captura',
         'ceremonial_id' => 'Cerimonial',
-        'lease' => 'Locação',
-        'date' => 'Data',
+        'competing_company_id' => 'Empresa Concorrente',
+        'lost_reason_id' => 'Motivo da Perda',
+        'lease' => 'Valor da Locação',
+        'date' => 'Data do Evento',
         'time' => 'Horário',
-        'duration' => 'Duração',
-        'duration_after' => 'Duração Após',
+        'duration' => 'Duração (horas)',
+        'duration_after' => 'Duração Após (minutos)',
         'contract_body' => 'Corpo do Contrato',
         'parthenon_courtesies' => 'Cortesias Parthenon',
         'partner_courtesies' => 'Cortesias Parceiro',
         'unit_insurance' => 'Seguro Unitário',
-        'competing_company_id' => 'Empresa Concorrente',
-        'lost_reason_id' => 'Motivo da Perda',
+        'discount' => 'Desconto',
+        'unit_discount' => 'Desconto Unitário',
         'is_draft' => 'Rascunho',
         'total_value' => 'Valor Total',
         'buffet_value' => 'Valor do Buffet',
         'sub_total' => 'Subtotal',
-        'event_guests' => 'Convidados do Evento',
+        'event_guests' => 'Quantidade de Convidados',
+        'present_guests' => 'Convidados Presentes',
+        'guest_unit_value' => 'Valor Unitário por Convidado',
+        'excess_unit_value' => 'Valor Unitário Excedente',
+        'min_guests' => 'Mínimo de Convidados',
         'is_medicine' => 'É Medicina',
-        'closed_at' => 'Fechado em',
+        'closed_at' => 'Data de Fechamento',
         // Relacionamentos
         'event_batches' => 'Lotes do Evento',
         'event_notes' => 'Anotações do Evento',
         'payment_plan' => 'Plano de Pagamento',
         'extra_sales' => 'Vendas Extras',
         'event_kits' => 'Itens do Buffet',
+        'materials' => 'Materiais',
+        'office_events' => 'Eventos de Escritório',
+        'utensils' => 'Utensílios',
+        'office_budgets' => 'Orçamentos de Escritório',
+        'related_tasting_events' => 'Eventos de Degustação Relacionados',
+        'parent_events' => 'Eventos Principais',
     ];
 
     /**
@@ -90,15 +120,13 @@ class EventHistoryService
     public function logEventCreation(Event $event): EventHistory
     {
         $newData = $this->prepareEventData($event);
+        $formattedChanges = $this->formatChangesForCreation($newData);
 
         return EventHistory::create([
             'event_id' => $event->id,
             'user_id' => Auth::id(),
             'action' => 'created',
-            'old_data' => null,
-            'new_data' => $newData,
-            'changes' => $this->formatChangesForCreation($newData),
-            'description' => 'Evento criado',
+            'changes' => $this->processChangesForStorage($formattedChanges),
         ]);
     }
 
@@ -116,7 +144,7 @@ class EventHistoryService
             $newData = $this->addRelationshipsData($newData, $requestData);
         }
 
-        $changes = $this->detectChanges($oldData, $newData);
+        $changes = $this->detectChanges($oldData, $newData, $requestData);
 
         // Se não houver mudanças, não registra
         if (empty($changes)) {
@@ -127,10 +155,7 @@ class EventHistoryService
             'event_id' => $event->id,
             'user_id' => Auth::id(),
             'action' => 'updated',
-            'old_data' => $oldData,
-            'new_data' => $newData,
-            'changes' => $changes,
-            'description' => $this->generateUpdateDescription($changes),
+            'changes' => $this->processChangesForStorage($changes),
         ]);
     }
 
@@ -139,11 +164,22 @@ class EventHistoryService
      */
     private function addRelationshipsData(array $data, array $sourceData): array
     {
-        $relationshipsToTrack = ['event_batches', 'event_notes', 'payment_plan', 'extra_sales', 'event_kits'];
+        $relationshipsToTrack = [
+            'event_batches',
+            'event_notes',
+            'payment_plan',
+            'extra_sales',
+            'event_kits',
+            'materials',
+            'office_events',
+            'related_tasting_events',
+            'parent_events',
+        ];
 
         foreach ($relationshipsToTrack as $relationship) {
             if (isset($sourceData[$relationship])) {
                 $normalized = $this->normalizeRelationshipData($sourceData[$relationship]);
+
                 // Só adiciona se não for vazio
                 if ($normalized !== null && $normalized !== []) {
                     $data[$relationship] = $normalized;
@@ -218,12 +254,18 @@ class EventHistoryService
         }
 
         // Normaliza valores numéricos em campos de valores monetários
-        $numericFields = ['total_amount', 'down_payment', 'installment_amount', 'unit_value'];
+        $numericFields = ['total_amount', 'down_payment', 'installment_amount', 'unit_value', 'quantity'];
         foreach ($numericFields as $field) {
             if (isset($item[$field])) {
                 // Converte para float e depois para string com 2 casas decimais
                 $item[$field] = number_format((float) $item[$field], 2, '.', '');
             }
+        }
+
+        // Normaliza o campo 'selected' para garantir comparação consistente
+        if (isset($item['selected'])) {
+            // Converte para string para comparação consistente
+            $item['selected'] = (string) $item['selected'];
         }
 
         // Remove valores null para comparação mais limpa
@@ -319,7 +361,7 @@ class EventHistoryService
     /**
      * Detecta mudanças entre dados antigos e novos
      */
-    private function detectChanges(array $oldData, array $newData): array
+    private function detectChanges(array $oldData, array $newData, array $requestData = []): array
     {
         $changes = [];
 
@@ -328,22 +370,26 @@ class EventHistoryService
 
             // Compara valores (tratando null e string vazia como equivalentes)
             if ($this->valuesAreDifferent($oldValue, $newValue)) {
-                // Debug temporário
-                if ($key === 'payment_plan') {
-                    \Log::debug("Payment Plan STILL different after normalization", [
-                        'old_normalized' => $oldValue,
-                        'new_normalized' => $newValue,
-                        'old_hash' => $this->createDataHash($oldValue),
-                        'new_hash' => $this->createDataHash($newValue),
-                    ]);
-                }
-
-                $changes[] = [
+                $change = [
                     'field' => $key,
                     'field_label' => $this->fieldLabels[$key] ?? $key,
                     'old_value' => $oldValue,
                     'new_value' => $newValue,
                 ];
+
+                // Adiciona nome amigável para campos de ID
+                if ($this->isRelationshipIdField($key)) {
+                    $change['old_value_display'] = $this->getRelationshipName($key, $oldValue);
+                    $change['new_value_display'] = $this->getRelationshipName($key, $newValue, $requestData);
+                }
+
+                // Adiciona formatação amigável para relacionamentos complexos
+                if ($this->isComplexRelationship($key)) {
+                    $change['old_value_display'] = $this->formatComplexRelationship($key, $oldValue);
+                    $change['new_value_display'] = $this->formatComplexRelationship($key, $newValue);
+                }
+
+                $changes[] = $change;
             }
         }
 
@@ -473,18 +519,39 @@ class EventHistoryService
     }
 
     /**
-     * Gera descrição da atualização baseada nas mudanças
+     * Processa as mudanças para armazenamento
+     * Retorna apenas as informações necessárias já formatadas
      */
-    private function generateUpdateDescription(array $changes): string
+    private function processChangesForStorage(array $changes): array
     {
-        $changedFields = array_slice(array_column($changes, 'field_label'), 0, 3);
-        $description = 'Atualizado: ' . implode(', ', $changedFields);
+        return array_map(function ($change) {
+            $processed = [
+                'field' => $change['field'] ?? '',
+                'label' => $change['field_label'] ?? $change['field'] ?? '',
+            ];
 
-        if (count($changes) > 3) {
-            $description .= ' e mais ' . (count($changes) - 3) . ' campo(s)';
-        }
+            // Usa old_value_display se disponível, senão formata o valor
+            if (isset($change['old_value_display'])) {
+                $processed['old'] = $change['old_value_display'];
+            } else {
+                $processed['old'] = $this->formatValueForDisplay(
+                    $change['old_value'] ?? null,
+                    $change['field'] ?? null
+                );
+            }
 
-        return $description;
+            // Usa new_value_display se disponível, senão formata o valor
+            if (isset($change['new_value_display'])) {
+                $processed['new'] = $change['new_value_display'];
+            } else {
+                $processed['new'] = $this->formatValueForDisplay(
+                    $change['new_value'] ?? null,
+                    $change['field'] ?? null
+                );
+            }
+
+            return $processed;
+        }, $changes);
     }
 
     /**
@@ -496,6 +563,357 @@ class EventHistoryService
             ->with(['user.collaborator.sector', 'user.collaborator.sectorOffice'])
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
+    }
+
+    /**
+     * Verifica se um campo é um ID de relacionamento
+     */
+    private function isRelationshipIdField(string $field): bool
+    {
+        $relationshipFields = [
+            'client_id',
+            'invoice_client_id',
+            'collaborator_id',
+            'event_type_id',
+            'event_place_id',
+            'event_status_id',
+            'partner_id',
+            'decorator_id',
+            'ceremonial_id',
+            'event_capture_id',
+            'competing_company_id',
+            'lost_reason_id',
+        ];
+
+        return in_array($field, $relationshipFields);
+    }
+
+    /**
+     * Verifica se é um relacionamento complexo (array/objeto)
+     */
+    private function isComplexRelationship(string $field): bool
+    {
+        $complexFields = [
+            'event_batches',
+            'event_notes',
+            'extra_sales',
+            'event_kits',
+            'materials',
+            'office_events',
+            'payment_plan',
+            'related_tasting_events',
+            'parent_events',
+        ];
+
+        return in_array($field, $complexFields);
+    }
+
+    /**
+     * Busca o nome de uma entidade relacionada pelo ID
+     */
+    private function getRelationshipName(string $field, $id, array $requestData = []): string
+    {
+        if ($id === null || $id === '') {
+            return '(nenhum)';
+        }
+
+        // Tenta buscar do requestData primeiro (mais eficiente)
+        $name = $this->getNameFromRequestData($field, $id, $requestData);
+        if ($name !== null) {
+            return $name;
+        }
+
+        // Busca no banco de dados
+        try {
+            switch ($field) {
+                case 'client_id':
+                    $client = Client::find($id);
+                    return $client ? ($client->name ?? $client->nickname ?? "Cliente #{$id}") : "Cliente #{$id}";
+
+                case 'invoice_client_id':
+                    $client = Client::find($id);
+                    return $client ? ($client->name ?? $client->nickname ?? "Cliente #{$id}") : "Cliente #{$id}";
+
+                case 'collaborator_id':
+                    $collaborator = Collaborator::find($id);
+                    return $collaborator ? ($collaborator->name ?? "Colaborador #{$id}") : "Colaborador #{$id}";
+
+                case 'event_type_id':
+                    $type = EventType::find($id);
+                    return $type ? $type->name : "Tipo #{$id}";
+
+                case 'event_place_id':
+                    $place = EventPlace::find($id);
+                    return $place ? $place->name : "Local #{$id}";
+
+                case 'event_status_id':
+                    $status = EventStatus::find($id);
+                    return $status ? $status->name : "Status #{$id}";
+
+                case 'partner_id':
+                    $partner = Partner::find($id);
+                    return $partner ? $partner->name : "Parceiro #{$id}";
+
+                case 'decorator_id':
+                    $decorator = Decorator::find($id);
+                    return $decorator ? $decorator->name : "Decorador #{$id}";
+
+                case 'ceremonial_id':
+                    $ceremonial = Ceremonial::find($id);
+                    return $ceremonial ? $ceremonial->name : "Cerimonial #{$id}";
+
+                case 'event_capture_id':
+                    $capture = EventCapture::find($id);
+                    return $capture ? $capture->name : "Captura #{$id}";
+
+                case 'competing_company_id':
+                    $company = CompetingCompany::find($id);
+                    return $company ? $company->name : "Empresa #{$id}";
+
+                case 'lost_reason_id':
+                    $reason = LostReason::find($id);
+                    return $reason ? $reason->name : "Motivo #{$id}";
+
+                default:
+                    return (string) $id;
+            }
+        } catch (\Exception $e) {
+            Log::error("Erro ao buscar nome do relacionamento {$field}: " . $e->getMessage());
+            return (string) $id;
+        }
+    }
+
+    /**
+     * Tenta buscar o nome do requestData (quando disponível)
+     */
+    private function getNameFromRequestData(string $field, $id, array $requestData): ?string
+    {
+        if (empty($requestData)) {
+            return null;
+        }
+
+        $mapping = [
+            'client_id' => 'client',
+            'invoice_client_id' => 'invoice_client',
+            'collaborator_id' => 'collaborator',
+            'event_type_id' => 'type',
+            'event_place_id' => 'event_place',
+            'event_status_id' => 'status',
+            'partner_id' => 'partner',
+            'decorator_id' => 'decorator',
+            'ceremonial_id' => 'ceremonial',
+            'event_capture_id' => 'event_capture',
+            'competing_company_id' => 'competing_company',
+            'lost_reason_id' => 'lost_reason',
+        ];
+
+        $relationKey = $mapping[$field] ?? null;
+        if (!$relationKey || !isset($requestData[$relationKey])) {
+            return null;
+        }
+
+        $relation = $requestData[$relationKey];
+        if (is_array($relation) && isset($relation['id']) && $relation['id'] == $id) {
+            return $relation['name'] ?? $relation['nickname'] ?? null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Formata relacionamentos complexos para exibição
+     */
+    private function formatComplexRelationship(string $field, $value): string
+    {
+        if ($value === null || $value === '' || $value === []) {
+            return '(nenhum)';
+        }
+
+        if (!is_array($value)) {
+            return (string) $value;
+        }
+
+        switch ($field) {
+            case 'event_batches':
+                return $this->formatEventBatches($value);
+
+            case 'event_notes':
+                return $this->formatEventNotes($value);
+
+            case 'extra_sales':
+                return $this->formatExtraSales($value);
+
+            case 'materials':
+                return $this->formatMaterials($value);
+
+            case 'office_events':
+                return $this->formatOfficeEvents($value);
+
+            case 'payment_plan':
+                return $this->formatPaymentPlan($value);
+
+            case 'related_tasting_events':
+            case 'parent_events':
+                return $this->formatRelatedEvents($value);
+
+            default:
+                return count($value) . ' ' . (count($value) === 1 ? 'item' : 'itens');
+        }
+    }
+
+    /**
+     * Formata lotes do evento
+     */
+    private function formatEventBatches(array $batches): string
+    {
+        if (empty($batches)) {
+            return '(nenhum)';
+        }
+
+        $items = [];
+        foreach ($batches as $batch) {
+            $guests = $batch['guests'] ?? 0;
+            $unitValue = isset($batch['unit_value']) ? 'R$ ' . number_format((float) $batch['unit_value'], 2, ',', '.') : '';
+            $items[] = "{$guests} convidados ({$unitValue})";
+        }
+
+        return count($items) . ' lote(s): ' . implode('; ', array_slice($items, 0, 3)) . (count($items) > 3 ? '...' : '');
+    }
+
+    /**
+     * Formata anotações do evento
+     */
+    private function formatEventNotes(array $notes): string
+    {
+        if (empty($notes)) {
+            return '(nenhuma)';
+        }
+
+        return count($notes) . ' anotação' . (count($notes) === 1 ? '' : 'ões');
+    }
+
+    /**
+     * Formata vendas extras
+     */
+    private function formatExtraSales(array $sales): string
+    {
+        if (empty($sales)) {
+            return '(nenhuma)';
+        }
+
+        $items = [];
+        foreach ($sales as $sale) {
+            $desc = $sale['description'] ?? 'Item';
+            $qty = $sale['quantity'] ?? 0;
+            $items[] = "{$desc} (qtd: {$qty})";
+        }
+
+        return count($items) . ' venda(s): ' . implode('; ', array_slice($items, 0, 2)) . (count($items) > 2 ? '...' : '');
+    }
+
+    /**
+     * Formata materiais
+     */
+    private function formatMaterials(array $materials): string
+    {
+        if (empty($materials)) {
+            return '(nenhum)';
+        }
+
+        $selectedCount = 0;
+        $selectedItems = [];
+
+        foreach ($materials as $material) {
+            if (isset($material['selected']) && $material['selected'] == '1') {
+                $selectedCount++;
+                $desc = $material['description'] ?? 'Material';
+                $qty = $material['quantity'] ?? 0;
+                $selectedItems[] = "{$desc} (qtd: {$qty})";
+            }
+        }
+
+        if ($selectedCount === 0) {
+            return '(nenhum selecionado)';
+        }
+
+        return "{$selectedCount} material" . ($selectedCount === 1 ? '' : 'iais') . ' selecionado(s): ' .
+            implode('; ', array_slice($selectedItems, 0, 3)) . ($selectedCount > 3 ? '...' : '');
+    }
+
+    /**
+     * Formata eventos de escritório
+     */
+    private function formatOfficeEvents(array $events): string
+    {
+        if (empty($events)) {
+            return '(nenhum)';
+        }
+
+        return count($events) . ' evento(s) de escritório';
+    }
+
+    /**
+     * Formata plano de pagamento
+     */
+    private function formatPaymentPlan(array $plan): string
+    {
+        // Verifica se o plano está vazio (todos os campos são null)
+        $hasData = false;
+        foreach ($plan as $key => $value) {
+            if ($value !== null && $value !== '') {
+                $hasData = true;
+                break;
+            }
+        }
+
+        if (!$hasData) {
+            return '(não configurado)';
+        }
+
+        $parts = [];
+
+        if (isset($plan['total_amount']) && $plan['total_amount'] !== null) {
+            $parts[] = 'Total: R$ ' . number_format((float) $plan['total_amount'], 2, ',', '.');
+        }
+
+        if (isset($plan['down_payment']) && $plan['down_payment'] !== null && (float) $plan['down_payment'] > 0) {
+            $parts[] = 'Entrada: R$ ' . number_format((float) $plan['down_payment'], 2, ',', '.');
+        }
+
+        if (isset($plan['num_installments']) && $plan['num_installments'] !== null) {
+            $parts[] = $plan['num_installments'] . ' parcela' . ($plan['num_installments'] == 1 ? '' : 's');
+        }
+
+        if (isset($plan['installment_amount']) && $plan['installment_amount'] !== null) {
+            $parts[] = 'de R$ ' . number_format((float) $plan['installment_amount'], 2, ',', '.');
+        }
+
+        return empty($parts) ? '(configurado)' : implode(', ', $parts);
+    }
+
+    /**
+     * Formata eventos relacionados
+     */
+    private function formatRelatedEvents(array $events): string
+    {
+        if (empty($events)) {
+            return '(nenhum)';
+        }
+
+        $names = [];
+        foreach ($events as $event) {
+            if (is_array($event) && isset($event['name'])) {
+                $names[] = $event['name'];
+            } elseif (is_numeric($event)) {
+                $names[] = "Evento #{$event}";
+            }
+        }
+
+        if (empty($names)) {
+            return count($events) . ' evento(s)';
+        }
+
+        return implode(', ', array_slice($names, 0, 3)) . (count($names) > 3 ? ' e mais ' . (count($names) - 3) : '');
     }
 
     /**
@@ -516,11 +934,11 @@ class EventHistoryService
             return date('H:i', strtotime($value));
         }
 
-        if (in_array($field, ['total_value', 'buffet_value', 'sub_total', 'unit_insurance'])) {
-            return 'R$ ' . number_format($value, 2, ',', '.');
+        if (in_array($field, ['total_value', 'buffet_value', 'sub_total', 'unit_insurance', 'lease', 'discount', 'unit_discount', 'guest_unit_value', 'excess_unit_value'])) {
+            return 'R$ ' . number_format((float) $value, 2, ',', '.');
         }
 
-        if (in_array($field, ['is_draft', 'is_medicine', 'lease'])) {
+        if (in_array($field, ['is_draft', 'is_medicine'])) {
             return $value ? 'Sim' : 'Não';
         }
 
