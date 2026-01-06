@@ -346,6 +346,12 @@ class EventController extends Controller
                     'quantity' => (int) $office->pivot->quantity,
                 ];
             })->toArray(),
+            'legal_representatives' => $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+                return [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                ];
+            })->toArray(),
         ];
         $originalDataWithRelationships = array_merge($originalData, $originalRelationships);
 
@@ -423,10 +429,6 @@ class EventController extends Controller
                 ];
             })->toArray();
             $event->officeEvents()->sync($officeArray);
-        }
-
-        if (!empty($data['client_id'])) {
-            $event->clients()->sync($data['client_id']);
         }
 
         if (!empty($data['extra_sales'])) {
@@ -802,20 +804,85 @@ class EventController extends Controller
     public function attachLegalRepresentatives(Request $request, Event $event)
     {
         $this->authorize('attachLegalRepresentatives', $event);
+
+        $originalLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
         $event->clients()->sync($request->legal_representatives);
+
+        $event->refresh();
+        $newLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
+        $originalData = ['legal_representatives' => $originalLegalRepresentatives];
+        $requestData = ['legal_representatives' => $newLegalRepresentatives];
+
+        $this->historyService->logEventUpdate($event, $originalData, $requestData);
     }
 
     public function attachLegalRepresentative(Request $request, Event $event)
     {
         $this->authorize('attachLegalRepresentatives', $event);
+
+        $originalLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
         $event->clients()->attach($request->legalRepresentativeId);
+
+        $event->refresh();
+        $newLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
+        $originalData = ['legal_representatives' => $originalLegalRepresentatives];
+        $requestData = ['legal_representatives' => $newLegalRepresentatives];
+
+        $this->historyService->logEventUpdate($event, $originalData, $requestData);
+
         return response()->json([], 201);
     }
 
     public function detachLegalRepresentative(Event $event, $legalRepresentativeId)
     {
         $this->authorize('attachLegalRepresentatives', $event);
+
+        $originalLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
         $event->clients()->detach($legalRepresentativeId);
+
+        $event->refresh();
+        $newLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
+        $originalData = ['legal_representatives' => $originalLegalRepresentatives];
+        $requestData = ['legal_representatives' => $newLegalRepresentatives];
+
+        $this->historyService->logEventUpdate($event, $originalData, $requestData);
+
         return response()->json([], 204);
     }
 

@@ -112,6 +112,7 @@ class EventHistoryService
         'office_budgets' => 'Orçamentos de Escritório',
         'related_tasting_events' => 'Eventos de Degustação Relacionados',
         'parent_events' => 'Eventos Principais',
+        'legal_representatives' => 'Representantes Legais',
     ];
 
     /**
@@ -135,13 +136,24 @@ class EventHistoryService
      */
     public function logEventUpdate(Event $event, array $originalData, array $requestData = []): ?EventHistory
     {
-        $oldData = $this->prepareEventData($event, $originalData);
-        $newData = $this->prepareEventData($event);
+        // Separa atributos de relacionamentos nos dados originais
+        $originalAttributes = $this->extractAttributes($originalData);
+        $originalRelationships = $this->extractRelationships($originalData);
 
-        // Adiciona dados de relacionamentos do request se houver
-        if (!empty($requestData)) {
-            $oldData = $this->addRelationshipsData($oldData, $originalData);
-            $newData = $this->addRelationshipsData($newData, $requestData);
+        // Separa atributos de relacionamentos nos dados do request
+        $requestAttributes = !empty($requestData) ? $this->extractAttributes($requestData) : $event->getAttributes();
+        $requestRelationships = !empty($requestData) ? $this->extractRelationships($requestData) : [];
+
+        // Prepara dados antigos usando apenas os atributos originais
+        $oldData = $this->prepareEventData($event, $originalAttributes);
+
+        // Prepara dados novos usando apenas os atributos do request
+        $newData = $this->prepareEventData($event, $requestAttributes);
+
+        // Adiciona dados de relacionamentos
+        if (!empty($originalRelationships) || !empty($requestRelationships)) {
+            $oldData = $this->addRelationshipsData($oldData, $originalRelationships);
+            $newData = $this->addRelationshipsData($newData, $requestRelationships);
         }
 
         $changes = $this->detectChanges($oldData, $newData, $requestData);
@@ -160,6 +172,63 @@ class EventHistoryService
     }
 
     /**
+     * Extrai apenas os atributos do evento (sem relacionamentos)
+     */
+    private function extractAttributes(array $data): array
+    {
+        $relationships = [
+            'event_batches',
+            'event_notes',
+            'payment_plan',
+            'extra_sales',
+            'event_kits',
+            'materials',
+            'office_events',
+            'related_tasting_events',
+            'parent_events',
+            'legal_representatives',
+        ];
+
+        $attributes = [];
+        foreach ($data as $key => $value) {
+            // Ignora relacionamentos e também campos que não são atributos do modelo
+            if (!in_array($key, $relationships) && !in_array($key, $this->ignoredFields)) {
+                $attributes[$key] = $value;
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Extrai apenas os relacionamentos
+     */
+    private function extractRelationships(array $data): array
+    {
+        $relationships = [
+            'event_batches',
+            'event_notes',
+            'payment_plan',
+            'extra_sales',
+            'event_kits',
+            'materials',
+            'office_events',
+            'related_tasting_events',
+            'parent_events',
+            'legal_representatives',
+        ];
+
+        $relationshipsData = [];
+        foreach ($data as $key => $value) {
+            if (in_array($key, $relationships)) {
+                $relationshipsData[$key] = $value;
+            }
+        }
+
+        return $relationshipsData;
+    }
+
+    /**
      * Adiciona dados de relacionamentos que foram enviados no request
      */
     private function addRelationshipsData(array $data, array $sourceData): array
@@ -174,6 +243,7 @@ class EventHistoryService
             'office_events',
             'related_tasting_events',
             'parent_events',
+            'legal_representatives',
         ];
 
         foreach ($relationshipsToTrack as $relationship) {
@@ -365,8 +435,18 @@ class EventHistoryService
     {
         $changes = [];
 
-        foreach ($newData as $key => $newValue) {
+        // Cria um conjunto de todas as chaves (antigas e novas) para comparar
+        $allKeys = array_unique(array_merge(array_keys($oldData), array_keys($newData)));
+
+        foreach ($allKeys as $key) {
             $oldValue = $oldData[$key] ?? null;
+            $newValue = $newData[$key] ?? null;
+
+            // Ignora campos que não existem em ambos (não foram alterados)
+            // Se o campo não existe em oldData e não existe em newData, pula
+            if (!isset($oldData[$key]) && !isset($newData[$key])) {
+                continue;
+            }
 
             // Compara valores (tratando null e string vazia como equivalentes)
             if ($this->valuesAreDifferent($oldValue, $newValue)) {
@@ -603,6 +683,7 @@ class EventHistoryService
             'payment_plan',
             'related_tasting_events',
             'parent_events',
+            'legal_representatives',
         ];
 
         return in_array($field, $complexFields);
@@ -755,6 +836,9 @@ class EventHistoryService
             case 'related_tasting_events':
             case 'parent_events':
                 return $this->formatRelatedEvents($value);
+
+            case 'legal_representatives':
+                return $this->formatLegalRepresentatives($value);
 
             default:
                 return count($value) . ' ' . (count($value) === 1 ? 'item' : 'itens');
@@ -911,6 +995,33 @@ class EventHistoryService
 
         if (empty($names)) {
             return count($events) . ' evento(s)';
+        }
+
+        return implode(', ', array_slice($names, 0, 3)) . (count($names) > 3 ? ' e mais ' . (count($names) - 3) : '');
+    }
+
+    /**
+     * Formata representantes legais
+     */
+    private function formatLegalRepresentatives(array $representatives): string
+    {
+        if (empty($representatives)) {
+            return '(nenhum)';
+        }
+
+        $names = [];
+        foreach ($representatives as $representative) {
+            if (is_array($representative) && isset($representative['name'])) {
+                $names[] = $representative['name'];
+            } elseif (is_array($representative) && isset($representative['id'])) {
+                $names[] = "Representante #{$representative['id']}";
+            } elseif (is_numeric($representative)) {
+                $names[] = "Representante #{$representative}";
+            }
+        }
+
+        if (empty($names)) {
+            return count($representatives) . ' representante(s)';
         }
 
         return implode(', ', array_slice($names, 0, 3)) . (count($names) > 3 ? ' e mais ' . (count($names) - 3) : '');
