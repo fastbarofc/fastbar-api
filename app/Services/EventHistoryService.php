@@ -31,7 +31,7 @@ class EventHistoryService
         'updated_at',
         'deleted_at',
         'old_system_id',
-        // Relacionamentos carregados que não devem ser comparados diretamente
+        'total_guests',
         'client',
         'invoice_client',
         'collaborator',

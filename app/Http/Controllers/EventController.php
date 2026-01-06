@@ -346,12 +346,6 @@ class EventController extends Controller
                     'quantity' => (int) $office->pivot->quantity,
                 ];
             })->toArray(),
-            'legal_representatives' => $event->clients()->where('type', 'pf')->get()->map(function ($client) {
-                return [
-                    'id' => $client->id,
-                    'name' => $client->name,
-                ];
-            })->toArray(),
         ];
         $originalDataWithRelationships = array_merge($originalData, $originalRelationships);
 
