@@ -55,7 +55,6 @@ class EventController extends Controller
 {
     public function __construct(protected EventHistoryService $historyService)
     {
-        $this->historyService = $historyService;
         // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
         // $this->authorizeResource(EventController::class, 'event');
     }
