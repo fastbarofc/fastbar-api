@@ -22,9 +22,6 @@ use Illuminate\Support\Facades\Log;
 
 class EventHistoryService
 {
-    /**
-     * Campos que devem ser ignorados na comparação
-     */
     private array $ignoredFields = [
         'id',
         'created_at',
@@ -61,9 +58,6 @@ class EventHistoryService
         'has_tasting',
     ];
 
-    /**
-     * Mapeamento de nomes de campos para nomes amigáveis
-     */
     private array $fieldLabels = [
         'name' => 'Nome do Evento',
         'client_id' => 'Cliente',
@@ -100,7 +94,6 @@ class EventHistoryService
         'min_guests' => 'Mínimo de Convidados',
         'is_medicine' => 'É Medicina',
         'closed_at' => 'Data de Fechamento',
-        // Relacionamentos
         'event_batches' => 'Lotes do Evento',
         'event_notes' => 'Anotações do Evento',
         'payment_plan' => 'Plano de Pagamento',
@@ -115,9 +108,6 @@ class EventHistoryService
         'legal_representatives' => 'Representantes Legais',
     ];
 
-    /**
-     * Registra a criação de um evento
-     */
     public function logEventCreation(Event $event): EventHistory
     {
         $newData = $this->prepareEventData($event);
@@ -131,26 +121,18 @@ class EventHistoryService
         ]);
     }
 
-    /**
-     * Registra a atualização de um evento
-     */
     public function logEventUpdate(Event $event, array $originalData, array $requestData = []): ?EventHistory
     {
-        // Separa atributos de relacionamentos nos dados originais
         $originalAttributes = $this->extractAttributes($originalData);
         $originalRelationships = $this->extractRelationships($originalData);
 
-        // Separa atributos de relacionamentos nos dados do request
         $requestAttributes = !empty($requestData) ? $this->extractAttributes($requestData) : $event->getAttributes();
         $requestRelationships = !empty($requestData) ? $this->extractRelationships($requestData) : [];
 
-        // Prepara dados antigos usando apenas os atributos originais
         $oldData = $this->prepareEventData($event, $originalAttributes);
 
-        // Prepara dados novos usando apenas os atributos do request
         $newData = $this->prepareEventData($event, $requestAttributes);
 
-        // Adiciona dados de relacionamentos
         if (!empty($originalRelationships) || !empty($requestRelationships)) {
             $oldData = $this->addRelationshipsData($oldData, $originalRelationships);
             $newData = $this->addRelationshipsData($newData, $requestRelationships);
@@ -158,7 +140,6 @@ class EventHistoryService
 
         $changes = $this->detectChanges($oldData, $newData, $requestData);
 
-        // Se não houver mudanças, não registra
         if (empty($changes)) {
             return null;
         }
@@ -171,9 +152,6 @@ class EventHistoryService
         ]);
     }
 
-    /**
-     * Extrai apenas os atributos do evento (sem relacionamentos)
-     */
     private function extractAttributes(array $data): array
     {
         $relationships = [
@@ -191,7 +169,6 @@ class EventHistoryService
 
         $attributes = [];
         foreach ($data as $key => $value) {
-            // Ignora relacionamentos e também campos que não são atributos do modelo
             if (!in_array($key, $relationships) && !in_array($key, $this->ignoredFields)) {
                 $attributes[$key] = $value;
             }
@@ -200,9 +177,6 @@ class EventHistoryService
         return $attributes;
     }
 
-    /**
-     * Extrai apenas os relacionamentos
-     */
     private function extractRelationships(array $data): array
     {
         $relationships = [
@@ -228,9 +202,6 @@ class EventHistoryService
         return $relationshipsData;
     }
 
-    /**
-     * Adiciona dados de relacionamentos que foram enviados no request
-     */
     private function addRelationshipsData(array $data, array $sourceData): array
     {
         $relationshipsToTrack = [
@@ -250,7 +221,6 @@ class EventHistoryService
             if (isset($sourceData[$relationship])) {
                 $normalized = $this->normalizeRelationshipData($sourceData[$relationship]);
 
-                // Só adiciona se não for vazio
                 if ($normalized !== null && $normalized !== []) {
                     $data[$relationship] = $normalized;
                 }
@@ -260,26 +230,19 @@ class EventHistoryService
         return $data;
     }
 
-    /**
-     * Normaliza dados de relacionamentos para comparação
-     */
     private function normalizeRelationshipData($data)
     {
         if ($data === null || $data === []) {
             return null;
         }
 
-        // Se for array de relacionamentos (hasMany)
         if (is_array($data) && !empty($data)) {
-            // Verifica se é array associativo (hasOne) ou numérico (hasMany)
             $isAssoc = array_keys($data) !== range(0, count($data) - 1);
 
             if ($isAssoc) {
-                // hasOne/belongsTo - apenas um objeto
                 return $this->cleanRelationshipItem($data);
             }
 
-            // hasMany - array de objetos
             $normalized = array_map(function ($item) {
                 if (!is_array($item)) {
                     return $item;
@@ -287,7 +250,6 @@ class EventHistoryService
                 return $this->cleanRelationshipItem($item);
             }, $data);
 
-            // Ordena por ID para comparação consistente
             usort($normalized, function ($a, $b) {
                 $aId = $a['id'] ?? 0;
                 $bId = $b['id'] ?? 0;
@@ -300,45 +262,36 @@ class EventHistoryService
         return $data;
     }
 
-    /**
-     * Limpa um item de relacionamento removendo campos de controle
-     */
     private function cleanRelationshipItem(array $item): array
     {
-        // Remove campos de controle do Laravel, pivot e foreign keys
         $fieldsToRemove = [
             'created_at',
             'updated_at',
             'deleted_at',
             'pivot',
             'laravel_through_key',
-            'event_id',        // Foreign key sempre presente no banco mas não no request
-            'user_id',         // ID do usuário em event_notes
-            'collaborator_id', // ID do colaborador
-            'user_name',       // Nome do usuário vindo do frontend
-            'installments',    // Sub-relacionamento de payment_plan (não comparar aqui)
+            'event_id',
+            'user_id',
+            'collaborator_id',
+            'user_name',
+            'installments',
         ];
 
         foreach ($fieldsToRemove as $field) {
             unset($item[$field]);
         }
 
-        // Normaliza valores numéricos em campos de valores monetários
         $numericFields = ['total_amount', 'down_payment', 'installment_amount', 'unit_value', 'quantity'];
         foreach ($numericFields as $field) {
             if (isset($item[$field])) {
-                // Converte para float e depois para string com 2 casas decimais
                 $item[$field] = number_format((float) $item[$field], 2, '.', '');
             }
         }
 
-        // Normaliza o campo 'selected' para garantir comparação consistente
         if (isset($item['selected'])) {
-            // Converte para string para comparação consistente
             $item['selected'] = (string) $item['selected'];
         }
 
-        // Remove valores null para comparação mais limpa
         $item = array_filter($item, function ($value) {
             return $value !== null;
         });
@@ -346,55 +299,40 @@ class EventHistoryService
         return $item;
     }
 
-    /**
-     * Prepara os dados do evento para o histórico
-     */
     private function prepareEventData(Event $event, ?array $originalData = null): array
     {
-        // Usa getAttributes() para pegar apenas os atributos do model, sem relacionamentos
         $data = $originalData ?? $event->getAttributes();
 
-        // Remove campos ignorados
         foreach ($this->ignoredFields as $field) {
             unset($data[$field]);
         }
 
-        // Normaliza os dados para comparação
         $data = $this->normalizeData($data);
 
         return $data;
     }
 
-    /**
-     * Normaliza dados para comparação consistente
-     */
     private function normalizeData(array $data): array
     {
         foreach ($data as $key => $value) {
-            // Normaliza booleanos
             if (in_array($key, ['is_draft', 'is_medicine', 'lease']) && $value !== null) {
                 $data[$key] = (bool) $value;
             }
 
-            // Normaliza horários (remove segundos se existir)
             if ($key === 'time' && $value !== null) {
                 if (is_string($value)) {
-                    // Remove segundos: "14:32:00" -> "14:32"
                     $data[$key] = substr($value, 0, 5);
                 }
             }
 
-            // Normaliza valores decimais
             if (in_array($key, ['total_value', 'buffet_value', 'sub_total', 'unit_insurance', 'discount', 'unit_discount']) && $value !== null) {
                 $data[$key] = number_format((float) $value, 2, '.', '');
             }
 
-            // Normaliza HTML em campos de texto rico
             if ($key === 'contract_body' && $value !== null && is_string($value)) {
                 $data[$key] = $this->normalizeHtml($value);
             }
 
-            // Remove espaços em branco extras de strings (mas não aplica em time)
             if (is_string($value) && $value !== null && $key !== 'time') {
                 $data[$key] = trim($value);
             }
@@ -403,52 +341,37 @@ class EventHistoryService
         return $data;
     }
 
-    /**
-     * Normaliza HTML para comparação (remove diferenças de formatação)
-     */
     private function normalizeHtml(?string $html): string
     {
         if (empty($html)) {
             return '';
         }
 
-        // Extrai apenas o texto, removendo todas as tags HTML
         $text = strip_tags($html);
 
-        // Remove entidades HTML
         $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
-        // Remove espaços múltiplos e quebras de linha
         $text = preg_replace('/\s+/', ' ', $text);
 
-        // Trim
         $text = trim($text);
 
-        // Retorna o texto normalizado
         return $text;
     }
 
-    /**
-     * Detecta mudanças entre dados antigos e novos
-     */
     private function detectChanges(array $oldData, array $newData, array $requestData = []): array
     {
         $changes = [];
 
-        // Cria um conjunto de todas as chaves (antigas e novas) para comparar
         $allKeys = array_unique(array_merge(array_keys($oldData), array_keys($newData)));
 
         foreach ($allKeys as $key) {
             $oldValue = $oldData[$key] ?? null;
             $newValue = $newData[$key] ?? null;
 
-            // Ignora campos que não existem em ambos (não foram alterados)
-            // Se o campo não existe em oldData e não existe em newData, pula
             if (!isset($oldData[$key]) && !isset($newData[$key])) {
                 continue;
             }
 
-            // Compara valores (tratando null e string vazia como equivalentes)
             if ($this->valuesAreDifferent($oldValue, $newValue)) {
                 $change = [
                     'field' => $key,
@@ -457,13 +380,11 @@ class EventHistoryService
                     'new_value' => $newValue,
                 ];
 
-                // Adiciona nome amigável para campos de ID
                 if ($this->isRelationshipIdField($key)) {
                     $change['old_value_display'] = $this->getRelationshipName($key, $oldValue);
                     $change['new_value_display'] = $this->getRelationshipName($key, $newValue, $requestData);
                 }
 
-                // Adiciona formatação amigável para relacionamentos complexos
                 if ($this->isComplexRelationship($key)) {
                     $change['old_value_display'] = $this->formatComplexRelationship($key, $oldValue);
                     $change['new_value_display'] = $this->formatComplexRelationship($key, $newValue);
@@ -476,21 +397,15 @@ class EventHistoryService
         return $changes;
     }
 
-    /**
-     * Verifica se dois valores são diferentes
-     */
     private function valuesAreDifferent($oldValue, $newValue): bool
     {
-        // Trata null e string vazia como equivalentes
         $oldValue = $oldValue === '' ? null : $oldValue;
         $newValue = $newValue === '' ? null : $newValue;
 
-        // Se ambos são null, são iguais
         if ($oldValue === null && $newValue === null) {
             return false;
         }
 
-        // Se apenas um é null, são diferentes (exceto se for array vazio)
         if ($oldValue === null && is_array($newValue) && empty($newValue)) {
             return false;
         }
@@ -501,7 +416,6 @@ class EventHistoryService
             return true;
         }
 
-        // Para arrays e objetos, cria um hash dos dados essenciais
         if (is_array($oldValue) || is_object($oldValue)) {
             $oldValue = $this->createDataHash($oldValue);
         }
@@ -509,32 +423,22 @@ class EventHistoryService
             $newValue = $this->createDataHash($newValue);
         }
 
-        // Comparação estrita
         return $oldValue !== $newValue;
     }
 
-    /**
-     * Cria um hash dos dados para comparação consistente
-     */
     private function createDataHash($data): string
     {
         if (!is_array($data)) {
             return (string) $data;
         }
 
-        // Remove valores null
         $data = $this->removeNullValues($data);
 
-        // Ordena recursivamente
         $data = $this->sortArrayRecursive($data);
 
-        // Gera hash MD5 do JSON
         return md5(json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
-    /**
-     * Remove valores null recursivamente
-     */
     private function removeNullValues($array)
     {
         if (!is_array($array)) {
@@ -552,23 +456,18 @@ class EventHistoryService
         return $array;
     }
 
-    /**
-     * Ordena arrays recursivamente para comparação consistente
-     */
     private function sortArrayRecursive($array)
     {
         if (!is_array($array)) {
             return $array;
         }
 
-        // Primeiro, ordena recursivamente os valores
         foreach ($array as $key => $value) {
             if (is_array($value)) {
                 $array[$key] = $this->sortArrayRecursive($value);
             }
         }
 
-        // Se for array associativo, ordena por chave
         $keys = array_keys($array);
         if ($keys !== range(0, count($array) - 1)) {
             ksort($array, SORT_STRING);
@@ -577,9 +476,6 @@ class EventHistoryService
         return $array;
     }
 
-    /**
-     * Formata mudanças para criação (todos os campos preenchidos são "mudanças")
-     */
     private function formatChangesForCreation(array $data): array
     {
         $changes = [];
@@ -598,10 +494,6 @@ class EventHistoryService
         return $changes;
     }
 
-    /**
-     * Processa as mudanças para armazenamento
-     * Retorna apenas as informações necessárias já formatadas
-     */
     private function processChangesForStorage(array $changes): array
     {
         return array_map(function ($change) {
@@ -610,7 +502,6 @@ class EventHistoryService
                 'label' => $change['field_label'] ?? $change['field'] ?? '',
             ];
 
-            // Usa old_value_display se disponível, senão formata o valor
             if (isset($change['old_value_display'])) {
                 $processed['old'] = $change['old_value_display'];
             } else {
@@ -620,7 +511,6 @@ class EventHistoryService
                 );
             }
 
-            // Usa new_value_display se disponível, senão formata o valor
             if (isset($change['new_value_display'])) {
                 $processed['new'] = $change['new_value_display'];
             } else {
@@ -634,9 +524,6 @@ class EventHistoryService
         }, $changes);
     }
 
-    /**
-     * Obtém o histórico de um evento com paginação
-     */
     public function getEventHistory(int $eventId, int $perPage = 15)
     {
         return EventHistory::where('event_id', $eventId)
@@ -645,9 +532,6 @@ class EventHistoryService
             ->paginate($perPage);
     }
 
-    /**
-     * Verifica se um campo é um ID de relacionamento
-     */
     private function isRelationshipIdField(string $field): bool
     {
         $relationshipFields = [
@@ -668,9 +552,6 @@ class EventHistoryService
         return in_array($field, $relationshipFields);
     }
 
-    /**
-     * Verifica se é um relacionamento complexo (array/objeto)
-     */
     private function isComplexRelationship(string $field): bool
     {
         $complexFields = [
@@ -689,22 +570,17 @@ class EventHistoryService
         return in_array($field, $complexFields);
     }
 
-    /**
-     * Busca o nome de uma entidade relacionada pelo ID
-     */
     private function getRelationshipName(string $field, $id, array $requestData = []): string
     {
         if ($id === null || $id === '') {
             return '(nenhum)';
         }
 
-        // Tenta buscar do requestData primeiro (mais eficiente)
         $name = $this->getNameFromRequestData($field, $id, $requestData);
         if ($name !== null) {
             return $name;
         }
 
-        // Busca no banco de dados
         try {
             switch ($field) {
                 case 'client_id':
@@ -764,9 +640,6 @@ class EventHistoryService
         }
     }
 
-    /**
-     * Tenta buscar o nome do requestData (quando disponível)
-     */
     private function getNameFromRequestData(string $field, $id, array $requestData): ?string
     {
         if (empty($requestData)) {
@@ -801,9 +674,6 @@ class EventHistoryService
         return null;
     }
 
-    /**
-     * Formata relacionamentos complexos para exibição
-     */
     private function formatComplexRelationship(string $field, $value): string
     {
         if ($value === null || $value === '' || $value === []) {
@@ -845,9 +715,6 @@ class EventHistoryService
         }
     }
 
-    /**
-     * Formata lotes do evento
-     */
     private function formatEventBatches(array $batches): string
     {
         if (empty($batches)) {
@@ -864,9 +731,6 @@ class EventHistoryService
         return count($items) . ' lote(s): ' . implode('; ', array_slice($items, 0, 3)) . (count($items) > 3 ? '...' : '');
     }
 
-    /**
-     * Formata anotações do evento
-     */
     private function formatEventNotes(array $notes): string
     {
         if (empty($notes)) {
@@ -876,9 +740,6 @@ class EventHistoryService
         return count($notes) . ' anotação' . (count($notes) === 1 ? '' : 'ões');
     }
 
-    /**
-     * Formata vendas extras
-     */
     private function formatExtraSales(array $sales): string
     {
         if (empty($sales)) {
@@ -895,9 +756,6 @@ class EventHistoryService
         return count($items) . ' venda(s): ' . implode('; ', array_slice($items, 0, 2)) . (count($items) > 2 ? '...' : '');
     }
 
-    /**
-     * Formata materiais
-     */
     private function formatMaterials(array $materials): string
     {
         if (empty($materials)) {
@@ -924,9 +782,6 @@ class EventHistoryService
             implode('; ', array_slice($selectedItems, 0, 3)) . ($selectedCount > 3 ? '...' : '');
     }
 
-    /**
-     * Formata eventos de escritório
-     */
     private function formatOfficeEvents(array $events): string
     {
         if (empty($events)) {
@@ -936,12 +791,8 @@ class EventHistoryService
         return count($events) . ' evento(s) de escritório';
     }
 
-    /**
-     * Formata plano de pagamento
-     */
     private function formatPaymentPlan(array $plan): string
     {
-        // Verifica se o plano está vazio (todos os campos são null)
         $hasData = false;
         foreach ($plan as $key => $value) {
             if ($value !== null && $value !== '') {
@@ -975,9 +826,6 @@ class EventHistoryService
         return empty($parts) ? '(configurado)' : implode(', ', $parts);
     }
 
-    /**
-     * Formata eventos relacionados
-     */
     private function formatRelatedEvents(array $events): string
     {
         if (empty($events)) {
@@ -1000,9 +848,6 @@ class EventHistoryService
         return implode(', ', array_slice($names, 0, 3)) . (count($names) > 3 ? ' e mais ' . (count($names) - 3) : '');
     }
 
-    /**
-     * Formata representantes legais
-     */
     private function formatLegalRepresentatives(array $representatives): string
     {
         if (empty($representatives)) {
@@ -1027,16 +872,12 @@ class EventHistoryService
         return implode(', ', array_slice($names, 0, 3)) . (count($names) > 3 ? ' e mais ' . (count($names) - 3) : '');
     }
 
-    /**
-     * Formata valor para exibição
-     */
     public function formatValueForDisplay($value, string $field = null): string
     {
         if ($value === null || $value === '') {
             return '(vazio)';
         }
 
-        // Formatação específica por tipo de campo
         if (in_array($field, ['date', 'closed_at'])) {
             return date('d/m/Y', strtotime($value));
         }
@@ -1057,7 +898,6 @@ class EventHistoryService
             return $value ? 'Sim' : 'Não';
         }
 
-        // Formatação específica para relacionamentos
         if (in_array($field, ['event_batches', 'event_notes', 'extra_sales', 'event_kits']) && is_array($value)) {
             return count($value) . ' ' . (count($value) === 1 ? 'item' : 'itens');
         }
