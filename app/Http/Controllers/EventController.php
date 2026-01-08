@@ -19,6 +19,7 @@ use App\Models\Contract;
 use App\Models\EventType;
 use App\Models\Installment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\EventCalendarResource;
 use App\Models\Ceremonial;
@@ -45,7 +46,6 @@ use App\Services\EventHistoryService;
 use App\Http\Resources\EventHistoryResource;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -321,17 +321,20 @@ class EventController extends Controller
 
     public function update(UpdateEventRequest $request, Event $event)
     {
+        $event->refresh();
+        $event->load(['officeEvents']);
+
         $originalData = $event->getAttributes();
 
         $data = $request->all();
 
         $originalRelationships = [
-            'event_batches' => $event->eventBatches->toArray(),
-            'event_notes' => $event->eventNotes->toArray(),
-            'payment_plan' => $event->paymentPlan ? $event->paymentPlan->toArray() : null,
-            'extra_sales' => $event->extraSales->toArray(),
-            'event_kits' => $event->eventKits->toArray(),
-            'materials' => $event->materials->map(function ($material) {
+            'event_batches' => $event->eventBatches->fresh()->toArray(),
+            'event_notes' => $event->eventNotes->fresh()->toArray(),
+            'payment_plan' => $event->paymentPlan ? $event->paymentPlan->fresh()->toArray() : null,
+            'extra_sales' => $event->extraSales->fresh()->toArray(),
+            'event_kits' => $event->eventKits->fresh()->toArray(),
+            'materials' => $event->materials()->withPivot(['quantity', 'selected'])->get()->map(function ($material) {
                 return [
                     'id' => $material->id,
                     'description' => $material->description,
@@ -339,13 +342,38 @@ class EventController extends Controller
                     'quantity' => (int) $material->pivot->quantity,
                 ];
             })->toArray(),
-            'office_events' => $event->officeEvents->map(function ($office) {
+            'office_events' => $event->officeEvents()->withPivot(['quantity'])->get()->map(function ($office) {
+                $quantity = 0;
+                if (isset($office->pivot) && isset($office->pivot->quantity)) {
+                    $quantity = (int) $office->pivot->quantity;
+                }
                 return [
                     'id' => $office->id,
-                    'quantity' => (int) $office->pivot->quantity,
+                    'description' => $office->description ?? '',
+                    'quantity' => $quantity,
                 ];
             })->toArray(),
         ];
+
+        $officeEventsWithQuantity = array_filter($originalRelationships['office_events'], function ($item) {
+            return (int) ($item['quantity'] ?? 0) > 0;
+        });
+
+        $requestOfficeEvents = $data['office_events'] ?? [];
+        $requestOfficeEventsWithQuantity = array_filter($requestOfficeEvents, function ($item) {
+            return (int) ($item['quantity'] ?? 0) > 0;
+        });
+
+        Log::info('EventController@update - Dados originais de office_events capturados', [
+            'event_id' => $event->id,
+            'office_events_count' => count($originalRelationships['office_events']),
+            'office_events_with_quantity_count' => count($officeEventsWithQuantity),
+            'office_events_with_quantity' => array_values($officeEventsWithQuantity),
+            'request_office_events_count' => count($requestOfficeEvents),
+            'request_office_events_with_quantity_count' => count($requestOfficeEventsWithQuantity),
+            'request_office_events_with_quantity' => array_values($requestOfficeEventsWithQuantity),
+        ]);
+
         $originalDataWithRelationships = array_merge($originalData, $originalRelationships);
 
         $consumptionReport = $data['post_event_consumption_report'] ?? null;
@@ -414,14 +442,47 @@ class EventController extends Controller
         }
 
         if (!empty($data['office_events'])) {
-            $officeArray = collect($data['office_events'])->mapWithKeys(function ($office) {
+            $uniqueOfficeEvents = [];
+            $seenIds = [];
+            foreach ($data['office_events'] as $office) {
+                $id = $office['id'] ?? null;
+                if ($id !== null && !isset($seenIds[$id])) {
+                    $seenIds[$id] = true;
+                    $uniqueOfficeEvents[] = $office;
+                }
+            }
+
+            $officeArray = collect($uniqueOfficeEvents)->mapWithKeys(function ($office) {
                 return [
                     $office['id'] => [
                         'quantity' => !empty($office['quantity']) ? $office['quantity'] : 0
                     ]
                 ];
             })->toArray();
+
+            Log::info('EventController@update - Antes do sync office_events', [
+                'event_id' => $event->id,
+                'office_array' => $officeArray,
+            ]);
+
             $event->officeEvents()->sync($officeArray);
+
+            $event->refresh();
+            $event->load(['officeEvents']);
+            $afterSync = $event->officeEvents()->withPivot(['quantity'])->get()->filter(function ($office) {
+                return (int) ($office->pivot->quantity ?? 0) > 0;
+            })->map(function ($office) {
+                return [
+                    'id' => $office->id,
+                    'description' => $office->description,
+                    'quantity' => (int) $office->pivot->quantity,
+                ];
+            })->values()->toArray();
+
+            Log::info('EventController@update - Após sync office_events', [
+                'event_id' => $event->id,
+                'after_sync' => $afterSync,
+            ]);
         }
 
         if (!empty($data['extra_sales'])) {

@@ -6,11 +6,13 @@ use App\Http\Requests\StoreExtraSaleRequest;
 use App\Http\Requests\UpdateExtraSaleRequest;
 use App\Http\Resources\ExtraSaleResource;
 use App\Models\ExtraSale;
+use App\Models\Event;
 use Illuminate\Http\Request;
+use App\Services\EventHistoryService;
 
 class ExtraSaleController extends Controller
 {
-    public function __construct()
+    public function __construct(protected EventHistoryService $historyService)
     {
         // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
         // $this->authorizeResource(ExtraSaleController::class, 'extraSale');
@@ -57,7 +59,25 @@ class ExtraSaleController extends Controller
 
     public function store(StoreExtraSaleRequest $request)
     {
-        $extraSale = ExtraSale::create($request->all());
+        $data = $request->all();
+        
+        $event = Event::find($data['event_id']);
+        if ($event) {
+            $originalExtraSales = $event->extraSales->toArray();
+            
+            $extraSale = ExtraSale::create($data);
+            
+            $event->refresh();
+            $newExtraSales = $event->extraSales->toArray();
+            
+            $originalData = ['extra_sales' => $originalExtraSales];
+            $requestData = ['extra_sales' => $newExtraSales];
+            
+            $this->historyService->logEventUpdate($event, $originalData, $requestData);
+        } else {
+            $extraSale = ExtraSale::create($data);
+        }
+        
         return response()->json(new ExtraSaleResource($extraSale), 201);
     }
 
@@ -68,13 +88,47 @@ class ExtraSaleController extends Controller
 
     public function update(UpdateExtraSaleRequest $request, ExtraSale $extraSale)
     {
+        $event = $extraSale->event;
+        
+        if ($event) {
+            $originalExtraSales = $event->extraSales->toArray();
+        }
+        
         $extraSale->update($request->all());
+        
+        if ($event) {
+            $event->refresh();
+            $newExtraSales = $event->extraSales->toArray();
+            
+            $originalData = ['extra_sales' => $originalExtraSales];
+            $requestData = ['extra_sales' => $newExtraSales];
+            
+            $this->historyService->logEventUpdate($event, $originalData, $requestData);
+        }
+        
         return response()->json(new ExtraSaleResource($extraSale), 200);
     }
 
     public function destroy(ExtraSale $extraSale)
     {
+        $event = $extraSale->event;
+        
+        if ($event) {
+            $originalExtraSales = $event->extraSales->toArray();
+        }
+        
         $extraSale->delete();
+        
+        if ($event) {
+            $event->refresh();
+            $newExtraSales = $event->extraSales->toArray();
+            
+            $originalData = ['extra_sales' => $originalExtraSales];
+            $requestData = ['extra_sales' => $newExtraSales];
+            
+            $this->historyService->logEventUpdate($event, $originalData, $requestData);
+        }
+        
         return response()->json([], 204);
     }
 

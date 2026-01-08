@@ -15,8 +15,6 @@ use App\Models\Ceremonial;
 use App\Models\EventCapture;
 use App\Models\CompetingCompany;
 use App\Models\LostReason;
-use App\Models\Material;
-use App\Models\Unit;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -100,7 +98,7 @@ class EventHistoryService
         'extra_sales' => 'Vendas Extras',
         'event_kits' => 'Itens do Buffet',
         'materials' => 'Materiais',
-        'office_events' => 'Eventos de Escritório',
+        'office_events' => 'Colaboradores do Evento',
         'utensils' => 'Utensílios',
         'office_budgets' => 'Orçamentos de Escritório',
         'related_tasting_events' => 'Eventos de Degustação Relacionados',
@@ -123,8 +121,22 @@ class EventHistoryService
 
     public function logEventUpdate(Event $event, array $originalData, array $requestData = []): ?EventHistory
     {
+        Log::info('EventHistoryService@logEventUpdate - Início', [
+            'event_id' => $event->id,
+            'original_data_has_office_events' => isset($originalData['office_events']),
+            'original_office_events_count' => isset($originalData['office_events']) ? count($originalData['office_events']) : 0,
+            'original_office_events' => $originalData['office_events'] ?? null,
+        ]);
+
         $originalAttributes = $this->extractAttributes($originalData);
         $originalRelationships = $this->extractRelationships($originalData);
+
+        Log::info('EventHistoryService@logEventUpdate - Após extrair relacionamentos', [
+            'event_id' => $event->id,
+            'original_relationships_has_office_events' => isset($originalRelationships['office_events']),
+            'original_relationships_office_events_count' => isset($originalRelationships['office_events']) ? count($originalRelationships['office_events']) : 0,
+            'original_relationships_office_events' => $originalRelationships['office_events'] ?? null,
+        ]);
 
         $requestAttributes = !empty($requestData) ? $this->extractAttributes($requestData) : $event->getAttributes();
         $requestRelationships = !empty($requestData) ? $this->extractRelationships($requestData) : [];
@@ -134,8 +146,22 @@ class EventHistoryService
         $newData = $this->prepareEventData($event, $requestAttributes);
 
         if (!empty($originalRelationships) || !empty($requestRelationships)) {
+            Log::info('EventHistoryService@logEventUpdate - Antes de addRelationshipsData', [
+                'event_id' => $event->id,
+                'original_relationships' => array_keys($originalRelationships),
+                'request_relationships' => array_keys($requestRelationships),
+            ]);
+
             $oldData = $this->addRelationshipsData($oldData, $originalRelationships);
             $newData = $this->addRelationshipsData($newData, $requestRelationships);
+
+            Log::info('EventHistoryService@logEventUpdate - Após addRelationshipsData', [
+                'event_id' => $event->id,
+                'old_data_has_office_events' => isset($oldData['office_events']),
+                'old_data_office_events' => $oldData['office_events'] ?? null,
+                'new_data_has_office_events' => isset($newData['office_events']),
+                'new_data_office_events' => $newData['office_events'] ?? null,
+            ]);
         }
 
         $changes = $this->detectChanges($oldData, $newData, $requestData);
@@ -219,7 +245,7 @@ class EventHistoryService
 
         foreach ($relationshipsToTrack as $relationship) {
             if (isset($sourceData[$relationship])) {
-                $normalized = $this->normalizeRelationshipData($sourceData[$relationship]);
+                $normalized = $this->normalizeRelationshipData($sourceData[$relationship], $relationship);
 
                 if ($normalized !== null && $normalized !== []) {
                     $data[$relationship] = $normalized;
@@ -230,7 +256,7 @@ class EventHistoryService
         return $data;
     }
 
-    private function normalizeRelationshipData($data)
+    private function normalizeRelationshipData($data, string $relationshipName = '')
     {
         if ($data === null || $data === []) {
             return null;
@@ -250,13 +276,45 @@ class EventHistoryService
                 return $this->cleanRelationshipItem($item);
             }, $data);
 
+            if ($relationshipName === 'office_events') {
+                Log::info('EventHistoryService@normalizeRelationshipData - Antes do filtro office_events', [
+                    'relationship_name' => $relationshipName,
+                    'items_count_before' => count($normalized),
+                    'items_before' => $normalized,
+                ]);
+
+                $normalized = array_filter($normalized, function ($item) {
+                    $quantity = isset($item['quantity']) ? (int) $item['quantity'] : 0;
+                    return $quantity > 0;
+                });
+                $normalized = array_values($normalized);
+
+                Log::info('EventHistoryService@normalizeRelationshipData - Após o filtro office_events', [
+                    'relationship_name' => $relationshipName,
+                    'items_count_after' => count($normalized),
+                    'items_after' => $normalized,
+                ]);
+            }
+
             usort($normalized, function ($a, $b) {
                 $aId = $a['id'] ?? 0;
                 $bId = $b['id'] ?? 0;
                 return $aId <=> $bId;
             });
 
-            return $normalized;
+            $seen = [];
+            $unique = [];
+            foreach ($normalized as $item) {
+                $id = $item['id'] ?? null;
+                if ($id !== null && !isset($seen[$id])) {
+                    $seen[$id] = true;
+                    $unique[] = $item;
+                } elseif ($id === null) {
+                    $unique[] = $item;
+                }
+            }
+
+            return $unique;
         }
 
         return $data;
@@ -281,11 +339,15 @@ class EventHistoryService
             unset($item[$field]);
         }
 
-        $numericFields = ['total_amount', 'down_payment', 'installment_amount', 'unit_value', 'quantity'];
+        $numericFields = ['total_amount', 'down_payment', 'installment_amount', 'unit_value'];
         foreach ($numericFields as $field) {
             if (isset($item[$field])) {
                 $item[$field] = number_format((float) $item[$field], 2, '.', '');
             }
+        }
+
+        if (isset($item['quantity'])) {
+            $item['quantity'] = (int) $item['quantity'];
         }
 
         if (isset($item['selected'])) {
@@ -362,6 +424,15 @@ class EventHistoryService
     {
         $changes = [];
 
+        if (isset($oldData['office_events']) || isset($newData['office_events'])) {
+            Log::info('EventHistoryService@detectChanges - office_events encontrado', [
+                'old_value_exists' => isset($oldData['office_events']),
+                'old_value' => $oldData['office_events'] ?? null,
+                'new_value_exists' => isset($newData['office_events']),
+                'new_value' => $newData['office_events'] ?? null,
+            ]);
+        }
+
         $allKeys = array_unique(array_merge(array_keys($oldData), array_keys($newData)));
 
         foreach ($allKeys as $key) {
@@ -370,6 +441,16 @@ class EventHistoryService
 
             if (!isset($oldData[$key]) && !isset($newData[$key])) {
                 continue;
+            }
+
+            if ($key === 'office_events') {
+                Log::info('EventHistoryService@detectChanges - Comparando office_events', [
+                    'old_value_type' => gettype($oldValue),
+                    'old_value' => $oldValue,
+                    'new_value_type' => gettype($newValue),
+                    'new_value' => $newValue,
+                    'are_different' => $this->valuesAreDifferent($oldValue, $newValue),
+                ]);
             }
 
             if ($this->valuesAreDifferent($oldValue, $newValue)) {
@@ -388,6 +469,13 @@ class EventHistoryService
                 if ($this->isComplexRelationship($key)) {
                     $change['old_value_display'] = $this->formatComplexRelationship($key, $oldValue);
                     $change['new_value_display'] = $this->formatComplexRelationship($key, $newValue);
+
+                    if ($key === 'office_events') {
+                        Log::info('EventHistoryService@detectChanges - office_events formatado', [
+                            'old_value_display' => $change['old_value_display'],
+                            'new_value_display' => $change['new_value_display'],
+                        ]);
+                    }
                 }
 
                 $changes[] = $change;
@@ -728,7 +816,7 @@ class EventHistoryService
             $items[] = "{$guests} convidados ({$unitValue})";
         }
 
-        return count($items) . ' lote(s): ' . implode('; ', array_slice($items, 0, 3)) . (count($items) > 3 ? '...' : '');
+        return count($items) . ' lote(s): ' . implode('; ', $items);
     }
 
     private function formatEventNotes(array $notes): string
@@ -737,7 +825,9 @@ class EventHistoryService
             return '(nenhuma)';
         }
 
-        return count($notes) . ' anotação' . (count($notes) === 1 ? '' : 'ões');
+        $count = count($notes);
+        $word = $count === 1 ? 'anotação' : 'anotações';
+        return $count . ' ' . $word;
     }
 
     private function formatExtraSales(array $sales): string
@@ -753,7 +843,7 @@ class EventHistoryService
             $items[] = "{$desc} (qtd: {$qty})";
         }
 
-        return count($items) . ' venda(s): ' . implode('; ', array_slice($items, 0, 2)) . (count($items) > 2 ? '...' : '');
+        return count($items) . ' venda(s): ' . implode('; ', $items);
     }
 
     private function formatMaterials(array $materials): string
@@ -779,16 +869,56 @@ class EventHistoryService
         }
 
         return "{$selectedCount} material" . ($selectedCount === 1 ? '' : 'iais') . ' selecionado(s): ' .
-            implode('; ', array_slice($selectedItems, 0, 3)) . ($selectedCount > 3 ? '...' : '');
+            implode('; ', $selectedItems);
     }
 
     private function formatOfficeEvents(array $events): string
     {
+        Log::info('EventHistoryService@formatOfficeEvents - Início', [
+            'events_count' => count($events),
+            'events' => $events,
+        ]);
+
         if (empty($events)) {
+            Log::info('EventHistoryService@formatOfficeEvents - Array vazio, retornando (nenhum)');
             return '(nenhum)';
         }
 
-        return count($events) . ' evento(s) de escritório';
+        $items = [];
+
+        foreach ($events as $event) {
+            $quantity = isset($event['quantity']) ? (int) $event['quantity'] : 0;
+
+            Log::info('EventHistoryService@formatOfficeEvents - Processando item', [
+                'event' => $event,
+                'quantity' => $quantity,
+                'quantity > 0' => $quantity > 0,
+            ]);
+
+            if ($quantity > 0) {
+                $description = $event['description'] ?? 'Colaborador';
+                $items[] = "{$description} (qtd: {$quantity})";
+            }
+        }
+
+        Log::info('EventHistoryService@formatOfficeEvents - Após processar itens', [
+            'items_count' => count($items),
+            'items' => $items,
+        ]);
+
+        if (empty($items)) {
+            Log::info('EventHistoryService@formatOfficeEvents - Nenhum item com quantidade > 0, retornando (nenhum)');
+            return '(nenhum)';
+        }
+
+        $count = count($items);
+        $result = "{$count} colaborador" . ($count === 1 ? '' : 'es') . " do evento: " . implode('; ', $items);
+
+        Log::info('EventHistoryService@formatOfficeEvents - Resultado final', [
+            'result' => $result,
+        ]);
+
+        return $result;
     }
 
     private function formatPaymentPlan(array $plan): string
@@ -845,7 +975,7 @@ class EventHistoryService
             return count($events) . ' evento(s)';
         }
 
-        return implode(', ', array_slice($names, 0, 3)) . (count($names) > 3 ? ' e mais ' . (count($names) - 3) : '');
+        return implode(', ', $names);
     }
 
     private function formatLegalRepresentatives(array $representatives): string
@@ -869,7 +999,7 @@ class EventHistoryService
             return count($representatives) . ' representante(s)';
         }
 
-        return implode(', ', array_slice($names, 0, 3)) . (count($names) > 3 ? ' e mais ' . (count($names) - 3) : '');
+        return implode(', ', $names);
     }
 
     public function formatValueForDisplay($value, string $field = null): string
