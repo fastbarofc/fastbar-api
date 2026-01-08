@@ -19,6 +19,7 @@ use App\Models\Contract;
 use App\Models\EventType;
 use App\Models\Installment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\EventCalendarResource;
 use App\Models\Ceremonial;
@@ -41,9 +42,10 @@ use App\Models\Partner;
 use App\Models\PaymentPlan;
 
 use App\Services\FileService;
+use App\Services\EventHistoryService;
+use App\Http\Resources\EventHistoryResource;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use mikehaertl\wkhtmlto\Pdf;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +53,7 @@ use Illuminate\Support\Facades\Validator;
 
 class EventController extends Controller
 {
-    public function __construct()
+    public function __construct(protected EventHistoryService $historyService)
     {
         // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
         // $this->authorizeResource(EventController::class, 'event');
@@ -284,6 +286,10 @@ class EventController extends Controller
 
         $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
 
+        if (!$request->is_draft) {
+            $this->historyService->logEventCreation($event);
+        }
+
         return response()->json(new EventResource($event), 201);
     }
 
@@ -315,7 +321,60 @@ class EventController extends Controller
 
     public function update(UpdateEventRequest $request, Event $event)
     {
+        $event->refresh();
+        $event->load(['officeEvents']);
+
+        $originalData = $event->getAttributes();
+
         $data = $request->all();
+
+        $originalRelationships = [
+            'event_batches' => $event->eventBatches->fresh()->toArray(),
+            'event_notes' => $event->eventNotes->fresh()->toArray(),
+            'payment_plan' => $event->paymentPlan ? $event->paymentPlan->fresh()->toArray() : null,
+            'extra_sales' => $event->extraSales->fresh()->toArray(),
+            'event_kits' => $event->eventKits->fresh()->toArray(),
+            'materials' => $event->materials()->withPivot(['quantity', 'selected'])->get()->map(function ($material) {
+                return [
+                    'id' => $material->id,
+                    'description' => $material->description,
+                    'selected' => $material->pivot->selected === null ? '-1' : (string) $material->pivot->selected,
+                    'quantity' => (int) $material->pivot->quantity,
+                ];
+            })->toArray(),
+            'office_events' => $event->officeEvents()->withPivot(['quantity'])->get()->map(function ($office) {
+                $quantity = 0;
+                if (isset($office->pivot) && isset($office->pivot->quantity)) {
+                    $quantity = (int) $office->pivot->quantity;
+                }
+                return [
+                    'id' => $office->id,
+                    'description' => $office->description ?? '',
+                    'quantity' => $quantity,
+                ];
+            })->toArray(),
+        ];
+
+        $officeEventsWithQuantity = array_filter($originalRelationships['office_events'], function ($item) {
+            return (int) ($item['quantity'] ?? 0) > 0;
+        });
+
+        $requestOfficeEvents = $data['office_events'] ?? [];
+        $requestOfficeEventsWithQuantity = array_filter($requestOfficeEvents, function ($item) {
+            return (int) ($item['quantity'] ?? 0) > 0;
+        });
+
+        Log::info('EventController@update - Dados originais de office_events capturados', [
+            'event_id' => $event->id,
+            'office_events_count' => count($originalRelationships['office_events']),
+            'office_events_with_quantity_count' => count($officeEventsWithQuantity),
+            'office_events_with_quantity' => array_values($officeEventsWithQuantity),
+            'request_office_events_count' => count($requestOfficeEvents),
+            'request_office_events_with_quantity_count' => count($requestOfficeEventsWithQuantity),
+            'request_office_events_with_quantity' => array_values($requestOfficeEventsWithQuantity),
+        ]);
+
+        $originalDataWithRelationships = array_merge($originalData, $originalRelationships);
 
         $consumptionReport = $data['post_event_consumption_report'] ?? null;
         $consumptionReportFileName = $data['post_event_consumption_report_file_name'] ?? null;
@@ -383,18 +442,47 @@ class EventController extends Controller
         }
 
         if (!empty($data['office_events'])) {
-            $officeArray = collect($data['office_events'])->mapWithKeys(function ($office) {
+            $uniqueOfficeEvents = [];
+            $seenIds = [];
+            foreach ($data['office_events'] as $office) {
+                $id = $office['id'] ?? null;
+                if ($id !== null && !isset($seenIds[$id])) {
+                    $seenIds[$id] = true;
+                    $uniqueOfficeEvents[] = $office;
+                }
+            }
+
+            $officeArray = collect($uniqueOfficeEvents)->mapWithKeys(function ($office) {
                 return [
                     $office['id'] => [
                         'quantity' => !empty($office['quantity']) ? $office['quantity'] : 0
                     ]
                 ];
             })->toArray();
-            $event->officeEvents()->sync($officeArray);
-        }
 
-        if (!empty($data['client_id'])) {
-            $event->clients()->sync($data['client_id']);
+            Log::info('EventController@update - Antes do sync office_events', [
+                'event_id' => $event->id,
+                'office_array' => $officeArray,
+            ]);
+
+            $event->officeEvents()->sync($officeArray);
+
+            $event->refresh();
+            $event->load(['officeEvents']);
+            $afterSync = $event->officeEvents()->withPivot(['quantity'])->get()->filter(function ($office) {
+                return (int) ($office->pivot->quantity ?? 0) > 0;
+            })->map(function ($office) {
+                return [
+                    'id' => $office->id,
+                    'description' => $office->description,
+                    'quantity' => (int) $office->pivot->quantity,
+                ];
+            })->values()->toArray();
+
+            Log::info('EventController@update - Após sync office_events', [
+                'event_id' => $event->id,
+                'after_sync' => $afterSync,
+            ]);
         }
 
         if (!empty($data['extra_sales'])) {
@@ -463,6 +551,11 @@ class EventController extends Controller
                 $installmentsData = $paymentPlanData['installments'] ?? null;
                 unset($paymentPlanData['installments'], $paymentPlanData['id']);
 
+                $downPayment = $paymentPlanData['down_payment'] ?? null;
+                if (!$downPayment || (float) $downPayment <= 0) {
+                    $paymentPlanData['down_payment_due_date'] = null;
+                }
+
                 $this->ensureCompletePaymentPlan($paymentPlanData);
 
                 if ($event->paymentPlan) {
@@ -510,6 +603,10 @@ class EventController extends Controller
         }
 
         $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
+
+        $event->refresh();
+
+        $this->historyService->logEventUpdate($event, $originalDataWithRelationships, $data);
 
         return response()->json(new EventResource($event), 200);
     }
@@ -761,20 +858,85 @@ class EventController extends Controller
     public function attachLegalRepresentatives(Request $request, Event $event)
     {
         $this->authorize('attachLegalRepresentatives', $event);
+
+        $originalLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
         $event->clients()->sync($request->legal_representatives);
+
+        $event->refresh();
+        $newLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
+        $originalData = ['legal_representatives' => $originalLegalRepresentatives];
+        $requestData = ['legal_representatives' => $newLegalRepresentatives];
+
+        $this->historyService->logEventUpdate($event, $originalData, $requestData);
     }
 
     public function attachLegalRepresentative(Request $request, Event $event)
     {
         $this->authorize('attachLegalRepresentatives', $event);
+
+        $originalLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
         $event->clients()->attach($request->legalRepresentativeId);
+
+        $event->refresh();
+        $newLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
+        $originalData = ['legal_representatives' => $originalLegalRepresentatives];
+        $requestData = ['legal_representatives' => $newLegalRepresentatives];
+
+        $this->historyService->logEventUpdate($event, $originalData, $requestData);
+
         return response()->json([], 201);
     }
 
     public function detachLegalRepresentative(Event $event, $legalRepresentativeId)
     {
         $this->authorize('attachLegalRepresentatives', $event);
+
+        $originalLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
         $event->clients()->detach($legalRepresentativeId);
+
+        $event->refresh();
+        $newLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+            ];
+        })->toArray();
+
+        $originalData = ['legal_representatives' => $originalLegalRepresentatives];
+        $requestData = ['legal_representatives' => $newLegalRepresentatives];
+
+        $this->historyService->logEventUpdate($event, $originalData, $requestData);
+
         return response()->json([], 204);
     }
 
@@ -1197,10 +1359,14 @@ class EventController extends Controller
         $currentMonth = $today->month;
 
         if ($plan->down_payment > 0) {
+            $downPaymentDueDate = $plan->down_payment_due_date
+                ? $plan->down_payment_due_date->format('Y-m-d')
+                : $today->format('Y-m-d');
+
             $event->receivables()->create([
                 'description' => 'Entrada - ' . $event->name,
                 'amount' => $plan->down_payment,
-                'due_date' => $today->format('Y-m-d'),
+                'due_date' => $downPaymentDueDate,
                 'status' => 'pending',
                 'payment_method_id' => $plan->payment_method_id,
                 'receivableable_type' => get_class($event),
@@ -1326,6 +1492,11 @@ class EventController extends Controller
             if ($event->paymentPlan) {
                 $paymentPlanData = $event->paymentPlan->toArray();
                 unset($paymentPlanData['id']);
+
+                $downPayment = $paymentPlanData['down_payment'] ?? null;
+                if (!$downPayment || (float) $downPayment <= 0) {
+                    $paymentPlanData['down_payment_due_date'] = null;
+                }
 
                 $newPaymentPlan = $newEvent->paymentPlan()->create($paymentPlanData);
                 $this->generateReceivables($newEvent, $newPaymentPlan);
@@ -1634,6 +1805,25 @@ class EventController extends Controller
         }
     }
 
+    /**
+     * Retorna o histórico de alterações de um evento
+     */
+    public function history(Request $request, Event $event)
+    {
+        $perPage = $request->input('per_page', 15);
+        $histories = $this->historyService->getEventHistory($event->id, $perPage);
+
+        return response()->json([
+            'data' => EventHistoryResource::collection($histories),
+            'pagination' => [
+                'page' => $histories->currentPage(),
+                'total_pages' => $histories->lastPage(),
+                'per_page' => $histories->perPage(),
+                'total' => $histories->total(),
+            ],
+        ], 200);
+    }
+
     private function resolveInstallmentAmount(PaymentPlan $plan, array $installmentData): float
     {
         $amount = $installmentData['amount'] ?? $plan->installment_amount ?? 0;
@@ -1655,10 +1845,15 @@ class EventController extends Controller
         $calculatedTotal = round($installmentSum + $downPayment, 2);
 
         if (abs($calculatedTotal - $expectedTotal) > 0.01) {
+            $difference = round($expectedTotal - $calculatedTotal, 2);
+            $differenceText = $difference > 0
+                ? "faltam R$ " . number_format(abs($difference), 2, ',', '.')
+                : "há excesso de R$ " . number_format(abs($difference), 2, ',', '.');
+
             $validator = Validator::make([], []);
             $validator->errors()->add(
                 'payment_plan.total_amount',
-                'A soma das parcelas (considerando a entrada) deve ser igual ao valor total.'
+                "A soma das parcelas (considerando a entrada) deve ser igual ao valor total. Atualmente {$differenceText}"
             );
 
             throw new ValidationException($validator);
@@ -1699,6 +1894,20 @@ class EventController extends Controller
                 'Preencha todos os campos de pagamento ou deixe todos vazios.'
             );
             throw new ValidationException($validator);
+        }
+
+        $downPayment = $paymentPlanData['down_payment'] ?? null;
+        $downPaymentDueDate = $paymentPlanData['down_payment_due_date'] ?? null;
+
+        if ($downPayment && (float) $downPayment > 0) {
+            if (!$downPaymentDueDate || trim($downPaymentDueDate) === '') {
+                $validator = Validator::make([], []);
+                $validator->errors()->add(
+                    'payment_plan.down_payment_due_date',
+                    'A data de vencimento da entrada é obrigatória quando há valor de entrada.'
+                );
+                throw new ValidationException($validator);
+            }
         }
     }
 

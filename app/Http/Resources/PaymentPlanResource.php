@@ -19,6 +19,7 @@ class PaymentPlanResource extends JsonResource
             'event_id' => $this->event_id,
             'total_amount' => $this->total_amount,
             'down_payment' => $this->down_payment,
+            'down_payment_due_date' => $this->down_payment_due_date?->format('Y-m-d'),
             'num_installments' => $this->num_installments,
             'installment_amount' => $this->installment_amount,
             'payment_method_id' => $this->payment_method_id,

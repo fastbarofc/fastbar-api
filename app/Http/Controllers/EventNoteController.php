@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreEventNoteRequest;
 use App\Http\Requests\UpdateEventNoteRequest;
 use App\Models\EventNote;
+use App\Models\Event;
 use Illuminate\Http\Request;
 use App\Http\Resources\EventNoteResource;
 use Illuminate\Support\Facades\Log;
+use App\Services\EventHistoryService;
 
 class EventNoteController extends Controller
 {
-    public function __construct()
+    public function __construct(protected EventHistoryService $historyService)
     {
         //$this->authorizeResource(EventNoteController::class, 'eventNote'); TODO: Implementar
     }
@@ -60,7 +62,24 @@ class EventNoteController extends Controller
     public function store(StoreEventNoteRequest $request)
     {
         $data = $request->all();
-        $eventNote = EventNote::create($data);
+        
+        $event = Event::find($data['event_id']);
+        if ($event) {
+            $originalEventNotes = $event->eventNotes->toArray();
+            
+            $eventNote = EventNote::create($data);
+            
+            $event->refresh();
+            $newEventNotes = $event->eventNotes->toArray();
+            
+            $originalData = ['event_notes' => $originalEventNotes];
+            $requestData = ['event_notes' => $newEventNotes];
+            
+            $this->historyService->logEventUpdate($event, $originalData, $requestData);
+        } else {
+            $eventNote = EventNote::create($data);
+        }
+        
         return response()->json(new EventNoteResource($eventNote), 201);
     }
 
@@ -71,15 +90,49 @@ class EventNoteController extends Controller
 
     public function update(UpdateEventNoteRequest $request, EventNote $eventNote)
     {
+        $event = $eventNote->event;
+        
+        if ($event) {
+            $originalEventNotes = $event->eventNotes->toArray();
+        }
+        
         $data = $request->all();
         unset($data['collaborator_id']);
         $eventNote->update($data);
+        
+        if ($event) {
+            $event->refresh();
+            $newEventNotes = $event->eventNotes->toArray();
+            
+            $originalData = ['event_notes' => $originalEventNotes];
+            $requestData = ['event_notes' => $newEventNotes];
+            
+            $this->historyService->logEventUpdate($event, $originalData, $requestData);
+        }
+        
         return response()->json(new EventNoteResource($eventNote), 200);
     }
 
     public function destroy(EventNote $eventNote)
     {
+        $event = $eventNote->event;
+        
+        if ($event) {
+            $originalEventNotes = $event->eventNotes->toArray();
+        }
+        
         $eventNote->delete();
+        
+        if ($event) {
+            $event->refresh();
+            $newEventNotes = $event->eventNotes->toArray();
+            
+            $originalData = ['event_notes' => $originalEventNotes];
+            $requestData = ['event_notes' => $newEventNotes];
+            
+            $this->historyService->logEventUpdate($event, $originalData, $requestData);
+        }
+        
         return response()->json([], 204);
     }
 }

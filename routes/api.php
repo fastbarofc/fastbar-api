@@ -263,4 +263,5 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
 
     Route::get('/events/{event}/duplicate', [EventController::class, 'duplicate']);
+    Route::get('/events/{event}/history', [EventController::class, 'history'])->name('events.history');
 });
