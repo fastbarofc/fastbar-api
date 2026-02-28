@@ -8,7 +8,7 @@ use App\Models\EventKit;
 
 class EventKitSeeder extends Seeder
 {
-    
+
     public function run(): void
     {
         $grandparentKits = EventKit::factory(15)->create();
@@ -16,9 +16,13 @@ class EventKitSeeder extends Seeder
         $grandparentKits = $grandparentKits->take(12);
 
         foreach ($grandparentKits as $parent) {
-            EventKit::factory(3)
-            ->state(['event_kit_id'=> $parent->id, 'event_id' => $parent->event_id])
-            ->create();
+            $eventKitNames = ['Casa parthenon', 'Parthenon MED', 'Camarim'];
+
+            foreach ($eventKitNames as $eventKitName) {
+                EventKit::factory()
+                ->state(['event_kit_id'=> $parent->id, 'event_id' => $parent->event_id, 'name' => $eventKitName])
+                ->create();
+            }
         }
 
         $parentKits = EventKit::whereNotNull('event_kit_id')->take(25);
