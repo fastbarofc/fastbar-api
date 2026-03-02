@@ -117,9 +117,13 @@
 
         <div class="section">
             @foreach($kits as $kit)
+                @php $showObservations = $showObservations ?? false; @endphp
                 @foreach($kit->children as $child)
                     <div class="kit">
                         <h2>{{ $child['data']['name'] }}</h2>
+                        @if(isset($showObservations) && $showObservations && !empty($child['data']['observation']))
+                            <p style="font-size: 11px; color: #555; margin: 4px 0 0 0;">Obs: {{ $child['data']['observation'] }}</p>
+                        @endif
                         <hr class="hr-strong">
                         <div>
                             @if(!empty($child['children']))
@@ -130,15 +134,10 @@
                                 @if (!empty($subChildren) && !empty($subChildren[0]))
                                     @if ($subChildren[0]['data']['type'] == 'kit')
                                         @foreach($subChildren as $subChild)
-                                            @php $component = 'budget-kits'; @endphp
-                                            @include('pdfs.' . $component, $subChild)
+                                            @include('pdfs.budget-kits', ['subChild' => $subChild, 'showObservations' => $showObservations ?? false])
                                         @endforeach
                                     @else
-                                        @php
-                                            $component = 'budget-products';
-                                            $nestedChildren = $subChildren;
-                                        @endphp
-                                        @include('pdfs.' . $component, $nestedChildren)
+                                        @include('pdfs.budget-products', ['nestedChildren' => $subChildren, 'showObservations' => $showObservations ?? false])
                                     @endif
                                 @endif
                             @endif
