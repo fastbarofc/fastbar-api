@@ -228,10 +228,10 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('/events/generate-letterhead-budget/{event}', [EventController::class, 'generateLetterheadBudget']);
     Route::post('/events/generate-buffet-contract/{event}', [EventController::class, 'generateBuffetContract']);
     Route::post('/events/generate-lease-contract/{event}', [EventController::class, 'generateLeaseContract']);
-    Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
     Route::post('/events/generate-closure/{event}', [EventController::class, 'generateClosure']);
     Route::post('/events/generate-summary/{event}', [EventController::class, 'generateSummary']);
     Route::post('/events/generate-menu/{event}', [EventController::class, 'generateMenu']);
+    Route::post('/events/generate-menu-with-observations/{event}', [EventController::class, 'generateMenuWithObservations']);
     Route::post('/events/generate-collaborators/{event}', [EventController::class, 'generateCollaborators']);
     Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
     Route::post('/events/generate-event-items-checklist/{event}', [EventController::class, 'generateEventItemChecklist']);

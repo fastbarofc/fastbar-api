@@ -1215,6 +1215,16 @@ class EventController extends Controller
 
     public function generateMenu(Event $event)
     {
+        return $this->generateMenuPdf($event, false, 'menu-do-cliente-');
+    }
+
+    public function generateMenuWithObservations(Event $event)
+    {
+        return $this->generateMenuPdf($event, true, 'cardapio-');
+    }
+
+    private function generateMenuPdf(Event $event, bool $showObservations, string $fileNamePrefix = 'menu-do-cliente-'): \Illuminate\Http\JsonResponse
+    {
         $event->load([
             'eventStatus',
             'client',
@@ -1226,6 +1236,7 @@ class EventController extends Controller
         if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
             return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
         }
+
         $date = Carbon::now()->format('d/m/Y');
         $client = $event->client;
         $place = $event->eventPlace;
@@ -1238,8 +1249,8 @@ class EventController extends Controller
 
         $headerPath = resource_path('views/pdfs/header.html');
         $header = file_get_contents($headerPath);
-        $fileName = 'orcamento-' . $event->id;
-        $viewContent = view("/pdfs/menu-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'totalGuests']));
+        $fileName = $fileNamePrefix . $event->id;
+        $viewContent = view("/pdfs/menu-pdf", compact(['event', 'date', 'client', 'place', 'kits', 'totalGuests', 'showObservations']));
 
         try {
             $pdfUrl = FileService::generatePdf(viewContent: $viewContent, fileName: $fileName, footerContent: $header, headerContent: $header);

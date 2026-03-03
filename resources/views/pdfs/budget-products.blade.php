@@ -8,7 +8,12 @@
             <ul>
                 @if(!empty($nestedChildren))
                 @for($i = 0; $i < $kitsLeft; $i++)
-                    <li>{{ $nestedChildren[$i]['data']['name'] }}</li>
+                    <li>
+                        {{ $nestedChildren[$i]['data']['name'] }}
+                        @if(isset($showObservations) && $showObservations && !empty($nestedChildren[$i]['data']['observation']))
+                            <br><span style="font-size: 11px; color: #555;">Obs: {{ $nestedChildren[$i]['data']['observation'] }}</span>
+                        @endif
+                    </li>
                     @endfor
                     @endif
             </ul>
@@ -17,7 +22,12 @@
             <ul>
                 @if(!empty($nestedChildren))
                 @for($i = $kitsLeft; $i < count($nestedChildren); $i++)
-                    <li>{{ $nestedChildren[$i]['data']['name'] }}</li>
+                    <li>
+                        {{ $nestedChildren[$i]['data']['name'] }}
+                        @if(isset($showObservations) && $showObservations && !empty($nestedChildren[$i]['data']['observation']))
+                            <br><span style="font-size: 11px; color: #555;">Obs: {{ $nestedChildren[$i]['data']['observation'] }}</span>
+                        @endif
+                    </li>
                     @endfor
                     @endif
             </ul>
