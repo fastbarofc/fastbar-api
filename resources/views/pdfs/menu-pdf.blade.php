@@ -112,7 +112,7 @@
             <p><span class="label">Horário:</span> {{ $event->time ? \Carbon\Carbon::parse($event->time)->format('H:i') : 'Hora a definir' }}</p>
             <p><span class="label">Duração (h):</span> {{ $event->duration }}</p>
             <p><span class="label">Total de Convidados:</span> {{ $totalGuests }}</p>
-            <p><span class="label">Responsável:</span> {{ $event->collaborator->name }}</p>
+            <p><span class="label">Responsável:</span> {{ $event->collaborator?->name ?? '' }}</p>
         </div>
 
         <div class="section">
