@@ -52,8 +52,9 @@ class UpdateEventRequest extends FormRequest
             'post_event_consumption_report' => 'nullable|string',
             'post_event_consumption_report_file_id' => 'nullable|exists:files,id',
             'post_event_consumption_report_file_name' => 'nullable|string|max:255',
-            'post_event_consumption_report_remove' => 'nullable|boolean'
-
+            'post_event_consumption_report_remove' => 'nullable|boolean',
+            'company_ids' => 'nullable|array',
+            'company_ids.*' => 'exists:companies,id',
         ];
     }
 

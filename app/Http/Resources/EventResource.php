@@ -83,6 +83,7 @@ class EventResource extends JsonResource
                     ];
                 });
             }),
+            'companies' => $this->whenLoaded('companies', fn () => $this->companies->map(fn ($c) => ['id' => $c->id, 'internal_name' => $c->internal_name])),
         ];
     }
 }

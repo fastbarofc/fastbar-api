@@ -49,8 +49,8 @@ class StoreEventRequest extends FormRequest
             'post_event_consumption_report_file_id' => 'nullable|exists:files,id',
             'post_event_consumption_report_file_name' => 'nullable|string|max:255',
             'post_event_consumption_report_remove' => 'nullable|boolean',
-
-
+            'company_ids' => 'nullable|array',
+            'company_ids.*' => 'exists:companies,id',
         ];
 
         return $data;

@@ -209,6 +209,11 @@ class Event extends Model implements AuditableInterface
         return $this->belongsToMany(OfficeBudget::class, 'event_office_budget');
     }
 
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class, 'event_companies');
+    }
+
     public function utensils()
     {
         return $this->belongsToMany(Utensil::class, 'event_utensil');

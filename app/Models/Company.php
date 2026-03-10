@@ -24,4 +24,9 @@ class Company extends Model
     protected $casts = [
         'type' => 'string',
     ];
+
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'event_companies');
+    }
 }
