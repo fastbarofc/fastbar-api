@@ -68,7 +68,8 @@ class EventController extends Controller
             'client',
             'eventType',
             'collaborator',
-            'eventKits'
+            'eventKits',
+            'companies'
         ]);
 
         if ($request->input('filter_by')) {
@@ -82,7 +83,9 @@ class EventController extends Controller
                     $operator = $field == 'name' ? 'like' : '=';
                     $isDate = in_array($field, ['date']);
 
-                    if (str_contains($field, '.')) {
+                    if ($field === 'company_id') {
+                        $query->whereHas('companies', fn ($q) => $q->where('companies.id', $value));
+                    } elseif (str_contains($field, '.')) {
                         [$relation, $relationField] = explode('.', $field);
                         $query->whereHas($relation, function ($q) use ($relationField, $value, $operator) {
                             $q->where($relationField, $operator, $operator === 'like' ? "%$value%" : $value);
@@ -118,6 +121,8 @@ class EventController extends Controller
 
         $events = $query->paginate($request->input('per_page', 10));
 
+        $eventCompanies = Company::whereIn('internal_name', ['Parthenon', 'Fastbar'])->whereNull('deleted_at')->get(['id', 'internal_name']);
+
         return response()->json([
             'data' => EventListResource::collection($events),
             'pagination' => [
@@ -130,7 +135,8 @@ class EventController extends Controller
             'filterable_fields' => Event::filterableFields(),
             'event_types' => EventType::all(['id', 'name']),
             'event_places' => EventPlace::all(['id', 'name']),
-            'event_statuses' => EventStatus::all(['id', 'name'])
+            'event_statuses' => EventStatus::all(['id', 'name']),
+            'event_companies' => $eventCompanies
         ], 200);
     }
 
@@ -155,6 +161,8 @@ class EventController extends Controller
 
         $query->whereDate('date', '>=', $start)->whereDate('date', '<', $end);
 
+        $query->with('companies');
+
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
             if ($filterable && $filterable !== '[]') {
@@ -162,8 +170,12 @@ class EventController extends Controller
                 foreach ($filterableArray as $filter) {
                     $field = array_keys($filter)[0];
                     $value = $filter[$field];
-                    $operator = $field == 'name' ? 'like' : '=';
-                    $query->filterByField($field, $value, $operator);
+                    if ($field === 'company_id') {
+                        $query->whereHas('companies', fn ($q) => $q->where('companies.id', $value));
+                    } else {
+                        $operator = $field == 'name' ? 'like' : '=';
+                        $query->filterByField($field, $value, $operator);
+                    }
                 }
             }
         }
@@ -176,10 +188,13 @@ class EventController extends Controller
 
         $events = $query->get();
 
+        $eventCompanies = Company::whereIn('internal_name', ['Parthenon', 'Fastbar'])->whereNull('deleted_at')->get(['id', 'internal_name']);
+
         return response()->json([
             'data' => EventCalendarResource::collection($events),
             'sortable_fields' => Event::sortableFields(),
-            'filterable_fields' => Event::filterableFields()
+            'filterable_fields' => Event::filterableFields(),
+            'event_companies' => $eventCompanies
         ], 200);
     }
 
