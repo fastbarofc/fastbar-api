@@ -8,6 +8,7 @@ use App\Http\Requests\ChangeCollaboratorPasswordRequest;
 use App\Http\Resources\CollaboratorResource;
 use Spatie\Permission\Models\Role;
 use App\Models\Collaborator;
+use App\Models\Company;
 use App\Models\User;
 use App\Models\File;
 use App\Models\Address;
@@ -31,7 +32,7 @@ class CollaboratorController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = Collaborator::query();
+        $query = Collaborator::query()->with('companies');
 
         $joins = [
             'sector_offices' => false,
@@ -53,6 +54,8 @@ class CollaboratorController extends Controller
                                 $subQuery->orWhere("collaborators.$searchableField", 'like', "%$value%");
                             }
                         });
+                    } elseif ($field === 'company_id') {
+                        $query->whereHas('companies', fn ($q) => $q->where('companies.id', $value));
                     } else {
                         if (Collaborator::isFieldFilterable($field)) {
                             $query->where("collaborators.$field", $value);
@@ -104,6 +107,8 @@ class CollaboratorController extends Controller
 
         $collaborators = $query->paginate($perPage);
 
+        $collaboratorCompanies = Company::whereIn('internal_name', ['Parthenon', 'Fastbar'])->whereNull('deleted_at')->get(['id', 'internal_name']);
+
         return response()->json([
             'data' => CollaboratorResource::collection($collaborators),
             'pagination' => [
@@ -114,6 +119,7 @@ class CollaboratorController extends Controller
             ],
             'sortable_fields' => Collaborator::sortableFields(),
             'filterable_fields' => Collaborator::filterableFields(),
+            'collaborator_companies' => $collaboratorCompanies,
         ], 200);
     }
 
@@ -122,6 +128,9 @@ class CollaboratorController extends Controller
         try {
             DB::beginTransaction();
             $data = $request->all();
+
+            $companyIds = $data['company_ids'] ?? [];
+            unset($data['company_ids']);
 
             $collaborator = Collaborator::create($data);
 
@@ -222,8 +231,11 @@ class CollaboratorController extends Controller
             }
 
             $this->syncQualifications($collaborator, $data);
+
+            $collaborator->companies()->sync($companyIds);
             DB::commit();
 
+            $collaborator->load('companies');
             return response()->json(new CollaboratorResource($collaborator), 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -233,6 +245,7 @@ class CollaboratorController extends Controller
 
     public function show(Collaborator $collaborator)
     {
+        $collaborator->load('companies');
         return response()->json(new CollaboratorResource($collaborator), 200);
     }
 
@@ -242,6 +255,10 @@ class CollaboratorController extends Controller
         try {
             DB::beginTransaction();
             $data = $request->except('photo');
+
+            $companyIds = $data['company_ids'] ?? [];
+            unset($data['company_ids']);
+
             $collaborator->update($data);
             if ($request->filled('photo')) {
                 $photoUrl = $request->photo;
@@ -415,7 +432,10 @@ class CollaboratorController extends Controller
 
             $this->syncQualifications($collaborator, $data);
 
+            $collaborator->companies()->sync($companyIds);
+
             DB::commit();
+            $collaborator->load('companies');
             return response()->json(new CollaboratorResource($collaborator), 200);
         } catch (\Exception $e) {
             DB::rollBack();
