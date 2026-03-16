@@ -218,7 +218,16 @@ class EventController extends Controller
         unset($data['company_ids']);
 
         $data['collaborator_id'] = auth()->user()->collaborator->id;
-        $data['contract_body'] = ContractTemplate::first()?->content ?? null;
+        $contractTemplate = null;
+        if (!empty($companyIds)) {
+            $parthenon = Company::whereIn('id', $companyIds)
+                ->where('internal_name', 'Parthenon')
+                ->first();
+            $companyId = $parthenon?->id ?? $companyIds[0];
+            $contractTemplate = ContractTemplate::where('company_id', $companyId)->first();
+        }
+        $contractTemplate ??= ContractTemplate::first();
+        $data['contract_body'] = $contractTemplate?->content ?? null;
         $data['is_medicine'] = $data['is_medicine'] ?? false;
 
         $event = Event::create($data);

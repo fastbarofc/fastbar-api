@@ -33,6 +33,15 @@ class AuthController extends Controller
 
         $permissions = $user->getPermissionsViaRoles()->pluck('slug')->toArray() ?? [];
 
+        $collaboratorCompanies = [];
+        if ($user->collaborator) {
+            $collaboratorCompanies = $user->collaborator
+                ->companies()
+                ->select('companies.id', 'companies.internal_name')
+                ->get()
+                ->toArray();
+        }
+
         $response = [
             'id' => $user->id,
             'name' => $user->name,
@@ -42,7 +51,8 @@ class AuthController extends Controller
             'token' => $token,
             'role' => $user->roles->pluck('name')->first(),
             'is_employee' => $user->is_employee,
-            'permissions' => $permissions
+            'permissions' => $permissions,
+            'companies' => $collaboratorCompanies,
         ];
 
         return response($response, 200);

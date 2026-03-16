@@ -8,10 +8,18 @@ use Illuminate\Http\Request;
 class ContractTemplateController extends Controller
 {
 
-    public function show(ContractTemplate $contractTemplate)
+    public function show(Request $request)
     {
-        $contractTemplate = ContractTemplate::first();
-        
+        $companyId = $request->query('company_id');
+
+        $query = ContractTemplate::query();
+
+        if ($companyId) {
+            $query->where('company_id', $companyId);
+        }
+
+        $contractTemplate = $query->first();
+
         return response()->json([
             'content' => $contractTemplate ? $contractTemplate->content : '',
         ]);
@@ -19,11 +27,16 @@ class ContractTemplateController extends Controller
 
     public function save(Request $request)
     {
-        $data = $request->only('content');
-
+        $data = $request->only(['content', 'company_id']);
         $data['content'] = $data['content'] ?? '';
-        
-        $contractTemplate = ContractTemplate::first();
+
+        $companyId = $data['company_id'] ?? null;
+
+        if ($companyId) {
+            $contractTemplate = ContractTemplate::where('company_id', $companyId)->first();
+        } else {
+            $contractTemplate = ContractTemplate::whereNull('company_id')->first();
+        }
 
         if ($contractTemplate) {
             $contractTemplate->update($data);
@@ -33,9 +46,4 @@ class ContractTemplateController extends Controller
             return response()->json(['message' => 'Modelo de contrato criado com sucesso!']);
         }
     }
-
-   
-}   
-
-
-
+}
