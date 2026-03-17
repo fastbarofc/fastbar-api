@@ -641,7 +641,9 @@ class EventController extends Controller
 
         $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
 
-        $event->companies()->sync($companyIds ?? []);
+        if ($request->has('company_ids')) {
+            $event->companies()->sync($companyIds ?? []);
+        }
 
         $event->refresh();
         $event->load('companies');
