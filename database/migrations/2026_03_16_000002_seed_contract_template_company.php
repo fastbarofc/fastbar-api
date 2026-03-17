@@ -7,7 +7,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $parthenon = DB::table('companies')->where('internal_name', 'Parthenon')->first();
+        $parthenon = DB::table('companies')->where('internal_name', 'Parthenon')->whereNull('deleted_at')->first();
 
         if ($parthenon) {
             DB::table('contract_templates')
