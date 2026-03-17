@@ -29,12 +29,19 @@ class ContractTemplateController extends Controller
 
     public function save(Request $request)
     {
-        $data = $request->only(['content', 'company_id']);
-        $data['content'] = $data['content'] ?? '';
+        $validated = $request->validate([
+            'content' => 'nullable|string',
+            'company_id' => 'nullable|integer|exists:companies,id',
+        ]);
 
-        $companyId = $data['company_id'] ?? null;
+        $data = [
+            'content' => $validated['content'] ?? '',
+            'company_id' => $validated['company_id'] ?? null,
+        ];
 
-        if ($companyId) {
+        $companyId = $data['company_id'];
+
+        if ($companyId !== null) {
             $contractTemplate = ContractTemplate::where('company_id', $companyId)->first();
         } else {
             $contractTemplate = ContractTemplate::whereNull('company_id')->first();
