@@ -16,6 +16,8 @@ class ContractTemplateController extends Controller
 
         if ($companyId) {
             $query->where('company_id', $companyId);
+        } else {
+            $query->whereNull('company_id');
         }
 
         $contractTemplate = $query->first();
