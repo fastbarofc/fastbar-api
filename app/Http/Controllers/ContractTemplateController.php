@@ -8,10 +8,20 @@ use Illuminate\Http\Request;
 class ContractTemplateController extends Controller
 {
 
-    public function show(ContractTemplate $contractTemplate)
+    public function show(Request $request)
     {
-        $contractTemplate = ContractTemplate::first();
-        
+        $companyId = $request->query('company_id');
+
+        $query = ContractTemplate::query();
+
+        if ($companyId) {
+            $query->where('company_id', $companyId);
+        } else {
+            $query->whereNull('company_id');
+        }
+
+        $contractTemplate = $query->first();
+
         return response()->json([
             'content' => $contractTemplate ? $contractTemplate->content : '',
         ]);
@@ -19,11 +29,23 @@ class ContractTemplateController extends Controller
 
     public function save(Request $request)
     {
-        $data = $request->only('content');
+        $validated = $request->validate([
+            'content' => 'nullable|string',
+            'company_id' => 'nullable|integer|exists:companies,id',
+        ]);
 
-        $data['content'] = $data['content'] ?? '';
-        
-        $contractTemplate = ContractTemplate::first();
+        $data = [
+            'content' => $validated['content'] ?? '',
+            'company_id' => $validated['company_id'] ?? null,
+        ];
+
+        $companyId = $data['company_id'];
+
+        if ($companyId !== null) {
+            $contractTemplate = ContractTemplate::where('company_id', $companyId)->first();
+        } else {
+            $contractTemplate = ContractTemplate::whereNull('company_id')->first();
+        }
 
         if ($contractTemplate) {
             $contractTemplate->update($data);
@@ -33,9 +55,4 @@ class ContractTemplateController extends Controller
             return response()->json(['message' => 'Modelo de contrato criado com sucesso!']);
         }
     }
-
-   
-}   
-
-
-
+}

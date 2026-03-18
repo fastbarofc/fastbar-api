@@ -9,10 +9,15 @@ class ContractTemplate extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['content'];
+    protected $fillable = ['content', 'company_id'];
 
     public function event()
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(\App\Models\Company::class);
     }
 }

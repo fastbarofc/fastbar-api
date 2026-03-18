@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use App\Models\Qualification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Models\this;
 
 class CollaboratorResource extends JsonResource
 {
@@ -49,6 +48,7 @@ class CollaboratorResource extends JsonResource
             'bank_details' => BankDetailResource::collection($this->bankDetails),
             'pix_keys' => PixKeyResource::collection($this->pixKeys),
             'goals' => CollaboratorGoalResource::collection($this->goals),
+            'companies' => $this->whenLoaded('companies', fn () => $this->companies->map(fn ($c) => ['id' => $c->id, 'internal_name' => $c->internal_name])),
 
         ];
 

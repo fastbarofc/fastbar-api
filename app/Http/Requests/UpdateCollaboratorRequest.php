@@ -52,6 +52,8 @@ class UpdateCollaboratorRequest extends FormRequest
             'pix_keys'   => 'nullable|array',
             'bank_details' => 'nullable|array',
             'qualifications' => 'nullable|array',
+            'company_ids' => 'required|array|min:1',
+            'company_ids.*' => 'exists:companies,id',
         ];
 
         /* if ($this->request->get('has_login')) {
@@ -95,6 +97,9 @@ class UpdateCollaboratorRequest extends FormRequest
             'has_login.boolean'       => 'O campo possui login deve ser um booleano.',
             'active.boolean'         => 'O campo ativo deve ser um booleano.',
             'role_id.exists'         => 'O perfil selecionado não é válido.',
+            'company_ids.required'   => 'Selecione pelo menos uma empresa.',
+            'company_ids.min'        => 'Selecione pelo menos uma empresa.',
+            'company_ids.*.exists'   => 'A empresa selecionada não é válida.',
         ];
     }
 

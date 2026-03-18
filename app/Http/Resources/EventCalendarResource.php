@@ -29,8 +29,12 @@ class EventCalendarResource extends JsonResource
             'time'               => $this->time ? Carbon::parse($this->time)->format('H:i') : null,
             'event_place'        => $place,
             'guests'             => $this->event_guests + $batchGuestsCount,
-            'event_status'             => $this->eventStatus->name,
+            'event_status'       => $this->eventStatus->name,
             'updated_at'         => $this->updated_at,
+            'companies'          => $this->whenLoaded('companies', fn() => $this->companies->map(fn($c) => [
+                'id' => $c->id,
+                'internal_name' => $c->internal_name
+            ])->values()->toArray()),
         ];
     }
 }

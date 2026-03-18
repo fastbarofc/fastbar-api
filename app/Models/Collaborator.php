@@ -54,7 +54,8 @@ class Collaborator extends Model implements AuditableInterface
         'nickname',
         'name',
         'email',
-        'phone_1'
+        'phone_1',
+        'company_id',
     ];
 
     protected static $searchableFields = [
@@ -163,6 +164,11 @@ class Collaborator extends Model implements AuditableInterface
 
     public function goals() {
         return $this->hasMany(CollaboratorGoal::class);
+    }
+
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class, 'collaborator_companies');
     }
 }
 

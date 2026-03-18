@@ -40,6 +40,7 @@ use App\Models\OfficeBudget;
 use App\Models\OfficeEvent;
 use App\Models\Partner;
 use App\Models\PaymentPlan;
+use App\Models\Company;
 
 use App\Services\FileService;
 use App\Services\EventHistoryService;
@@ -67,7 +68,8 @@ class EventController extends Controller
             'client',
             'eventType',
             'collaborator',
-            'eventKits'
+            'eventKits',
+            'companies'
         ]);
 
         if ($request->input('filter_by')) {
@@ -81,7 +83,9 @@ class EventController extends Controller
                     $operator = $field == 'name' ? 'like' : '=';
                     $isDate = in_array($field, ['date']);
 
-                    if (str_contains($field, '.')) {
+                    if ($field === 'company_id') {
+                        $query->whereHas('companies', fn ($q) => $q->where('companies.id', $value));
+                    } elseif (str_contains($field, '.')) {
                         [$relation, $relationField] = explode('.', $field);
                         $query->whereHas($relation, function ($q) use ($relationField, $value, $operator) {
                             $q->where($relationField, $operator, $operator === 'like' ? "%$value%" : $value);
@@ -117,6 +121,8 @@ class EventController extends Controller
 
         $events = $query->paginate($request->input('per_page', 10));
 
+        $eventCompanies = Company::whereIn('internal_name', ['Parthenon', 'Fastbar'])->whereNull('deleted_at')->get(['id', 'internal_name']);
+
         return response()->json([
             'data' => EventListResource::collection($events),
             'pagination' => [
@@ -129,7 +135,8 @@ class EventController extends Controller
             'filterable_fields' => Event::filterableFields(),
             'event_types' => EventType::all(['id', 'name']),
             'event_places' => EventPlace::all(['id', 'name']),
-            'event_statuses' => EventStatus::all(['id', 'name'])
+            'event_statuses' => EventStatus::all(['id', 'name']),
+            'event_companies' => $eventCompanies
         ], 200);
     }
 
@@ -154,6 +161,8 @@ class EventController extends Controller
 
         $query->whereDate('date', '>=', $start)->whereDate('date', '<', $end);
 
+        $query->with('companies');
+
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
             if ($filterable && $filterable !== '[]') {
@@ -161,8 +170,12 @@ class EventController extends Controller
                 foreach ($filterableArray as $filter) {
                     $field = array_keys($filter)[0];
                     $value = $filter[$field];
-                    $operator = $field == 'name' ? 'like' : '=';
-                    $query->filterByField($field, $value, $operator);
+                    if ($field === 'company_id') {
+                        $query->whereHas('companies', fn ($q) => $q->where('companies.id', $value));
+                    } else {
+                        $operator = $field == 'name' ? 'like' : '=';
+                        $query->filterByField($field, $value, $operator);
+                    }
                 }
             }
         }
@@ -175,10 +188,13 @@ class EventController extends Controller
 
         $events = $query->get();
 
+        $eventCompanies = Company::whereIn('internal_name', ['Parthenon', 'Fastbar'])->whereNull('deleted_at')->get(['id', 'internal_name']);
+
         return response()->json([
             'data' => EventCalendarResource::collection($events),
             'sortable_fields' => Event::sortableFields(),
-            'filterable_fields' => Event::filterableFields()
+            'filterable_fields' => Event::filterableFields(),
+            'event_companies' => $eventCompanies
         ], 200);
     }
 
@@ -198,8 +214,20 @@ class EventController extends Controller
             $data['post_event_consumption_report_remove']
         );
 
+        $companyIds = $data['company_ids'] ?? [];
+        unset($data['company_ids']);
+
         $data['collaborator_id'] = auth()->user()->collaborator->id;
-        $data['contract_body'] = ContractTemplate::first()?->content ?? null;
+        $contractTemplate = null;
+        if (!empty($companyIds)) {
+            $parthenon = Company::whereIn('id', $companyIds)
+                ->where('internal_name', 'Parthenon')
+                ->first();
+            $companyId = $parthenon?->id ?? $companyIds[0];
+            $contractTemplate = ContractTemplate::where('company_id', $companyId)->first();
+        }
+        $contractTemplate ??= ContractTemplate::first();
+        $data['contract_body'] = $contractTemplate?->content ?? null;
         $data['is_medicine'] = $data['is_medicine'] ?? false;
 
         $event = Event::create($data);
@@ -284,12 +312,17 @@ class EventController extends Controller
 
         EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
 
+        if (!empty($companyIds)) {
+            $event->companies()->sync($companyIds);
+        }
+
         $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
 
         if (!$request->is_draft) {
             $this->historyService->logEventCreation($event);
         }
 
+        $event->load('companies');
         return response()->json(new EventResource($event), 201);
     }
 
@@ -302,6 +335,7 @@ class EventController extends Controller
             'eventType',
             'eventPlace',
             'eventStatus',
+            'companies',
             'materials',
             'officeEvents',
             'eventGifts',
@@ -581,6 +615,9 @@ class EventController extends Controller
 
 
 
+        $companyIds = $data['company_ids'] ?? [];
+        unset($data['company_ids']);
+
         $data['competing_company_id'] = $data['competing_company_id'] ?? null;
         $data['lost_reason_id'] = $data['lost_reason_id'] ?? null;
         $data['is_draft'] = false;
@@ -604,7 +641,12 @@ class EventController extends Controller
 
         $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
 
+        if ($request->has('company_ids')) {
+            $event->companies()->sync($companyIds ?? []);
+        }
+
         $event->refresh();
+        $event->load('companies');
 
         $this->historyService->logEventUpdate($event, $originalDataWithRelationships, $data);
 
@@ -617,7 +659,7 @@ class EventController extends Controller
         return response()->json([], 204);
     }
 
-    public function getFormData(Event $event)
+    public function getFormData(?Event $event = null)
     {
         $eventCaptures = EventCapture::all();
         $eventTypes = EventType::all();
@@ -636,7 +678,10 @@ class EventController extends Controller
         $parentEvents = [];
         $hasTasting = false;
 
-        if ($event) {
+        $eventCompanies = Company::whereIn('internal_name', ['Parthenon', 'Fastbar'])->whereNull('deleted_at')->get(['id', 'internal_name']);
+
+        $companyIds = [];
+        if ($event && $event->id) {
             $clients = Client::where('id', $event->client_id)->get();
             $invoiceClients = Client::where('id', $event->invoice_client_id)->get();
             $collaborators = Collaborator::where('id', $event->collaborator_id)->get();
@@ -646,9 +691,12 @@ class EventController extends Controller
                 ->get(['id', 'name']);
             $relatedTastingEvents = Event::whereIn('id', $event->tastingEvents()->pluck('events.id'))
                 ->get(['id', 'name']);
+            $companyIds = $event->companies()->pluck('companies.id')->toArray();
         }
 
         return response()->json([
+            'event_companies' => $eventCompanies,
+            'company_ids' => $companyIds,
             'event_captures' => $eventCaptures,
             'event_types' => $eventTypes,
             'partners' => $partners,
@@ -1433,9 +1481,8 @@ class EventController extends Controller
                 'utensils',
                 'officeBudgets',
                 'clients',
+                'companies',
                 'eventKits'
-
-
             ]);
 
             $newEventData = $event->toArray();
@@ -1546,6 +1593,10 @@ class EventController extends Controller
                 if (!empty($legalRepresentativesIds)) {
                     $newEvent->clients()->syncWithoutDetaching($legalRepresentativesIds);
                 }
+            }
+
+            if ($event->companies->isNotEmpty()) {
+                $newEvent->companies()->sync($event->companies->pluck('id')->toArray());
             }
 
             if (EventKit::where('event_id', $event->id)->exists()) {
