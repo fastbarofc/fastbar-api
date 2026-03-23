@@ -59,6 +59,8 @@ use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\RequisitionController;
+use App\Http\Controllers\DevolutionController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -257,12 +259,19 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::resource('departments', DepartmentController::class);
 
     Route::get('stock', [StockMovementController::class, 'getStock'])->name('stock.index');
+    Route::get('stock/product/{product}', [StockMovementController::class, 'getProductStockDetail'])->name('stock.product-detail');
     Route::resource('stock-movements', StockMovementController::class)->only(['index', 'show']);
 
     Route::resource('purchase-requests', PurchaseRequestController::class);
     Route::get('purchase-requests/{purchaseRequest}/products', [PurchaseRequestController::class, 'products'])->name('purchase-requests.products');
 
     Route::resource('purchase-orders', PurchaseOrderController::class);
+
+    Route::resource('requisitions', RequisitionController::class)->only(['index', 'store', 'show', 'destroy']);
+    Route::get('events/{event}/requisitions', [RequisitionController::class, 'byEvent'])->name('events.requisitions');
+
+    Route::resource('devolutions', DevolutionController::class)->only(['index', 'store', 'show']);
+    Route::get('requisitions/{requisition}/devolution', [DevolutionController::class, 'showByRequisition'])->name('requisitions.devolution');
 
     Route::get('/notifications/unread', [NotificationController::class, 'unread'])->name('notifications.unread');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
