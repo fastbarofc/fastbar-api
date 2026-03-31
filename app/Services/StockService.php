@@ -57,17 +57,33 @@ class StockService
 
             $price = $stockLevel ? $stockLevel->weighted_average_price : 0;
 
+            // Saída do departamento de origem
             StockMovement::create([
-                'product_id' => $item->product_id,
-                'department_id' => $requisition->department_id,
-                'type' => StockMovement::TYPE_OUT,
-                'quantity' => $item->quantity,
-                'price' => $price,
+                'product_id'       => $item->product_id,
+                'department_id'    => $requisition->department_id,
+                'type'             => StockMovement::TYPE_OUT,
+                'quantity'         => $item->quantity,
+                'price'            => $price,
                 'movementable_type' => Requisition::class,
-                'movementable_id' => $requisition->id,
+                'movementable_id'  => $requisition->id,
             ]);
 
             $this->updateStockLevel($item->product_id, $requisition->department_id);
+
+            // Entrada no departamento destino (transferência entre departamentos)
+            if ($requisition->destination_department_id) {
+                StockMovement::create([
+                    'product_id'       => $item->product_id,
+                    'department_id'    => $requisition->destination_department_id,
+                    'type'             => StockMovement::TYPE_IN,
+                    'quantity'         => $item->quantity,
+                    'price'            => $price,
+                    'movementable_type' => Requisition::class,
+                    'movementable_id'  => $requisition->id,
+                ]);
+
+                $this->updateStockLevel($item->product_id, $requisition->destination_department_id);
+            }
         }
     }
 

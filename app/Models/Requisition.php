@@ -17,6 +17,7 @@ class Requisition extends Model implements AuditableInterface
     protected $fillable = [
         'event_id',
         'department_id',
+        'destination_department_id',
         'requester_id',
         'notes',
     ];
@@ -45,6 +46,11 @@ class Requisition extends Model implements AuditableInterface
     public function department()
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function destinationDepartment()
+    {
+        return $this->belongsTo(Department::class, 'destination_department_id');
     }
 
     public function requester()

@@ -64,10 +64,11 @@ class RequisitionController extends Controller
             DB::beginTransaction();
 
             $requisition = Requisition::create([
-                'event_id' => $request->event_id,
-                'department_id' => $request->department_id,
-                'requester_id' => auth()->user()->id,
-                'notes' => $request->notes,
+                'event_id'                  => $request->event_id,
+                'department_id'             => $request->department_id,
+                'destination_department_id' => $request->destination_department_id,
+                'requester_id'              => auth()->user()->id,
+                'notes'                     => $request->notes,
             ]);
 
             foreach ($request->items as $item) {
