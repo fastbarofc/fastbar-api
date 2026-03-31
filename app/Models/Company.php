@@ -25,6 +25,29 @@ class Company extends Model
         'type' => 'string',
     ];
 
+    protected static $sortableFields = [
+        'id',
+        'internal_name',
+        'legal_name',
+        'trade_name',
+        'type',
+        'created_at',
+    ];
+
+    protected static $filterableFields = [
+        'id',
+        'internal_name',
+        'legal_name',
+        'trade_name',
+        'type',
+    ];
+
+    protected static $searchableFields = [
+        'internal_name',
+        'legal_name',
+        'trade_name',
+    ];
+    
     public function events()
     {
         return $this->belongsToMany(Event::class, 'event_companies');
@@ -34,4 +57,5 @@ class Company extends Model
     {
         return $this->belongsToMany(Collaborator::class, 'collaborator_companies');
     }
+
 }

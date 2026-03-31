@@ -20,6 +20,8 @@ class StorePurchaseOrderRequest extends FormRequest
             'price' => 'required|numeric|min:0|max:99999999.99',
             'financial_operation_id' => 'required|integer|exists:financial_operations,id',
             'cost_center_id' => 'required|integer|exists:cost_centers,id',
+            'department_id' => 'nullable|integer|exists:departments,id',
+            'status' => 'nullable|string|in:pending,received,cancelled',
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|integer|exists:products,id',
             'products.*.purchase_request_id' => 'required|integer|exists:purchase_requests,id',

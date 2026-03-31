@@ -48,6 +48,7 @@ class PurchaseRequest extends Model implements AuditableInterface
     ];
 
     protected static $searchableFields = [
+        'id',
         'status',
     ];
 

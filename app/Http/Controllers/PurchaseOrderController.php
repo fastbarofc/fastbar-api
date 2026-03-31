@@ -6,22 +6,24 @@ use App\Http\Requests\StorePurchaseOrderRequest;
 use App\Http\Requests\UpdatePurchaseOrderRequest;
 use App\Http\Resources\PurchaseOrderResource;
 use App\Models\PurchaseOrder;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderController extends Controller
 {
-    public function __construct()
+    protected $stockService;
+
+    public function __construct(StockService $stockService)
     {
-        // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
-        // $this->authorizeResource(PurchaseOrderController::class, 'purchaseOrder');
+        $this->stockService = $stockService;
     }
 
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 30);
 
-        $query = PurchaseOrder::with(['company', 'financialOperation', 'costCenter', 'products']);
+        $query = PurchaseOrder::with(['company', 'financialOperation', 'costCenter', 'department', 'products']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -66,6 +68,8 @@ class PurchaseOrderController extends Controller
                 'price' => $request->price,
                 'financial_operation_id' => $request->financial_operation_id,
                 'cost_center_id' => $request->cost_center_id,
+                'department_id' => $request->department_id,
+                'status' => $request->status ?? PurchaseOrder::STATUS_PENDING,
             ]);
 
             $productsToSync = [];
@@ -80,9 +84,11 @@ class PurchaseOrderController extends Controller
             }
             $purchaseOrder->products()->sync($productsToSync);
 
+            $this->stockService->registerPurchaseOrderMovements($purchaseOrder);
+
             DB::commit();
 
-            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'products']);
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'department', 'products']);
 
             return response()->json(new PurchaseOrderResource($purchaseOrder), 201);
         } catch (\Exception $e) {
@@ -93,7 +99,7 @@ class PurchaseOrderController extends Controller
 
     public function show(PurchaseOrder $purchaseOrder)
     {
-        $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'purchaseOrderProducts.product']);
+        $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'department', 'purchaseOrderProducts.product']);
         return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
     }
 
@@ -102,11 +108,15 @@ class PurchaseOrderController extends Controller
         try {
             DB::beginTransaction();
 
+            $oldStatus = $purchaseOrder->status;
+
             $updateData = array_filter([
                 'company_id' => $request->company_id,
                 'price' => $request->price,
                 'financial_operation_id' => $request->financial_operation_id,
                 'cost_center_id' => $request->cost_center_id,
+                'department_id' => $request->department_id,
+                'status' => $request->status,
             ], function ($value) {
                 return $value !== null;
             });
@@ -127,9 +137,13 @@ class PurchaseOrderController extends Controller
                 $purchaseOrder->products()->sync($productsToSync);
             }
 
+            if ($this->stockService->shouldRegisterMovements($purchaseOrder, $oldStatus)) {
+                $this->stockService->registerPurchaseOrderMovements($purchaseOrder);
+            }
+
             DB::commit();
 
-            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'products']);
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'department', 'products']);
 
             return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
         } catch (\Exception $e) {

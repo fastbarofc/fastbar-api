@@ -34,6 +34,7 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseOrder;
+use App\Models\Department;
 use App\Policies\CeremonialPolicy;
 use App\Policies\ClientPolicy;
 use App\Policies\CollaboratorPolicy;
@@ -61,6 +62,7 @@ use App\Policies\UserPolicy;
 use App\Policies\OfficeBudgetPolicy;
 use App\Policies\PurchaseRequestPolicy;
 use App\Policies\PurchaseOrderPolicy;
+use App\Policies\DepartmentPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -97,6 +99,7 @@ class AuthServiceProvider extends ServiceProvider
         OfficeBudget::class => OfficeBudgetPolicy::class,
         PurchaseRequest::class => PurchaseRequestPolicy::class,
         PurchaseOrder::class => PurchaseOrderPolicy::class,
+        Department::class => DepartmentPolicy::class,
     ];
 
     /**

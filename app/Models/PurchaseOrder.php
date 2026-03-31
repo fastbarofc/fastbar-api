@@ -14,20 +14,28 @@ class PurchaseOrder extends Model implements AuditableInterface
 {
     use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
+    const STATUS_PENDING = 'pending';
+    const STATUS_RECEIVED = 'received';
+    const STATUS_CANCELLED = 'cancelled';
+
     protected $fillable = [
         'company_id',
         'price',
         'financial_operation_id',
         'cost_center_id',
+        'department_id',
+        'status',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'status' => 'string',
     ];
 
     protected static $sortableFields = [
         'id',
         'price',
+        'status',
         'created_at',
     ];
 
@@ -36,10 +44,13 @@ class PurchaseOrder extends Model implements AuditableInterface
         'company_id',
         'financial_operation_id',
         'cost_center_id',
+        'department_id',
+        'status',
     ];
 
     protected static $searchableFields = [
-        'price',
+        'id',
+        'status',
     ];
 
     public function company()
@@ -57,6 +68,11 @@ class PurchaseOrder extends Model implements AuditableInterface
         return $this->belongsTo(CostCenter::class);
     }
 
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
     public function products()
     {
         return $this->belongsToMany(Product::class, 'purchase_order_product')
@@ -68,5 +84,10 @@ class PurchaseOrder extends Model implements AuditableInterface
     public function purchaseOrderProducts()
     {
         return $this->hasMany(PurchaseOrderProduct::class);
+    }
+
+    public function stockMovements()
+    {
+        return $this->morphMany(StockMovement::class, 'movementable');
     }
 } 

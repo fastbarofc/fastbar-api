@@ -279,6 +279,11 @@ class Event extends Model implements AuditableInterface
         return $this->hasOne(PaymentPlan::class);
     }
 
+    public function requisitions()
+    {
+        return $this->hasMany(Requisition::class);
+    }
+
     public function receivables(): MorphMany
     {
         return $this->morphMany(Receivable::class, 'receivableable');

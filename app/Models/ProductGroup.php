@@ -20,6 +20,8 @@ class ProductGroup extends Model implements AuditableInterface
 
     protected static $filterableFields = ['description'];
 
+    protected static $searchableFields = ['description'];
+
     public function products()
     {
         return $this->hasMany(Product::class);

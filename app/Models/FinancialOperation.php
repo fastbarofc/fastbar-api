@@ -28,6 +28,30 @@ class FinancialOperation extends Model
         'type' => 'string',
     ];
 
+    protected static $sortableFields = [
+        'id',
+        'code',
+        'description',
+        'account',
+        'nature',
+        'type',
+        'created_at',
+    ];
+
+    protected static $filterableFields = [
+        'id',
+        'code',
+        'description',
+        'account',
+        'nature',
+        'type',
+    ];
+
+    protected static $searchableFields = [
+        'code',
+        'description',
+    ];
+
     public function payables()
     {
         return $this->hasMany(Payable::class);

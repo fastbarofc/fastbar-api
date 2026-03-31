@@ -29,8 +29,19 @@ class CostCenterController extends Controller
                 foreach ($filterableArray as $filter) {
                     $field = array_keys($filter)[0];
                     $value = $filter[$field];
-                    $operator = $field == 'description' ? 'like' : '=';
-                    $query->where($field, $operator, $operator == 'like' ? "%$value%" : $value);
+
+                    if ($field === 'search') {
+                        if (!empty($value)) {
+                            $query->where(function ($subQuery) use ($value) {
+                                foreach (CostCenter::searchableFields() as $searchableField) {
+                                    $subQuery->orWhere('cost_centers.' . $searchableField, 'like', "%$value%");
+                                }
+                            });
+                        }
+                    } else {
+                        $operator = $field == 'description' ? 'like' : '=';
+                        $query->where($field, $operator, $operator == 'like' ? "%$value%" : $value);
+                    }
                 }
             }
         }
