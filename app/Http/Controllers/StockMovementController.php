@@ -58,30 +58,67 @@ class StockMovementController extends Controller
 
     public function getStock(Request $request)
     {
-        $query = StockLevel::with(['product.productGroup', 'product.unit', 'department'])
-            ->where('current_quantity', '>', 0);
+        $perPage = $request->input('per_page', 30);
+        $departmentId = $request->input('department_id');
+        $orderBy = $request->input('order_by', 'name');
+        $direction = $request->input('direction', 'asc') === 'desc' ? 'desc' : 'asc';
 
-        if ($request->input('department_id')) {
-            $query->where('department_id', $request->input('department_id'));
+        $query = Product::with(['productGroup', 'unit'])
+            ->leftJoinSub(
+                \App\Models\StockLevel::select('product_id', 'current_quantity')
+                    ->when($departmentId, fn($q) => $q->where('department_id', $departmentId)),
+                'sl',
+                'sl.product_id',
+                '=',
+                'products.id'
+            )
+            ->select('products.*', 'sl.current_quantity as stock_quantity');
+
+        if ($request->input('product_name')) {
+            $query->where('products.name', 'like', '%' . $request->input('product_name') . '%');
         }
 
         if ($request->input('product_group_id')) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('product_group_id', $request->input('product_group_id'));
-            });
+            $query->where('products.product_group_id', $request->input('product_group_id'));
         }
 
-        $stockLevels = $query->get();
+        if ($request->input('only_with_stock')) {
+            $query->where('sl.current_quantity', '>', 0);
+        }
+
+        if ($orderBy === 'current_quantity') {
+            $query->orderByRaw("COALESCE(sl.current_quantity, 0) $direction")->orderBy('products.name', 'asc');
+        } else {
+            $query->orderBy('products.name', $direction);
+        }
+
+        $products = $query->paginate($perPage);
+
+        $productIds = $products->pluck('id')->all();
+        $stockLevels = \App\Models\StockLevel::whereIn('product_id', $productIds)
+            ->when($departmentId, fn($q) => $q->where('department_id', $departmentId))
+            ->get()
+            ->keyBy('product_id');
+
+        $data = $products->map(function ($product) use ($stockLevels) {
+            $stockLevel = $stockLevels->get($product->id);
+
+            return [
+                'product_id' => $product->id,
+                'product' => $product,
+                'current_quantity' => $stockLevel?->current_quantity ?? 0,
+                'weighted_average_price' => $stockLevel?->weighted_average_price ?? 0,
+            ];
+        });
 
         return response()->json([
-            'data' => $stockLevels->map(function ($item) {
-                return [
-                    'product_id' => $item->product_id,
-                    'product' => $item->product,
-                    'current_quantity' => $item->current_quantity,
-                    'weighted_average_price' => $item->weighted_average_price,
-                ];
-            })
+            'data' => $data,
+            'pagination' => [
+                'page' => $products->currentPage(),
+                'total_pages' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+            ],
         ], 200);
     }
 
