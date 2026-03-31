@@ -23,7 +23,7 @@ class RequisitionController extends Controller
     {
         $perPage = $request->input('per_page', 30);
 
-        $query = Requisition::with(['event', 'department', 'requester', 'requisitionItems.product', 'devolution']);
+        $query = Requisition::with(['event', 'department', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -69,6 +69,7 @@ class RequisitionController extends Controller
                 'destination_department_id' => $request->destination_department_id,
                 'requester_id'              => auth()->user()->id,
                 'notes'                     => $request->notes,
+                'status'                    => Requisition::STATUS_OPEN,
             ]);
 
             foreach ($request->items as $item) {
@@ -94,7 +95,7 @@ class RequisitionController extends Controller
 
             DB::commit();
 
-            $requisition->load(['event', 'department', 'requester', 'requisitionItems.product']);
+            $requisition->load(['event', 'department', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
 
             return response()->json(new RequisitionResource($requisition), 201);
         } catch (\Exception $e) {
@@ -105,7 +106,7 @@ class RequisitionController extends Controller
 
     public function show(Requisition $requisition)
     {
-        $requisition->load(['event', 'department', 'requester', 'requisitionItems.product', 'devolution.devolutionItems']);
+        $requisition->load(['event', 'department', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
         return response()->json(new RequisitionResource($requisition), 200);
     }
 
@@ -128,7 +129,7 @@ class RequisitionController extends Controller
 
     public function byEvent(Request $request, $eventId)
     {
-        $requisitions = Requisition::with(['department', 'requester', 'requisitionItems.product', 'devolution'])
+        $requisitions = Requisition::with(['department', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems'])
             ->where('event_id', $eventId)
             ->orderBy('created_at', 'desc')
             ->get();

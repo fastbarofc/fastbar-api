@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\Devolution;
+use App\Models\DevolutionItem;
 use App\Models\PurchaseOrder;
 use App\Models\Requisition;
+use App\Models\RequisitionItem;
 use App\Models\StockLevel;
 use App\Models\StockMovement;
 use Illuminate\Support\Facades\DB;
@@ -142,6 +144,29 @@ class StockService
 
             $this->updateStockLevel($item->product_id, $devolution->department_id);
         }
+
+        $this->updateRequisitionStatus($devolution->requisition);
+    }
+
+    public function updateRequisitionStatus(Requisition $requisition): void
+    {
+        $requisitionItems = RequisitionItem::where('requisition_id', $requisition->id)->get();
+
+        $totalRequested = $requisitionItems->sum('quantity');
+
+        $totalReturned = DevolutionItem::whereHas('devolution', function ($q) use ($requisition) {
+            $q->where('requisition_id', $requisition->id)->whereNull('deleted_at');
+        })->sum('quantity_returned');
+
+        if ($totalReturned <= 0) {
+            $status = Requisition::STATUS_OPEN;
+        } elseif ($totalReturned >= $totalRequested) {
+            $status = Requisition::STATUS_RETURNED;
+        } else {
+            $status = Requisition::STATUS_PARTIAL;
+        }
+
+        $requisition->update(['status' => $status]);
     }
 
     public function updateStockLevel(int $productId, int $departmentId): void

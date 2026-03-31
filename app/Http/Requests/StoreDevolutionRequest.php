@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\DevolutionItem;
 use App\Models\Requisition;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -34,8 +35,8 @@ class StoreDevolutionRequest extends FormRequest
             $requisition = Requisition::with('requisitionItems')->find($requisitionId);
             if (!$requisition) return;
 
-            if ($requisition->devolution) {
-                $validator->errors()->add('requisition_id', 'Esta requisição já possui uma devolução registrada.');
+            if ($requisition->status === Requisition::STATUS_RETURNED) {
+                $validator->errors()->add('requisition_id', 'Esta requisição já foi completamente devolvida.');
                 return;
             }
 
@@ -46,12 +47,22 @@ class StoreDevolutionRequest extends FormRequest
                 $validator->errors()->add('items', 'Todos os produtos da requisição devem ter devolução informada.');
             }
 
+            // Calculate already returned quantities per product
+            $alreadyReturned = DevolutionItem::whereHas('devolution', function ($q) use ($requisitionId) {
+                $q->where('requisition_id', $requisitionId)->whereNull('deleted_at');
+            })->get()->groupBy('product_id')->map(fn($items) => $items->sum('quantity_returned'));
+
             foreach ($this->input('items', []) as $index => $item) {
                 $requisitionItem = $requisition->requisitionItems->where('product_id', $item['product_id'])->first();
-                if ($requisitionItem && $item['quantity_returned'] > $requisitionItem->quantity) {
+                if (!$requisitionItem) continue;
+
+                $returned = $alreadyReturned[$item['product_id']] ?? 0;
+                $remaining = $requisitionItem->quantity - $returned;
+
+                if ($item['quantity_returned'] > $remaining) {
                     $validator->errors()->add(
                         "items.{$index}.quantity_returned",
-                        "A quantidade devolvida não pode ser maior que a quantidade requisitada ({$requisitionItem->quantity})."
+                        "A quantidade devolvida não pode ser maior que a quantidade restante ({$remaining})."
                     );
                 }
             }

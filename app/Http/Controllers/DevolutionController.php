@@ -72,6 +72,10 @@ class DevolutionController extends Controller
 
             $requisition = Requisition::with('requisitionItems')->findOrFail($request->requisition_id);
 
+            if ($requisition->status === Requisition::STATUS_RETURNED) {
+                return response()->json(['error' => 'Esta requisição já foi completamente devolvida.'], 422);
+            }
+
             $devolution = Devolution::create([
                 'requisition_id' => $request->requisition_id,
                 'department_id' => $requisition->department_id,

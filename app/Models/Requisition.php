@@ -14,12 +14,17 @@ class Requisition extends Model implements AuditableInterface
 {
     use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
+    const STATUS_OPEN = 'open';
+    const STATUS_PARTIAL = 'partial';
+    const STATUS_RETURNED = 'returned';
+
     protected $fillable = [
         'event_id',
         'department_id',
         'destination_department_id',
         'requester_id',
         'notes',
+        'status',
     ];
 
     protected static $sortableFields = [
@@ -68,8 +73,8 @@ class Requisition extends Model implements AuditableInterface
         return $this->morphMany(StockMovement::class, 'movementable');
     }
 
-    public function devolution()
+    public function devolutions()
     {
-        return $this->hasOne(Devolution::class);
+        return $this->hasMany(Devolution::class);
     }
 }

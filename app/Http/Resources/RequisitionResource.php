@@ -20,8 +20,9 @@ class RequisitionResource extends JsonResource
             'requester_id'   => $this->requester_id,
             'requester'      => UserResource::make($this->whenLoaded('requester')),
             'notes'          => $this->notes,
-            'has_devolution' => $this->whenLoaded('devolution', fn() => $this->devolution !== null, false),
+            'status'         => $this->status ?? 'open',
             'items'          => RequisitionItemResource::collection($this->whenLoaded('requisitionItems')),
+            'devolutions'    => DevolutionResource::collection($this->whenLoaded('devolutions')),
             'created_at'     => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at'     => $this->updated_at->format('Y-m-d H:i:s'),
         ];
