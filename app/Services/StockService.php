@@ -150,17 +150,27 @@ class StockService
 
     public function updateRequisitionStatus(Requisition $requisition): void
     {
-        $requisitionItems = RequisitionItem::where('requisition_id', $requisition->id)->get();
+        $requisitionProductIds = RequisitionItem::where('requisition_id', $requisition->id)
+            ->pluck('product_id')
+            ->sort()
+            ->values()
+            ->toArray();
 
-        $totalRequested = $requisitionItems->sum('quantity');
-
-        $totalReturned = DevolutionItem::whereHas('devolution', function ($q) use ($requisition) {
+        // Product IDs that have appeared in at least one devolution for this requisition
+        $returnedProductIds = DevolutionItem::whereHas('devolution', function ($q) use ($requisition) {
             $q->where('requisition_id', $requisition->id)->whereNull('deleted_at');
-        })->sum('quantity_returned');
+        })->pluck('product_id')
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
 
-        if ($totalReturned <= 0) {
+        $coveredCount = count(array_intersect($requisitionProductIds, $returnedProductIds));
+        $totalCount = count($requisitionProductIds);
+
+        if ($coveredCount === 0) {
             $status = Requisition::STATUS_OPEN;
-        } elseif ($totalReturned >= $totalRequested) {
+        } elseif ($coveredCount >= $totalCount) {
             $status = Requisition::STATUS_RETURNED;
         } else {
             $status = Requisition::STATUS_PARTIAL;
