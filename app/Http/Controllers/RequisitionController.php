@@ -82,15 +82,6 @@ class RequisitionController extends Controller
 
             $requisition->load('requisitionItems.product');
 
-            $insufficient = $this->stockService->validateRequisitionStock($requisition);
-            if (!empty($insufficient)) {
-                DB::rollBack();
-                return response()->json([
-                    'error' => 'Estoque insuficiente para os seguintes produtos.',
-                    'insufficient_products' => $insufficient,
-                ], 422);
-            }
-
             $this->stockService->executeRequisition($requisition);
 
             DB::commit();
@@ -112,6 +103,10 @@ class RequisitionController extends Controller
 
     public function destroy(Requisition $requisition)
     {
+        if (in_array($requisition->status, [Requisition::STATUS_PARTIAL, Requisition::STATUS_RETURNED])) {
+            return response()->json(['error' => 'Não é possível excluir uma requisição que já foi devolvida ou parcialmente devolvida.'], 422);
+        }
+
         try {
             DB::beginTransaction();
 
