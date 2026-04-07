@@ -145,6 +145,27 @@ class StockMovementController extends Controller
                 ];
             });
 
+        $lastPurchaseMovement = StockMovement::with('movementable')
+            ->where('product_id', $product->id)
+            ->where('type', StockMovement::TYPE_IN)
+            ->where('movementable_type', \App\Models\PurchaseOrder::class)
+            ->when($departmentId, fn($q) => $q->where('department_id', $departmentId))
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $lastPurchase = null;
+        if ($lastPurchaseMovement && $lastPurchaseMovement->movementable) {
+            $po = $lastPurchaseMovement->movementable->load('company');
+            $lastPurchase = [
+                'purchase_order_id' => $po->id,
+                'company' => $po->company?->trade_name ?? $po->company?->legal_name ?? '—',
+                'quantity' => $lastPurchaseMovement->quantity,
+                'unit_price' => $lastPurchaseMovement->price,
+                'total_value' => $lastPurchaseMovement->quantity * $lastPurchaseMovement->price,
+                'date' => $lastPurchaseMovement->created_at->format('Y-m-d H:i:s'),
+            ];
+        }
+
         $perPage = $request->input('per_page', 20);
         $movementsQuery = StockMovement::with(['department', 'movementable'])
             ->where('product_id', $product->id)
@@ -191,6 +212,7 @@ class StockMovementController extends Controller
                 'weighted_average_price' => $stockLevel->weighted_average_price,
                 'total_value' => $stockLevel->total_value,
             ] : null,
+            'last_purchase' => $lastPurchase,
             'purchase_history' => $purchaseHistory,
             'movements' => [
                 'data' => $movementData,
