@@ -58,6 +58,7 @@ use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\StockLevelController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RequisitionController;
 use App\Http\Controllers\DevolutionController;
@@ -261,6 +262,9 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('stock', [StockMovementController::class, 'getStock'])->name('stock.index');
     Route::get('stock/product/{product}', [StockMovementController::class, 'getProductStockDetail'])->name('stock.product-detail');
     Route::resource('stock-movements', StockMovementController::class)->only(['index', 'show']);
+
+    Route::get('stock-levels', [StockLevelController::class, 'index'])->name('stock-levels.index');
+    Route::post('stock-levels/upsert', [StockLevelController::class, 'upsert'])->name('stock-levels.upsert');
 
     Route::resource('purchase-requests', PurchaseRequestController::class);
     Route::get('purchase-requests/{purchaseRequest}/products', [PurchaseRequestController::class, 'products'])->name('purchase-requests.products');
