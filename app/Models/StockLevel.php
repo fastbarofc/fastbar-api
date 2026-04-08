@@ -19,12 +19,16 @@ class StockLevel extends Model implements AuditableInterface
         'current_quantity',
         'weighted_average_price',
         'total_value',
+        'min_quantity',
+        'max_quantity',
     ];
 
     protected $casts = [
         'current_quantity' => 'integer',
         'weighted_average_price' => 'decimal:2',
         'total_value' => 'decimal:2',
+        'min_quantity' => 'integer',
+        'max_quantity' => 'integer',
     ];
 
     protected static $sortableFields = [
@@ -32,6 +36,8 @@ class StockLevel extends Model implements AuditableInterface
         'current_quantity',
         'weighted_average_price',
         'total_value',
+        'min_quantity',
+        'max_quantity',
         'created_at',
     ];
 
