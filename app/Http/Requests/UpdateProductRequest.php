@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\ProductGroup;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -17,7 +19,17 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name'                => 'nullable|string|max:255|unique:products,name,' . $this->route('product')->id,
-            'group'               => 'nullable|string|max:255',
+            'product_group_id'    => 'nullable|numeric|exists:product_groups,id',
+            'product_subgroup_id' => [
+                Rule::requiredIf(function () {
+                    $groupId = $this->input('product_group_id');
+                    if (!$groupId) return false;
+                    return ProductGroup::find($groupId)?->subgroups()->exists() ?? false;
+                }),
+                'nullable',
+                'numeric',
+                Rule::exists('product_subgroups', 'id')->where('product_group_id', $this->input('product_group_id')),
+            ],
             'barcode'             => 'nullable|string|max:255',
             'unit_id'             => 'nullable|numeric|exists:units,id',
             'weight'              => 'nullable|numeric',
@@ -35,11 +47,14 @@ class UpdateProductRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.string'                 => 'O campo nome deve ser uma string.',
-            'name.max'                    => 'O campo nome deve ter no máximo 255 caracteres.',
-            'name.unique'                 => 'O nome informado já está em uso.',
-            'group.string'                => 'O campo grupo deve ser uma string.',
-            'group.max'                   => 'O campo grupo deve ter no máximo 255 caracteres.',
+            'name.string'                      => 'O campo nome deve ser uma string.',
+            'name.max'                         => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.unique'                      => 'O nome informado já está em uso.',
+            'product_group_id.numeric'         => 'O campo grupo deve ser numérico.',
+            'product_group_id.exists'          => 'O grupo informado não existe.',
+            'product_subgroup_id.required'     => 'O subgrupo é obrigatório para o grupo selecionado.',
+            'product_subgroup_id.numeric'      => 'O campo subgrupo deve ser numérico.',
+            'product_subgroup_id.exists'       => 'O subgrupo informado não pertence ao grupo selecionado.',
             'barcode.string'              => 'O campo código de barra deve ser uma string.',
             'barcode.max'                 => 'O campo código de barra deve ter no máximo 255 caracteres.',
             'unit_id.numeric'             => 'O campo ID da unidade deve conter apenas números.',

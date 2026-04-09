@@ -45,6 +45,7 @@ use App\Http\Controllers\OfficeBudgetController;
 use App\Http\Controllers\ParthenonBankAccountController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductGroupController;
+use App\Http\Controllers\ProductSubgroupController;
 use App\Http\Controllers\QualificationController;
 use App\Models\Qualification;
 use App\Http\Controllers\SupplierController;
@@ -206,6 +207,7 @@ Route::group(['middleware' => ['auth:api']], function () {
 
 
     Route::resource('product-groups', ProductGroupController::class);
+    Route::resource('product-subgroups', ProductSubgroupController::class);
 
     Route::resource('how-did-you-hears', HowDidYouHearController::class);
 

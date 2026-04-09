@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\ProductSubgroupResource;
 
 class ProductResource extends JsonResource
 {
@@ -15,8 +16,10 @@ class ProductResource extends JsonResource
             'slug'=> $this->slug,
             'file_id'=> $this->file_id,
             'file_path'      => $this->file ? asset('storage/' . $this->file->path) : null,
-            'product_group_id'=> $this->product_group_id,
-            'product_group'=> ProductGroupResource::make($this->whenLoaded('productGroup')),
+            'product_group_id'    => $this->product_group_id,
+            'product_group'       => ProductGroupResource::make($this->whenLoaded('productGroup')),
+            'product_subgroup_id' => $this->product_subgroup_id,
+            'product_subgroup'    => ProductSubgroupResource::make($this->whenLoaded('productSubgroup')),
             'barcode'=> $this->barcode,
             'unit_id'=> $this->unit_id,
             'unit'=> UnitResource::make($this->whenLoaded('unit')),

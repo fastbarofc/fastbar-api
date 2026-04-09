@@ -29,6 +29,7 @@ class Product extends Model implements AuditableInterface
         'own_production',
         'recipe_yield',
         'product_group_id',
+        'product_subgroup_id',
         'file_id'
     ];
 
@@ -90,6 +91,11 @@ class Product extends Model implements AuditableInterface
     public function productGroup()
     {
         return $this->belongsTo(ProductGroup::class);
+    }
+
+    public function productSubgroup()
+    {
+        return $this->belongsTo(ProductSubgroup::class);
     }
 
     public function file()
