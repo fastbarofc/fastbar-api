@@ -20,7 +20,7 @@ class ProductGroupController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = ProductGroup::query();
+        $query = ProductGroup::withCount('subgroups');
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -64,18 +64,18 @@ class ProductGroupController extends Controller
     public function store(StoreProductGroupRequest $request)
     {
         $productGroup = ProductGroup::create($request->all());
-        return response()->json(new ProductGroupResource($productGroup), 201);
+        return response()->json(new ProductGroupResource($productGroup->loadCount('subgroups')), 201);
     }
 
     public function show(ProductGroup $productGroup)
     {
-        return response()->json(new ProductGroupResource($productGroup), 200);
+        return response()->json(new ProductGroupResource($productGroup->loadCount('subgroups')), 200);
     }
 
     public function update(UpdateProductGroupRequest $request, ProductGroup $productGroup)
     {
         $productGroup->update($request->all());
-        return response()->json(new ProductGroupResource($productGroup), 200);
+        return response()->json(new ProductGroupResource($productGroup->loadCount('subgroups')), 200);
     }
 
     public function destroy(ProductGroup $productGroup)

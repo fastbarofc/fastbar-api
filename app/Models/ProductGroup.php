@@ -26,4 +26,9 @@ class ProductGroup extends Model implements AuditableInterface
     {
         return $this->hasMany(Product::class);
     }
+
+    public function subgroups()
+    {
+        return $this->hasMany(ProductSubgroup::class);
+    }
 }

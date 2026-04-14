@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             UtensilSeeder::class,
             StockSeeder::class,
             ProductGroupSeeder::class,
+            ProductSubgroupSeeder::class,
             EventKitSeeder::class,
             EventNoteSeeder::class,
             EventBatchSeeder::class,
