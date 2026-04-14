@@ -21,7 +21,7 @@ class UpdatePurchaseOrderRequest extends FormRequest
             'financial_operation_id' => 'nullable|integer|exists:financial_operations,id',
             'cost_center_id' => 'nullable|integer|exists:cost_centers,id',
             'department_id' => 'nullable|integer|exists:departments,id',
-            'status' => 'nullable|string|in:pending,received,cancelled',
+            // status changes are handled via dedicated endpoint
             'products' => 'nullable|array|min:1',
             'products.*.product_id' => 'required_with:products|integer|exists:products,id',
             'products.*.purchase_request_id' => 'required_with:products|integer|exists:purchase_requests,id',

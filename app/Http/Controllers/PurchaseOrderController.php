@@ -69,7 +69,7 @@ class PurchaseOrderController extends Controller
                 'financial_operation_id' => $request->financial_operation_id,
                 'cost_center_id' => $request->cost_center_id,
                 'department_id' => $request->department_id,
-                'status' => $request->status ?? PurchaseOrder::STATUS_PENDING,
+                'status' => PurchaseOrder::STATUS_PENDING,
             ]);
 
             $productsToSync = [];
@@ -105,10 +105,12 @@ class PurchaseOrderController extends Controller
 
     public function update(UpdatePurchaseOrderRequest $request, PurchaseOrder $purchaseOrder)
     {
+        if ($purchaseOrder->status !== PurchaseOrder::STATUS_PENDING) {
+            return response()->json(['error' => 'Apenas ordens de compra com status pendente podem ser editadas.'], 422);
+        }
+
         try {
             DB::beginTransaction();
-
-            $oldStatus = $purchaseOrder->status;
 
             $updateData = array_filter([
                 'company_id' => $request->company_id,
@@ -116,7 +118,6 @@ class PurchaseOrderController extends Controller
                 'financial_operation_id' => $request->financial_operation_id,
                 'cost_center_id' => $request->cost_center_id,
                 'department_id' => $request->department_id,
-                'status' => $request->status,
             ], function ($value) {
                 return $value !== null;
             });
@@ -137,6 +138,38 @@ class PurchaseOrderController extends Controller
                 $purchaseOrder->products()->sync($productsToSync);
             }
 
+            DB::commit();
+
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'department', 'products']);
+
+            return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Erro ao atualizar ordem de compra.'], 500);
+        }
+    }
+
+    public function updateStatus(Request $request, PurchaseOrder $purchaseOrder)
+    {
+        $request->validate([
+            'status' => 'required|string|in:received,cancelled,financial_completed',
+        ]);
+
+        $newStatus = $request->status;
+        $allowedTransitions = PurchaseOrder::ALLOWED_TRANSITIONS[$purchaseOrder->status] ?? [];
+
+        if (!in_array($newStatus, $allowedTransitions)) {
+            return response()->json([
+                'error' => 'Transição de status inválida.',
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $oldStatus = $purchaseOrder->status;
+            $purchaseOrder->update(['status' => $newStatus]);
+
             if ($this->stockService->shouldRegisterMovements($purchaseOrder, $oldStatus)) {
                 $this->stockService->registerPurchaseOrderMovements($purchaseOrder);
             }
@@ -148,7 +181,7 @@ class PurchaseOrderController extends Controller
             return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Erro ao atualizar ordem de compra.'], 500);
+            return response()->json(['error' => 'Erro ao atualizar status da ordem de compra.'], 500);
         }
     }
 

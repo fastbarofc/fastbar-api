@@ -272,6 +272,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('purchase-requests/{purchaseRequest}/products', [PurchaseRequestController::class, 'products'])->name('purchase-requests.products');
 
     Route::resource('purchase-orders', PurchaseOrderController::class);
+    Route::patch('purchase-orders/{purchase_order}/status', [PurchaseOrderController::class, 'updateStatus'])->name('purchase-orders.update-status');
 
     Route::resource('requisitions', RequisitionController::class)->only(['index', 'store', 'show', 'destroy']);
     Route::get('events/{event}/requisitions', [RequisitionController::class, 'byEvent'])->name('events.requisitions');
