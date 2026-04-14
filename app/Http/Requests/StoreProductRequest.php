@@ -19,7 +19,7 @@ class StoreProductRequest extends FormRequest
     {
         return [
             'name'                => 'required|string|max:255|unique:products,name',
-            'product_group_id'    => 'nullable|numeric|exists:product_groups,id',
+            'product_group_id'    => 'required|numeric|exists:product_groups,id',
             'product_subgroup_id' => [
                 Rule::requiredIf(function () {
                     $groupId = $this->input('product_group_id');
@@ -51,6 +51,7 @@ class StoreProductRequest extends FormRequest
             'name.string'                      => 'O campo nome deve ser uma string.',
             'name.max'                         => 'O campo nome deve ter no máximo 255 caracteres.',
             'name.unique'                      => 'O nome informado já está em uso.',
+            'product_group_id.required'        => 'O campo grupo é obrigatório.',
             'product_group_id.numeric'         => 'O campo grupo deve ser numérico.',
             'product_group_id.exists'          => 'O grupo informado não existe.',
             'product_subgroup_id.required'     => 'O subgrupo é obrigatório para o grupo selecionado.',

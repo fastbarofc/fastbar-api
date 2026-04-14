@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('description');
             $table->timestamps();
             $table->softDeletes();
+            $table->unique(['product_group_id', 'slug']);
         });
     }
 
