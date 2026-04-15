@@ -15,8 +15,8 @@ class PurchaseOrderSeeder extends Seeder
      */
     public function run(): void
     {
-        PurchaseOrder::factory(5)->create()->each(function ($purchaseOrder) {
-            $products = Product::inRandomOrder()->take(rand(1, 3))->get();
+        PurchaseOrder::factory(100)->create()->each(function ($purchaseOrder) {
+            $products = Product::inRandomOrder()->take(rand(3, 8))->get();
             $purchaseRequests = PurchaseRequest::inRandomOrder()->take(3)->get();
             
             $productsToAttach = [];

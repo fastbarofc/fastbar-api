@@ -46,8 +46,12 @@ class DatabaseSeeder extends Seeder
             FinancialOperationSeeder::class,
             PayableSeeder::class,
             PaymentPlanSeeder::class,
-
-
+            CostCenterSeeder::class,
+            PurchaseRequestSeeder::class,
+            PurchaseOrderSeeder::class,
+            StockMovementSeeder::class,
+            RequisitionSeeder::class,
+            DevolutionSeeder::class,
         ]);
     }
 }
