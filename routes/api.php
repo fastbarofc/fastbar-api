@@ -57,7 +57,7 @@ use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\PurchaseOrderController;
-use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\StockLevelController;
 use App\Http\Controllers\NotificationController;
@@ -259,7 +259,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::resource('financial-operations', FinancialOperationController::class);
     Route::resource('cost-centers', CostCenterController::class);
 
-    Route::resource('departments', DepartmentController::class);
+    Route::resource('stocks', StockController::class);
 
     Route::get('stock', [StockMovementController::class, 'getStock'])->name('stock.index');
     Route::get('stock/product/{product}', [StockMovementController::class, 'getProductStockDetail'])->name('stock.product-detail');

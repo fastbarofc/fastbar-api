@@ -3,32 +3,38 @@
 namespace App\Models;
 
 use App\Traits\Filterable;
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
 use OwenIt\Auditing\Auditable;
-use App\Traits\Sortable;
-
 
 class Stock extends Model implements AuditableInterface
 {
-    use HasFactory, Auditable, SoftDeletes, Sortable, Filterable;
+    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
     protected $fillable = [
-        'name'
+        'name',
     ];
 
     protected static $sortableFields = [
-        'name'
+        'id',
+        'name',
+        'created_at',
     ];
 
     protected static $filterableFields = [
-        'name'
+        'id',
+        'name',
     ];
-    
-    public function address()
+
+    protected static $searchableFields = [
+        'name',
+    ];
+
+    public function purchaseOrders()
     {
-        return $this->morphOne(Address::class, 'addressable');
+        return $this->hasMany(PurchaseOrder::class);
     }
 }

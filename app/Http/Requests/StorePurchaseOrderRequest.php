@@ -20,7 +20,7 @@ class StorePurchaseOrderRequest extends FormRequest
             'price' => 'required|numeric|min:0|max:99999999.99',
             'financial_operation_id' => 'required|integer|exists:financial_operations,id',
             'cost_center_id' => 'required|integer|exists:cost_centers,id',
-            'department_id' => 'nullable|integer|exists:departments,id',
+            'stock_id' => 'nullable|integer|exists:stocks,id',
             // status is always set to 'pending' on creation
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|integer|exists:products,id',

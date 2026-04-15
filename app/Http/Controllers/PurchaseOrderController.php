@@ -23,7 +23,7 @@ class PurchaseOrderController extends Controller
     {
         $perPage = $request->input('per_page', 30);
 
-        $query = PurchaseOrder::with(['company', 'financialOperation', 'costCenter', 'department', 'products']);
+        $query = PurchaseOrder::with(['company', 'financialOperation', 'costCenter', 'stock', 'products']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -68,7 +68,7 @@ class PurchaseOrderController extends Controller
                 'price' => $request->price,
                 'financial_operation_id' => $request->financial_operation_id,
                 'cost_center_id' => $request->cost_center_id,
-                'department_id' => $request->department_id,
+                'stock_id' => $request->stock_id,
                 'status' => PurchaseOrder::STATUS_PENDING,
             ]);
 
@@ -88,7 +88,7 @@ class PurchaseOrderController extends Controller
 
             DB::commit();
 
-            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'department', 'products']);
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'products']);
 
             return response()->json(new PurchaseOrderResource($purchaseOrder), 201);
         } catch (\Exception $e) {
@@ -99,7 +99,7 @@ class PurchaseOrderController extends Controller
 
     public function show(PurchaseOrder $purchaseOrder)
     {
-        $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'department', 'purchaseOrderProducts.product']);
+        $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'purchaseOrderProducts.product']);
         return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
     }
 
@@ -117,7 +117,7 @@ class PurchaseOrderController extends Controller
                 'price' => $request->price,
                 'financial_operation_id' => $request->financial_operation_id,
                 'cost_center_id' => $request->cost_center_id,
-                'department_id' => $request->department_id,
+                'stock_id' => $request->stock_id,
             ], function ($value) {
                 return $value !== null;
             });
@@ -140,7 +140,7 @@ class PurchaseOrderController extends Controller
 
             DB::commit();
 
-            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'department', 'products']);
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'products']);
 
             return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
         } catch (\Exception $e) {
@@ -152,7 +152,7 @@ class PurchaseOrderController extends Controller
     public function updateStatus(Request $request, PurchaseOrder $purchaseOrder)
     {
         $request->validate([
-            'status' => 'required|string|in:received,cancelled,financial_completed',
+            'status' => 'required|string|in:received,invoice_received,paid,cancelled',
         ]);
 
         $newStatus = $request->status;
@@ -176,7 +176,7 @@ class PurchaseOrderController extends Controller
 
             DB::commit();
 
-            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'department', 'products']);
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'products']);
 
             return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
         } catch (\Exception $e) {

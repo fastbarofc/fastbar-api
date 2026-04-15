@@ -15,7 +15,7 @@ class StockLevel extends Model implements AuditableInterface
 
     protected $fillable = [
         'product_id',
-        'department_id',
+        'stock_id',
         'current_quantity',
         'weighted_average_price',
         'total_value',
@@ -44,7 +44,7 @@ class StockLevel extends Model implements AuditableInterface
     protected static $filterableFields = [
         'id',
         'product_id',
-        'department_id',
+        'stock_id',
     ];
 
     protected static $searchableFields = [
@@ -56,8 +56,8 @@ class StockLevel extends Model implements AuditableInterface
         return $this->belongsTo(Product::class);
     }
 
-    public function department()
+    public function stock()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Stock::class);
     }
 }

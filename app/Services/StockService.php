@@ -24,7 +24,7 @@ class StockService
         foreach ($purchaseOrder->purchaseOrderProducts as $orderProduct) {
             StockMovement::create([
                 'product_id' => $orderProduct->product_id,
-                'department_id' => $purchaseOrder->department_id,
+                'stock_id' => $purchaseOrder->stock_id,
                 'type' => StockMovement::TYPE_IN,
                 'quantity' => $orderProduct->quantity,
                 'price' => $orderProduct->price,
@@ -32,13 +32,13 @@ class StockService
                 'movementable_id' => $purchaseOrder->id,
             ]);
 
-            $this->updateStockLevel($orderProduct->product_id, $purchaseOrder->department_id);
+            $this->updateStockLevel($orderProduct->product_id, $purchaseOrder->stock_id);
         }
     }
 
     public function shouldRegisterMovements(PurchaseOrder $purchaseOrder, ?string $oldStatus): bool
     {
-        if (!$purchaseOrder->department_id) {
+        if (!$purchaseOrder->stock_id) {
             return false;
         }
 
@@ -54,15 +54,15 @@ class StockService
 
         foreach ($requisition->requisitionItems as $item) {
             $stockLevel = StockLevel::where('product_id', $item->product_id)
-                ->where('department_id', $requisition->department_id)
+                ->where('stock_id', $requisition->stock_id)
                 ->first();
 
             $price = $stockLevel ? $stockLevel->weighted_average_price : 0;
 
-            // Saída do departamento de origem
+            // Saída do estoque de origem
             StockMovement::create([
                 'product_id'       => $item->product_id,
-                'department_id'    => $requisition->department_id,
+                'stock_id'    => $requisition->stock_id,
                 'type'             => StockMovement::TYPE_OUT,
                 'quantity'         => $item->quantity,
                 'price'            => $price,
@@ -70,13 +70,13 @@ class StockService
                 'movementable_id'  => $requisition->id,
             ]);
 
-            $this->updateStockLevel($item->product_id, $requisition->department_id);
+            $this->updateStockLevel($item->product_id, $requisition->stock_id);
 
-            // Entrada no departamento destino (transferência entre departamentos)
-            if ($requisition->destination_department_id) {
+            // Entrada no estoque destino (transferência entre estoques)
+            if ($requisition->destination_stock_id) {
                 StockMovement::create([
                     'product_id'       => $item->product_id,
-                    'department_id'    => $requisition->destination_department_id,
+                    'stock_id'    => $requisition->destination_stock_id,
                     'type'             => StockMovement::TYPE_IN,
                     'quantity'         => $item->quantity,
                     'price'            => $price,
@@ -84,7 +84,7 @@ class StockService
                     'movementable_id'  => $requisition->id,
                 ]);
 
-                $this->updateStockLevel($item->product_id, $requisition->destination_department_id);
+                $this->updateStockLevel($item->product_id, $requisition->destination_stock_id);
             }
         }
     }
@@ -96,7 +96,7 @@ class StockService
 
         foreach ($requisition->requisitionItems as $item) {
             $stockLevel = StockLevel::where('product_id', $item->product_id)
-                ->where('department_id', $requisition->department_id)
+                ->where('stock_id', $requisition->stock_id)
                 ->first();
 
             $available = $stockLevel ? $stockLevel->current_quantity : 0;
@@ -124,7 +124,7 @@ class StockService
             }
 
             $outMovement = StockMovement::where('product_id', $item->product_id)
-                ->where('department_id', $devolution->department_id)
+                ->where('stock_id', $devolution->stock_id)
                 ->where('movementable_type', Requisition::class)
                 ->where('movementable_id', $devolution->requisition_id)
                 ->where('type', StockMovement::TYPE_OUT)
@@ -134,7 +134,7 @@ class StockService
 
             StockMovement::create([
                 'product_id' => $item->product_id,
-                'department_id' => $devolution->department_id,
+                'stock_id' => $devolution->stock_id,
                 'type' => StockMovement::TYPE_IN,
                 'quantity' => $item->quantity_returned,
                 'price' => $price,
@@ -142,7 +142,7 @@ class StockService
                 'movementable_id' => $devolution->id,
             ]);
 
-            $this->updateStockLevel($item->product_id, $devolution->department_id);
+            $this->updateStockLevel($item->product_id, $devolution->stock_id);
         }
 
         $this->updateRequisitionStatus($devolution->requisition);
@@ -179,10 +179,10 @@ class StockService
         $requisition->update(['status' => $status]);
     }
 
-    public function updateStockLevel(int $productId, int $departmentId): void
+    public function updateStockLevel(int $productId, int $stockId): void
     {
         $result = StockMovement::where('product_id', $productId)
-            ->where('department_id', $departmentId)
+            ->where('stock_id', $stockId)
             ->selectRaw('
                 SUM(CASE WHEN type = "in" THEN quantity ELSE -quantity END) as current_quantity,
                 CASE
@@ -199,7 +199,7 @@ class StockService
         StockLevel::updateOrCreate(
             [
                 'product_id' => $productId,
-                'department_id' => $departmentId,
+                'stock_id' => $stockId,
             ],
             [
                 'current_quantity' => $currentQuantity,
@@ -211,12 +211,12 @@ class StockService
 
     public function recalculateAllStockLevels(): void
     {
-        $combinations = StockMovement::select('product_id', 'department_id')
+        $combinations = StockMovement::select('product_id', 'stock_id')
             ->distinct()
             ->get();
 
         foreach ($combinations as $combo) {
-            $this->updateStockLevel($combo->product_id, $combo->department_id);
+            $this->updateStockLevel($combo->product_id, $combo->stock_id);
         }
     }
 }

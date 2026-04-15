@@ -12,7 +12,7 @@ class StockLevelResource extends JsonResource
         return [
             'id' => $this->id,
             'product_id' => $this->product_id,
-            'department_id' => $this->department_id,
+            'stock_id' => $this->stock_id,
             'current_quantity' => $this->current_quantity,
             'weighted_average_price' => $this->weighted_average_price,
             'total_value' => $this->total_value,
@@ -26,9 +26,9 @@ class StockLevelResource extends JsonResource
                 'unit' => $this->product->unit?->description,
                 'product_group' => $this->product->productGroup?->description,
             ]),
-            'department' => $this->whenLoaded('department', fn() => [
-                'id' => $this->department->id,
-                'name' => $this->department->name,
+            'stock' => $this->whenLoaded('stock', fn() => [
+                'id' => $this->stock->id,
+                'name' => $this->stock->name,
             ]),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

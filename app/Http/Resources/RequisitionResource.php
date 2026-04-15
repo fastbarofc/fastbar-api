@@ -10,21 +10,21 @@ class RequisitionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'                       => $this->id,
-            'event_id'                 => $this->event_id,
-            'event'                    => EventResource::make($this->whenLoaded('event')),
-            'department_id'            => $this->department_id,
-            'department'               => DepartmentResource::make($this->whenLoaded('department')),
-            'destination_department_id' => $this->destination_department_id,
-            'destination_department'   => DepartmentResource::make($this->whenLoaded('destinationDepartment')),
-            'requester_id'   => $this->requester_id,
-            'requester'      => UserResource::make($this->whenLoaded('requester')),
-            'notes'          => $this->notes,
-            'status'         => $this->status ?? 'open',
-            'items'          => RequisitionItemResource::collection($this->whenLoaded('requisitionItems')),
-            'devolutions'    => DevolutionResource::collection($this->whenLoaded('devolutions')),
-            'created_at'     => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at'     => $this->updated_at->format('Y-m-d H:i:s'),
+            'id'                    => $this->id,
+            'event_id'              => $this->event_id,
+            'event'                 => EventResource::make($this->whenLoaded('event')),
+            'stock_id'              => $this->stock_id,
+            'stock'                 => StockResource::make($this->whenLoaded('stock')),
+            'destination_stock_id'  => $this->destination_stock_id,
+            'destination_stock'     => StockResource::make($this->whenLoaded('destinationStock')),
+            'requester_id'          => $this->requester_id,
+            'requester'             => UserResource::make($this->whenLoaded('requester')),
+            'notes'                 => $this->notes,
+            'status'                => $this->status ?? 'open',
+            'items'                 => RequisitionItemResource::collection($this->whenLoaded('requisitionItems')),
+            'devolutions'           => DevolutionResource::collection($this->whenLoaded('devolutions')),
+            'created_at'            => $this->created_at->format('Y-m-d H:i:s'),
+            'updated_at'            => $this->updated_at->format('Y-m-d H:i:s'),
         ];
     }
 }
