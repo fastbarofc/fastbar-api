@@ -13,13 +13,13 @@ class StockLevelController extends Controller
     {
         $perPage = $request->input('per_page', 30);
 
-        $query = StockLevel::with(['product.unit', 'product.productGroup', 'department'])
+        $query = StockLevel::with(['product.unit', 'product.productGroup', 'stock'])
             ->where(function ($q) {
                 $q->whereNotNull('min_quantity')->orWhereNotNull('max_quantity');
             });
 
-        if ($request->input('department_id')) {
-            $query->where('department_id', $request->input('department_id'));
+        if ($request->input('stock_id')) {
+            $query->where('stock_id', $request->input('stock_id'));
         }
 
         if ($request->input('product_name')) {
@@ -58,7 +58,7 @@ class StockLevelController extends Controller
         $stockLevel = StockLevel::updateOrCreate(
             [
                 'product_id' => $request->product_id,
-                'department_id' => $request->department_id,
+                'stock_id' => $request->stock_id,
             ],
             [
                 'min_quantity' => $request->min_quantity,
@@ -66,7 +66,7 @@ class StockLevelController extends Controller
             ]
         );
 
-        $stockLevel->load(['product.unit', 'product.productGroup', 'department']);
+        $stockLevel->load(['product.unit', 'product.productGroup', 'stock']);
 
         return response()->json(new StockLevelResource($stockLevel), 200);
     }

@@ -15,7 +15,7 @@ class StockMovementController extends Controller
     {
         $perPage = $request->input('per_page', 30);
 
-        $query = StockMovement::with(['product', 'department', 'movementable']);
+        $query = StockMovement::with(['product', 'stock', 'movementable']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -52,21 +52,21 @@ class StockMovementController extends Controller
 
     public function show(StockMovement $stockMovement)
     {
-        $stockMovement->load(['product', 'department', 'movementable']);
+        $stockMovement->load(['product', 'stock', 'movementable']);
         return response()->json(new StockMovementResource($stockMovement), 200);
     }
 
     public function getStock(Request $request)
     {
         $perPage = $request->input('per_page', 30);
-        $departmentId = $request->input('department_id');
+        $stockId = $request->input('stock_id');
         $orderBy = $request->input('order_by', 'name');
         $direction = $request->input('direction', 'asc') === 'desc' ? 'desc' : 'asc';
 
         $query = Product::with(['productGroup', 'unit'])
             ->leftJoinSub(
                 \App\Models\StockLevel::select('product_id', 'current_quantity')
-                    ->when($departmentId, fn($q) => $q->where('department_id', $departmentId)),
+                    ->when($stockId, fn($q) => $q->where('stock_id', $stockId)),
                 'sl',
                 'sl.product_id',
                 '=',
@@ -96,7 +96,7 @@ class StockMovementController extends Controller
 
         $productIds = $products->pluck('id')->all();
         $stockLevels = \App\Models\StockLevel::whereIn('product_id', $productIds)
-            ->when($departmentId, fn($q) => $q->where('department_id', $departmentId))
+            ->when($stockId, fn($q) => $q->where('stock_id', $stockId))
             ->get()
             ->keyBy('product_id');
 
@@ -124,10 +124,10 @@ class StockMovementController extends Controller
 
     public function getProductStockDetail(Request $request, Product $product)
     {
-        $departmentId = $request->input('department_id');
+        $stockId = $request->input('stock_id');
 
         $stockLevel = StockLevel::where('product_id', $product->id)
-            ->when($departmentId, fn($q) => $q->where('department_id', $departmentId))
+            ->when($stockId, fn($q) => $q->where('stock_id', $stockId))
             ->first();
 
         $purchaseHistory = PurchaseOrderProduct::with(['purchaseOrder.company'])
@@ -149,7 +149,7 @@ class StockMovementController extends Controller
             ->where('product_id', $product->id)
             ->where('type', StockMovement::TYPE_IN)
             ->where('movementable_type', \App\Models\PurchaseOrder::class)
-            ->when($departmentId, fn($q) => $q->where('department_id', $departmentId))
+            ->when($stockId, fn($q) => $q->where('stock_id', $stockId))
             ->orderBy('created_at', 'desc')
             ->first();
 
@@ -167,9 +167,9 @@ class StockMovementController extends Controller
         }
 
         $perPage = $request->input('per_page', 20);
-        $movementsQuery = StockMovement::with(['department', 'movementable'])
+        $movementsQuery = StockMovement::with(['stock', 'movementable'])
             ->where('product_id', $product->id)
-            ->when($departmentId, fn($q) => $q->where('department_id', $departmentId))
+            ->when($stockId, fn($q) => $q->where('stock_id', $stockId))
             ->orderBy('created_at', 'desc');
 
         $movements = $movementsQuery->paginate($perPage);
@@ -190,7 +190,7 @@ class StockMovementController extends Controller
                 'type' => $movement->type,
                 'quantity' => $movement->quantity,
                 'price' => $movement->price,
-                'department' => $movement->department->name ?? '—',
+                'stock' => $movement->department->name ?? '—',
                 'source_type' => $sourceType,
                 'source_id' => $movement->movementable_id,
                 'user' => $userName,

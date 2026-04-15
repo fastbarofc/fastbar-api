@@ -16,14 +16,16 @@ class PurchaseOrder extends Model implements AuditableInterface
 
     const STATUS_PENDING = 'pending';
     const STATUS_RECEIVED = 'received';
+    const STATUS_INVOICE_RECEIVED = 'invoice_received';
+    const STATUS_PAID = 'paid';
     const STATUS_CANCELLED = 'cancelled';
-    const STATUS_FINANCIAL_COMPLETED = 'financial_completed';
 
     const ALLOWED_TRANSITIONS = [
         self::STATUS_PENDING => [self::STATUS_RECEIVED, self::STATUS_CANCELLED],
-        self::STATUS_RECEIVED => [self::STATUS_FINANCIAL_COMPLETED],
+        self::STATUS_RECEIVED => [self::STATUS_INVOICE_RECEIVED],
+        self::STATUS_INVOICE_RECEIVED => [self::STATUS_PAID],
+        self::STATUS_PAID => [],
         self::STATUS_CANCELLED => [],
-        self::STATUS_FINANCIAL_COMPLETED => [],
     ];
 
     protected $fillable = [
@@ -31,7 +33,7 @@ class PurchaseOrder extends Model implements AuditableInterface
         'price',
         'financial_operation_id',
         'cost_center_id',
-        'department_id',
+        'stock_id',
         'status',
     ];
 
@@ -52,7 +54,7 @@ class PurchaseOrder extends Model implements AuditableInterface
         'company_id',
         'financial_operation_id',
         'cost_center_id',
-        'department_id',
+        'stock_id',
         'status',
     ];
 
@@ -76,9 +78,9 @@ class PurchaseOrder extends Model implements AuditableInterface
         return $this->belongsTo(CostCenter::class);
     }
 
-    public function department()
+    public function stock()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Stock::class);
     }
 
     public function products()

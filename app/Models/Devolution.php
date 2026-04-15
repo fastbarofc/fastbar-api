@@ -16,7 +16,7 @@ class Devolution extends Model implements AuditableInterface
 
     protected $fillable = [
         'requisition_id',
-        'department_id',
+        'stock_id',
         'registered_by_id',
         'notes',
     ];
@@ -29,7 +29,7 @@ class Devolution extends Model implements AuditableInterface
     protected static $filterableFields = [
         'id',
         'requisition_id',
-        'department_id',
+        'stock_id',
         'registered_by_id',
     ];
 
@@ -42,9 +42,9 @@ class Devolution extends Model implements AuditableInterface
         return $this->belongsTo(Requisition::class);
     }
 
-    public function department()
+    public function stock()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Stock::class);
     }
 
     public function registeredBy()

@@ -23,7 +23,7 @@ class RequisitionController extends Controller
     {
         $perPage = $request->input('per_page', 30);
 
-        $query = Requisition::with(['event', 'department', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
+        $query = Requisition::with(['event', 'stock', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -65,8 +65,8 @@ class RequisitionController extends Controller
 
             $requisition = Requisition::create([
                 'event_id'                  => $request->event_id,
-                'department_id'             => $request->department_id,
-                'destination_department_id' => $request->destination_department_id,
+                'stock_id'             => $request->stock_id,
+                'destination_stock_id' => $request->destination_stock_id,
                 'requester_id'              => auth()->user()->id,
                 'notes'                     => $request->notes,
                 'status'                    => Requisition::STATUS_OPEN,
@@ -86,7 +86,7 @@ class RequisitionController extends Controller
 
             DB::commit();
 
-            $requisition->load(['event', 'department', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
+            $requisition->load(['event', 'stock', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
 
             return response()->json(new RequisitionResource($requisition), 201);
         } catch (\Exception $e) {
@@ -97,7 +97,7 @@ class RequisitionController extends Controller
 
     public function show(Requisition $requisition)
     {
-        $requisition->load(['event', 'department', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
+        $requisition->load(['event', 'stock', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
         return response()->json(new RequisitionResource($requisition), 200);
     }
 
@@ -124,7 +124,7 @@ class RequisitionController extends Controller
 
     public function byEvent(Request $request, $eventId)
     {
-        $requisitions = Requisition::with(['department', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems'])
+        $requisitions = Requisition::with(['stock', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems'])
             ->where('event_id', $eventId)
             ->orderBy('created_at', 'desc')
             ->get();

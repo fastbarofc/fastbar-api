@@ -27,7 +27,7 @@ class DevolutionController extends Controller
         $query = Devolution::with([
             'requisition.event',
             'requisition.requisitionItems.product',
-            'department',
+            'stock',
             'registeredBy',
             'devolutionItems.product',
         ]);
@@ -78,7 +78,7 @@ class DevolutionController extends Controller
 
             $devolution = Devolution::create([
                 'requisition_id' => $request->requisition_id,
-                'department_id' => $requisition->department_id,
+                'stock_id' => $requisition->stock_id,
                 'registered_by_id' => auth()->user()->id,
                 'notes' => $request->notes,
             ]);
@@ -99,7 +99,7 @@ class DevolutionController extends Controller
 
             $devolution->load([
                 'requisition.event',
-                'department',
+                'stock',
                 'registeredBy',
                 'devolutionItems.product',
             ]);
@@ -116,7 +116,7 @@ class DevolutionController extends Controller
         $devolution->load([
             'requisition.event',
             'requisition.requisitionItems.product',
-            'department',
+            'stock',
             'registeredBy',
             'devolutionItems.product',
         ]);
@@ -127,7 +127,7 @@ class DevolutionController extends Controller
     {
         $devolution = Devolution::with([
             'requisition.event',
-            'department',
+            'stock',
             'registeredBy',
             'devolutionItems.product',
         ])->where('requisition_id', $requisition->id)->first();

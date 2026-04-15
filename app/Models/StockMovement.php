@@ -19,7 +19,7 @@ class StockMovement extends Model implements AuditableInterface
 
     protected $fillable = [
         'product_id',
-        'department_id',
+        'stock_id',
         'type',
         'quantity',
         'price',
@@ -43,7 +43,7 @@ class StockMovement extends Model implements AuditableInterface
     protected static $filterableFields = [
         'id',
         'product_id',
-        'department_id',
+        'stock_id',
         'movementable_type',
         'movementable_id',
     ];
@@ -58,9 +58,9 @@ class StockMovement extends Model implements AuditableInterface
         return $this->belongsTo(Product::class);
     }
 
-    public function department()
+    public function stock()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Stock::class);
     }
 
     public function movementable()

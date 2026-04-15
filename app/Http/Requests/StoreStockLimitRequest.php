@@ -15,7 +15,7 @@ class StoreStockLimitRequest extends FormRequest
     {
         return [
             'product_id' => ['required', 'integer', 'exists:products,id'],
-            'department_id' => ['required', 'integer', 'exists:departments,id'],
+            'stock_id' => ['required', 'integer', 'exists:stocks,id'],
             'min_quantity' => ['nullable', 'integer', 'min:0'],
             'max_quantity' => ['nullable', 'integer', 'min:0', 'gte:min_quantity'],
         ];
@@ -26,8 +26,8 @@ class StoreStockLimitRequest extends FormRequest
         return [
             'product_id.required' => 'O produto é obrigatório.',
             'product_id.exists' => 'Produto não encontrado.',
-            'department_id.required' => 'O departamento é obrigatório.',
-            'department_id.exists' => 'Departamento não encontrado.',
+            'stock_id.required' => 'O estoque é obrigatório.',
+            'stock_id.exists' => 'Estoque não encontrado.',
             'min_quantity.integer' => 'A quantidade mínima deve ser um número inteiro.',
             'min_quantity.min' => 'A quantidade mínima não pode ser negativa.',
             'max_quantity.integer' => 'A quantidade máxima deve ser um número inteiro.',

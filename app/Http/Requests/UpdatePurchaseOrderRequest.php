@@ -20,7 +20,7 @@ class UpdatePurchaseOrderRequest extends FormRequest
             'price' => 'nullable|numeric|min:0|max:99999999.99',
             'financial_operation_id' => 'nullable|integer|exists:financial_operations,id',
             'cost_center_id' => 'nullable|integer|exists:cost_centers,id',
-            'department_id' => 'nullable|integer|exists:departments,id',
+            'stock_id' => 'nullable|integer|exists:stocks,id',
             // status changes are handled via dedicated endpoint
             'products' => 'nullable|array|min:1',
             'products.*.product_id' => 'required_with:products|integer|exists:products,id',

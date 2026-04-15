@@ -20,8 +20,8 @@ class Requisition extends Model implements AuditableInterface
 
     protected $fillable = [
         'event_id',
-        'department_id',
-        'destination_department_id',
+        'stock_id',
+        'destination_stock_id',
         'requester_id',
         'notes',
         'status',
@@ -35,7 +35,7 @@ class Requisition extends Model implements AuditableInterface
     protected static $filterableFields = [
         'id',
         'event_id',
-        'department_id',
+        'stock_id',
         'requester_id',
     ];
 
@@ -48,14 +48,14 @@ class Requisition extends Model implements AuditableInterface
         return $this->belongsTo(Event::class);
     }
 
-    public function department()
+    public function stock()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Stock::class);
     }
 
-    public function destinationDepartment()
+    public function destinationStock()
     {
-        return $this->belongsTo(Department::class, 'destination_department_id');
+        return $this->belongsTo(Stock::class, 'destination_stock_id');
     }
 
     public function requester()
