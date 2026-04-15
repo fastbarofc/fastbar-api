@@ -130,8 +130,11 @@ class StockMovementController extends Controller
             ->when($departmentId, fn($q) => $q->where('department_id', $departmentId))
             ->first();
 
+        $dateFrom = $request->input('date_from');
+
         $purchaseHistory = PurchaseOrderProduct::with(['purchaseOrder.company'])
             ->where('product_id', $product->id)
+            ->when($dateFrom, fn($q) => $q->where('created_at', '>=', $dateFrom))
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($pop) {
@@ -170,6 +173,7 @@ class StockMovementController extends Controller
         $movementsQuery = StockMovement::with(['department', 'movementable'])
             ->where('product_id', $product->id)
             ->when($departmentId, fn($q) => $q->where('department_id', $departmentId))
+            ->when($dateFrom, fn($q) => $q->where('created_at', '>=', $dateFrom))
             ->orderBy('created_at', 'desc');
 
         $movements = $movementsQuery->paginate($perPage);

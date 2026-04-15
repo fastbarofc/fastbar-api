@@ -16,17 +16,15 @@ class PurchaseRequestSeeder extends Seeder
     {
         PurchaseRequest::factory(10)->create()->each(function ($purchaseRequest) {
             $products = Product::inRandomOrder()->take(rand(1, 5))->get();
-            
-            $productsToAttach = [];
+
             foreach ($products as $product) {
-                $productsToAttach[$product->id] = [
-                    'factor' => fake()->optional()->word(),
-                    'reference' => fake()->optional()->word(),
-                    'quantity' => fake()->numberBetween(1, 20),
-                ];
+                $purchaseRequest->purchaseRequestProducts()->create([
+                    'product_id' => $product->id,
+                    'factor'     => fake()->optional()->word(),
+                    'reference'  => fake()->optional()->word(),
+                    'quantity'   => fake()->numberBetween(1, 20),
+                ]);
             }
-            
-            $purchaseRequest->products()->attach($productsToAttach);
         });
     }
 }
