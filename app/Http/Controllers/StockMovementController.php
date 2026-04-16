@@ -181,9 +181,10 @@ class StockMovementController extends Controller
         $movementData = $movements->map(function ($movement) {
             $sourceType = match (class_basename($movement->movementable_type)) {
                 'PurchaseOrder' => 'Ordem de Compra',
-                'Requisition' => 'Requisição',
-                'Devolution' => 'Devolução',
-                default => $movement->movementable_type,
+                'Requisition'   => 'Requisição',
+                'Devolution'    => 'Devolução',
+                'StockLevel'    => 'Entrada de Estoque',
+                default         => $movement->movementable_type,
             };
 
             $audit = $movement->audits()->where('event', 'created')->first();
