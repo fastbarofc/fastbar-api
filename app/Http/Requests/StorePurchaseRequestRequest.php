@@ -23,7 +23,7 @@ class StorePurchaseRequestRequest extends FormRequest
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|integer|exists:products,id',
             'products.*.factor' => 'nullable|string|max:255',
-            'products.*.reference' => 'nullable|string|max:255',
+            'products.*.observation' => 'nullable|string|max:255',
             'products.*.quantity' => 'required|integer|min:1',
         ];
     }
@@ -50,8 +50,8 @@ class StorePurchaseRequestRequest extends FormRequest
             'products.*.product_id.exists' => 'O produto selecionado não existe.',
             'products.*.factor.string' => 'O fator deve ser uma string.',
             'products.*.factor.max' => 'O fator deve ter no máximo 255 caracteres.',
-            'products.*.reference.string' => 'A referência deve ser uma string.',
-            'products.*.reference.max' => 'A referência deve ter no máximo 255 caracteres.',
+            'products.*.observation.string' => 'A observação deve ser uma string.',
+            'products.*.observation.max' => 'A observação deve ter no máximo 255 caracteres.',
             'products.*.quantity.required' => 'A quantidade é obrigatória.',
             'products.*.quantity.integer' => 'A quantidade deve ser um número inteiro.',
             'products.*.quantity.min' => 'A quantidade deve ser pelo menos 1.',

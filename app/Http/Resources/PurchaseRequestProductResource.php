@@ -16,7 +16,7 @@ class PurchaseRequestProductResource extends JsonResource
             'product_id'            => $this->product_id,
             'product'               => ProductResource::make($this->whenLoaded('product')),
             'factor'                => $this->factor,
-            'reference'             => $this->reference,
+            'observation'           => $this->observation,
             'quantity'              => $this->quantity,
             'created_at'            => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at'            => $this->updated_at->format('Y-m-d H:i:s'),

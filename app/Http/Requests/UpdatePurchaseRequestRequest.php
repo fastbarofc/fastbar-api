@@ -24,7 +24,7 @@ class UpdatePurchaseRequestRequest extends FormRequest
             'products' => 'nullable|array|min:1',
             'products.*.product_id' => 'required_with:products|integer|exists:products,id',
             'products.*.factor' => 'nullable|string|max:255',
-            'products.*.reference' => 'nullable|string|max:255',
+            'products.*.observation' => 'nullable|string|max:255',
             'products.*.quantity' => 'required_with:products|integer|min:1',
         ];
     }
@@ -63,8 +63,8 @@ class UpdatePurchaseRequestRequest extends FormRequest
             'products.*.product_id.exists' => 'O produto selecionado não existe.',
             'products.*.factor.string' => 'O fator deve ser uma string.',
             'products.*.factor.max' => 'O fator deve ter no máximo 255 caracteres.',
-            'products.*.reference.string' => 'A referência deve ser uma string.',
-            'products.*.reference.max' => 'A referência deve ter no máximo 255 caracteres.',
+            'products.*.observation.string' => 'A observação deve ser uma string.',
+            'products.*.observation.max' => 'A observação deve ter no máximo 255 caracteres.',
             'products.*.quantity.required_with' => 'A quantidade é obrigatória quando produtos são informados.',
             'products.*.quantity.integer' => 'A quantidade deve ser um número inteiro.',
             'products.*.quantity.min' => 'A quantidade deve ser pelo menos 1.',

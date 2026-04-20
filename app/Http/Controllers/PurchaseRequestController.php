@@ -74,7 +74,7 @@ class PurchaseRequestController extends Controller
                 $purchaseRequest->purchaseRequestProducts()->create([
                     'product_id' => $product['product_id'],
                     'factor' => $product['factor'] ?? null,
-                    'reference' => $product['reference'] ?? null,
+                    'observation' => $product['observation'] ?? null,
                     'quantity' => $product['quantity'],
                 ]);
             }
@@ -119,7 +119,7 @@ class PurchaseRequestController extends Controller
                     $purchaseRequest->purchaseRequestProducts()->create([
                         'product_id' => $product['product_id'],
                         'factor' => $product['factor'] ?? null,
-                        'reference' => $product['reference'] ?? null,
+                        'observation' => $product['observation'] ?? null,
                         'quantity' => $product['quantity'],
                     ]);
                 }
