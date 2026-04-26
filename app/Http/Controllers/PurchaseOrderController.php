@@ -6,6 +6,8 @@ use App\Http\Requests\StorePurchaseOrderRequest;
 use App\Http\Requests\UpdatePurchaseOrderRequest;
 use App\Http\Resources\PurchaseOrderResource;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseRequest;
+use App\Services\PurchaseRequestService;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,10 +15,12 @@ use Illuminate\Support\Facades\DB;
 class PurchaseOrderController extends Controller
 {
     protected $stockService;
+    protected $purchaseRequestService;
 
-    public function __construct(StockService $stockService)
+    public function __construct(StockService $stockService, PurchaseRequestService $purchaseRequestService)
     {
         $this->stockService = $stockService;
+        $this->purchaseRequestService = $purchaseRequestService;
     }
 
     public function index(Request $request)
@@ -77,7 +81,7 @@ class PurchaseOrderController extends Controller
                 $productsToSync[$product['product_id']] = [
                     'purchase_request_id' => $product['purchase_request_id'],
                     'factor' => $product['factor'] ?? null,
-                    'reference' => $product['reference'] ?? null,
+                    'observation' => $product['observation'] ?? null,
                     'quantity' => $product['quantity'],
                     'price' => $product['price'],
                 ];
@@ -85,6 +89,18 @@ class PurchaseOrderController extends Controller
             $purchaseOrder->products()->sync($productsToSync);
 
             $this->stockService->registerPurchaseOrderMovements($purchaseOrder);
+
+            $purchaseRequestIds = collect($request->products)
+                ->pluck('purchase_request_id')
+                ->unique()
+                ->filter();
+
+            foreach ($purchaseRequestIds as $purchaseRequestId) {
+                $purchaseRequest = PurchaseRequest::find($purchaseRequestId);
+                if ($purchaseRequest) {
+                    $this->purchaseRequestService->syncFulfillmentStatus($purchaseRequest);
+                }
+            }
 
             DB::commit();
 
@@ -112,6 +128,11 @@ class PurchaseOrderController extends Controller
         try {
             DB::beginTransaction();
 
+            $oldPurchaseRequestIds = $purchaseOrder->purchaseOrderProducts()
+                ->pluck('purchase_request_id')
+                ->unique()
+                ->filter();
+
             $updateData = array_filter([
                 'company_id' => $request->company_id,
                 'price' => $request->price,
@@ -124,18 +145,34 @@ class PurchaseOrderController extends Controller
 
             $purchaseOrder->update($updateData);
 
+            $newPurchaseRequestIds = collect();
+
             if ($request->has('products')) {
                 $productsToSync = [];
                 foreach ($request->products as $product) {
                     $productsToSync[$product['product_id']] = [
                         'purchase_request_id' => $product['purchase_request_id'],
                         'factor' => $product['factor'] ?? null,
-                        'reference' => $product['reference'] ?? null,
+                        'observation' => $product['observation'] ?? null,
                         'quantity' => $product['quantity'],
                         'price' => $product['price'],
                     ];
                 }
                 $purchaseOrder->products()->sync($productsToSync);
+
+                $newPurchaseRequestIds = collect($request->products)
+                    ->pluck('purchase_request_id')
+                    ->unique()
+                    ->filter();
+            }
+
+            $allPurchaseRequestIds = $oldPurchaseRequestIds->merge($newPurchaseRequestIds)->unique();
+
+            foreach ($allPurchaseRequestIds as $purchaseRequestId) {
+                $purchaseRequest = PurchaseRequest::find($purchaseRequestId);
+                if ($purchaseRequest) {
+                    $this->purchaseRequestService->syncFulfillmentStatus($purchaseRequest);
+                }
             }
 
             DB::commit();
@@ -167,11 +204,26 @@ class PurchaseOrderController extends Controller
         try {
             DB::beginTransaction();
 
+            $purchaseRequestIds = collect();
+            if ($newStatus === PurchaseOrder::STATUS_CANCELLED) {
+                $purchaseRequestIds = $purchaseOrder->purchaseOrderProducts()
+                    ->pluck('purchase_request_id')
+                    ->unique()
+                    ->filter();
+            }
+
             $oldStatus = $purchaseOrder->status;
             $purchaseOrder->update(['status' => $newStatus]);
 
             if ($this->stockService->shouldRegisterMovements($purchaseOrder, $oldStatus)) {
                 $this->stockService->registerPurchaseOrderMovements($purchaseOrder);
+            }
+
+            foreach ($purchaseRequestIds as $purchaseRequestId) {
+                $purchaseRequest = PurchaseRequest::find($purchaseRequestId);
+                if ($purchaseRequest) {
+                    $this->purchaseRequestService->syncFulfillmentStatus($purchaseRequest);
+                }
             }
 
             DB::commit();
@@ -185,16 +237,25 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    
-
     public function destroy(PurchaseOrder $purchaseOrder)
     {
         try {
             DB::beginTransaction();
 
+            $purchaseRequestIds = $purchaseOrder->purchaseOrderProducts()
+                ->pluck('purchase_request_id')
+                ->unique()
+                ->filter();
+
             $purchaseOrder->products()->detach();
-            
             $purchaseOrder->delete();
+
+            foreach ($purchaseRequestIds as $purchaseRequestId) {
+                $purchaseRequest = PurchaseRequest::find($purchaseRequestId);
+                if ($purchaseRequest) {
+                    $this->purchaseRequestService->syncFulfillmentStatus($purchaseRequest);
+                }
+            }
 
             DB::commit();
 
@@ -204,4 +265,4 @@ class PurchaseOrderController extends Controller
             return response()->json(['error' => 'Erro ao excluir ordem de compra.'], 500);
         }
     }
-} 
+}

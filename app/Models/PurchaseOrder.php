@@ -87,7 +87,7 @@ class PurchaseOrder extends Model implements AuditableInterface
     {
         return $this->belongsToMany(Product::class, 'purchase_order_product')
             ->using(PurchaseOrderProduct::class)
-            ->withPivot(['purchase_request_id', 'factor', 'reference', 'quantity', 'price'])
+            ->withPivot(['purchase_request_id', 'factor', 'observation', 'quantity', 'price'])
             ->withTimestamps();
     }
 

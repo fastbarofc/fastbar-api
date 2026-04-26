@@ -16,7 +16,14 @@ class PurchaseRequest extends Model implements AuditableInterface
 
     const STATUS_NOT_CONFIRMED = 'not_confirmed';
     const STATUS_CONFIRMED = 'confirmed';
-    const STATUS_AUTHORIZED = 'authorized';
+    const STATUS_PARTIALLY_FULFILLED = 'partially_fulfilled';
+    const STATUS_FULFILLED = 'fulfilled';
+
+    const FULFILLMENT_STATUSES = [
+        self::STATUS_CONFIRMED,
+        self::STATUS_PARTIALLY_FULFILLED,
+        self::STATUS_FULFILLED,
+    ];
 
     protected $fillable = [
         'company_id',
@@ -76,4 +83,6 @@ class PurchaseRequest extends Model implements AuditableInterface
     {
         return $this->hasMany(PurchaseRequestProduct::class);
     }
-} 
+
+
+}

@@ -98,6 +98,10 @@ class PurchaseRequestController extends Controller
 
     public function update(UpdatePurchaseRequestRequest $request, PurchaseRequest $purchaseRequest)
     {
+        if ($purchaseRequest->status !== PurchaseRequest::STATUS_NOT_CONFIRMED) {
+            return response()->json(['message' => 'Apenas pedidos não confirmados podem ser editados.'], 422);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -134,6 +138,23 @@ class PurchaseRequestController extends Controller
             DB::rollBack();
             return response()->json(['error' => 'Erro ao atualizar pedido de compra.'], 500);
         }
+    }
+
+    public function updateStatus(Request $request, PurchaseRequest $purchaseRequest)
+    {
+        $request->validate([
+            'status' => 'required|string|in:confirmed',
+        ]);
+
+        if ($purchaseRequest->status !== PurchaseRequest::STATUS_NOT_CONFIRMED) {
+            return response()->json(['message' => 'Apenas pedidos não confirmados podem ser confirmados.'], 422);
+        }
+
+        $purchaseRequest->update(['status' => PurchaseRequest::STATUS_CONFIRMED]);
+
+        $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
+
+        return response()->json(new PurchaseRequestResource($purchaseRequest), 200);
     }
 
     public function destroy(PurchaseRequest $purchaseRequest)

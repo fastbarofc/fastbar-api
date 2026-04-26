@@ -16,7 +16,7 @@ class PurchaseOrderProduct extends Pivot
         'product_id',
         'purchase_request_id',
         'factor',
-        'reference',
+        'observation',
         'quantity',
         'price',
     ];

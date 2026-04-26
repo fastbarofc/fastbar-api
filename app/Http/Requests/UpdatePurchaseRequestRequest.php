@@ -20,7 +20,7 @@ class UpdatePurchaseRequestRequest extends FormRequest
             'company_id' => 'nullable|integer|exists:companies,id',
             'sector_id' => 'nullable|integer|exists:sectors,id',
             'expected_date' => 'nullable|date|after_or_equal:today',
-            'status' => 'nullable|string|in:not_confirmed,confirmed,authorized',
+            'status' => 'nullable|string|in:not_confirmed,confirmed',
             'products' => 'nullable|array|min:1',
             'products.*.product_id' => 'required_with:products|integer|exists:products,id',
             'products.*.factor' => 'nullable|string|max:255',
@@ -34,7 +34,7 @@ class UpdatePurchaseRequestRequest extends FormRequest
         $validator->after(function ($validator) {
             $status = $this->input('status');
 
-            if (in_array($status, ['confirmed', 'authorized'])) {
+            if ($status === 'confirmed') {
                 if ($this->filled('products')) {
                     $validator->errors()->add(
                         'products',
@@ -55,7 +55,7 @@ class UpdatePurchaseRequestRequest extends FormRequest
             'expected_date.date' => 'O campo data prevista deve ser uma data válida.',
             'expected_date.after_or_equal' => 'A data prevista deve ser hoje ou uma data futura.',
             'status.string' => 'O campo status deve ser uma string.',
-            'status.in' => 'O status deve ser: não confirmado, confirmado ou autorizado.',
+            'status.in' => 'O status deve ser: não confirmado ou confirmado.',
             'products.array' => 'Os produtos devem estar em formato de lista.',
             'products.min' => 'É obrigatório incluir pelo menos um produto.',
             'products.*.product_id.required_with' => 'O produto é obrigatório quando produtos são informados.',

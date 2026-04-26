@@ -270,6 +270,7 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::resource('purchase-requests', PurchaseRequestController::class);
     Route::get('purchase-requests/{purchaseRequest}/products', [PurchaseRequestController::class, 'products'])->name('purchase-requests.products');
+    Route::patch('purchase-requests/{purchaseRequest}/status', [PurchaseRequestController::class, 'updateStatus'])->name('purchase-requests.update-status');
 
     Route::resource('purchase-orders', PurchaseOrderController::class);
     Route::patch('purchase-orders/{purchase_order}/status', [PurchaseOrderController::class, 'updateStatus'])->name('purchase-orders.update-status');
