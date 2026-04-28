@@ -28,7 +28,7 @@ class UpdatePurchaseOrderRequest extends FormRequest
             'products.*.factor' => 'nullable|string|max:255',
             'products.*.observation' => 'nullable|string|max:255',
             'products.*.quantity' => 'required_with:products|integer|min:1',
-            'products.*.price' => 'required_with:products|numeric|min:0|max:99999999.99',
+            'products.*.price' => 'required_with:products|numeric|gt:0|max:99999999.99',
         ];
     }
 
@@ -61,7 +61,7 @@ class UpdatePurchaseOrderRequest extends FormRequest
             'products.*.quantity.min' => 'A quantidade deve ser pelo menos 1.',
             'products.*.price.required_with' => 'O preço unitário é obrigatório quando produtos são informados.',
             'products.*.price.numeric' => 'O preço unitário deve ser um número.',
-            'products.*.price.min' => 'O preço unitário deve ser maior ou igual a zero.',
+            'products.*.price.gt' => 'O preço unitário deve ser maior que zero.',
             'products.*.price.max' => 'O preço unitário deve ser menor que 99.999.999,99.',
         ];
     }

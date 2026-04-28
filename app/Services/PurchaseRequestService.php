@@ -2,9 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
-use Illuminate\Support\Facades\DB;
 
 class PurchaseRequestService
 {
@@ -14,32 +12,18 @@ class PurchaseRequestService
             return;
         }
 
-        $requestProductIds = $purchaseRequest->purchaseRequestProducts()
-            ->pluck('product_id')
-            ->unique()
-            ->values()
-            ->toArray();
+        $items = $purchaseRequest->purchaseRequestProducts()->get(['ordered']);
 
-        if (empty($requestProductIds)) {
+        if ($items->isEmpty()) {
             return;
         }
 
-        $coveredProductIds = DB::table('purchase_order_product')
-            ->join('purchase_orders', 'purchase_orders.id', '=', 'purchase_order_product.purchase_order_id')
-            ->where('purchase_order_product.purchase_request_id', $purchaseRequest->id)
-            ->where('purchase_orders.status', '!=', PurchaseOrder::STATUS_CANCELLED)
-            ->whereNull('purchase_orders.deleted_at')
-            ->pluck('purchase_order_product.product_id')
-            ->unique()
-            ->values()
-            ->toArray();
+        $orderedCount = $items->where('ordered', true)->count();
+        $totalCount = $items->count();
 
-        $coveredCount = count(array_intersect($requestProductIds, $coveredProductIds));
-        $totalCount = count($requestProductIds);
-
-        if ($coveredCount === 0) {
+        if ($orderedCount === 0) {
             $newStatus = PurchaseRequest::STATUS_CONFIRMED;
-        } elseif ($coveredCount >= $totalCount) {
+        } elseif ($orderedCount >= $totalCount) {
             $newStatus = PurchaseRequest::STATUS_FULFILLED;
         } else {
             $newStatus = PurchaseRequest::STATUS_PARTIALLY_FULFILLED;

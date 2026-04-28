@@ -17,10 +17,16 @@ class PurchaseRequestProduct extends Pivot
         'factor',
         'observation',
         'quantity',
+        'ordered',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
+        'ordered' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'ordered' => false,
     ];
 
     public function purchaseRequest()

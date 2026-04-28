@@ -28,7 +28,6 @@ class PurchaseRequestFactory extends Factory
             'status' => $this->faker->randomElement([
                 PurchaseRequest::STATUS_NOT_CONFIRMED,
                 PurchaseRequest::STATUS_CONFIRMED,
-                PurchaseRequest::STATUS_AUTHORIZED
             ]),
         ];
     }

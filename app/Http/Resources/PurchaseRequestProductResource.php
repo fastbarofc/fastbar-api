@@ -18,6 +18,7 @@ class PurchaseRequestProductResource extends JsonResource
             'factor'                => $this->factor,
             'observation'           => $this->observation,
             'quantity'              => $this->quantity,
+            'ordered'               => (bool) $this->ordered,
             'created_at'            => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at'            => $this->updated_at->format('Y-m-d H:i:s'),
         ];

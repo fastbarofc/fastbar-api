@@ -7,10 +7,12 @@ use App\Http\Requests\UpdatePurchaseOrderRequest;
 use App\Http\Resources\PurchaseOrderResource;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
+use App\Models\PurchaseRequestProduct;
 use App\Services\PurchaseRequestService;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class PurchaseOrderController extends Controller
 {
@@ -68,6 +70,8 @@ class PurchaseOrderController extends Controller
 
     public function store(StorePurchaseOrderRequest $request)
     {
+        $this->ensureItemsAreAvailable($request->products);
+
         try {
             DB::beginTransaction();
 
@@ -91,6 +95,8 @@ class PurchaseOrderController extends Controller
                 ];
             }
             $purchaseOrder->products()->sync($productsToSync);
+
+            $this->markRequestItemsAsOrdered($request->products, true);
 
             $this->stockService->registerPurchaseOrderMovements($purchaseOrder);
 
@@ -129,6 +135,23 @@ class PurchaseOrderController extends Controller
             return response()->json(['error' => 'Apenas ordens de compra com status pendente podem ser editadas.'], 422);
         }
 
+        $oldItems = $purchaseOrder->purchaseOrderProducts()
+            ->get(['purchase_request_id', 'product_id'])
+            ->map(fn ($item) => $item->purchase_request_id . ':' . $item->product_id)
+            ->all();
+
+        if ($request->has('products')) {
+            $newItemKeys = collect($request->products)
+                ->map(fn ($p) => $p['purchase_request_id'] . ':' . $p['product_id'])
+                ->all();
+
+            $itemsToCheck = collect($request->products)->filter(
+                fn ($p) => !in_array($p['purchase_request_id'] . ':' . $p['product_id'], $oldItems)
+            )->values()->all();
+
+            $this->ensureItemsAreAvailable($itemsToCheck);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -136,6 +159,11 @@ class PurchaseOrderController extends Controller
                 ->pluck('purchase_request_id')
                 ->unique()
                 ->filter();
+
+            $oldItemPairs = $purchaseOrder->purchaseOrderProducts()
+                ->get(['purchase_request_id', 'product_id'])
+                ->map(fn ($item) => ['purchase_request_id' => $item->purchase_request_id, 'product_id' => $item->product_id])
+                ->all();
 
             $updateData = array_filter([
                 'company_id' => $request->company_id,
@@ -150,6 +178,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrder->update($updateData);
 
             $newPurchaseRequestIds = collect();
+            $newItemPairs = [];
 
             if ($request->has('products')) {
                 $productsToSync = [];
@@ -161,8 +190,14 @@ class PurchaseOrderController extends Controller
                         'quantity' => $product['quantity'],
                         'price' => $product['price'],
                     ];
+                    $newItemPairs[] = [
+                        'purchase_request_id' => $product['purchase_request_id'],
+                        'product_id' => $product['product_id'],
+                    ];
                 }
                 $purchaseOrder->products()->sync($productsToSync);
+
+                $this->syncOrderedFlags($oldItemPairs, $newItemPairs);
 
                 $newPurchaseRequestIds = collect($request->products)
                     ->pluck('purchase_request_id')
@@ -210,10 +245,17 @@ class PurchaseOrderController extends Controller
 
             $purchaseRequestIds = collect();
             if ($newStatus === PurchaseOrder::STATUS_CANCELLED) {
-                $purchaseRequestIds = $purchaseOrder->purchaseOrderProducts()
-                    ->pluck('purchase_request_id')
-                    ->unique()
-                    ->filter();
+                $items = $purchaseOrder->purchaseOrderProducts()
+                    ->get(['purchase_request_id', 'product_id']);
+
+                $purchaseRequestIds = $items->pluck('purchase_request_id')->unique()->filter();
+
+                $itemPairs = $items->map(fn ($i) => [
+                    'purchase_request_id' => $i->purchase_request_id,
+                    'product_id' => $i->product_id,
+                ])->all();
+
+                $this->markRequestItemsAsOrdered($itemPairs, false);
             }
 
             $oldStatus = $purchaseOrder->status;
@@ -246,10 +288,19 @@ class PurchaseOrderController extends Controller
         try {
             DB::beginTransaction();
 
-            $purchaseRequestIds = $purchaseOrder->purchaseOrderProducts()
-                ->pluck('purchase_request_id')
-                ->unique()
-                ->filter();
+            $items = $purchaseOrder->purchaseOrderProducts()
+                ->get(['purchase_request_id', 'product_id']);
+
+            $purchaseRequestIds = $items->pluck('purchase_request_id')->unique()->filter();
+
+            $itemPairs = $items->map(fn ($i) => [
+                'purchase_request_id' => $i->purchase_request_id,
+                'product_id' => $i->product_id,
+            ])->all();
+
+            if ($purchaseOrder->status !== PurchaseOrder::STATUS_CANCELLED) {
+                $this->markRequestItemsAsOrdered($itemPairs, false);
+            }
 
             $purchaseOrder->products()->detach();
             $purchaseOrder->delete();
@@ -268,5 +319,50 @@ class PurchaseOrderController extends Controller
             DB::rollBack();
             return response()->json(['error' => 'Erro ao excluir ordem de compra.'], 500);
         }
+    }
+
+    private function ensureItemsAreAvailable(array $items): void
+    {
+        if (empty($items)) {
+            return;
+        }
+
+        $errors = [];
+
+        foreach ($items as $index => $item) {
+            $exists = PurchaseRequestProduct::where('purchase_request_id', $item['purchase_request_id'])
+                ->where('product_id', $item['product_id'])
+                ->where('ordered', false)
+                ->exists();
+
+            if (!$exists) {
+                $errors["products.$index.product_id"] = ['O item selecionado já está incluído em outra ordem de compra.'];
+            }
+        }
+
+        if (!empty($errors)) {
+            throw ValidationException::withMessages($errors);
+        }
+    }
+
+    private function markRequestItemsAsOrdered(array $items, bool $ordered): void
+    {
+        foreach ($items as $item) {
+            PurchaseRequestProduct::where('purchase_request_id', $item['purchase_request_id'])
+                ->where('product_id', $item['product_id'])
+                ->update(['ordered' => $ordered]);
+        }
+    }
+
+    private function syncOrderedFlags(array $oldItems, array $newItems): void
+    {
+        $oldKeys = array_map(fn ($i) => $i['purchase_request_id'] . ':' . $i['product_id'], $oldItems);
+        $newKeys = array_map(fn ($i) => $i['purchase_request_id'] . ':' . $i['product_id'], $newItems);
+
+        $removed = array_filter($oldItems, fn ($i) => !in_array($i['purchase_request_id'] . ':' . $i['product_id'], $newKeys));
+        $added = array_filter($newItems, fn ($i) => !in_array($i['purchase_request_id'] . ':' . $i['product_id'], $oldKeys));
+
+        $this->markRequestItemsAsOrdered($removed, false);
+        $this->markRequestItemsAsOrdered($added, true);
     }
 }
