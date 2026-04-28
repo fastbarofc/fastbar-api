@@ -22,7 +22,7 @@ class PurchaseRequestController extends Controller
     {
         $perPage = $request->input('per_page', 30);
 
-        $query = PurchaseRequest::with(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
+        $query = PurchaseRequest::with(['company', 'requester', 'sector', 'purchaseRequestProducts.product', 'creator', 'lastEditor']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -66,12 +66,16 @@ class PurchaseRequestController extends Controller
         try {
             DB::beginTransaction();
 
+            $userId = auth()->user()->id;
+
             $purchaseRequest = PurchaseRequest::create([
                 'company_id' => $request->company_id,
-                'requester_id' => auth()->user()->id,
+                'requester_id' => $userId,
                 'sector_id' => $request->sector_id,
                 'expected_date' => $request->expected_date,
                 'status' => $request->status ?? PurchaseRequest::STATUS_NOT_CONFIRMED,
+                'created_by' => $userId,
+                'updated_by' => $userId,
             ]);
 
             foreach ($request->products as $product) {
@@ -85,7 +89,7 @@ class PurchaseRequestController extends Controller
 
             DB::commit();
 
-            $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
+            $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product', 'creator', 'lastEditor']);
 
             return response()->json(new PurchaseRequestResource($purchaseRequest), 201);
         } catch (\Exception $e) {
@@ -96,7 +100,7 @@ class PurchaseRequestController extends Controller
 
     public function show(PurchaseRequest $purchaseRequest)
     {
-        $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
+        $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product', 'creator', 'lastEditor']);
         return response()->json(new PurchaseRequestResource($purchaseRequest), 200);
     }
 
@@ -118,6 +122,8 @@ class PurchaseRequestController extends Controller
                 return $value !== null;
             });
 
+            $updateData['updated_by'] = auth()->id();
+
             $purchaseRequest->update($updateData);
 
             if ($request->has('products')) {
@@ -135,7 +141,7 @@ class PurchaseRequestController extends Controller
 
             DB::commit();
 
-            $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
+            $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product', 'creator', 'lastEditor']);
 
             return response()->json(new PurchaseRequestResource($purchaseRequest), 200);
         } catch (\Exception $e) {
@@ -154,9 +160,9 @@ class PurchaseRequestController extends Controller
             return response()->json(['message' => 'Apenas pedidos não confirmados podem ser confirmados.'], 422);
         }
 
-        $purchaseRequest->update(['status' => PurchaseRequest::STATUS_CONFIRMED]);
+        $purchaseRequest->update(['status' => PurchaseRequest::STATUS_CONFIRMED, 'updated_by' => auth()->id()]);
 
-        $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product']);
+        $purchaseRequest->load(['company', 'requester', 'sector', 'purchaseRequestProducts.product', 'creator', 'lastEditor']);
 
         return response()->json(new PurchaseRequestResource($purchaseRequest), 200);
     }

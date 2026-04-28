@@ -29,7 +29,7 @@ class PurchaseOrderController extends Controller
     {
         $perPage = $request->input('per_page', 30);
 
-        $query = PurchaseOrder::with(['company', 'financialOperation', 'costCenter', 'stock', 'products']);
+        $query = PurchaseOrder::with(['company', 'financialOperation', 'costCenter', 'stock', 'products', 'creator', 'lastEditor']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -75,6 +75,8 @@ class PurchaseOrderController extends Controller
         try {
             DB::beginTransaction();
 
+            $userId = auth()->id();
+
             $purchaseOrder = PurchaseOrder::create([
                 'company_id' => $request->company_id,
                 'price' => $request->price,
@@ -82,6 +84,8 @@ class PurchaseOrderController extends Controller
                 'cost_center_id' => $request->cost_center_id,
                 'stock_id' => $request->stock_id,
                 'status' => PurchaseOrder::STATUS_PENDING,
+                'created_by' => $userId,
+                'updated_by' => $userId,
             ]);
 
             $productsToSync = [];
@@ -114,7 +118,7 @@ class PurchaseOrderController extends Controller
 
             DB::commit();
 
-            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'products']);
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'products', 'creator', 'lastEditor']);
 
             return response()->json(new PurchaseOrderResource($purchaseOrder), 201);
         } catch (\Exception $e) {
@@ -125,7 +129,7 @@ class PurchaseOrderController extends Controller
 
     public function show(PurchaseOrder $purchaseOrder)
     {
-        $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'purchaseOrderProducts.product']);
+        $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'purchaseOrderProducts.product', 'creator', 'lastEditor']);
         return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
     }
 
@@ -175,6 +179,8 @@ class PurchaseOrderController extends Controller
                 return $value !== null;
             });
 
+            $updateData['updated_by'] = auth()->id();
+
             $purchaseOrder->update($updateData);
 
             $newPurchaseRequestIds = collect();
@@ -216,7 +222,7 @@ class PurchaseOrderController extends Controller
 
             DB::commit();
 
-            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'products']);
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'products', 'creator', 'lastEditor']);
 
             return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
         } catch (\Exception $e) {
@@ -259,7 +265,7 @@ class PurchaseOrderController extends Controller
             }
 
             $oldStatus = $purchaseOrder->status;
-            $purchaseOrder->update(['status' => $newStatus]);
+            $purchaseOrder->update(['status' => $newStatus, 'updated_by' => auth()->id()]);
 
             if ($this->stockService->shouldRegisterMovements($purchaseOrder, $oldStatus)) {
                 $this->stockService->registerPurchaseOrderMovements($purchaseOrder);
@@ -274,7 +280,7 @@ class PurchaseOrderController extends Controller
 
             DB::commit();
 
-            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'products']);
+            $purchaseOrder->load(['company', 'financialOperation', 'costCenter', 'stock', 'products', 'creator', 'lastEditor']);
 
             return response()->json(new PurchaseOrderResource($purchaseOrder), 200);
         } catch (\Exception $e) {

@@ -20,6 +20,10 @@ class PurchaseRequestResource extends JsonResource
             'expected_date'=> optional($this->expected_date)->format('Y-m-d'),
             'status'       => $this->status,
             'products'     => PurchaseRequestProductResource::collection($this->whenLoaded('purchaseRequestProducts')),
+            'created_by'   => $this->created_by,
+            'creator'      => UserResource::make($this->whenLoaded('creator')),
+            'updated_by'   => $this->updated_by,
+            'last_editor'  => UserResource::make($this->whenLoaded('lastEditor')),
             'created_at'   => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at'   => $this->updated_at->format('Y-m-d H:i:s'),
         ];

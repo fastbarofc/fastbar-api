@@ -31,6 +31,8 @@ class PurchaseRequest extends Model implements AuditableInterface
         'sector_id',
         'expected_date',
         'status',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -84,5 +86,13 @@ class PurchaseRequest extends Model implements AuditableInterface
         return $this->hasMany(PurchaseRequestProduct::class);
     }
 
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
+    public function lastEditor()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
 }

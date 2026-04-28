@@ -35,6 +35,8 @@ class PurchaseOrder extends Model implements AuditableInterface
         'cost_center_id',
         'stock_id',
         'status',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -99,5 +101,15 @@ class PurchaseOrder extends Model implements AuditableInterface
     public function stockMovements()
     {
         return $this->morphMany(StockMovement::class, 'movementable');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function lastEditor()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 } 
