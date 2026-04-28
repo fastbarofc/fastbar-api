@@ -41,6 +41,10 @@ class PurchaseOrderController extends Controller
             }
         }
 
+        if ($request->input('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
         if ($request->input('order_by')) {
             $sortableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';

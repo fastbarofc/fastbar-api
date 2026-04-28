@@ -36,6 +36,10 @@ class PurchaseRequestController extends Controller
             }
         }
 
+        if ($request->input('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
         if ($request->input('order_by')) {
             $sortableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
@@ -159,11 +163,23 @@ class PurchaseRequestController extends Controller
 
     public function destroy(PurchaseRequest $purchaseRequest)
     {
+        $forbiddenStatuses = [
+            PurchaseRequest::STATUS_PARTIALLY_FULFILLED,
+            PurchaseRequest::STATUS_FULFILLED,
+        ];
+
+        if (in_array($purchaseRequest->status, $forbiddenStatuses)) {
+            return response()->json(
+                ['message' => 'Pedidos com status "Atendido Parcialmente" ou "Atendido" não podem ser excluídos.'],
+                422
+            );
+        }
+
         try {
             DB::beginTransaction();
 
+            $purchaseRequest->purchaseOrderProducts()->delete();
             $purchaseRequest->purchaseRequestProducts()->delete();
-            
             $purchaseRequest->delete();
 
             DB::commit();
