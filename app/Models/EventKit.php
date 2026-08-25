@@ -64,7 +64,7 @@ class EventKit extends Model implements AuditableInterface
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'event_kit_product')->withPivot(['value', 'ordination', 'optional', 'average consumption ', 'quantity', 'comments', 'checklist', 'observation']);
+        return $this->belongsToMany(Product::class, 'event_kit_product')->withPivot(['value', 'ordination', 'optional', 'average consumption ', 'quantity', 'unit', 'comments', 'checklist', 'observation']);
     }
 
     public function getHasChildrenAttribute()

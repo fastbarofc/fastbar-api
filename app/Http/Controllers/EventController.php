@@ -161,7 +161,20 @@ class EventController extends Controller
 
         $query->whereDate('date', '>=', $start)->whereDate('date', '<', $end);
 
-        $query->with('companies');
+        // Eager loading de tudo que o EventCalendarResource usa: evita N+1 e
+        // permite montar o modal de detalhes sem nenhuma requisicao adicional.
+        $query->with([
+            'companies',
+            'client',
+            'eventType',
+            'collaborator',
+            'ceremonial',
+            'eventStatus',
+            'eventBatches',
+            'eventPlace.address.city.state',
+            'eventKits.products',
+            'eventNotes.user',
+        ]);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
