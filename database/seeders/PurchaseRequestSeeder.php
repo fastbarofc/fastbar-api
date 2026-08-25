@@ -19,10 +19,10 @@ class PurchaseRequestSeeder extends Seeder
 
             foreach ($products as $product) {
                 $purchaseRequest->purchaseRequestProducts()->create([
-                    'product_id' => $product->id,
-                    'factor'     => fake()->optional()->word(),
-                    'reference'  => fake()->optional()->word(),
-                    'quantity'   => fake()->numberBetween(1, 20),
+                    'product_id'  => $product->id,
+                    'factor'      => fake()->optional()->word(),
+                    'observation' => fake()->optional()->word(),
+                    'quantity'    => fake()->numberBetween(1, 20),
                 ]);
             }
         });

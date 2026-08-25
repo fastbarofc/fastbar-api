@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Department;
+use App\Models\Stock;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\StockMovement;
@@ -21,7 +21,7 @@ class StockMovementFactory extends Factory
 
         return [
             'product_id'        => Product::inRandomOrder()->first()?->id ?? 1,
-            'department_id'     => Department::inRandomOrder()->first()?->id ?? 1,
+            'stock_id'          => Stock::inRandomOrder()->first()?->id ?? 1,
             'type'              => $this->faker->randomElement([StockMovement::TYPE_IN, StockMovement::TYPE_OUT]),
             'quantity'          => $this->faker->numberBetween(1, 50),
             'price'             => $this->faker->randomFloat(2, 5, 500),

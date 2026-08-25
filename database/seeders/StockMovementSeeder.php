@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Department;
+use App\Models\Stock;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\StockLevel;
@@ -14,25 +14,28 @@ class StockMovementSeeder extends Seeder
 {
     public function run(): void
     {
-        $products    = Product::all();
-        $departments = Department::all();
-        $orders      = PurchaseOrder::all();
+        $products = Product::all();
+        $stocks   = Stock::all();
+        $orders   = PurchaseOrder::all();
 
-        if ($departments->isEmpty() || $products->isEmpty()) {
+        // Toda movimentação exige um documento de origem, então sem ordens de
+        // compra não há entrada possível
+        if ($stocks->isEmpty() || $products->isEmpty() || $orders->isEmpty()) {
             return;
         }
 
         foreach ($products as $product) {
-            // Cada produto recebe movimentações em 1 a 2 departamentos
-            $depts = $departments->random(min(rand(1, 2), $departments->count()));
-            if (!$depts instanceof \Illuminate\Support\Collection) {
-                $depts = collect([$depts]);
+            // Cada produto recebe movimentações em 1 a 2 estoques
+            $stks = $stocks->random(min(rand(1, 2), $stocks->count()));
+            if (!$stks instanceof \Illuminate\Support\Collection) {
+                $stks = collect([$stks]);
             }
 
-            foreach ($depts as $department) {
-                $order = $orders->isNotEmpty() ? $orders->random() : null;
+            foreach ($stks as $stock) {
+                $order = $orders->random();
 
-                // Entradas
+                // Entradas. As saídas ficam a cargo de RequisitionSeeder e
+                // DevolutionSeeder, que rodam depois e têm o documento de origem
                 $inCount = rand(3, 8);
                 for ($i = 0; $i < $inCount; $i++) {
                     $quantity = rand(5, 100);
@@ -40,43 +43,24 @@ class StockMovementSeeder extends Seeder
 
                     StockMovement::create([
                         'product_id'        => $product->id,
-                        'department_id'     => $department->id,
+                        'stock_id'          => $stock->id,
                         'type'              => StockMovement::TYPE_IN,
                         'quantity'          => $quantity,
                         'price'             => $price,
-                        'movementable_type' => $order ? PurchaseOrder::class : null,
-                        'movementable_id'   => $order?->id,
+                        'movementable_type' => PurchaseOrder::class,
+                        'movementable_id'   => $order->id,
                     ]);
 
-                    $this->updateStockLevel($product->id, $department->id, StockMovement::TYPE_IN, $quantity, $price);
-                }
-
-                // Saídas
-                $outCount = rand(1, 4);
-                for ($i = 0; $i < $outCount; $i++) {
-                    $quantity = rand(1, 15);
-                    $price    = fake()->randomFloat(2, 10, 300);
-
-                    StockMovement::create([
-                        'product_id'        => $product->id,
-                        'department_id'     => $department->id,
-                        'type'              => StockMovement::TYPE_OUT,
-                        'quantity'          => $quantity,
-                        'price'             => $price,
-                        'movementable_type' => null,
-                        'movementable_id'   => null,
-                    ]);
-
-                    $this->updateStockLevel($product->id, $department->id, StockMovement::TYPE_OUT, $quantity, $price);
+                    $this->updateStockLevel($product->id, $stock->id, StockMovement::TYPE_IN, $quantity, $price);
                 }
             }
         }
     }
 
-    private function updateStockLevel(int $productId, int $departmentId, string $type, int $quantity, float $price): void
+    private function updateStockLevel(int $productId, int $stockId, string $type, int $quantity, float $price): void
     {
         $level = StockLevel::firstOrCreate(
-            ['product_id' => $productId, 'department_id' => $departmentId],
+            ['product_id' => $productId, 'stock_id' => $stockId],
             ['current_quantity' => 0, 'weighted_average_price' => 0, 'total_value' => 0],
         );
 

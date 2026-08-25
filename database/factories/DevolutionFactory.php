@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Department;
+use App\Models\Stock;
 use App\Models\Devolution;
 use App\Models\Requisition;
 use App\Models\User;
@@ -19,7 +19,7 @@ class DevolutionFactory extends Factory
     {
         return [
             'requisition_id'   => Requisition::inRandomOrder()->first()?->id ?? 1,
-            'department_id'    => Department::inRandomOrder()->first()?->id ?? 1,
+            'stock_id'         => Stock::inRandomOrder()->first()?->id ?? 1,
             'registered_by_id' => User::inRandomOrder()->first()?->id ?? 1,
             'notes'            => $this->faker->optional(0.4)->sentence(),
         ];

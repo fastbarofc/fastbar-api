@@ -31,7 +31,7 @@ class DevolutionSeeder extends Seeder
 
             $devolution = Devolution::factory()->create([
                 'requisition_id' => $requisition->id,
-                'department_id'  => $requisition->department_id,
+                'stock_id'       => $requisition->stock_id,
             ]);
 
             foreach ($requisition->requisitionItems as $item) {
@@ -43,11 +43,11 @@ class DevolutionSeeder extends Seeder
                     'quantity_returned' => $quantityReturned,
                 ]);
 
-                $price = $this->getProductPrice($item->product_id, $requisition->department_id);
+                $price = $this->getProductPrice($item->product_id, $requisition->stock_id);
 
                 StockMovement::create([
                     'product_id'        => $item->product_id,
-                    'department_id'     => $requisition->department_id,
+                    'stock_id'          => $requisition->stock_id,
                     'type'              => StockMovement::TYPE_IN,
                     'quantity'          => $quantityReturned,
                     'price'             => $price,
@@ -55,15 +55,15 @@ class DevolutionSeeder extends Seeder
                     'movementable_id'   => $devolution->id,
                 ]);
 
-                $this->updateStockLevel($item->product_id, $requisition->department_id, $quantityReturned, $price);
+                $this->updateStockLevel($item->product_id, $requisition->stock_id, $quantityReturned, $price);
             }
         }
     }
 
-    private function getProductPrice(int $productId, int $departmentId): float
+    private function getProductPrice(int $productId, int $stockId): float
     {
         $level = StockLevel::where('product_id', $productId)
-            ->where('department_id', $departmentId)
+            ->where('stock_id', $stockId)
             ->first();
 
         return $level?->weighted_average_price > 0
@@ -71,10 +71,10 @@ class DevolutionSeeder extends Seeder
             : fake()->randomFloat(2, 5, 200);
     }
 
-    private function updateStockLevel(int $productId, int $departmentId, int $quantity, float $price): void
+    private function updateStockLevel(int $productId, int $stockId, int $quantity, float $price): void
     {
         $level = StockLevel::firstOrCreate(
-            ['product_id' => $productId, 'department_id' => $departmentId],
+            ['product_id' => $productId, 'stock_id' => $stockId],
             ['current_quantity' => 0, 'weighted_average_price' => 0, 'total_value' => 0],
         );
 

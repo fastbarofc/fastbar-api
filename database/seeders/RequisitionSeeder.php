@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Department;
+use App\Models\Stock;
 use App\Models\Product;
 use App\Models\Requisition;
 use App\Models\RequisitionItem;
@@ -15,14 +15,14 @@ class RequisitionSeeder extends Seeder
     public function run(): void
     {
         $products    = Product::all();
-        $departments = Department::all();
+        $stocks = Stock::all();
 
-        if ($products->isEmpty() || $departments->isEmpty()) {
+        if ($products->isEmpty() || $stocks->isEmpty()) {
             return;
         }
 
-        Requisition::factory(100)->create()->each(function (Requisition $requisition) use ($products, $departments) {
-            $department = $departments->find($requisition->department_id) ?? $departments->first();
+        Requisition::factory(100)->create()->each(function (Requisition $requisition) use ($products, $stocks) {
+            $stock = $stocks->find($requisition->stock_id) ?? $stocks->first();
             $items      = $products->random(rand(1, 4));
 
             foreach ($items as $product) {
@@ -34,11 +34,11 @@ class RequisitionSeeder extends Seeder
                     'quantity'       => $quantity,
                 ]);
 
-                $price = $this->getProductPrice($product->id, $department->id);
+                $price = $this->getProductPrice($product->id, $stock->id);
 
                 StockMovement::create([
                     'product_id'        => $product->id,
-                    'department_id'     => $department->id,
+                    'stock_id'          => $stock->id,
                     'type'              => StockMovement::TYPE_OUT,
                     'quantity'          => $quantity,
                     'price'             => $price,
@@ -46,15 +46,15 @@ class RequisitionSeeder extends Seeder
                     'movementable_id'   => $requisition->id,
                 ]);
 
-                $this->updateStockLevel($product->id, $department->id, StockMovement::TYPE_OUT, $quantity, $price);
+                $this->updateStockLevel($product->id, $stock->id, StockMovement::TYPE_OUT, $quantity, $price);
             }
         });
     }
 
-    private function getProductPrice(int $productId, int $departmentId): float
+    private function getProductPrice(int $productId, int $stockId): float
     {
         $level = StockLevel::where('product_id', $productId)
-            ->where('department_id', $departmentId)
+            ->where('stock_id', $stockId)
             ->first();
 
         return $level?->weighted_average_price > 0
@@ -62,10 +62,10 @@ class RequisitionSeeder extends Seeder
             : fake()->randomFloat(2, 5, 200);
     }
 
-    private function updateStockLevel(int $productId, int $departmentId, string $type, int $quantity, float $price): void
+    private function updateStockLevel(int $productId, int $stockId, string $type, int $quantity, float $price): void
     {
         $level = StockLevel::firstOrCreate(
-            ['product_id' => $productId, 'department_id' => $departmentId],
+            ['product_id' => $productId, 'stock_id' => $stockId],
             ['current_quantity' => 0, 'weighted_average_price' => 0, 'total_value' => 0],
         );
 

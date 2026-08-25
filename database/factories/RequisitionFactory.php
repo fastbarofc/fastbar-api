@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Department;
+use App\Models\Stock;
 use App\Models\Event;
 use App\Models\Requisition;
 use App\Models\User;
@@ -17,15 +17,15 @@ class RequisitionFactory extends Factory
 
     public function definition(): array
     {
-        $departments = Department::inRandomOrder()->take(2)->get();
+        $stocks = Stock::inRandomOrder()->take(2)->get();
 
         return [
-            'event_id'                 => Event::inRandomOrder()->first()?->id ?? 1,
-            'department_id'            => $departments->first()?->id ?? 1,
-            'destination_department_id'=> $departments->last()?->id ?? 1,
-            'requester_id'             => User::inRandomOrder()->first()?->id ?? 1,
-            'notes'                    => $this->faker->optional(0.4)->sentence(),
-            'status'                   => $this->faker->randomElement([
+            'event_id'             => Event::inRandomOrder()->first()?->id ?? 1,
+            'stock_id'             => $stocks->first()?->id ?? 1,
+            'destination_stock_id' => $stocks->last()?->id ?? 1,
+            'requester_id'         => User::inRandomOrder()->first()?->id ?? 1,
+            'notes'                => $this->faker->optional(0.4)->sentence(),
+            'status'               => $this->faker->randomElement([
                 Requisition::STATUS_OPEN,
                 Requisition::STATUS_PARTIAL,
                 Requisition::STATUS_RETURNED,

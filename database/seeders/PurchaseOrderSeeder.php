@@ -25,7 +25,7 @@ class PurchaseOrderSeeder extends Seeder
                 $productsToAttach[$product->id] = [
                     'purchase_request_id' => $purchaseRequest->id,
                     'factor' => fake()->optional()->word(),
-                    'reference' => fake()->optional()->word(),
+                    'observation' => fake()->optional()->word(),
                     'quantity' => fake()->numberBetween(1, 15),
                     'price' => fake()->randomFloat(2, 10, 500),
                 ];
