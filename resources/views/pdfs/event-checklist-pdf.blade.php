@@ -170,7 +170,7 @@
             <td><span class="text-bold">ENDEREÇO:</span>&nbsp;{{ $event->invoiceClient?->address?->street }},&nbsp;{{ $event->invoiceClient?->address->number }},&nbsp;{{ $event->invoiceClient?->address?->city->name }},&nbsp;{{ $event->invoiceClient?->address->state->letter }}</td>
         </tr>
         <tr>
-            <td><span class="text-bold">CPF / CNPJ: </span>{{ $event->invoiceClient?->cnpj ?: $event->invoiceClient?->cpf }}</td>
+            <td><span class="text-bold">CPF / CNPJ: </span>{{ maskCnpj($event->invoiceClient?->cnpj) ?: maskCpf($event->invoiceClient?->cpf) }}</td>
         </tr>
     </table>
 

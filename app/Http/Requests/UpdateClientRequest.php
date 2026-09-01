@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Cnpj;
+use App\Rules\Cpf;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -13,6 +15,26 @@ class UpdateClientRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * Os documentos são normalizados antes da validação para que cheguem ao banco sem máscara.
+     */
+    protected function prepareForValidation(): void
+    {
+        $documents = [];
+
+        if ($this->has('cpf')) {
+            $documents['cpf'] = unmaskCpf($this->input('cpf'));
+        }
+
+        if ($this->has('cnpj')) {
+            $documents['cnpj'] = unmaskCnpj($this->input('cnpj'));
+        }
+
+        if (!empty($documents)) {
+            $this->merge($documents);
+        }
     }
 
     public function rules(): array
@@ -31,9 +53,9 @@ class UpdateClientRequest extends FormRequest
             'name'         => 'nullable|string|max:255',
             'nickname'     => 'nullable|string|max:255',
             'birth_date'   => 'nullable|date',
-            'cpf'          => 'nullable|string|max:14',
+            'cpf'          => ['nullable', 'string', new Cpf],
             'rg'           => 'nullable|string|max:20',
-            'cnpj'         => 'nullable|string|max:18',
+            'cnpj'         => ['nullable', 'string', new Cnpj],
             'ie'           => 'nullable|string|max:255',
             'im'           => 'nullable|string|max:255',
         ];
@@ -62,11 +84,9 @@ class UpdateClientRequest extends FormRequest
             'nickname.max'            => 'O campo apelido deve ter no máximo 255 caracteres.',
             'birth_date.date'         => 'O campo data de nascimento deve ser uma data válida.',
             'cpf.string'              => 'O campo CPF deve ser uma string.',
-            'cpf.max'                 => 'O campo CPF deve ter no máximo 14 caracteres.',
             'rg.string'               => 'O campo RG deve ser uma string.',
             'rg.max'                  => 'O campo RG deve ter no máximo 20 caracteres.',
             'cnpj.string'             => 'O campo CNPJ deve ser uma string.',
-            'cnpj.max'                => 'O campo CNPJ deve ter no máximo 255 caracteres.',
             'ie.string'               => 'O campo inscrição estadual deve ser uma string.',
             'ie.max'                  => 'O campo inscrição estadual deve ter no máximo 255 caracteres.',
             'im.string'               => 'O campo inscrição municipal deve ser uma string.',

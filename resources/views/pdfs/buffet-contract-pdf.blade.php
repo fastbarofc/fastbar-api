@@ -145,7 +145,7 @@
         <tr>
             <td style="border: 1px solid #000;"><strong>02</strong></td>
             <td style="border: 1px solid #000;"><strong>Contratante</strong></td>
-            <td style="border: 1px solid #000;"><strong>Nome: {{ $client->name ?? 'Não informado' }}</strong>, nacionalidade: {{ $client->nationality ?? 'Não informado' }}, estado civil: {{ $client->civil_status ?? 'Não informado' }}, profissão: {{ $client->profession ?? 'Não informado' }}, inscrito(a) no CPF sob o n. {{ $client->cpf ?? 'Não informado' }} e portador(a) da CI de n. {{ $client->rg ?? 'Não informado' }}, residente e domiciliado(a) na Rua {{ $client->address['street'] ?? 'Não informado' }}, nº {{ $client->address['number'] ?? 'Não informado' }}{{ $client->address['complement'] ? ', ' . $client->address['complement'] : '' }}, Bairro {{ $client->address['district'] ?? 'Não informado' }}, CEP {{ $client->address['zip_code'] ?? 'Não informado' }}.</td>
+            <td style="border: 1px solid #000;"><strong>Nome: {{ $client->name ?? 'Não informado' }}</strong>, nacionalidade: {{ $client->nationality ?? 'Não informado' }}, estado civil: {{ $client->civil_status ?? 'Não informado' }}, profissão: {{ $client->profession ?? 'Não informado' }}, inscrito(a) no CPF sob o n. {{ maskCpf($client->cpf) ?? 'Não informado' }} e portador(a) da CI de n. {{ $client->rg ?? 'Não informado' }}, residente e domiciliado(a) na Rua {{ $client->address['street'] ?? 'Não informado' }}, nº {{ $client->address['number'] ?? 'Não informado' }}{{ $client->address['complement'] ? ', ' . $client->address['complement'] : '' }}, Bairro {{ $client->address['district'] ?? 'Não informado' }}, CEP {{ $client->address['zip_code'] ?? 'Não informado' }}.</td>
         </tr>
 
         <tr>

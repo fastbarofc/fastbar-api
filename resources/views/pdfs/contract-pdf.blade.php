@@ -169,7 +169,7 @@
     '{{ nacionalidade_cliente }}' => $contract->properties['client']['nationality'] ?? 'Não informado',
     '{{ estado_civil_cliente }}' => $contract->properties['client']['civil_status'] ?? 'Não informado',
     '{{ profissao_cliente }}' => $contract->properties['client']['profession'] ?? 'Não informado',
-    '{{ cpf_cliente }}' => $contract->properties['client']['cpf'] ?? 'Não informado',
+    '{{ cpf_cliente }}' => maskCpf($contract->properties['client']['cpf'] ?? null) ?? 'Não informado',
     '{{ rg_cliente }}' => $contract->properties['client']['rg'] ?? 'Não informado',
     '{{ endereco_cliente.rua }}' => $contract->properties['client']['address']['street'] ?? 'Não informado',
     '{{ endereco_cliente.numero }}' => $contract->properties['client']['address']['number'] ?? 'Não informado',

@@ -70,6 +70,13 @@ class Client extends Model implements AuditableInterface
             $model->phone_1 = preg_replace("/[^0-9]/", "", $model->phone_1);
             $model->phone_2 = preg_replace("/[^0-9]/", "", $model->phone_2);
         });
+
+        // Documentos são sempre gravados sem máscara.
+        static::saving(function ($model)
+        {
+            $model->cpf = unmaskCpf($model->cpf);
+            $model->cnpj = unmaskCnpj($model->cnpj);
+        });
     }
 
     public function address()

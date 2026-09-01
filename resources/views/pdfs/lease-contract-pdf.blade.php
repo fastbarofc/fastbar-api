@@ -78,7 +78,7 @@
     </div>
 
     <div style="margin-bottom: 20px;">
-        <p><strong>CONTRATANTE:</strong> {{ $client->name ?? 'Não informado' }}, CPF: {{ $client->cpf ?? 'Não informado' }}, RG: {{ $client->rg ?? 'Não informado' }}, residente e domiciliado no endereço: Rua: {{ $client->address['street'] ?? 'Não informado' }}, nº: {{ $client->address['number'] ?? 'Não informado' }} - Complemento: {{ $client->address['complement'] ? ', ' . $client->address['complement'] : '' }}, Bairro: {{ $client->address['district'] ?? 'Não informado' }}, CEP: {{ $client->address['zip_code'] ?? 'Não informado' }}, doravante denominado(a) <strong>LOCATÁRIO</strong>, resolvem assinar o presente CONTRATO, aplicando-se a este suas disposições irrestrita e incondicionalmente, conforme cláusulas e condições seguintes:
+        <p><strong>CONTRATANTE:</strong> {{ $client->name ?? 'Não informado' }}, CPF: {{ maskCpf($client->cpf) ?? 'Não informado' }}, RG: {{ $client->rg ?? 'Não informado' }}, residente e domiciliado no endereço: Rua: {{ $client->address['street'] ?? 'Não informado' }}, nº: {{ $client->address['number'] ?? 'Não informado' }} - Complemento: {{ $client->address['complement'] ? ', ' . $client->address['complement'] : '' }}, Bairro: {{ $client->address['district'] ?? 'Não informado' }}, CEP: {{ $client->address['zip_code'] ?? 'Não informado' }}, doravante denominado(a) <strong>LOCATÁRIO</strong>, resolvem assinar o presente CONTRATO, aplicando-se a este suas disposições irrestrita e incondicionalmente, conforme cláusulas e condições seguintes:
         </p>
     </div>
 
@@ -217,7 +217,7 @@
     <div style="text-align: center; margin-top: 50px;">
     <p>________________________________________</p>
     <p>{{ $client->name ?? 'Não informado' }}</p>
-    <p>CPF: {{ $client->cpf ?? 'Não informado' }}</p>
+    <p>CPF: {{ maskCpf($client->cpf) ?? 'Não informado' }}</p>
     <p>RG: {{ $client->rg ?? 'Não informado' }}</p>
     <p>CONTRATANTE</p>
 
