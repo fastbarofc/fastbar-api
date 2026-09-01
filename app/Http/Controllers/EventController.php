@@ -42,8 +42,10 @@ use App\Models\Partner;
 use App\Models\PaymentPlan;
 use App\Models\Company;
 
+use App\Http\Requests\GenerateEventProposalRequest;
 use App\Services\FileService;
 use App\Services\EventHistoryService;
+use App\Services\EventProposalService;
 use App\Http\Resources\EventHistoryResource;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
@@ -1087,6 +1089,44 @@ class EventController extends Controller
 
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName, $footer, $header);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Preenchimento inicial do formulario de proposta: o que ja existe no
+     * evento vem preenchido, o resto vai vazio para o usuario completar.
+     */
+    public function proposalData(Event $event)
+    {
+        return response()->json([
+            'data' => EventProposalService::defaults($event),
+            'required_fields' => EventProposalService::requiredFields(),
+        ]);
+    }
+
+    public function generateProposal(GenerateEventProposalRequest $request, Event $event)
+    {
+        $proposal = $request->validated();
+        $fileName = 'proposta-' . $event->id;
+        $viewContent = view('/pdfs/proposal-pdf', compact('proposal'));
+
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName, null, null, [
+                // A arte e A4 paisagem sangrada: sem margem e sem reescala,
+                // para que os 297mm x 210mm do CSS batam com a pagina.
+                'disable-smart-shrinking',
+                'page-size' => 'A4',
+                'orientation' => 'Landscape',
+                'margin-top' => '0',
+                'margin-bottom' => '0',
+                'margin-left' => '0',
+                'margin-right' => '0',
+                'dpi' => 96,
+            ]);
+
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);

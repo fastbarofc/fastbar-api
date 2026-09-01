@@ -81,16 +81,14 @@ class FileService
     $file->delete();
   }
 
-  public static function generatePdf($viewContent, $fileName, $footerContent = null, $headerContent = null)
+  public static function generatePdf($viewContent, $fileName, $footerContent = null, $headerContent = null, array $extraOptions = [])
   {
-    $root = base_path();
-    $arch = self::getArchitecture();
-    $bin = "{$root}/vendor/bin/wkhtmltopdf-{$arch}";
+    $bin = self::resolveBinary();
 
-    $options  = [
+    $options  = array_merge([
       'binary' => $bin,
       'ignoreWarnings' => true
-    ];
+    ], $extraOptions);
 
     if (!empty($footerContent)) {
       $footer = new MikeFile($footerContent, '.html');
@@ -125,15 +123,72 @@ class FileService
     return $pdfUrl;
   }
 
-  private static function getArchitecture()
+  /**
+   * Caminho do wkhtmltopdf, na ordem: caminho configurado, binario vendorado
+   * compativel com a arquitetura da maquina e, por fim, wkhtmltopdf do PATH.
+   */
+  private static function resolveBinary(): string
   {
+    $configured = config('pdf.binary');
 
-    if (2147483647 == PHP_INT_MAX) {
-      $architecture = 'i386';
-    } else {
-      $architecture = 'amd64';
+    if (!empty($configured)) {
+      if (!is_executable($configured)) {
+        throw new \RuntimeException("wkhtmltopdf configurado em WKHTMLTOPDF_BINARY nao e executavel: {$configured}");
+      }
+
+      return $configured;
     }
-    return $architecture;
+
+    $architecture = self::getArchitecture();
+
+    if ($architecture !== null) {
+      $vendored = base_path("vendor/bin/wkhtmltopdf-{$architecture}");
+
+      if (is_executable($vendored)) {
+        return $vendored;
+      }
+    }
+
+    $fromPath = self::findBinaryInPath('wkhtmltopdf');
+
+    if ($fromPath !== null) {
+      return $fromPath;
+    }
+
+    throw new \RuntimeException(
+      'wkhtmltopdf nao encontrado para a arquitetura ' . php_uname('m') . '. ' .
+        'Instale o wkhtmltopdf no ambiente ou aponte o caminho em WKHTMLTOPDF_BINARY.'
+    );
+  }
+
+  /**
+   * Arquitetura correspondente aos pacotes h4cc/wkhtmltopdf-*, ou null quando
+   * nenhum deles serve para a maquina atual (arm64, por exemplo).
+   */
+  private static function getArchitecture(): ?string
+  {
+    return match (strtolower(php_uname('m'))) {
+      'x86_64', 'amd64' => 'amd64',
+      'i386', 'i486', 'i586', 'i686', 'x86' => 'i386',
+      default => null,
+    };
+  }
+
+  private static function findBinaryInPath(string $name): ?string
+  {
+    foreach (explode(PATH_SEPARATOR, (string) getenv('PATH')) as $directory) {
+      if ($directory === '') {
+        continue;
+      }
+
+      $candidate = rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $name;
+
+      if (is_file($candidate) && is_executable($candidate)) {
+        return $candidate;
+      }
+    }
+
+    return null;
   }
 
   private static function getExtensionFromMime(string $mimeType): ?string
