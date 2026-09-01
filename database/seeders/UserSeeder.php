@@ -20,6 +20,7 @@ class UserSeeder extends Seeder
             ->state([
                 'name' => 'Admin',
                 'email' => 'admin@gmail.com.br',
+                'password' => '456',
                 'is_employee' => true,
             ])
             ->create();
@@ -34,14 +35,5 @@ class UserSeeder extends Seeder
             
         $roleAdmin = Role::where('name', 'Admin')->first();
         $userAdmin->assignRole($roleAdmin);
-
-        $userClient = User::factory()
-            ->state([
-                'name' => 'Client',
-                'email' => 'client@gmail.com.br'
-            ])
-            ->create();
-        $roleClient = Role::where('name', 'Client')->first();
-        $userClient->assignRole($roleClient);
     }
 }
