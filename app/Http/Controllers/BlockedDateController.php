@@ -6,6 +6,7 @@ use App\Http\Requests\StoreBlockedDateRequest;
 use App\Http\Requests\UpdateBlockedDateRequest;
 use App\Models\BlockedDate;
 use App\Http\Resources\BlockedDateResource;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class BlockedDateController extends Controller
@@ -16,6 +17,16 @@ class BlockedDateController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $query = BlockedDate::query();
+
+        // Intervalo usado pelo calendario para trazer so os bloqueios da tela
+        // atual, sem depender da paginacao padrao.
+        if ($request->filled('start')) {
+            $query->whereDate('date', '>=', Carbon::parse($request->input('start'))->toDateString());
+        }
+
+        if ($request->filled('end')) {
+            $query->whereDate('date', '<=', Carbon::parse($request->input('end'))->toDateString());
+        }
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');

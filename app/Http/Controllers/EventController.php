@@ -185,12 +185,8 @@ class EventController extends Controller
                 foreach ($filterableArray as $filter) {
                     $field = array_keys($filter)[0];
                     $value = $filter[$field];
-                    if ($field === 'company_id') {
-                        $query->whereHas('companies', fn ($q) => $q->where('companies.id', $value));
-                    } else {
-                        $operator = $field == 'name' ? 'like' : '=';
-                        $query->filterByField($field, $value, $operator);
-                    }
+                    $operator = $field == 'name' ? 'like' : '=';
+                    $query->filterByField($field, $value, $operator);
                 }
             }
         }
@@ -203,13 +199,10 @@ class EventController extends Controller
 
         $events = $query->get();
 
-        $eventCompanies = Company::whereIn('internal_name', ['Parthenon', 'Fastbar'])->whereNull('deleted_at')->get(['id', 'internal_name']);
-
         return response()->json([
             'data' => EventCalendarResource::collection($events),
             'sortable_fields' => Event::sortableFields(),
             'filterable_fields' => Event::filterableFields(),
-            'event_companies' => $eventCompanies
         ], 200);
     }
 
