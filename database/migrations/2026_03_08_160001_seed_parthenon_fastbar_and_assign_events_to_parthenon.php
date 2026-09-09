@@ -3,6 +3,13 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Cria a empresa Fastbar e faz o backfill de event_companies.
+ *
+ * O backfill so acontece se a Parthenon ja existir no banco (instalacao
+ * antiga, onde os eventos precisavam ser atribuidos a ela). Numa instalacao
+ * nova da FastBar a Parthenon nao e criada, e nao ha eventos para atribuir.
+ */
 return new class extends Migration
 {
     /**
@@ -10,24 +17,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $parthenon = DB::table('companies')
-            ->where('internal_name', 'Parthenon')
-            ->whereNull('deleted_at')
-            ->first();
-
-        if (!$parthenon) {
-            $parthenonId = DB::table('companies')->insertGetId([
-                'internal_name' => 'Parthenon',
-                'legal_name' => 'Parthenon',
-                'trade_name' => 'Parthenon',
-                'type' => 'head_office',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        } else {
-            $parthenonId = $parthenon->id;
-        }
-
         $fastbar = DB::table('companies')
             ->where('internal_name', 'Fastbar')
             ->whereNull('deleted_at')
@@ -44,13 +33,22 @@ return new class extends Migration
             ]);
         }
 
+        $parthenon = DB::table('companies')
+            ->where('internal_name', 'Parthenon')
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (!$parthenon) {
+            return;
+        }
+
         $eventIds = DB::table('events')->whereNull('deleted_at')->pluck('id');
         $now = now();
 
-        $inserts = $eventIds->map(function ($eventId) use ($parthenonId, $now) {
+        $inserts = $eventIds->map(function ($eventId) use ($parthenon, $now) {
             return [
                 'event_id' => $eventId,
-                'company_id' => $parthenonId,
+                'company_id' => $parthenon->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ];

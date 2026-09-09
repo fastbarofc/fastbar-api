@@ -16,7 +16,7 @@ class EventKitSeeder extends Seeder
         $grandparentKits = $grandparentKits->take(12);
 
         foreach ($grandparentKits as $parent) {
-            $eventKitNames = ['Casa parthenon', 'Parthenon MED', 'Camarim'];
+            $eventKitNames = ['Bar Principal', 'Bar Secundario', 'Camarim'];
 
             foreach ($eventKitNames as $eventKitName) {
                 EventKit::factory()

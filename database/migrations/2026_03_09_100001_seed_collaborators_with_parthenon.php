@@ -15,18 +15,13 @@ return new class extends Migration
             ->whereNull('deleted_at')
             ->first();
 
+        // Backfill apenas para instalacoes que ja tinham a Parthenon. Numa
+        // instalacao nova da FastBar a empresa nao existe e nao ha o que migrar.
         if (!$parthenon) {
-            $parthenonId = DB::table('companies')->insertGetId([
-                'internal_name' => 'Parthenon',
-                'legal_name' => 'Parthenon',
-                'trade_name' => 'Parthenon',
-                'type' => 'head_office',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        } else {
-            $parthenonId = $parthenon->id;
+            return;
         }
+
+        $parthenonId = $parthenon->id;
 
         $collaboratorIds = DB::table('collaborators')->whereNull('deleted_at')->pluck('id');
         $now = now();
