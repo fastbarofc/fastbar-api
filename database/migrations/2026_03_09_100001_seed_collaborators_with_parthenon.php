@@ -15,8 +15,6 @@ return new class extends Migration
             ->whereNull('deleted_at')
             ->first();
 
-        // Backfill apenas para instalacoes que ja tinham a Parthenon. Numa
-        // instalacao nova da FastBar a empresa nao existe e nao ha o que migrar.
         if (!$parthenon) {
             return;
         }

@@ -10,9 +10,6 @@ class ContractTemplateSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * Ha no maximo um modelo de contrato por empresa (ver ContractTemplateController).
-     * O conteudo e HTML livre, editado no TinyMCE pela tela de Modelo de Contrato.
      */
     public function run(): void
     {

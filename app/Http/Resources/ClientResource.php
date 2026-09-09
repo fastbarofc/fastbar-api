@@ -23,11 +23,16 @@ class ClientResource extends JsonResource
             'cpf'      => $this->cpf,
             'rg'      => $this->rg,
             'cnpj'     => $this->cnpj,
+            'representative_name' => $this->representative_name,
+            'representative_cpf'  => $this->representative_cpf,
             'opening_date' => $this->opening_date,
             'ie'    => $this->ie,
             'im'   => $this->im,
             'user_id'   => new UserResource($this->user),
             'address'    => new AddressResource($this->address),
+            'representative_address' => $this->representativeAddress
+                ? new AddressResource($this->representativeAddress)
+                : null,
         ];
     }
 }

@@ -3,13 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Cria a empresa Fastbar e faz o backfill de event_companies.
- *
- * O backfill so acontece se a Parthenon ja existir no banco (instalacao
- * antiga, onde os eventos precisavam ser atribuidos a ela). Numa instalacao
- * nova da FastBar a Parthenon nao e criada, e nao ha eventos para atribuir.
- */
 return new class extends Migration
 {
     /**

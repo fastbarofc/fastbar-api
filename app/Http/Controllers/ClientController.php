@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Str;
+use App\Enums\AddressTypeEnum;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use App\Http\Resources\ClientResource;
@@ -70,6 +71,27 @@ class ClientController extends Controller
         ], 200);
     }
 
+    private function saveAddress(Client $client, array $address, AddressTypeEnum $type): void
+    {
+        Address::updateOrCreate(
+            [
+                'addressable_id'   => $client->id,
+                'addressable_type' => Client::class,
+                'type'             => $type->value,
+            ],
+            [
+                'street'     => $address['street'] ?? '',
+                'district'   => $address['district'] ?? '',
+                'complement' => $address['complement'] ?? '',
+                'city_id'    => $address['city_id'] ?? null,
+                'state_id'   => $address['state_id'] ?? null,
+                'number'     => $address['number'] ?? '',
+                'zip_code'   => $address['zip_code'] ?? '',
+                'reference'  => $address['reference'] ?? '',
+            ]
+        );
+    }
+
     public function store(StoreClientRequest $request)
     {
         try {
@@ -113,19 +135,11 @@ class ClientController extends Controller
         }
 
         if (!empty($data['address'])) {
-            $address = $data['address'];
-            Address::create([
-                'addressable_id'      => $client->id,
-                'addressable_type'    => Client::class,
-                'street'           => $address['street'] ?? '',
-                'district'         => $address['district'] ?? '',
-                'complement'       => $address['complement'] ?? '',
-                'city_id'          => $address['city_id'],
-                'state_id'         => $address['state_id'],
-                'number'           => $address['number'] ?? '',
-                'zip_code'         => $address['zip_code'] ?? '',
-                'reference'        => $address['reference'] ?? '',
-            ]);
+            $this->saveAddress($client, $data['address'], AddressTypeEnum::MAIN);
+        }
+
+        if (!empty($data['representative_address'])) {
+            $this->saveAddress($client, $data['representative_address'], AddressTypeEnum::REPRESENTATIVE);
         }
 
         DB::commit();
@@ -206,25 +220,11 @@ class ClientController extends Controller
             }
     
             if (!empty($data['address'])) {
-                $address = $data['address'];
-                Address::updateOrCreate(
-                    [
-                        'addressable_id'   => $client->id,
-                        'addressable_type' => Client::class
-                    ],
-                    [
-                        'addressable_id'   => $client->id,
-                        'addressable_type' => Client::class,
-                        'street'           => $address['street'] ?? '',
-                        'district'         => $address['district'] ?? '',
-                        'complement'       => $address['complement'] ?? '',
-                        'city_id'          => $address['city_id'],
-                        'state_id'         => $address['state_id'],
-                        'number'           => $address['number'] ?? '',
-                        'zip_code'         => $address['zip_code'] ?? '',
-                        'reference'        => $address['reference'] ?? '',
-                    ]
-                );
+                $this->saveAddress($client, $data['address'], AddressTypeEnum::MAIN);
+            }
+
+            if (!empty($data['representative_address'])) {
+                $this->saveAddress($client, $data['representative_address'], AddressTypeEnum::REPRESENTATIVE);
             }
             
     

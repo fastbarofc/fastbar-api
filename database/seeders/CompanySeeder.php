@@ -9,9 +9,6 @@ class CompanySeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * A instalacao da FastBar opera com uma unica empresa. Nao ha factory aqui
-     * de proposito: companies e cadastro de negocio, nao dado ficticio.
      */
     public function run(): void
     {

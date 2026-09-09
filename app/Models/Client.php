@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AddressTypeEnum;
 use App\Traits\Filterable;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,6 +30,8 @@ class Client extends Model implements AuditableInterface
         'cpf',
         'rg',
         'cnpj',
+        'representative_name',
+        'representative_cpf',
         'opening_date',
         'ie',
         'im',
@@ -76,12 +79,20 @@ class Client extends Model implements AuditableInterface
         {
             $model->cpf = unmaskCpf($model->cpf);
             $model->cnpj = unmaskCnpj($model->cnpj);
+            $model->representative_cpf = unmaskCpf($model->representative_cpf);
         });
     }
 
     public function address()
     {
-        return $this->morphOne(Address::class, 'addressable');
+        return $this->morphOne(Address::class, 'addressable')
+            ->where('type', AddressTypeEnum::MAIN->value);
+    }
+
+    public function representativeAddress()
+    {
+        return $this->morphOne(Address::class, 'addressable')
+            ->where('type', AddressTypeEnum::REPRESENTATIVE->value);
     }
 
     public function events()

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AddressTypeEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
@@ -16,6 +17,7 @@ class Address extends Model implements AuditableInterface
     protected $fillable = [
         'addressable_id',
         'addressable_type',
+        'type',
         'street',
         'district',
         'complement',
@@ -24,6 +26,10 @@ class Address extends Model implements AuditableInterface
         'number',
         'zip_code',
         'reference'
+    ];
+
+    protected $casts = [
+        'type' => AddressTypeEnum::class,
     ];
 
     public function addressable() {
