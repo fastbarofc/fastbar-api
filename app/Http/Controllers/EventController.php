@@ -1103,8 +1103,11 @@ class EventController extends Controller
     public function generateProposal(GenerateEventProposalRequest $request, Event $event)
     {
         $proposal = $request->validated();
+        // O wkhtmltopdf nao quebra conteudo em absoluto: a distribuicao dos
+        // blocos entre as paginas de orcamento vem calculada do service.
+        $pages = EventProposalService::pages($proposal);
         $fileName = 'proposta-' . $event->id;
-        $viewContent = view('/pdfs/proposal-pdf', compact('proposal'));
+        $viewContent = view('/pdfs/proposal-pdf', compact('proposal', 'pages'));
 
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName, null, null, [

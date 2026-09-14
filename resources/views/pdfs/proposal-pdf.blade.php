@@ -2,9 +2,13 @@
     /**
      * Proposta comercial Fast Bar.
      *
-     * As paginas 2, 3, 4, 5 e 7 sao arte fixa: entram como imagem achatada.
-     * Apenas as paginas 1 e 6 recebem conteudo do evento, desenhado sobre o
-     * fundo limpo exportado da arte original.
+     * As paginas 2, 3, 4, 5 e a de encerramento sao arte fixa: entram como
+     * imagem achatada. Apenas a capa e as paginas de orcamento recebem
+     * conteudo do evento, desenhado sobre o fundo limpo exportado da arte
+     * original.
+     *
+     * O orcamento pode ocupar mais de uma pagina: EventProposalService::pages()
+     * ja entrega os blocos distribuidos, sem nenhum partido no meio.
      */
     /**
      * As imagens vao embutidas em base64: o wkhtmltopdf 0.12.6+ bloqueia
@@ -13,10 +17,6 @@
      */
     $art = function (string $file) {
         return 'data:image/jpeg;base64,' . base64_encode(file_get_contents(public_path("img/proposals/fastbar/{$file}")));
-    };
-
-    $money = function ($value) {
-        return 'R$ ' . number_format((float) $value, 2, ',', '.');
     };
 @endphp
 <!DOCTYPE html>
@@ -66,7 +66,7 @@
             height: 210mm;
         }
 
-        /* ----- pagina 1: capa ----- */
+        /* ----- capa ----- */
 
         .cover-info {
             position: absolute;
@@ -104,7 +104,7 @@
             letter-spacing: 0.8px;
         }
 
-        /* ----- pagina 6: orcamento ----- */
+        /* ----- paginas de orcamento ----- */
 
         .detail-content {
             position: absolute;
@@ -113,22 +113,20 @@
             width: 84%;
         }
 
-        .detail-cols {
-            width: 100%;
-            border-collapse: collapse;
+        /* Colunas em absoluto: a esquerda pode esvaziar nas paginas seguintes
+           sem que a direita mude de lugar. */
+        .detail-col {
+            position: absolute;
+            top: 0;
         }
 
-        .detail-cols td {
-            vertical-align: top;
-            padding: 0;
-        }
-
-        .detail-cols td.col-left {
+        .detail-col-left {
+            left: 0;
             width: 53%;
-            padding-right: 5%;
         }
 
-        .detail-cols td.col-right {
+        .detail-col-right {
+            left: 58%;
             width: 42%;
         }
 
@@ -185,7 +183,7 @@
 </head>
 
 <body>
-    {{-- Pagina 1: capa com os dados do evento --}}
+    {{-- Capa com os dados do evento --}}
     <div class="page">
         <img class="page-art" src="{{ $art('page-1-bg.jpg') }}" alt="">
         <div class="cover-info">
@@ -203,73 +201,37 @@
         </div>
     </div>
 
-    {{-- Paginas 2 a 5: arte institucional fixa --}}
+    {{-- Arte institucional fixa --}}
     <div class="page"><img class="page-art" src="{{ $art('page-2.jpg') }}" alt=""></div>
     <div class="page"><img class="page-art" src="{{ $art('page-3.jpg') }}" alt=""></div>
     <div class="page"><img class="page-art" src="{{ $art('page-4.jpg') }}" alt=""></div>
     <div class="page"><img class="page-art" src="{{ $art('page-5.jpg') }}" alt=""></div>
 
-    {{-- Pagina 6: orcamento detalhado --}}
-    <div class="page">
-        <img class="page-art" src="{{ $art('page-6-bg.jpg') }}" alt="">
-        <div class="detail-content">
-            <table class="detail-cols">
-                <tr>
-                    <td class="col-left">
-                        <h2>ORÇAMENTO DETALHADO:</h2>
-                        <ul class="pink">
-                            @foreach ($proposal['budget_details'] as $item)
-                                <li><span>{{ $item }}</span></li>
-                            @endforeach
-                        </ul>
+    {{-- Orcamento detalhado: uma ou mais paginas, conforme o que couber --}}
+    @foreach ($pages as $page)
+        <div class="page">
+            <img class="page-art" src="{{ $art('page-6-bg.jpg') }}" alt="">
+            <div class="detail-content">
+                <div class="detail-col detail-col-left">
+                    @foreach ($page['left'] as $index => $block)
+                        @include('pdfs.proposal-block', ['block' => $block, 'first' => $index === 0])
+                    @endforeach
+                </div>
 
-                        @if (!empty($proposal['observations']))
-                            <h2 class="spaced">OBSERVAÇÕES:</h2>
-                            <ul class="blue">
-                                @foreach ($proposal['observations'] as $item)
-                                    <li><span>{{ $item }}</span></li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </td>
-
-                    <td class="col-right">
+                <div class="detail-col detail-col-right">
+                    @if (!empty($page['right']))
                         <h2>RESUMO:</h2>
-                        <h2>BAR DE DRINKS:</h2>
-                        <ul class="pink tight">
-                            @foreach ($proposal['drinks_bar_items'] as $item)
-                                <li><span>{{ $item }}</span></li>
-                            @endforeach
-                        </ul>
-                        <p class="line">Valor por pessoa: {{ $money($proposal['drinks_bar_price']) }}.</p>
 
-                        @if (!empty($proposal['optional_drinks_note']))
-                            <p class="note">{{ $proposal['optional_drinks_note'] }}</p>
-                        @endif
-
-                        <h2 class="spaced">BAR DE DESTILADOS:</h2>
-                        <ul class="pink tight">
-                            @foreach ($proposal['spirits_bar_items'] as $item)
-                                <li><span>{{ $item }}</span></li>
-                            @endforeach
-                        </ul>
-                        <p class="line">Valor por pessoa: ({{ $money($proposal['spirits_bar_price']) }}):</p>
-
-                        @if (!empty($proposal['additional_items']))
-                            <h2 class="spaced">ADICIONAIS (troca):</h2>
-                            <ul class="pink tight">
-                                @foreach ($proposal['additional_items'] as $item)
-                                    <li><span>{{ $item }}</span></li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </td>
-                </tr>
-            </table>
+                        @foreach ($page['right'] as $index => $block)
+                            @include('pdfs.proposal-block', ['block' => $block, 'first' => $index === 0])
+                        @endforeach
+                    @endif
+                </div>
+            </div>
         </div>
-    </div>
+    @endforeach
 
-    {{-- Pagina 7: encerramento --}}
+    {{-- Encerramento --}}
     <div class="page page-last"><img class="page-art" src="{{ $art('page-7.jpg') }}" alt=""></div>
 </body>
 
