@@ -37,7 +37,9 @@ class Event extends Model implements AuditableInterface
         'time',
         'duration',
         'duration_after',
+        'glass_cup_hours',
         'contract_body',
+        'contract_print_data',
         'post_event_consumption_report_file_id',
         'parthenon_courtesies',
         'partner_courtesies',
@@ -62,6 +64,7 @@ class Event extends Model implements AuditableInterface
     protected $casts = [
         'date' => 'date:Y-m-d',
         'time' => 'string',
+        'contract_print_data' => 'array',
         'is_medicine' => 'boolean',
         'closed_at' => 'datetime',
     ];

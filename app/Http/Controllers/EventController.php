@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GenerateEventContractRequest;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use App\Http\Resources\ContractResource;
@@ -45,6 +46,7 @@ use App\Models\Company;
 use App\Http\Requests\GenerateEventProposalRequest;
 use App\Services\FileService;
 use App\Services\EventHistoryService;
+use App\Services\EventContractService;
 use App\Services\EventProposalService;
 use App\Http\Resources\EventHistoryResource;
 use Carbon\Carbon;
@@ -1243,31 +1245,6 @@ class EventController extends Controller
         }
     }
 
-    public function generateBuffetContract(Event $event)
-    {
-        $event->load([
-            'eventStatus',
-            'client',
-            'eventPlace',
-            'paymentPlan.paymentMethod'
-        ]);
-
-        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
-            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
-        }
-        $client = $event->client;
-        $place = $event->eventPlace;
-
-        $fileName = 'contrato-buffet-' . $event->id;
-        $viewContent = view("/pdfs/buffet-contract-pdf", compact(['event', 'place', 'client']));
-        try {
-            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
-            return response()->json(['pdf_url' => $pdfUrl]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
-        }
-    }
-
     public function generateEventItemChecklist(Event $event)
     {
         $event->load([
@@ -1287,21 +1264,35 @@ class EventController extends Controller
         }
     }
 
-    public function generateLeaseContract(Event $event)
+    public function contractData(Event $event)
     {
-        $event->load([
-            'eventStatus',
-            'client'
-        ]);
+        return response()->json(['data' => EventContractService::printableDefaults($event)]);
+    }
 
-        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
-            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+    public function generateEventContract(GenerateEventContractRequest $request, Event $event)
+    {
+        $event->load(['eventStatus', 'client']);
+
+        if (!EventContractService::isPrintable($event)) {
+            return response()->json([
+                'error' => 'O contrato só pode ser gerado a partir do status Contrato.',
+            ], 400);
         }
 
-        $client = $event->client;
+        if (EventContractService::missingRepresentative($event->client)) {
+            return response()->json([
+                'message' => 'O cliente é pessoa jurídica e não tem representante legal cadastrado. Preencha nome e CPF do representante no cadastro do cliente antes de gerar o contrato.',
+            ], 422);
+        }
 
-        $fileName = 'contrato-locacao-' . $event->id;
-        $viewContent = view("/pdfs/lease-contract-pdf", compact(['event', 'client']));
+        $printable = $request->validated();
+        $event->update(['contract_print_data' => $printable]);
+
+        $contract = EventContractService::build($event, $printable);
+
+        $fileName = 'contrato-' . $event->id;
+        $viewContent = view("/pdfs/event-contract-pdf", compact('contract'));
+
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);

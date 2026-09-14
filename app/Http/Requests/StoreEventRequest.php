@@ -27,6 +27,7 @@ class StoreEventRequest extends FormRequest
             'date'          => 'nullable|date|after:now',
             'time'          => 'nullable|date_format:H:i',
             'contract_body'      => 'nullable',
+            'glass_cup_hours'    => 'nullable|integer|min:0|max:24',
             'parthenon_courtesies' => 'nullable|numeric|min:0',
             'partner_courtesies'   => 'nullable|numeric|min:0',
             'total_value'   => 'nullable|numeric|min:0',
@@ -99,6 +100,8 @@ class StoreEventRequest extends FormRequest
             'clients.*.exists'          => 'O campo ID do cliente deve ser um ID válido.',
             'min_guests.integer' => 'O campo convidados mínimos deve conter apenas números inteiros',
             'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
+            'glass_cup_hours.integer' => 'As horas com copo de vidro devem ser um número inteiro',
+            'glass_cup_hours.max' => 'As horas com copo de vidro não podem passar de 24',
             'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
         ];
     }

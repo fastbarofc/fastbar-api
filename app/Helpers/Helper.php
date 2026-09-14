@@ -75,6 +75,33 @@ function maskCnpj($cnpj)
 }
 
 /**
+ * Remove a máscara do CEP, mantendo apenas os 8 dígitos.
+ */
+function unmaskZipCode($zipCode)
+{
+    if ($zipCode === null || $zipCode === '') {
+        return null;
+    }
+
+    return substr(preg_replace('/\D/', '', $zipCode), 0, 8) ?: null;
+}
+
+/**
+ * Formata o CEP para exibição: 00000-000. O valor original volta quando não
+ * são 8 dígitos, para a validação apontar o erro no que o usuário digitou.
+ */
+function maskZipCode($zipCode)
+{
+    $value = unmaskZipCode($zipCode);
+
+    if (strlen((string) $value) !== 8) {
+        return $zipCode;
+    }
+
+    return substr($value, 0, 5) . '-' . substr($value, 5, 3);
+}
+
+/**
  * Formata CPF ou CNPJ conforme o tamanho do documento.
  */
 function maskDocument($document)

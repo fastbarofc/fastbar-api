@@ -39,6 +39,16 @@ class StoreClientRequest extends FormRequest
         if (!empty($documents)) {
             $this->merge($documents);
         }
+
+        // O front envia o CEP sem máscara, mas `formato_cep` só aceita 00000-000.
+        foreach (['address', 'representative_address'] as $key) {
+            $address = $this->input($key);
+
+            if (is_array($address) && array_key_exists('zip_code', $address)) {
+                $address['zip_code'] = maskZipCode($address['zip_code']);
+                $this->merge([$key => $address]);
+            }
+        }
     }
 
     public function rules(): array
