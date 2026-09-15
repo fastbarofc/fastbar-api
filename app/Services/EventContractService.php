@@ -28,6 +28,27 @@ class EventContractService
      */
     public const PRINTABLE_STATUSES = ['Contrato', 'Fechado', 'Planejamento', 'Concluído'];
 
+    /**
+     * Logo, marca d'água e filete extraídos da arte do contrato Fast Bar.
+     *
+     * Vão em base64 porque o wkhtmltopdf 0.12.6+ bloqueia file:// por padrão
+     * e a flag --enable-local-file-access não existe na 0.12.4; data URI
+     * funciona nas duas versões, inclusive dentro do cabeçalho e do rodapé.
+     */
+    public static function brandAssets(): array
+    {
+        return [
+            'logo' => self::brandAsset('fastbar-logo.png'),
+            'watermark' => self::brandAsset('fastbar-watermark-tile.png'),
+            'divider' => self::brandAsset('fastbar-divider.png'),
+        ];
+    }
+
+    private static function brandAsset(string $file): string
+    {
+        return 'data:image/png;base64,' . base64_encode(file_get_contents(public_path("img/logos/fastbar/{$file}")));
+    }
+
     /** Campos que o usuário preenche na impressão, já com o que foi salvo antes. */
     public static function printableDefaults(Event $event): array
     {

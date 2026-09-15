@@ -7,13 +7,34 @@
     <title>Contrato de Prestação de Serviços de Coquetelaria</title>
 
     <style>
+        /*
+         * As margens da página vêm das opções do wkhtmltopdf, que também
+         * reservam o espaço do cabeçalho e do rodapé de marca.
+         *
+         * A marca d'água é o fundo do body, e não um `position: fixed`:
+         * o wkhtmltopdf 0.12.6 desenha elementos fixos só na primeira
+         * página, mas repete o fundo em todas. O tile tem a proporção da
+         * área de conteúdo (168 x 253mm) com o X centralizado, então basta
+         * um tile por página. Ele é opaco de propósito: o Qt suja o canal
+         * alfa ao ampliar a imagem em ~5x e deixa um halo cinza em volta
+         * dos traços. Como a página é branca, o fundo branco do tile
+         * resolve, e é o que a arte original também faz.
+         *
+         * O período é dado em unidades CSS, que não batem com as físicas:
+         * o smart shrinking monta o layout na largura inteira da página
+         * (210mm) e reduz para os 168mm de conteúdo, fator 0,8. Logo os
+         * 253mm de conteúdo valem 253 / 0,8 = 316,25mm de CSS. Mexer nas
+         * margens do PDF exige refazer essa conta e a proporção do tile.
+         */
         body {
-            margin-left: 50px;
-            margin-right: 50px;
-            padding-top: 50px;
+            margin: 0;
             color: #333;
             font-family: 'Times New Roman', serif;
             font-size: 12px;
+            background-image: url('{{ $brand['watermark'] }}');
+            background-repeat: repeat-y;
+            background-position: left top;
+            background-size: 210mm 316.25mm;
         }
 
         p {
@@ -67,8 +88,14 @@
         }
 
         .signature {
-            text-align: center;
             margin-top: 50px;
+        }
+
+        /* Regra no próprio `p` é necessária: a de cima é herdada e perde
+           para o `p { text-align: justify }` das cláusulas. */
+        .signature p,
+        .witnesses p {
+            text-align: center;
         }
     </style>
 </head>
@@ -570,7 +597,7 @@
         <p>CONTRATADO</p>
     </div>
 
-    <table style="width: 100%; margin-top: 65px;">
+    <table class="witnesses" style="width: 100%; margin-top: 65px;">
         <tr>
             <td style="width: 50%; text-align: center;">
                 <p>________________________________________</p>

@@ -1289,12 +1289,24 @@ class EventController extends Controller
         $event->update(['contract_print_data' => $printable]);
 
         $contract = EventContractService::build($event, $printable);
+        $brand = EventContractService::brandAssets();
 
         $fileName = 'contrato-' . $event->id;
-        $viewContent = view("/pdfs/event-contract-pdf", compact('contract'));
+        $viewContent = view("/pdfs/event-contract-pdf", compact('contract', 'brand'));
+        $header = view("/pdfs/partials/fastbar-header", compact('brand'))->render();
+        $footer = view("/pdfs/partials/fastbar-footer", compact('brand'))->render();
 
         try {
-            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            // As margens abrem espaço para a logo do topo e para o filete com a
+            // logo do rodapé, que o wkhtmltopdf repete em todas as páginas.
+            $pdfUrl = FileService::generatePdf($viewContent, $fileName, $footer, $header, [
+                'margin-top' => '20mm',
+                'margin-bottom' => '24mm',
+                'margin-left' => '21mm',
+                'margin-right' => '21mm',
+                'header-spacing' => 3,
+                'footer-spacing' => 3,
+            ]);
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
