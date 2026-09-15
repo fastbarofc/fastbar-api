@@ -125,7 +125,7 @@ class EventController extends Controller
 
         $events = $query->paginate($request->input('per_page', 10));
 
-        $eventCompanies = Company::whereIn('internal_name', ['Parthenon', 'Fastbar'])->whereNull('deleted_at')->get(['id', 'internal_name']);
+        $eventCompanies = Company::where('internal_name', 'Fastbar')->whereNull('deleted_at')->get(['id', 'internal_name']);
 
         return response()->json([
             'data' => EventListResource::collection($events),
@@ -230,11 +230,7 @@ class EventController extends Controller
         $data['collaborator_id'] = auth()->user()->collaborator->id;
         $contractTemplate = null;
         if (!empty($companyIds)) {
-            $parthenon = Company::whereIn('id', $companyIds)
-                ->where('internal_name', 'Parthenon')
-                ->first();
-            $companyId = $parthenon?->id ?? $companyIds[0];
-            $contractTemplate = ContractTemplate::where('company_id', $companyId)->first();
+            $contractTemplate = ContractTemplate::where('company_id', $companyIds[0])->first();
         }
         $contractTemplate ??= ContractTemplate::first();
         $data['contract_body'] = $contractTemplate?->content ?? null;
@@ -688,7 +684,7 @@ class EventController extends Controller
         $parentEvents = [];
         $hasTasting = false;
 
-        $eventCompanies = Company::whereIn('internal_name', ['Parthenon', 'Fastbar'])->whereNull('deleted_at')->get(['id', 'internal_name']);
+        $eventCompanies = Company::where('internal_name', 'Fastbar')->whereNull('deleted_at')->get(['id', 'internal_name']);
 
         $companyIds = [];
         if ($event && $event->id) {

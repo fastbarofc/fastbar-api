@@ -107,7 +107,7 @@ class CollaboratorController extends Controller
 
         $collaborators = $query->paginate($perPage);
 
-        $collaboratorCompanies = Company::whereIn('internal_name', ['Parthenon', 'Fastbar'])->whereNull('deleted_at')->get(['id', 'internal_name']);
+        $collaboratorCompanies = Company::where('internal_name', 'Fastbar')->whereNull('deleted_at')->get(['id', 'internal_name']);
 
         return response()->json([
             'data' => CollaboratorResource::collection($collaborators),

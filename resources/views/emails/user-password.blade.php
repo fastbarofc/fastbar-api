@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bem-vindo à Parthenon</title>
+    <title>Bem-vindo à Fastbar</title>
     <style>
         * {
             margin: 0;
@@ -185,14 +185,14 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <div class="logo">PARTHENON</div>
+            <div class="logo">FASTBAR</div>
         </div>
         
         <div class="content">
             <h1 class="greeting">Olá, {{ $user->name }}!</h1>
             
             <p class="message">
-                É um prazer recebê-lo(a) na equipe Parthenon! Seu acesso ao sistema foi criado com sucesso e você já pode começar a utilizar todas as funcionalidades disponíveis.
+                É um prazer recebê-lo(a) na equipe Fastbar! Seu acesso ao sistema foi criado com sucesso e você já pode começar a utilizar todas as funcionalidades disponíveis.
             </p>
             
             <div class="credentials-box">
@@ -221,15 +221,15 @@
             
             <p class="message" style="margin-top: 30px; color: #888888; font-size: 14px;">
                 Atenciosamente,<br>
-                <strong style="color: #aa8534;">Equipe Parthenon</strong>
+                <strong style="color: #aa8534;">Equipe Fastbar</strong>
             </p>
         </div>
         
         <div class="footer">
-            <div class="footer-brand">PARTHENON</div>
+            <div class="footer-brand">FASTBAR</div>
             <p>Este é um e-mail automático, por favor não responda.</p>
             <p style="margin-top: 15px; font-size: 12px;">
-                © {{ date('Y') }} Parthenon. Todos os direitos reservados.
+                © {{ date('Y') }} Fastbar. Todos os direitos reservados.
             </p>
         </div>
     </div>
