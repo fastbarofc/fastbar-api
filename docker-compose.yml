@@ -5,7 +5,7 @@ services:
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        image: parthenon-system-api/app
+        image: fastbar-api/app
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
@@ -34,7 +34,11 @@ services:
             MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
             MYSQL_ROOT_HOST: '%'
             MYSQL_DATABASE: '${DB_DATABASE}'
-            MYSQL_USER: '${DB_USERNAME}'
+            # Usuario fixo 'sail' em vez de ${DB_USERNAME}: a app conecta como
+            # root (ja criado por MYSQL_ROOT_HOST) e recria-lo aborta a
+            # inicializacao do volume. O script de testing-database do Sail
+            # exige um MYSQL_USER valido para o GRANT.
+            MYSQL_USER: 'sail'
             MYSQL_PASSWORD: '${DB_PASSWORD}'
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
         volumes:
