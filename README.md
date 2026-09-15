@@ -1,18 +1,18 @@
 
 ## Descrição
 
-Projeto de gerenciamento de eventos do Parthenon.
+Projeto de gerenciamento de eventos da Fastbar.
 
 ## Instalação
 
 
 1. **Clone o repositório**
 ```
-git@github.com:gabicmontes/parthenon-api.git
+git@github.com:fastbarofc/fastbar-api.git
 ```
 2. **Acesse o diretório do projeto**
 ```
-cd parthenon-api
+cd fastbar-api
 ```
 3. **Copie o arquivo .env.example para .env**
 ```
