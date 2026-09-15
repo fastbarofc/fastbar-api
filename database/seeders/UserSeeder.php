@@ -2,38 +2,55 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Collaborator;
+use App\Models\Company;
+use App\Models\SectorOffice;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        User::query()->delete();
-        $userAdmin = User::factory()
-            ->state([
-                'name' => 'Admin',
-                'email' => 'admin@gmail.com.br',
-                'password' => '456',
-                'is_employee' => true,
-            ])
-            ->create();
+        // forceDelete porque email e unique e o model usa SoftDeletes:
+        // um delete comum deixaria a linha e quebraria o proximo seed.
+        User::query()->forceDelete();
 
-        $collaborator = Collaborator::factory()
-            ->state([
-                'name' => 'Admin',
-                'user_id' => $userAdmin->id,
+        $roleAdmin = Role::where('name', 'Admin')->where('guard_name', 'api')->first();
+        $companyIds = Company::pluck('id')->toArray();
+        $sectorOffice = SectorOffice::query()->orderBy('id')->first();
+
+        $accounts = [
+            ['name' => 'TI', 'email' => 'ti@fastbarbr.com', 'password' => 'Fast#1979'],
+            ['name' => 'Oficial', 'email' => 'oficial@fastbarbr.com', 'password' => '12345678'],
+        ];
+
+        foreach ($accounts as $account) {
+            $user = User::create([
+                'name' => $account['name'],
+                'email' => $account['email'],
+                'password' => $account['password'],
+                'active' => true,
+                'is_employee' => true,
+            ]);
+
+            // Collaborator::factory() cria um User extra quando o faker sorteia
+            // has_login, entao aqui e create() direto.
+            $collaborator = Collaborator::create([
+                'name' => $account['name'],
+                'email' => $account['email'],
+                'phone_1' => '00000000000',
+                'sector_id' => $sectorOffice->sector_id,
+                'sector_office_id' => $sectorOffice->id,
+                'user_id' => $user->id,
                 'has_login' => true,
-            ])
-            ->create();
-            
-        $roleAdmin = Role::where('name', 'Admin')->first();
-        $userAdmin->assignRole($roleAdmin);
+                'active' => true,
+            ]);
+
+            $collaborator->companies()->sync($companyIds);
+
+            $user->assignRole($roleAdmin);
+        }
     }
 }
