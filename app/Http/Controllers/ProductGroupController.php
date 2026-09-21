@@ -63,7 +63,7 @@ class ProductGroupController extends Controller
 
     public function store(StoreProductGroupRequest $request)
     {
-        $productGroup = ProductGroup::create($request->all());
+        $productGroup = ProductGroup::create($request->validated());
         return response()->json(new ProductGroupResource($productGroup->loadCount('subgroups')), 201);
     }
 
