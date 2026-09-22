@@ -1262,7 +1262,11 @@ class EventController extends Controller
 
     public function contractData(Event $event)
     {
-        return response()->json(['data' => EventContractService::printableDefaults($event)]);
+        return response()->json([
+            'data' => EventContractService::printableDefaults($event) + [
+                'drinks' => EventContractService::drinks($event),
+            ],
+        ]);
     }
 
     public function generateEventContract(GenerateEventContractRequest $request, Event $event)
@@ -1278,6 +1282,12 @@ class EventController extends Controller
         if (EventContractService::missingRepresentative($event->client)) {
             return response()->json([
                 'message' => 'O cliente é pessoa jurídica e não tem representante legal cadastrado. Preencha nome e CPF do representante no cadastro do cliente antes de gerar o contrato.',
+            ], 422);
+        }
+
+        if (!EventContractService::drinks($event)) {
+            return response()->json([
+                'message' => 'O evento não tem drinks cadastrados. Adicione os drinks no Menu de drinks do evento antes de gerar o contrato.',
             ], 422);
         }
 

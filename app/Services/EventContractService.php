@@ -5,15 +5,18 @@ namespace App\Services;
 use App\Models\Address;
 use App\Models\Client;
 use App\Models\Event;
+use App\Models\EventKit;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Monta o contrato de prestação de serviços de coquetelaria (Fast Bar).
  *
  * O texto fixo do contrato mora no blade; daqui saem apenas as partes que
- * mudam de evento para evento. Cardápio e pontos de bar não existem no
- * cadastro do evento: são digitados na hora de imprimir e ficam gravados em
- * `contract_print_data`, para voltarem preenchidos na próxima impressão.
+ * mudam de evento para evento. Os itens do cardápio são os drinks cadastrados
+ * no evento. Modalidade e pontos de bar não existem no cadastro: são digitados
+ * na hora de imprimir e ficam gravados em `contract_print_data`, para voltarem
+ * preenchidos na próxima impressão.
  */
 class EventContractService
 {
@@ -56,9 +59,30 @@ class EventContractService
 
         return [
             'menu_modality' => $saved['menu_modality'] ?? '',
-            'menu_items' => $saved['menu_items'] ?? [],
             'bar_points_text' => $saved['bar_points_text'] ?? self::DEFAULT_BAR_POINTS_TEXT,
         ];
+    }
+
+    /** Drinks de todas as pastas do evento, na ordem em que aparecem na árvore. */
+    public static function drinks(Event $event): array
+    {
+        return $event->eventKits()
+            ->whereNull('event_kit_id')
+            ->with(['products', 'eventKits'])
+            ->get()
+            ->sortBy('ordination')
+            ->flatMap(fn (EventKit $kit) => self::kitDrinks($kit))
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private static function kitDrinks(EventKit $kit): Collection
+    {
+        return $kit->products
+            ->sortBy('pivot.ordination')
+            ->pluck('name')
+            ->merge($kit->eventKits->sortBy('ordination')->flatMap(fn (EventKit $child) => self::kitDrinks($child)));
     }
 
     public static function isPrintable(Event $event): bool
@@ -101,7 +125,7 @@ class EventContractService
             'cups' => self::cups($event),
             'menu' => [
                 'modality' => $printable['menu_modality'] ?? '',
-                'items' => $printable['menu_items'] ?? [],
+                'items' => self::drinks($event),
             ],
             'bar_points_text' => $printable['bar_points_text'] ?? self::DEFAULT_BAR_POINTS_TEXT,
         ];
