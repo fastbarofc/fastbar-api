@@ -1146,6 +1146,14 @@ class EventController extends Controller
 
         $themedTables = $event->eventKits()->where('checklist', true)->where('themed_table', true)->get();
 
+        $checklistDrinks = $event->eventKits()
+            ->with(['products' => fn ($query) => $query->wherePivot('checklist', true)])
+            ->orderBy('ordination')
+            ->get()
+            ->flatMap(fn (EventKit $kit) => $kit->products->sortBy('pivot.ordination'))
+            ->unique('id')
+            ->values();
+
         $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
 
         foreach ($event->eventBatches as $eventbatch) {
@@ -1155,7 +1163,7 @@ class EventController extends Controller
         $eventResponsibleNames = implode(', ', $event->clients->pluck('name')->toArray());
 
         $fileName = 'checklist-evento-' . $event->id;
-        $viewContent = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames', 'themedTables']));
+        $viewContent = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames', 'themedTables', 'checklistDrinks']));
 
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);

@@ -217,6 +217,22 @@
         @endforeach
     </table>
 
+    <table style="page-break-inside: avoid;">
+        <tr>
+            <th colspan="2">DRINKS</th>
+        </tr>
+        <tr>
+            <td><span class="text-bold">DRINK</span></td>
+            <td><span class="text-bold">OBS</span></td>
+        </tr>
+        @foreach ($checklistDrinks as $drink)
+        <tr>
+            <td>{{ $drink->name }}</td>
+            <td>{{ $drink->pivot->observation }}</td>
+        </tr>
+        @endforeach
+    </table>
+
 </body>
 
 </html>
