@@ -8,6 +8,7 @@ use App\Http\Resources\KitResource;
 use App\Http\Resources\KitTreeResource;
 use App\Models\Kit;
 use App\Models\Product;
+use App\Services\DrinkTreeService;
 use Illuminate\Http\Request;
 
 class KitController extends Controller
@@ -339,6 +340,13 @@ class KitController extends Controller
             }
             $child->delete();
         }
+    }
+
+    public function fullTree()
+    {
+        return response()->json([
+            'data' => DrinkTreeService::build(Kit::with('products')->get(), 'kit_id'),
+        ]);
     }
 
     public function children(Kit $kit)

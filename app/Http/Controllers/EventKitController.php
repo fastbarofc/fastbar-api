@@ -10,6 +10,7 @@ use App\Http\Resources\ProductResource;
 use App\Models\EventKit;
 use App\Models\Kit;
 use App\Models\Product;
+use App\Services\DrinkTreeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -86,6 +87,13 @@ class EventKitController extends Controller
         ], 200);
     }
 
+    public function fullTree(Request $request)
+    {
+        $folders = EventKit::with('products')->where('event_id', $request->input('event_id'))->get();
+
+        return response()->json(['data' => DrinkTreeService::build($folders, 'event_kit_id')]);
+    }
+
     public function children(EventKit $kit)
     {
         $children = $kit->children;
@@ -134,7 +142,9 @@ class EventKitController extends Controller
             'observation' => $kitProduct ? ($kitProduct->pivot->observation ?? null) : null,
         ];
 
-        $product->eventKits()->attach($eventKitId, $pivotData);
+        if (!$product->eventKits()->where('event_kits.id', $eventKitId)->exists()) {
+            $product->eventKits()->attach($eventKitId, $pivotData);
+        }
         $eventKit = EventKit::find($eventKitId);
         while (!empty($eventKit->event_kit_id)) {
             $eventKit = EventKit::find($eventKit->event_kit_id);
@@ -210,6 +220,11 @@ class EventKitController extends Controller
             foreach ($children as $child) {
                 if ($child['data']['type'] == 'product') {
                     $product = Product::find($child['data']['id']);
+
+                    if ($eventKit->products()->where('products.id', $product->id)->exists()) {
+                        continue;
+                    }
+
                     $ordination = $this->getProductOrdination($eventKit->id);
 
                     $kitProduct = $kit->products()->where('product_id', $child['data']['id'])->first();
