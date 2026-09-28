@@ -27,16 +27,16 @@ class UpdateEventPlaceRequest extends FormRequest
                 Rule::unique('event_places', 'name')->ignore($eventPlaceId),
             ],
             'nullable|string|max:255|unique:event_places,name,' . $this->route('event_place')->id,
-            'responsible'       => 'nullable|string|max:255',
+            'responsible'       => 'sometimes|required|string|max:255',
             'description'       => 'nullable|string|max:255',
-            'phone_1'           => 'nullable|string|min:10|max:20',
-            'phone_2'           => 'nullable|string|min:10|max:20',
+            'phone_1'           => 'sometimes|nullable|required_without:phone_2|string|min:10|max:20',
+            'phone_2'           => 'sometimes|nullable|required_without:phone_1|string|min:10|max:20',
             'email'             => 'nullable|email',
             'belongs_parthenon' => 'boolean',
         ];
 
-        if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
-            $this->validateAddress($this->request->all()['address']);
+        if ($this->has('address')) {
+            $this->validateAddress($this->input('address') ?? []);
         }
 
         return $data;
@@ -48,10 +48,13 @@ class UpdateEventPlaceRequest extends FormRequest
             'name.string'             => 'O campo nome deve ser uma string.',
             'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.',
             'name.unique'             => 'O nome informado já está em uso.',
+            'responsible.required'    => 'O campo responsável é obrigatório.',
             'responsible.string'      => 'O campo nome do responsável deve ser uma string.',
             'responsible.max'         => 'O campo nome do responsável deve ter no máximo 255 caracteres.',
             'description.string'      => 'O campo descrição deve ser uma string.',
             'description.max'         => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'phone_1.required_without' => 'Informe o celular ou o telefone.',
+            'phone_2.required_without' => 'Informe o celular ou o telefone.',
             'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
             'phone_1.max'             => 'O campo telefone 1 deve ter no máximo 20 caracteres.',
             'phone_2.string'          => 'O campo telefone 2 deve ser uma string.',
@@ -66,22 +69,28 @@ class UpdateEventPlaceRequest extends FormRequest
 
     public function validateAddress(array $data) {
         $validator = Validator::make($data, [
-            'street'     => ['nullable', 'string'],
-            'district'   => ['nullable', 'string'],
+            'street'     => ['required', 'string'],
+            'district'   => ['required', 'string'],
             'complement' => ['nullable', 'string'],
-            'city_id'    => ['nullable', 'exists:cities,id'],
-            'state_id'   => ['nullable', 'exists:states,id'],
-            'number'     => ['nullable', 'string', 'max:50'],
-            'zip_code'   => ['nullable', 'formato_cep'],
+            'city_id'    => ['required', 'exists:cities,id'],
+            'state_id'   => ['required', 'exists:states,id'],
+            'number'     => ['required', 'string', 'max:50'],
+            'zip_code'   => ['required', 'formato_cep'],
             'reference'  => ['nullable', 'string'],
         ],[
+            'street.required'      => 'O campo rua é obrigatório.',
             'street.string'        => 'O campo rua deve ser uma string.',
+            'district.required'    => 'O campo bairro é obrigatório.',
             'district.string'      => 'O campo bairro deve ser uma string.',
             'complement.string'    => 'O campo complemento deve ser uma string.',
+            'city_id.required'     => 'O campo cidade é obrigatório.',
             'city_id.exists'       => 'O campo Cidade deve ser uma Cidade valida.',
+            'state_id.required'    => 'O campo estado é obrigatório.',
             'state_id.exists'      => 'O campo Estado deve ser um Estado valido.',
+            'number.required'      => 'O campo número é obrigatório.',
             'number.string'        => 'O campo número deve conter apenas letras e números',
             'number.max'           => 'O campo número não pode ter mais de 50 caracteres',
+            'zip_code.required'    => 'O campo CEP é obrigatório.',
             'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido.',
             'referencia.string'    => 'O campo referencia deve ser uma string.',
             

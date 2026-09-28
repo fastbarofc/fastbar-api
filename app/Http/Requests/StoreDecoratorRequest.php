@@ -17,7 +17,7 @@ class StoreDecoratorRequest extends FormRequest
     {
         return [
             'name'       => 'required|string|max:255',
-            'email'      => 'required|email',
+            'email'      => 'nullable|email',
             'responsible'=> 'nullable|string|max:255',
             'phone_2'    => 'nullable|string|min:10|max:20',
             'phone_1'    => 'required|string|min:10|max:20',
@@ -30,7 +30,6 @@ class StoreDecoratorRequest extends FormRequest
             'name.required'           => 'O campo nome é obrigatório.' ,
             'name.string'             => 'O campo nome deve ser um texto.' ,
             'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.' ,
-            'email.required'          => 'O campo email é obrigatório.' ,
             'email.email'             => 'O campo email deve ser um email real.' ,
             'responsible.string'      => 'O campo responsável deve ser um texto.' ,
             'responsible.max'         => 'O campo responsável deve ter no máximo 255 caracteres.' ,

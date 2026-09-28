@@ -24,6 +24,7 @@ use App\Http\Controllers\EventTypeController;
 use App\Http\Controllers\EventPlaceController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PartnerController;
+use App\Http\Controllers\PartnerDirectoryController;
 use App\Http\Controllers\CeremonialController;
 use App\Http\Controllers\EventGiftController;
 use App\Http\Controllers\MaterialController;
@@ -166,6 +167,7 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::resource('event-notes', EventNoteController::class);
 
+    Route::get('partner-directory', [PartnerDirectoryController::class, 'index'])->name('partner-directory.index');
     Route::resource('partners', PartnerController::class);
 
     Route::resource('ceremonials', CeremonialController::class);
