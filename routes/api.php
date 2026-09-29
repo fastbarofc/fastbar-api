@@ -247,7 +247,6 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('/events/generate-menu-with-observations/{event}', [EventController::class, 'generateMenuWithObservations']);
     Route::post('/events/generate-collaborators/{event}', [EventController::class, 'generateCollaborators']);
     Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
-    Route::post('/events/generate-event-items-checklist/{event}', [EventController::class, 'generateEventItemChecklist']);
     Route::get('/events/{event}/check-if-has-scheduled-events', [EventController::class, 'checkIfHasScheduledEvents']);
     Route::post('/reports/events/pdf', [ReportController::class, 'generatePdfReport']);
 

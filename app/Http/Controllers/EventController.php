@@ -1142,7 +1142,7 @@ class EventController extends Controller
         $themedTables = $event->eventKits()->where('checklist', true)->where('themed_table', true)->get();
 
         $checklistDrinks = $event->eventKits()
-            ->with(['products' => fn ($query) => $query->wherePivot('checklist', true)])
+            ->with(['products' => fn ($query) => $query->wherePivot('checklist', true)->with('components.unit')])
             ->orderBy('ordination')
             ->get()
             ->flatMap(fn (EventKit $kit) => $kit->products->sortBy('pivot.ordination'))
@@ -1157,8 +1157,10 @@ class EventController extends Controller
 
         $eventResponsibleNames = implode(', ', $event->clients->pluck('name')->toArray());
 
+        $logo = EventContractService::brandAssets()['logo'];
+
         $fileName = 'checklist-evento-' . $event->id;
-        $viewContent = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames', 'themedTables', 'checklistDrinks']));
+        $viewContent = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames', 'themedTables', 'checklistDrinks', 'logo']));
 
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
@@ -1236,25 +1238,6 @@ class EventController extends Controller
         $fileName = 'resumo-' . $event->id;
         $viewContent = view("/pdfs/summary-pdf", compact(['event', 'totalGuests', 'selectedMaterials', 'responsibles', 'kits']));
 
-        try {
-            $pdfUrl = FileService::generatePdf($viewContent, $fileName);
-            return response()->json(['pdf_url' => $pdfUrl]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
-        }
-    }
-
-    public function generateEventItemChecklist(Event $event)
-    {
-        $event->load([
-            'eventStatus'
-        ]);
-
-        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
-            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
-        }
-        $fileName = 'check-list-itens-evento-' . $event->id;
-        $viewContent = view("/pdfs/event-item-checklist-pdf");
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
             return response()->json(['pdf_url' => $pdfUrl]);
