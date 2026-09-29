@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Address;
 use App\Models\Client;
+use App\Models\ContractTemplate;
 use App\Models\Event;
 use App\Models\EventKit;
 use Carbon\Carbon;
@@ -13,15 +14,15 @@ use Illuminate\Support\Collection;
  * Monta o contrato de prestação de serviços de coquetelaria (Fast Bar).
  *
  * O texto fixo do contrato mora no blade; daqui saem apenas as partes que
- * mudam de evento para evento. Os itens do cardápio são os drinks cadastrados
- * no evento. Modalidade e pontos de bar não existem no cadastro: são digitados
- * na hora de imprimir e ficam gravados em `contract_print_data`, para voltarem
- * preenchidos na próxima impressão.
+ * mudam de evento para evento. As cláusulas vêm do modelo de contrato, com
+ * o que foi ajustado no próprio evento por cima, e os `{{campos}}` delas são
+ * trocados pelos dados do evento. Os itens do cardápio são os drinks
+ * cadastrados no evento. A modalidade não existe no cadastro: é digitada na
+ * hora de imprimir e fica gravada em `contract_print_data`, para voltar
+ * preenchida na próxima impressão.
  */
 class EventContractService
 {
-    public const DEFAULT_BAR_POINTS_TEXT = 'Balcões necessários para a montagem de 1 (um) ponto de bar do tipo "lateral".';
-
     public const DEFAULT_GLASS_CUP_HOURS = 4;
 
     /**
@@ -59,7 +60,6 @@ class EventContractService
 
         return [
             'menu_modality' => $saved['menu_modality'] ?? '',
-            'bar_points_text' => $saved['bar_points_text'] ?? self::DEFAULT_BAR_POINTS_TEXT,
         ];
     }
 
@@ -95,14 +95,63 @@ class EventContractService
         return $client?->type === Client::TYPE_LEGAL || !empty($client?->cnpj);
     }
 
-    /** Sem representante o preâmbulo de um contratante PJ fica sem quem assina. */
-    public static function missingRepresentative(?Client $client): bool
+    /**
+     * Rótulos do que falta no cadastro para o contrato sair completo: os dados
+     * do contratante do preâmbulo fixo e os campos que o texto das cláusulas
+     * deste evento usa. Campo removido do texto deixa de ser exigido.
+     */
+    public static function missingFields(Event $event): array
     {
-        return self::isCompany($client)
-            && (empty($client->representative_name) || empty($client->representative_cpf));
+        self::loadRelations($event);
+
+        $client = $event->client;
+        $isCompany = self::isCompany($client);
+
+        $contractant = array_keys(array_filter([
+            'Cliente' => !$client,
+            'Nome do cliente' => $client && !$client->name,
+            ($isCompany ? 'CNPJ do cliente' : 'CPF do cliente') => $client && !($isCompany ? $client->cnpj : $client->cpf),
+            'Endereço do cliente' => $client && !self::formatAddress($client->address),
+            'Nome do representante legal' => $isCompany && !$client->representative_name,
+            'CPF do representante legal' => $isCompany && !$client->representative_cpf,
+            'Endereço do representante legal' => $isCompany && !self::formatAddress($client->representativeAddress),
+        ]));
+
+        $text = implode(' ', ContractTemplate::current()->sectionsWith($event->contract_sections));
+        $values = self::variables($event);
+
+        $clauses = collect(ContractTemplate::VARIABLES)
+            ->filter(fn (string $label, string $key) => $values[$key] === null && str_contains($text, '{{' . $key . '}}'))
+            ->values()
+            ->all();
+
+        return array_merge($contractant, $clauses);
     }
 
     public static function build(Event $event, array $printable): array
+    {
+        self::loadRelations($event);
+
+        $replacements = collect(self::variables($event))
+            ->mapWithKeys(fn (?string $value, string $key) => ['{{' . $key . '}}' => str_replace("\n", '<br>', e($value ?? ''))])
+            ->all();
+
+        return [
+            'code' => $event->id,
+            'issued_at' => Carbon::now(),
+            'contractant' => self::contractant($event->client),
+            'menu' => [
+                'modality' => $printable['menu_modality'] ?? '',
+                'items' => self::drinks($event),
+            ],
+            'sections' => array_map(
+                fn (string $html) => strtr($html, $replacements),
+                ContractTemplate::current()->sectionsWith($event->contract_sections)
+            ),
+        ];
+    }
+
+    private static function loadRelations(Event $event): void
     {
         $event->loadMissing([
             'client.address.state',
@@ -114,21 +163,50 @@ class EventContractService
             'paymentPlan.paymentMethod',
             'paymentPlan.installments',
         ]);
+    }
+
+    /** Valor de cada campo das cláusulas; null é o que não está preenchido no cadastro. */
+    private static function variables(Event $event): array
+    {
+        $plan = $event->paymentPlan;
+        $duration = (int) $event->duration;
+        $guests = self::totalGuests($event);
+        $cups = self::cups($event);
 
         return [
-            'code' => $event->id,
-            'issued_at' => Carbon::now(),
-            'contractant' => self::contractant($event->client),
-            'event' => self::eventSummary($event),
-            'price' => self::price($event),
-            'payment' => self::payment($event),
-            'cups' => self::cups($event),
-            'menu' => [
-                'modality' => $printable['menu_modality'] ?? '',
-                'items' => self::drinks($event),
-            ],
-            'bar_points_text' => $printable['bar_points_text'] ?? self::DEFAULT_BAR_POINTS_TEXT,
+            'event_name' => $event->name ?: null,
+            'event_place' => self::place($event),
+            'event_date' => $event->date ? Carbon::parse($event->date)->format('d/m/Y') : null,
+            'event_time' => $event->time ? Carbon::parse($event->time)->format('H:i') . 'h' : null,
+            'event_duration' => $duration > 0 ? (string) $duration : null,
+            'event_guests' => $guests > 0 ? (string) $guests : null,
+            'unit_price' => self::money($event->guest_unit_value),
+            'total_price' => self::money($event->total_value),
+            'excess_unit_price' => self::money($event->excess_unit_value ?: $event->guest_unit_value),
+            'payment_method' => $plan?->paymentMethod?->name ?: null,
+            'installments' => $plan ? self::installmentsText(self::installments($event), (float) $event->total_value) : null,
+            'glass_cup_hours' => (string) $cups['glass_hours'],
+            'acrylic_cup_hours' => $duration > 0 ? (string) $cups['acrylic_hours'] : null,
         ];
+    }
+
+    private static function installmentsText(array $installments, float $total): ?string
+    {
+        if (!$installments) {
+            return $total > 0 ? 'Pagamento à vista no valor de R$ ' . self::money($total) . '.' : null;
+        }
+
+        return collect($installments)
+            ->map(fn (array $row) => $row['label']
+                . ($row['share'] ? ' – ' . $row['share'] : '')
+                . ($row['due_date'] ? ' até ' . $row['due_date'] : '')
+                . ' (R$ ' . self::money($row['amount']) . ')')
+            ->implode("\n");
+    }
+
+    private static function money($value): ?string
+    {
+        return (float) $value > 0 ? number_format((float) $value, 2, ',', '.') : null;
     }
 
     private static function contractant(?Client $client): array
@@ -144,40 +222,28 @@ class EventContractService
                 : (maskCpf($client?->cpf) ?: 'Não informado'),
             'rg' => $client?->rg ?: null,
             'email' => $client?->email ?: null,
-            'address' => self::formatAddress($client?->address),
+            'address' => self::formatAddress($client?->address) ?? 'Não informado',
             'representative' => $isCompany ? [
                 'name' => $client?->representative_name,
                 'cpf' => maskCpf($client?->representative_cpf),
-                'address' => self::formatAddress($client?->representativeAddress),
+                'address' => self::formatAddress($client?->representativeAddress) ?? 'Não informado',
             ] : null,
         ];
     }
 
-    private static function eventSummary(Event $event): array
-    {
-        return [
-            'name' => $event->name ?: 'Não informado',
-            'place' => self::place($event),
-            'date' => $event->date ? Carbon::parse($event->date)->format('d/m/Y') : 'Não informada',
-            'time' => $event->time ? Carbon::parse($event->time)->format('H:i') . 'h' : 'A definir',
-            'duration' => (int) $event->duration,
-            'guests' => self::totalGuests($event),
-        ];
-    }
-
-    private static function place(Event $event): string
+    private static function place(Event $event): ?string
     {
         $place = $event->eventPlace;
 
-        if (!$place) {
-            return 'Não informado';
+        if (!$place?->name) {
+            return null;
         }
 
         if ($place->description && $place->description !== $place->name) {
             return $place->name . ' (' . $place->description . ')';
         }
 
-        return $place->name ?: 'Não informado';
+        return $place->name;
     }
 
     private static function totalGuests(Event $event): int
@@ -191,25 +257,6 @@ class EventContractService
         }
 
         return $total;
-    }
-
-    private static function price(Event $event): array
-    {
-        return [
-            'unit' => (float) $event->guest_unit_value,
-            'total' => (float) $event->total_value,
-            'excess_unit' => (float) ($event->excess_unit_value ?: $event->guest_unit_value),
-        ];
-    }
-
-    private static function payment(Event $event): array
-    {
-        $plan = $event->paymentPlan;
-
-        return [
-            'method' => $plan?->paymentMethod?->name ?: 'transferência bancária',
-            'installments' => self::installments($event),
-        ];
     }
 
     /**
@@ -270,10 +317,10 @@ class EventContractService
         ];
     }
 
-    private static function formatAddress(?Address $address): string
+    private static function formatAddress(?Address $address): ?string
     {
         if (!$address) {
-            return 'Não informado';
+            return null;
         }
 
         $street = trim(($address->street ?? '') . ($address->number ? ', n° ' . $address->number : ''));
@@ -287,6 +334,6 @@ class EventContractService
             $address->zip_code ? 'CEP ' . $address->zip_code : null,
         ]);
 
-        return $parts ? implode(', ', $parts) : 'Não informado';
+        return $parts ? implode(', ', $parts) : null;
     }
 }

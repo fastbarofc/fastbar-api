@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\ContractTemplate;
 use App\Models\Material;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -27,6 +28,8 @@ class StoreEventRequest extends FormRequest
             'date'          => 'nullable|date|after:now',
             'time'          => 'nullable|date_format:H:i',
             'contract_body'      => 'nullable',
+            'contract_sections'  => 'nullable|array:' . implode(',', ContractTemplate::SECTIONS),
+            'contract_sections.*' => 'nullable|string',
             'glass_cup_hours'    => 'nullable|integer|min:0|max:24',
             'parthenon_courtesies' => 'nullable|numeric|min:0',
             'partner_courtesies'   => 'nullable|numeric|min:0',

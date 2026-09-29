@@ -228,12 +228,7 @@ class EventController extends Controller
         unset($data['company_ids']);
 
         $data['collaborator_id'] = auth()->user()->collaborator->id;
-        $contractTemplate = null;
-        if (!empty($companyIds)) {
-            $contractTemplate = ContractTemplate::where('company_id', $companyIds[0])->first();
-        }
-        $contractTemplate ??= ContractTemplate::first();
-        $data['contract_body'] = $contractTemplate?->content ?? null;
+        $data['contract_sections'] = ContractTemplate::current()->sectionsWith($data['contract_sections'] ?? []);
         $data['is_medicine'] = $data['is_medicine'] ?? false;
 
         $event = Event::create($data);
@@ -1273,6 +1268,7 @@ class EventController extends Controller
         return response()->json([
             'data' => EventContractService::printableDefaults($event) + [
                 'drinks' => EventContractService::drinks($event),
+                'missing_fields' => EventContractService::missingFields($event),
             ],
         ]);
     }
@@ -1287,9 +1283,12 @@ class EventController extends Controller
             ], 400);
         }
 
-        if (EventContractService::missingRepresentative($event->client)) {
+        $missing = EventContractService::missingFields($event);
+
+        if ($missing) {
             return response()->json([
-                'message' => 'O cliente é pessoa jurídica e não tem representante legal cadastrado. Preencha nome e CPF do representante no cadastro do cliente antes de gerar o contrato.',
+                'message' => 'Preencha e salve antes de gerar o contrato: ' . implode(', ', $missing) . '.',
+                'missing_fields' => $missing,
             ], 422);
         }
 

@@ -36,6 +36,7 @@ class EventResource extends JsonResource
             'duration_after'     => $this->duration_after,
             'glass_cup_hours'    => $this->glass_cup_hours,
             'contract_body'      => $this->contract_body,
+            'contract_sections'  => $this->contract_sections,
             'post_event_consumption_report_file_id' => $this->post_event_consumption_report_file_id,
             'post_event_consumption_report_file_name' => $this->postEventConsumptionReportFile?->name,
             'post_event_consumption_report_file_url' => $this->postEventConsumptionReportFile ? asset('storage/' . $this->postEventConsumptionReportFile->path) : null,

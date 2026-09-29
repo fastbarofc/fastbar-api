@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\EventHistory;
 use App\Models\Client;
 use App\Models\Collaborator;
+use App\Models\ContractTemplate;
 use App\Models\EventType;
 use App\Models\EventPlace;
 use App\Models\EventStatus;
@@ -76,6 +77,7 @@ class EventHistoryService
         'duration' => 'Duração (horas)',
         'duration_after' => 'Duração Após (minutos)',
         'contract_body' => 'Corpo do Contrato',
+        'contract_sections' => 'Cláusulas do Contrato',
         'parthenon_courtesies' => 'Cortesias Parthenon',
         'partner_courtesies' => 'Cortesias Parceiro',
         'unit_insurance' => 'Seguro Unitário',
@@ -395,12 +397,27 @@ class EventHistoryService
                 $data[$key] = $this->normalizeHtml($value);
             }
 
+            if ($key === 'contract_sections' && $value !== null) {
+                $data[$key] = $this->normalizeContractSections($value);
+                continue;
+            }
+
             if (is_string($value) && $value !== null && $key !== 'time') {
                 $data[$key] = trim($value);
             }
         }
 
         return $data;
+    }
+
+    /** Vem como JSON do banco e como array da requisição; compara só o texto, na ordem do contrato. */
+    private function normalizeContractSections(array|string $sections): string
+    {
+        $sections = is_string($sections) ? (json_decode($sections, true) ?? []) : $sections;
+
+        return collect(ContractTemplate::SECTIONS)
+            ->map(fn (string $key) => $this->normalizeHtml($sections[$key] ?? ''))
+            ->implode(' ');
     }
 
     private function normalizeHtml(?string $html): string

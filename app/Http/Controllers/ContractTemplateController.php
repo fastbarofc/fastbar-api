@@ -7,52 +7,32 @@ use Illuminate\Http\Request;
 
 class ContractTemplateController extends Controller
 {
-
-    public function show(Request $request)
+    public function show()
     {
-        $companyId = $request->query('company_id');
-
-        $query = ContractTemplate::query();
-
-        if ($companyId) {
-            $query->where('company_id', $companyId);
-        } else {
-            $query->whereNull('company_id');
-        }
-
-        $contractTemplate = $query->first();
+        $template = ContractTemplate::current();
 
         return response()->json([
-            'content' => $contractTemplate ? $contractTemplate->content : '',
+            'sections' => $template->sectionsWith(),
+            'variables' => ContractTemplate::VARIABLES,
         ]);
     }
 
     public function save(Request $request)
     {
         $validated = $request->validate([
-            'content' => 'nullable|string',
-            'company_id' => 'nullable|integer|exists:companies,id',
+            'sections' => 'required|array:' . implode(',', ContractTemplate::SECTIONS),
+            'sections.*' => 'nullable|string',
+        ], [
+            'sections.array' => 'O modelo de contrato recebeu um trecho desconhecido.',
         ]);
 
-        $data = [
-            'content' => $validated['content'] ?? '',
-            'company_id' => $validated['company_id'] ?? null,
-        ];
+        $template = ContractTemplate::current();
+        $template->fill($validated)->save();
 
-        $companyId = $data['company_id'];
-
-        if ($companyId !== null) {
-            $contractTemplate = ContractTemplate::where('company_id', $companyId)->first();
-        } else {
-            $contractTemplate = ContractTemplate::whereNull('company_id')->first();
-        }
-
-        if ($contractTemplate) {
-            $contractTemplate->update($data);
-            return response()->json(['message' => 'Modelo de contrato atualizado com sucesso!']);
-        } else {
-            ContractTemplate::create($data);
-            return response()->json(['message' => 'Modelo de contrato criado com sucesso!']);
-        }
+        return response()->json([
+            'message' => 'Modelo de contrato salvo com sucesso!',
+            'sections' => $template->sectionsWith(),
+            'variables' => ContractTemplate::VARIABLES,
+        ]);
     }
 }

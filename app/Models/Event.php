@@ -40,6 +40,7 @@ class Event extends Model implements AuditableInterface
         'glass_cup_hours',
         'contract_body',
         'contract_print_data',
+        'contract_sections',
         'post_event_consumption_report_file_id',
         'parthenon_courtesies',
         'partner_courtesies',
@@ -65,6 +66,7 @@ class Event extends Model implements AuditableInterface
         'date' => 'date:Y-m-d',
         'time' => 'string',
         'contract_print_data' => 'array',
+        'contract_sections' => 'array',
         'is_medicine' => 'boolean',
         'closed_at' => 'datetime',
     ];
@@ -265,11 +267,6 @@ class Event extends Model implements AuditableInterface
     public function parentEvents()
     {
         return $this->belongsToMany(Event::class, 'event_event_tasting', 'related_event_id', 'event_id');
-    }
-
-    public function contractTemplates()
-    {
-        return $this->hasMany(ContractTemplate::class);
     }
 
     public function postEventConsumptionReportFile()
