@@ -13,7 +13,7 @@ use OwenIt\Auditing\Auditable;
 
 class Product extends Model implements AuditableInterface
 {
-    use HasFactory, HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
+    use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
 
     protected $fillable = [
         'name',
@@ -61,6 +61,8 @@ class Product extends Model implements AuditableInterface
         'supplier',
         'unit_id',
         'composition_item',
+        'product_subgroup_id',
+        'own_production',
     ];
 
     protected static $searchableFields = [
