@@ -14,7 +14,7 @@ class ProductSubgroupController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = ProductSubgroup::query();
+        $query = ProductSubgroup::withCount('products');
 
         if ($request->filled('product_group_id')) {
             $query->where('product_group_id', $request->input('product_group_id'));
@@ -62,22 +62,28 @@ class ProductSubgroupController extends Controller
     public function store(StoreProductSubgroupRequest $request)
     {
         $subgroup = ProductSubgroup::create($request->validated());
-        return response()->json(new ProductSubgroupResource($subgroup), 201);
+        return response()->json(new ProductSubgroupResource($subgroup->loadCount('products')), 201);
     }
 
     public function show(ProductSubgroup $productSubgroup)
     {
-        return response()->json(new ProductSubgroupResource($productSubgroup), 200);
+        return response()->json(new ProductSubgroupResource($productSubgroup->loadCount('products')), 200);
     }
 
     public function update(UpdateProductSubgroupRequest $request, ProductSubgroup $productSubgroup)
     {
         $productSubgroup->update($request->validated());
-        return response()->json(new ProductSubgroupResource($productSubgroup), 200);
+        return response()->json(new ProductSubgroupResource($productSubgroup->loadCount('products')), 200);
     }
 
     public function destroy(ProductSubgroup $productSubgroup)
     {
+        if ($productSubgroup->products()->exists()) {
+            return response()->json([
+                'message' => 'Não é possível excluir o subgrupo, pois existem produtos vinculados a ele.',
+            ], 422);
+        }
+
         $productSubgroup->delete();
         return response()->json([], 204);
     }

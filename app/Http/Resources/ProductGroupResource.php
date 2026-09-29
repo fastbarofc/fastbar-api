@@ -19,6 +19,7 @@ class ProductGroupResource extends JsonResource
             'slug'           => $this->slug,
             'description'    => $this->description,
             'has_subgroups'  => $this->subgroups_count > 0,
+            'products_count' => $this->whenCounted('products'),
         ];
     }
 }

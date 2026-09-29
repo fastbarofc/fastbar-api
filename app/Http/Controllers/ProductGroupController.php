@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProductGroupRequest;
 use App\Http\Requests\UpdateProductGroupRequest;
 use App\Http\Resources\ProductGroupResource;
+use App\Models\Product;
 use App\Models\ProductGroup;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductGroupController extends Controller
 {
@@ -20,7 +22,7 @@ class ProductGroupController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = ProductGroup::withCount('subgroups');
+        $query = ProductGroup::withCount(['subgroups', 'products']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -64,23 +66,36 @@ class ProductGroupController extends Controller
     public function store(StoreProductGroupRequest $request)
     {
         $productGroup = ProductGroup::create($request->validated());
-        return response()->json(new ProductGroupResource($productGroup->loadCount('subgroups')), 201);
+        return response()->json(new ProductGroupResource($productGroup->loadCount(['subgroups', 'products'])), 201);
     }
 
     public function show(ProductGroup $productGroup)
     {
-        return response()->json(new ProductGroupResource($productGroup->loadCount('subgroups')), 200);
+        return response()->json(new ProductGroupResource($productGroup->loadCount(['subgroups', 'products'])), 200);
     }
 
     public function update(UpdateProductGroupRequest $request, ProductGroup $productGroup)
     {
         $productGroup->update($request->all());
-        return response()->json(new ProductGroupResource($productGroup->loadCount('subgroups')), 200);
+        return response()->json(new ProductGroupResource($productGroup->loadCount(['subgroups', 'products'])), 200);
     }
 
     public function destroy(ProductGroup $productGroup)
     {
-        $productGroup->delete();
+        $inUse = $productGroup->products()->exists()
+            || Product::whereIn('product_subgroup_id', $productGroup->subgroups()->select('id'))->exists();
+
+        if ($inUse) {
+            return response()->json([
+                'message' => 'Não é possível excluir o grupo, pois existem produtos vinculados a ele ou aos seus subgrupos.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($productGroup) {
+            $productGroup->subgroups->each->delete();
+            $productGroup->delete();
+        });
+
         return response()->json([], 204);
     }
 }
