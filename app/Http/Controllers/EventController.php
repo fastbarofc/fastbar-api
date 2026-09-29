@@ -368,7 +368,6 @@ class EventController extends Controller
             'event_notes' => $event->eventNotes->fresh()->toArray(),
             'payment_plan' => $event->paymentPlan ? $event->paymentPlan->fresh()->toArray() : null,
             'extra_sales' => $event->extraSales->fresh()->toArray(),
-            'event_kits' => $event->eventKits->fresh()->toArray(),
             'materials' => $event->materials()->withPivot(['quantity', 'selected'])->get()->map(function ($material) {
                 return [
                     'id' => $material->id,

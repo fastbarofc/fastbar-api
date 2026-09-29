@@ -11,12 +11,13 @@ use App\Models\Product;
 use App\Models\Kit;
 use Illuminate\Http\Request;
 use App\Services\FileService;
+use App\Services\EventDrinkMenuHistoryService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function __construct()
+    public function __construct(protected EventDrinkMenuHistoryService $drinkMenuHistory)
     {
         // TODO: TEMPORÁRIO: Policy desativada - descomente para reativar
         // $this->authorizeResource(ProductController::class, 'product');
@@ -197,11 +198,14 @@ class ProductController extends Controller
         $newEventKit = EventKit::find($request->new_event_kit['id']);
         $oldEventKit = EventKit::find($request->old_event_kit['id']);
         $product = Product::find($request->product['id']);
-        $ordination = $this->getProductOrdination($newEventKit);
-        $newEventKit->products()->attach($product->id, [
-            'ordination' => $ordination
-        ]);
-        $oldEventKit->products()->detach($product->id);
+
+        $this->drinkMenuHistory->record($oldEventKit->event_id, function () use ($newEventKit, $oldEventKit, $product) {
+            $ordination = $this->getProductOrdination($newEventKit);
+            $newEventKit->products()->attach($product->id, [
+                'ordination' => $ordination
+            ]);
+            $oldEventKit->products()->detach($product->id);
+        });
     }
 
     private function getProductOrdination(EventKit | Kit $kit)
@@ -220,10 +224,12 @@ class ProductController extends Controller
         if ($hasProduct) {
             return response()->json(['message' => 'Produto já adicionado ao kit'], 400);
         }
-        $ordination = $this->getProductOrdination($eventKit);
-        $eventKit->products()->attach($request->product_id, [
-            'ordination' => $ordination
-        ]);
+        $this->drinkMenuHistory->record($eventKit->event_id, function () use ($eventKit, $request) {
+            $ordination = $this->getProductOrdination($eventKit);
+            $eventKit->products()->attach($request->product_id, [
+                'ordination' => $ordination
+            ]);
+        });
     }
 
     public function attachToKit(Request $request)
@@ -252,7 +258,10 @@ class ProductController extends Controller
     public function detachFromEventKit(Request $request)
     {
         $eventKit = EventKit::find($request->event_kit_id);
-        $eventKit->products()->detach($request->product_id);
+        $this->drinkMenuHistory->record(
+            $eventKit->event_id,
+            fn () => $eventKit->products()->detach($request->product_id),
+        );
     }
 
     public function detachFromKit(Request $request)

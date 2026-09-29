@@ -11,12 +11,13 @@ use App\Models\EventKit;
 use App\Models\Kit;
 use App\Models\Product;
 use App\Services\DrinkTreeService;
+use App\Services\EventDrinkMenuHistoryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class EventKitController extends Controller
 {
-    public function __construct()
+    public function __construct(protected EventDrinkMenuHistoryService $drinkMenuHistory)
     {
         //$this->authorizeResource(EventKitController::class, 'event_kit'); TODO: Implementar
     }
@@ -101,6 +102,11 @@ class EventKitController extends Controller
     }
 
     public function store(StoreEventKitRequest $request)
+    {
+        return $this->drinkMenuHistory->record($request->input('event_id'), fn () => $this->addToMenu($request));
+    }
+
+    private function addToMenu(StoreEventKitRequest $request)
     {
         $kit = Kit::find($request->input('id'));
 
@@ -501,7 +507,10 @@ class EventKitController extends Controller
         $product = Product::find($data['id']);
         unset($data['id']);
         unset($data['themed_table']);
-        $product->eventKits()->updateExistingPivot($data['event_kit_id'], $data);
+        $this->drinkMenuHistory->record(
+            EventKit::find($data['event_kit_id'])?->event_id,
+            fn () => $product->eventKits()->updateExistingPivot($data['event_kit_id'], $data),
+        );
         return response()->json(['message' => 'Alterado com sucesso.'], 200);
     }
 
@@ -511,17 +520,19 @@ class EventKitController extends Controller
         if (!$eventKit) {
             return response()->json(['error' => 'Kit não encontrado'], 404);
         }
-        $eventKit->update($request->all());
+        $this->drinkMenuHistory->record($eventKit->event_id, fn () => $eventKit->update($request->all()));
         return response()->json(new EventKitTreeResource($eventKit), 200);
     }
 
     public function destroy(EventKit $eventKit)
     {
-        $children = EventKit::where('event_kit_id', $eventKit->id)->get();
-        if ($children->count() > 0) {
-            $this->destroyChildrenKit($eventKit);
-        }
-        $eventKit->delete();
+        $this->drinkMenuHistory->record($eventKit->event_id, function () use ($eventKit) {
+            $children = EventKit::where('event_kit_id', $eventKit->id)->get();
+            if ($children->count() > 0) {
+                $this->destroyChildrenKit($eventKit);
+            }
+            $eventKit->delete();
+        });
         return response()->json([], 204);
     }
 
