@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Kit;
 use Illuminate\Http\Request;
 use App\Services\FileService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -25,7 +26,7 @@ class ProductController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = Product::query();
+        $query = Product::withCount('components');
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -67,8 +68,12 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request)
     {
-        $productData = $request->all();
-        $product = Product::create($productData);
+        $product = DB::transaction(function () use ($request) {
+            $product = Product::create($request->all());
+            $this->syncComposition($product, $request);
+
+            return $product;
+        });
 
         if ($request->has('photo') && !empty($request->photo)) {
             try {
@@ -79,12 +84,12 @@ class ProductController extends Controller
             }
         }
 
-        return response()->json(new ProductResource($product), 201);
+        return response()->json(new ProductResource($this->loadDetails($product)), 201);
     }
 
     public function show(Product $product)
     {
-        return response()->json(new ProductResource($product), 200);
+        return response()->json(new ProductResource($this->loadDetails($product)), 200);
     }
 
     public function update(UpdateProductRequest $request, Product $product)
@@ -118,15 +123,49 @@ class ProductController extends Controller
             }
         }
 
-        $product->update($productData);
+        DB::transaction(function () use ($product, $productData, $request) {
+            $product->update($productData);
+            $this->syncComposition($product, $request);
+        });
 
-        return response()->json(new ProductResource($product), 200);
+        return response()->json(new ProductResource($this->loadDetails($product)), 200);
     }
 
     public function destroy(Product $product)
     {
+        $composedProducts = $product->composedProducts()->pluck('name');
+
+        if ($composedProducts->isNotEmpty()) {
+            return response()->json([
+                'message' => 'Não é possível excluir o produto, pois ele faz parte da composição de: ' . $composedProducts->join(', ') . '.',
+            ], 422);
+        }
+
         $product->delete();
         return response()->json([], 204);
+    }
+
+    private function syncComposition(Product $product, Request $request): void
+    {
+        if ($product->composition_item) {
+            $product->components()->sync([]);
+            return;
+        }
+
+        if (!$request->has('composition')) {
+            return;
+        }
+
+        $product->components()->sync(
+            collect($request->input('composition', []))
+                ->mapWithKeys(fn ($item) => [$item['product_id'] => ['quantity' => $item['quantity']]])
+                ->all()
+        );
+    }
+
+    private function loadDetails(Product $product): Product
+    {
+        return $product->load(['components.unit', 'composedProducts'])->loadCount('components');
     }
 
     private function fixProductEmptyOrdination(EventKit | Kit $kit)

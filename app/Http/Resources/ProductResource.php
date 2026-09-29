@@ -31,7 +31,19 @@ class ProductResource extends JsonResource
             'average_consumption'=> $this->average_consumption,
             'display_checklist'=> $this->display_checklist,
             'own_production'=> $this->own_production,
+            'composition_item'=> $this->composition_item,
             'recipe_yield'=> $this->recipe_yield,
+            'composition_count' => $this->whenCounted('components'),
+            'composition' => $this->whenLoaded('components', fn () => $this->components->map(fn ($component) => [
+                'product_id' => $component->id,
+                'name' => $component->name,
+                'unit' => $component->unit?->description,
+                'quantity' => (float) $component->pivot->quantity,
+            ])),
+            'used_in' => $this->whenLoaded('composedProducts', fn () => $this->composedProducts->map(fn ($product) => [
+                'id' => $product->id,
+                'name' => $product->name,
+            ])),
         ];
     }
 }

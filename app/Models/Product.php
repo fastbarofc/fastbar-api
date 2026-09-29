@@ -27,6 +27,7 @@ class Product extends Model implements AuditableInterface
         'average_consumption',
         'display_checklist',
         'own_production',
+        'composition_item',
         'recipe_yield',
         'product_group_id',
         'product_subgroup_id',
@@ -37,6 +38,7 @@ class Product extends Model implements AuditableInterface
         'marketable' => 'boolean',
         'display_checklist' => 'boolean',
         'own_production' => 'boolean',
+        'composition_item' => 'boolean',
     ];
 
     protected static $sortableFields = [
@@ -57,7 +59,8 @@ class Product extends Model implements AuditableInterface
         'manufacturer',
         'value',
         'supplier',
-        'unit_id'
+        'unit_id',
+        'composition_item',
     ];
 
     protected static $searchableFields = [
@@ -106,6 +109,18 @@ class Product extends Model implements AuditableInterface
     public function stockLevels()
     {
         return $this->hasMany(StockLevel::class);
+    }
+
+    public function components()
+    {
+        return $this->belongsToMany(Product::class, 'product_compositions', 'product_id', 'component_id')
+            ->withPivot('quantity')
+            ->withTimestamps();
+    }
+
+    public function composedProducts()
+    {
+        return $this->belongsToMany(Product::class, 'product_compositions', 'component_id', 'product_id');
     }
 
     public function getPhotoAttribute()

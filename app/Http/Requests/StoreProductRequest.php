@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\ProductGroup;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreProductRequest extends FormRequest
 {
@@ -41,6 +42,15 @@ class StoreProductRequest extends FormRequest
             'display_checklist'   => 'nullable|boolean',
             'own_production'      => 'nullable|boolean',
             'recipe_yield'        => 'nullable|numeric|max:999999',
+            'composition_item'    => 'nullable|boolean',
+            'composition'              => 'nullable|array',
+            'composition.*.product_id' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('products', 'id')->where('composition_item', true)->whereNull('deleted_at'),
+            ],
+            'composition.*.quantity'   => 'required|numeric|gt:0|max:999999',
         ];
     }
 
@@ -76,6 +86,25 @@ class StoreProductRequest extends FormRequest
             'own_production.boolean'      => 'O campo produção própria estar em formato válido.',
             'recipe_yield.numeric'        => 'O campo rendimento deve conter apenas números.',
             'recipe_yield.max'            => 'O campo rendimento não pode ser superior a 999.999.',
+            'composition_item.boolean'    => 'O campo item de composição deve estar em formato válido.',
+            'composition.array'                   => 'A composição deve ser uma lista de itens.',
+            'composition.*.product_id.required'   => 'Informe o item da composição.',
+            'composition.*.product_id.integer'    => 'O item da composição é inválido.',
+            'composition.*.product_id.distinct'   => 'Um item não pode aparecer duas vezes na composição.',
+            'composition.*.product_id.exists'     => 'Só produtos marcados como item de composição podem compor outro produto.',
+            'composition.*.quantity.required'     => 'Informe a quantidade de cada item da composição.',
+            'composition.*.quantity.numeric'      => 'A quantidade do item da composição deve ser numérica.',
+            'composition.*.quantity.gt'           => 'A quantidade do item da composição deve ser maior que zero.',
+            'composition.*.quantity.max'          => 'A quantidade do item da composição não pode ser superior a 999.999.',
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if ($this->boolean('composition_item') && !empty($this->input('composition'))) {
+                $validator->errors()->add('composition', 'Item de composição não pode ter outros produtos na sua composição.');
+            }
+        });
     }
 }
