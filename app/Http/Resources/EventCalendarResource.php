@@ -44,6 +44,7 @@ class EventCalendarResource extends JsonResource
             'collaborator'       => $this->collaborator?->name,
             'ceremonial'         => $this->ceremonial?->name,
             'duration'           => $this->duration,
+            'duration_after'     => $this->duration_after,
             'min_guests'         => $this->min_guests,
             'present_guests'     => $this->present_guests,
             'total_value'        => $this->total_value,
