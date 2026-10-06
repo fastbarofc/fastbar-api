@@ -94,7 +94,7 @@ class Kit extends Model implements AuditableInterface
         }
 
         if ($products->first()) {
-            $children = $products->merge($kits);
+            $children = $products->concat($kits);
         } else {
             $children = $kits;
         }

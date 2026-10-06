@@ -227,7 +227,8 @@ class ProductController extends Controller
         $this->drinkMenuHistory->record($eventKit->event_id, function () use ($eventKit, $request) {
             $ordination = $this->getProductOrdination($eventKit);
             $eventKit->products()->attach($request->product_id, [
-                'ordination' => $ordination
+                'ordination' => $ordination,
+                'checklist' => true,
             ]);
         });
     }

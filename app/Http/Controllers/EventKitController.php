@@ -144,7 +144,7 @@ class EventKitController extends Controller
         $pivotData = [
             'ordination' => $ordination,
             'optional' => $kitProduct ? ($kitProduct->pivot->optional ?? false) : false,
-            'checklist' => $kitProduct ? ($kitProduct->pivot->checklist ?? false) : false,
+            'checklist' => true,
             'observation' => $kitProduct ? ($kitProduct->pivot->observation ?? null) : null,
         ];
 
@@ -238,7 +238,7 @@ class EventKitController extends Controller
                     $pivotData = [
                         'ordination' => $ordination,
                         'optional' => $kitProduct ? ($kitProduct->pivot->optional ?? false) : ($child['data']['optional'] ?? false),
-                        'checklist' => $kitProduct ? ($kitProduct->pivot->checklist ?? false) : ($child['data']['checklist'] ?? false),
+                        'checklist' => true,
                         'observation' => $kitProduct ? ($kitProduct->pivot->observation ?? null) : ($child['data']['observation'] ?? null),
                     ];
 
