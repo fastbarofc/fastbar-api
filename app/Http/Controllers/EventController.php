@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GenerateEventContractRequest;
+use App\Http\Requests\IndexCalendarEventRequest;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use App\Http\Resources\ContractResource;
@@ -154,7 +155,7 @@ class EventController extends Controller
         return response()->json($event->legal_representatives, 200);
     }
 
-    public function indexCalendar(Request $request)
+    public function indexCalendar(IndexCalendarEventRequest $request)
     {
         $disconsideredStatusId = EventStatus::whereIn('slug', ['aberto', 'descartado', 'cancelado'])->get()->pluck('id');
 

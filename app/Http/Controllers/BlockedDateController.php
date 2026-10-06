@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IndexBlockedDateRequest;
 use App\Http\Requests\StoreBlockedDateRequest;
 use App\Http\Requests\UpdateBlockedDateRequest;
 use App\Models\BlockedDate;
 use App\Http\Resources\BlockedDateResource;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class BlockedDateController extends Controller
 {
 
-    public function index(Request $request)
+    public function index(IndexBlockedDateRequest $request)
     {
         $perPage = $request->input('per_page', 10);
 
