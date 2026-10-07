@@ -1149,6 +1149,8 @@ class EventController extends Controller
             ->unique('id')
             ->values();
 
+        $checklistNotes = $event->eventNotes()->where('checklist', true)->orderBy('created_at')->get();
+
         $totalGuests = $event->event_guests + $event->parthenon_courtesies + $event->partner_courtesies;
 
         foreach ($event->eventBatches as $eventbatch) {
@@ -1160,7 +1162,7 @@ class EventController extends Controller
         $logo = EventContractService::brandAssets()['logo'];
 
         $fileName = 'checklist-evento-' . $event->id;
-        $viewContent = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames', 'themedTables', 'checklistDrinks', 'logo']));
+        $viewContent = view("/pdfs/event-checklist-pdf", compact(['event', 'client', 'place', 'totalGuests', 'eventResponsibleNames', 'themedTables', 'checklistDrinks', 'checklistNotes', 'logo']));
 
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);

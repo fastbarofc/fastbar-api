@@ -227,8 +227,7 @@ class ProductController extends Controller
         $this->drinkMenuHistory->record($eventKit->event_id, function () use ($eventKit, $request) {
             $ordination = $this->getProductOrdination($eventKit);
             $eventKit->products()->attach($request->product_id, [
-                'ordination' => $ordination,
-                'checklist' => true,
+                'ordination' => $ordination
             ]);
         });
     }
@@ -247,7 +246,7 @@ class ProductController extends Controller
         $pivotData = [
             'ordination' => $ordination,
             'optional' => $request->input('optional', false),
-            'checklist' => $request->input('checklist', false),
+            'checklist' => $request->input('checklist', (bool) Product::find($request->product_id)?->display_checklist),
             'observation' => $request->input('observation'),
         ];
 

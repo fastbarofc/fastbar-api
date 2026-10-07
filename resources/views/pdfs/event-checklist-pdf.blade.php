@@ -246,6 +246,19 @@
         @endforeach
     </table>
 
+    @if ($checklistNotes->isNotEmpty())
+    <table>
+        <tr>
+            <th>OBSERVAÇÕES</th>
+        </tr>
+        @foreach ($checklistNotes as $note)
+        <tr>
+            <td style="page-break-inside: avoid;">{!! nl2br(e($note->text)) !!}</td>
+        </tr>
+        @endforeach
+    </table>
+    @endif
+
 </body>
 
 </html>

@@ -32,6 +32,10 @@ class EventNote extends Model implements AuditableInterface
         'user_id'
     ];
 
+    protected $attributes = [
+        'checklist' => true,
+    ];
+
     protected $casts = [
         'checklist' => 'boolean'
     ];
