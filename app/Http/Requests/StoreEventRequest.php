@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\ContractTemplate;
+use App\Models\Event;
 use App\Models\Material;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,9 @@ class StoreEventRequest extends FormRequest
             'contract_sections'  => 'nullable|array:' . implode(',', ContractTemplate::SECTIONS),
             'contract_sections.*' => 'nullable|string',
             'glass_cup_hours'    => 'nullable|integer|min:0|max:24',
+            'guests_per_bartender' => 'nullable|integer|min:1',
+            'bar_counter_type'   => 'nullable|in:' . implode(',', array_keys(Event::BAR_COUNTER_TYPES)),
+            'cup_type'           => 'nullable|in:' . implode(',', array_keys(Event::CUP_TYPES)),
             'parthenon_courtesies' => 'nullable|numeric|min:0',
             'partner_courtesies'   => 'nullable|numeric|min:0',
             'total_value'   => 'nullable|numeric|min:0',
@@ -105,6 +109,10 @@ class StoreEventRequest extends FormRequest
             'min_guests.min' => 'O campo convidados mínimos deve conter pelo menos 1 convidado',
             'glass_cup_hours.integer' => 'As horas com copo de vidro devem ser um número inteiro',
             'glass_cup_hours.max' => 'As horas com copo de vidro não podem passar de 24',
+            'guests_per_bartender.integer' => 'O número de convidados por barman deve ser um número inteiro',
+            'guests_per_bartender.min' => 'O número de convidados por barman deve ser maior que zero',
+            'bar_counter_type.in' => 'O tipo do balcão deve ser lateral ou 360º',
+            'cup_type.in' => 'O tipo de copo selecionado é inválido',
             'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
         ];
     }

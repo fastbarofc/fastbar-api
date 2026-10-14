@@ -18,6 +18,19 @@ class Event extends Model implements AuditableInterface
 {
     use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
 
+    /** Chave gravada no evento => como o contrato escreve. */
+    public const BAR_COUNTER_TYPES = [
+        'lateral' => 'lateral',
+        '360' => '360º',
+    ];
+
+    /** Chave gravada no evento => como o contrato escreve, depois de "Copos de". */
+    public const CUP_TYPES = [
+        'acrylic' => 'acrílico',
+        'basic_glass' => 'vidro linha básica',
+        'premium_glass' => 'vidro linha premium',
+    ];
+
     protected $fillable = [
         'name',
         'old_system_id',
@@ -38,6 +51,9 @@ class Event extends Model implements AuditableInterface
         'duration',
         'duration_after',
         'glass_cup_hours',
+        'guests_per_bartender',
+        'bar_counter_type',
+        'cup_type',
         'contract_body',
         'contract_print_data',
         'contract_sections',
