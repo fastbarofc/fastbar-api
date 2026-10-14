@@ -44,6 +44,18 @@ class EventContractBarServiceTest extends TestCase
         $this->assertStringContainsString('<p>22.3 – Balcões necessários para a montagem de 1 (um) ponto de bar do tipo "360º".</p>', $after);
     }
 
+    public function test_contract_file_name_has_event_id_client_name_and_brand_without_spaces_or_accents(): void
+    {
+        $event = $this->createEvent([
+            'client_id' => Client::factory()->create(['name' => '  João  da Silva-Ávila & Cia. Ltda '])->id,
+        ]);
+
+        $this->assertSame(
+            "{$event->id}-contrato-joao-da-silva-avila-cia-ltda-fastbar",
+            EventContractService::fileName($event)
+        );
+    }
+
     public function test_contract_generation_asks_for_the_fields_the_event_left_empty(): void
     {
         $this->withoutMiddleware(Admin::class);

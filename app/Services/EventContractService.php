@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\Models\EventKit;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Monta o contrato de prestação de serviços de coquetelaria (Fast Bar).
@@ -51,6 +52,11 @@ class EventContractService
     private static function brandAsset(string $file): string
     {
         return 'data:image/png;base64,' . base64_encode(file_get_contents(public_path("img/logos/fastbar/{$file}")));
+    }
+
+    public static function fileName(Event $event): string
+    {
+        return Str::slug("{$event->id} contrato {$event->client?->name} fastbar");
     }
 
     /** Campos que o usuário preenche na impressão, já com o que foi salvo antes. */

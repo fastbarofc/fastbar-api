@@ -1289,7 +1289,7 @@ class EventController extends Controller
         $contract = EventContractService::build($event, $printable);
         $brand = EventContractService::brandAssets();
 
-        $fileName = 'contrato-' . $event->id;
+        $fileName = EventContractService::fileName($event);
         $viewContent = view("/pdfs/event-contract-pdf", compact('contract', 'brand'));
         $header = view("/pdfs/partials/fastbar-header", compact('brand'))->render();
         $footer = view("/pdfs/partials/fastbar-footer", compact('brand'))->render();
