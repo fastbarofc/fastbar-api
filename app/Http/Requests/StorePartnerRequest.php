@@ -15,13 +15,20 @@ class StorePartnerRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'name'        => 'required|string|max:255|unique:partners',
             'responsible' => 'nullable|string|max:255',
             'email'       => 'nullable|email|unique:partners',
             'phone_1'     => 'required|string|max:20',
             'phone_2'     => 'nullable|string|max:20',
+            'quick_registration' => 'nullable|boolean',
         ];
+
+        if ($this->boolean('quick_registration')) {
+            $rules['phone_1'] = 'nullable|string|max:20';
+        }
+
+        return $rules;
     }
 
     public function messages(): array 

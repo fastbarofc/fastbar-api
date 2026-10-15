@@ -15,6 +15,9 @@ class EventStatus extends Model implements AuditableInterface
 {
     use HasFactory, SoftDeletes, Sluggable, Auditable, Sortable, Filterable;
 
+    // Até a Pré-Reserva, cliente, parceiro e local podem ter só o nome; daqui em diante o cadastro precisa estar completo.
+    public const REQUIRES_COMPLETE_REGISTRATIONS = ['Contrato', 'Fechado', 'Planejamento', 'Concluído'];
+
     protected $fillable = [
         'name',
         'slug'

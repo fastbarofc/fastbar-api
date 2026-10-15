@@ -25,9 +25,18 @@ class StoreEventPlaceRequest extends FormRequest
             'phone_2'           => 'nullable|required_without:phone_1|string|min:10|max:20',
             'email'             => 'nullable|email',
             'belongs_parthenon' => 'nullable|boolean',
+            'quick_registration' => 'nullable|boolean',
         ];
 
-        $this->validateAddress($this->input('address') ?? []);
+        $quickRegistration = $this->boolean('quick_registration');
+
+        if ($quickRegistration) {
+            $data['responsible'] = 'nullable|string|max:255';
+            $data['phone_1'] = 'nullable|string|min:10|max:20';
+            $data['phone_2'] = 'nullable|string|min:10|max:20';
+        }
+
+        $this->validateAddress($this->input('address') ?? [], !$quickRegistration);
 
         return $data;
     }
@@ -58,15 +67,17 @@ class StoreEventPlaceRequest extends FormRequest
     
     }
 
-    public function validateAddress(array $data) {
+    public function validateAddress(array $data, bool $required = true) {
+        $presence = $required ? 'required' : 'nullable';
+
         $validator = Validator::make($data, [
-            'street'     => ['required', 'string'],
-            'district'   => ['required', 'string'],
+            'street'     => [$presence, 'string'],
+            'district'   => [$presence, 'string'],
             'complement' => ['nullable', 'string'],
-            'city_id'    => ['required', 'exists:cities,id'],
-            'state_id'   => ['required', 'exists:states,id'],
-            'number'     => ['required', 'string'],
-            'zip_code'   => ['required', 'regex:/^\d{5}-?\d{3}$/'],
+            'city_id'    => [$presence, 'exists:cities,id'],
+            'state_id'   => [$presence, 'exists:states,id'],
+            'number'     => [$presence, 'string'],
+            'zip_code'   => [$presence, 'regex:/^\d{5}-?\d{3}$/'],
             'reference'  => ['nullable', 'string'],
         ],[
             'street.required'      => 'O campo rua é obrigatório',

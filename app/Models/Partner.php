@@ -68,6 +68,21 @@ class Partner extends Model implements AuditableInterface
         ];
     }
 
+    public function missingRequiredFields(): array
+    {
+        $missing = [];
+
+        if (blank($this->name)) {
+            $missing[] = 'nome';
+        }
+
+        if (blank($this->phone_1)) {
+            $missing[] = 'telefone';
+        }
+
+        return $missing;
+    }
+
 
 
 

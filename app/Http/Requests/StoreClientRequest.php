@@ -63,7 +63,7 @@ class StoreClientRequest extends FormRequest
             ],
             'phone_1'      => 'required|string|max:20',
             'phone_2'      => 'nullable|string|max:20',
-            'name'         => 'nullable|string|max:255',
+            'name'         => 'required|string|max:255',
             'nickname'     => 'nullable|string|max:255',
             'birth_date'   => 'nullable|date',
             'cpf'          => ['nullable', 'string', new Cpf],
@@ -74,7 +74,14 @@ class StoreClientRequest extends FormRequest
             'has_login'    => 'nullable|boolean',
             'representative_name' => 'required_if:type,pj|nullable|string|max:255',
             'representative_cpf'  => ['required_if:type,pj', 'nullable', 'string', new Cpf],
+            'quick_registration'  => 'nullable|boolean',
         ];
+
+        if ($this->boolean('quick_registration')) {
+            $data['phone_1'] = 'nullable|string|max:20';
+            $data['representative_name'] = 'nullable|string|max:255';
+            $data['representative_cpf'] = ['nullable', 'string', new Cpf];
+        }
 
         if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
             $this->validateAddress($this->request->all()['address']);
@@ -86,7 +93,7 @@ class StoreClientRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
-            if ($this->input('type') !== 'pj' || $validator->errors()->isNotEmpty()) {
+            if ($this->input('type') !== 'pj' || $this->boolean('quick_registration') || $validator->errors()->isNotEmpty()) {
                 return;
             }
 

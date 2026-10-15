@@ -17,8 +17,10 @@ class EventCalendarResource extends JsonResource
         if (!empty($this->eventPlace)) {
             $place = $this->eventPlace->name;
 
-            if (!empty($this->eventPlace->address)) {
-                $place .= ' (' . $this->eventPlace->address->city->name . ' - ' . $this->eventPlace->address->city->state->letter . ')';
+            $city = $this->eventPlace->address?->city;
+
+            if (!empty($city)) {
+                $place .= ' (' . $city->name . ' - ' . $city->state->letter . ')';
             }
         }
 

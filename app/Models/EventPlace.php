@@ -80,4 +80,27 @@ class EventPlace extends Model implements AuditableInterface
     {
         return $this->morphOne(Address::class, 'addressable');
     }
+
+    public function missingRequiredFields(): array
+    {
+        $missing = [];
+
+        if (blank($this->name)) {
+            $missing[] = 'nome';
+        }
+
+        if (blank($this->responsible)) {
+            $missing[] = 'responsável';
+        }
+
+        if (blank($this->phone_1) && blank($this->phone_2)) {
+            $missing[] = 'telefone';
+        }
+
+        if (!$this->address?->isComplete()) {
+            $missing[] = 'endereço';
+        }
+
+        return $missing;
+    }
 }

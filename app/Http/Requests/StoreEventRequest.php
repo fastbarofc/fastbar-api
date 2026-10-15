@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\ContractTemplate;
 use App\Models\Event;
 use App\Models\Material;
+use App\Traits\ValidatesEventRegistrations;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -12,6 +13,8 @@ use Illuminate\Validation\Validator as ValidationValidator;
 
 class StoreEventRequest extends FormRequest
 {
+    use ValidatesEventRegistrations;
+
     protected $stopOnFirstFailure = true;
 
     public function authorize(): bool
@@ -121,6 +124,7 @@ class StoreEventRequest extends FormRequest
     {
         $validator->after(function (ValidationValidator $validator) {
             $this->validateMaterials($validator);
+            $this->validateRegistrationsForStatus($validator);
         });
     }
 

@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\EventStatus;
 use App\Models\EventType;
 use App\Models\Material;
+use App\Traits\ValidatesEventRegistrations;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,7 @@ use Illuminate\Validation\Validator;
 
 class UpdateEventRequest extends FormRequest
 {
+    use ValidatesEventRegistrations;
 
     protected $stopOnFirstFailure = true;
 
@@ -115,6 +117,7 @@ class UpdateEventRequest extends FormRequest
             }
 
             $this->validateMaterials($validator);
+            $this->validateRegistrationsForStatus($validator, $this->route('event'));
         });
     }
 

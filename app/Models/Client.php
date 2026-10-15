@@ -108,4 +108,31 @@ class Client extends Model implements AuditableInterface
     {
         return $this->belongsTo(HowDidYouHear::class);
     }
+
+    public function missingRequiredFields(): array
+    {
+        $missing = [];
+
+        if (blank($this->name)) {
+            $missing[] = 'nome';
+        }
+
+        if (blank($this->phone_1)) {
+            $missing[] = 'telefone';
+        }
+
+        if (!$this->address?->isComplete()) {
+            $missing[] = 'endereço';
+        }
+
+        if ($this->type === self::TYPE_LEGAL && (
+            blank($this->representative_name)
+            || blank($this->representative_cpf)
+            || !$this->representativeAddress?->isComplete()
+        )) {
+            $missing[] = 'dados do representante legal';
+        }
+
+        return $missing;
+    }
 }

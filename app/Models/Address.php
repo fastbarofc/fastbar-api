@@ -43,4 +43,10 @@ class Address extends Model implements AuditableInterface
     public function state() {
         return $this->belongsTo(State::class);
     }
+
+    public function isComplete(): bool
+    {
+        return collect(['street', 'number', 'district', 'zip_code', 'city_id', 'state_id'])
+            ->every(fn (string $field) => filled($this->{$field}));
+    }
 }
