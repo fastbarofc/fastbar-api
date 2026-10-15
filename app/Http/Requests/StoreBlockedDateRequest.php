@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DateWithoutEvents;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBlockedDateRequest extends FormRequest
@@ -16,7 +17,7 @@ class StoreBlockedDateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => 'required|date|unique:blocked_dates,date',
+            'date' => ['bail', 'required', 'date', 'unique:blocked_dates,date', new DateWithoutEvents],
             'description' => 'required|string|max:255'
         ];
     }

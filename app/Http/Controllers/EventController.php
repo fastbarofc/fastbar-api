@@ -43,6 +43,7 @@ use App\Models\OfficeEvent;
 use App\Models\Partner;
 use App\Models\PaymentPlan;
 use App\Models\Company;
+use App\Rules\DateNotBlocked;
 
 use App\Http\Requests\GenerateEventProposalRequest;
 use App\Services\FileService;
@@ -1520,6 +1521,8 @@ class EventController extends Controller
 
     public function duplicate(Event $event)
     {
+        Validator::make(['date' => $event->date?->toDateString()], ['date' => ['nullable', new DateNotBlocked]])->validate();
+
         DB::beginTransaction();
 
         try {

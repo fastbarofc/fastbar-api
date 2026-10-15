@@ -20,6 +20,8 @@ class EventStatus extends Model implements AuditableInterface
 
     public const REQUIRES_REASON = ['Cancelado', 'Descartado'];
 
+    public const LOST = ['Cancelado', 'Descartado', 'Fechou com o concorrente'];
+
     protected $fillable = [
         'name',
         'slug'

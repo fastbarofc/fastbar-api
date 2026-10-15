@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DateWithoutEvents;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateBlockedDateRequest extends FormRequest
@@ -18,7 +19,7 @@ class UpdateBlockedDateRequest extends FormRequest
 
         $blockedDate = $this->route('blocked_date'); 
         return [
-            'date'        => 'nullable|date|unique:blocked_dates,date,' . ($blockedDate ? $blockedDate->id : 'NULL'),
+            'date'        => ['bail', 'nullable', 'date', 'unique:blocked_dates,date,' . ($blockedDate ? $blockedDate->id : 'NULL'), new DateWithoutEvents($blockedDate?->date)],
             'description' => 'nullable|string|max:255'
         ];
     }

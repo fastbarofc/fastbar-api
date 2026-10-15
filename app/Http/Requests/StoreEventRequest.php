@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\ContractTemplate;
 use App\Models\Event;
 use App\Models\Material;
+use App\Rules\DateNotBlocked;
 use App\Traits\ValidatesEventRegistrations;
 use App\Traits\ValidatesEventStatusReason;
 use Illuminate\Foundation\Http\FormRequest;
@@ -30,7 +31,7 @@ class StoreEventRequest extends FormRequest
             'event_type_id'      => 'nullable|exists:event_types,id',
             'event_place_id'     => 'nullable|exists:event_places,id',
             'lease'              => 'nullable|numeric|min:0',
-            'date'          => 'nullable|date|after:now',
+            'date'          => ['bail', 'nullable', 'date', 'after:now', new DateNotBlocked],
             'time'          => 'nullable|date_format:H:i',
             'contract_body'      => 'nullable',
             'contract_sections'  => 'nullable|array:' . implode(',', ContractTemplate::SECTIONS),
