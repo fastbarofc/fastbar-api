@@ -71,6 +71,7 @@ class EventHistoryService
         'ceremonial_id' => 'Cerimonial',
         'competing_company_id' => 'Empresa Concorrente',
         'lost_reason_id' => 'Motivo da Perda',
+        'status_reason' => 'Motivo do Cancelamento/Descarte',
         'lease' => 'Valor da Locação',
         'date' => 'Data do Evento',
         'time' => 'Horário',

@@ -113,8 +113,8 @@ class EventStatusRegistrationsTest extends TestCase
     {
         $event = $this->createEvent('Pré-Reserva', ['client_id' => Client::create(['name' => 'Maria'])->id]);
 
-        $this->putJson("/api/events/{$event->id}", ['event_status_id' => $this->statusId('Descartado')])
-            ->assertJsonMissingValidationErrors('event_status_id');
+        $this->putJson("/api/events/{$event->id}", ['event_status_id' => $this->statusId('Descartado'), 'status_reason' => 'Sem retorno'])
+            ->assertOk();
     }
 
     public function test_event_already_advanced_keeps_saving_without_changing_status_or_registrations(): void

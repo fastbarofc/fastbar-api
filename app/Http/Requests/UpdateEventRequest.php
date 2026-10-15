@@ -8,6 +8,7 @@ use App\Models\EventStatus;
 use App\Models\EventType;
 use App\Models\Material;
 use App\Traits\ValidatesEventRegistrations;
+use App\Traits\ValidatesEventStatusReason;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ use Illuminate\Validation\Validator;
 
 class UpdateEventRequest extends FormRequest
 {
-    use ValidatesEventRegistrations;
+    use ValidatesEventRegistrations, ValidatesEventStatusReason;
 
     protected $stopOnFirstFailure = true;
 
@@ -62,6 +63,7 @@ class UpdateEventRequest extends FormRequest
             'post_event_consumption_report_file_id' => 'nullable|exists:files,id',
             'post_event_consumption_report_file_name' => 'nullable|string|max:255',
             'post_event_consumption_report_remove' => 'nullable|boolean',
+            'status_reason' => 'nullable|string|max:1000',
             'company_ids' => 'sometimes|array',
             'company_ids.*' => 'sometimes|exists:companies,id',
         ];
@@ -106,6 +108,7 @@ class UpdateEventRequest extends FormRequest
             'bar_counter_type.in' => 'O tipo do balcão deve ser lateral ou 360º',
             'cup_type.in' => 'O tipo de copo selecionado é inválido',
             'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
+            'status_reason.max' => 'O motivo deve ter no máximo 1000 caracteres.',
         ];
     }
 
@@ -118,6 +121,7 @@ class UpdateEventRequest extends FormRequest
 
             $this->validateMaterials($validator);
             $this->validateRegistrationsForStatus($validator, $this->route('event'));
+            $this->validateStatusReason($validator, $this->route('event'));
         });
     }
 

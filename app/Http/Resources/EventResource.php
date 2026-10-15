@@ -28,6 +28,7 @@ class EventResource extends JsonResource
             'event_place'        => $this->whenLoaded('eventPlace'),
             'event_status_id'    => $this->event_status_id,
             'status'             => $this->whenLoaded('eventStatus'),
+            'status_reason'      => $this->status_reason,
             'lease'              => $this->lease,
             'duration'           => $this->duration,
             'date'               => $this->date ? Carbon::parse($this->date)->format('Y-m-d') : null,

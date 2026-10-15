@@ -157,7 +157,7 @@ class EventController extends Controller
 
     public function indexCalendar(IndexCalendarEventRequest $request)
     {
-        $disconsideredStatusId = EventStatus::whereIn('slug', ['aberto', 'descartado', 'cancelado'])->get()->pluck('id');
+        $disconsideredStatusId = EventStatus::whereIn('slug', ['descartado', 'cancelado', 'fechou-com-o-concorrente'])->get()->pluck('id');
 
         $query = Event::query()->whereNotIn('event_status_id', $disconsideredStatusId);
 
@@ -324,7 +324,7 @@ class EventController extends Controller
             $this->historyService->logEventCreation($event);
         }
 
-        $event->load('companies');
+        $event->load(['companies', 'eventStatus']);
         return response()->json(new EventResource($event), 201);
     }
 
@@ -628,6 +628,10 @@ class EventController extends Controller
             if ($event->event_status_id !== $data['event_status_id'] && $newStatus && $newStatus->name === 'Fechado') {
                 $data['closed_at'] = Carbon::now();
             }
+
+            if ($newStatus && !in_array($newStatus->name, EventStatus::REQUIRES_REASON, true)) {
+                $data['status_reason'] = null;
+            }
         }
 
         $event->update($data);
@@ -647,7 +651,7 @@ class EventController extends Controller
         }
 
         $event->refresh();
-        $event->load('companies');
+        $event->load(['companies', 'eventStatus']);
 
         $this->historyService->logEventUpdate($event, $originalDataWithRelationships, $data);
 

@@ -63,6 +63,7 @@ class Event extends Model implements AuditableInterface
         'unit_insurance',
         'competing_company_id',
         'lost_reason_id',
+        'status_reason',
         'is_draft',
         'total_value',
         'buffet_value',

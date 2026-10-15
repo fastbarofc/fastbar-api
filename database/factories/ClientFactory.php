@@ -19,6 +19,8 @@ class ClientFactory extends Factory
             'name' => $this->faker->name(),
             'cpf' => $type == 'pf' ? $this->faker->unique()->cpf(false) : null,
             'nickname' => $this->faker->name(),
+            'representative_name' => $type == 'pj' ? $this->faker->name() : null,
+            'representative_cpf' => $type == 'pj' ? $this->faker->cpf(false) : null,
         ];
     }
 }

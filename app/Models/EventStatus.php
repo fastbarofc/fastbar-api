@@ -18,6 +18,8 @@ class EventStatus extends Model implements AuditableInterface
     // Até a Pré-Reserva, cliente, parceiro e local podem ter só o nome; daqui em diante o cadastro precisa estar completo.
     public const REQUIRES_COMPLETE_REGISTRATIONS = ['Contrato', 'Fechado', 'Planejamento', 'Concluído'];
 
+    public const REQUIRES_REASON = ['Cancelado', 'Descartado'];
+
     protected $fillable = [
         'name',
         'slug'
