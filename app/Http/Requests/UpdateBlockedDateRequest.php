@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Rules\DateWithoutEvents;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateBlockedDateRequest extends FormRequest
 {
@@ -19,7 +20,7 @@ class UpdateBlockedDateRequest extends FormRequest
 
         $blockedDate = $this->route('blocked_date'); 
         return [
-            'date'        => ['bail', 'nullable', 'date', 'unique:blocked_dates,date,' . ($blockedDate ? $blockedDate->id : 'NULL'), new DateWithoutEvents($blockedDate?->date)],
+            'date'        => ['bail', 'nullable', 'date', Rule::unique('blocked_dates', 'date')->ignore($blockedDate)->whereNull('deleted_at'), new DateWithoutEvents($blockedDate?->date)],
             'description' => 'nullable|string|max:255'
         ];
     }

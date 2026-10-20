@@ -100,6 +100,29 @@ class BlockedDateEventConflictTest extends TestCase
             ->assertOk();
     }
 
+    public function test_date_of_a_deleted_blocked_date_can_be_blocked_again(): void
+    {
+        BlockedDate::create(['date' => '2027-03-10', 'description' => 'Reforma do salão'])->delete();
+
+        $this->postJson('/api/blocked-dates', ['date' => '2027-03-10', 'description' => 'Reforma da cozinha'])->assertCreated();
+    }
+
+    public function test_blocked_date_can_be_moved_to_the_date_of_a_deleted_blocked_date(): void
+    {
+        BlockedDate::create(['date' => '2027-03-11', 'description' => 'Reforma do salão'])->delete();
+        $blockedDate = BlockedDate::create(['date' => '2027-03-10', 'description' => 'Reforma da cozinha']);
+
+        $this->putJson("/api/blocked-dates/{$blockedDate->id}", ['date' => '2027-03-11'])->assertOk();
+    }
+
+    public function test_date_of_an_active_blocked_date_cannot_be_blocked_again(): void
+    {
+        BlockedDate::create(['date' => '2027-03-10', 'description' => 'Reforma do salão']);
+
+        $this->postJson('/api/blocked-dates', ['date' => '2027-03-10', 'description' => 'Reforma da cozinha'])
+            ->assertJsonValidationErrors(['date' => 'Já existe um registro com a data informada.']);
+    }
+
     private function createEvent(string $status, array $attributes = []): Event
     {
         return Event::create($attributes + [
