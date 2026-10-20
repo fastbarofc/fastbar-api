@@ -15,6 +15,17 @@ class UpdateEventPlaceRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        // O front envia o CEP sem máscara, mas `formato_cep` só aceita 00000-000.
+        $address = $this->input('address');
+
+        if (is_array($address) && array_key_exists('zip_code', $address)) {
+            $address['zip_code'] = maskZipCode($address['zip_code']);
+            $this->merge(['address' => $address]);
+        }
+    }
+
     public function rules(): array
     {
         $eventPlaceId = $this->route('event_place')->id;

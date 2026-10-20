@@ -15,6 +15,17 @@ class StoreEventPlaceRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        // Grava como 00000-000, o formato que `formato_cep` exige na edição.
+        $address = $this->input('address');
+
+        if (is_array($address) && array_key_exists('zip_code', $address)) {
+            $address['zip_code'] = maskZipCode($address['zip_code']);
+            $this->merge(['address' => $address]);
+        }
+    }
+
     public function rules(): array
     {
         $data = [
