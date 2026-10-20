@@ -6,7 +6,7 @@ use App\Http\Requests\GenerateEventContractRequest;
 use App\Http\Requests\IndexCalendarEventRequest;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
-use App\Http\Resources\ContractResource;
+use App\Http\Resources\ContractVersionResource;
 use App\Http\Resources\EventGiftResource;
 use App\Http\Resources\EventResource;
 use App\Http\Resources\EventListResource;
@@ -872,31 +872,11 @@ class EventController extends Controller
         ], 200);
     }
 
-    public function contracts(Request $request, Contract $contract)
+    public function contractHistory(Event $event)
     {
-        $this->authorize('view', $contract);
+        $contracts = $event->contracts()->with('audits.user')->orderByDesc('version')->get();
 
-        $perPage = $request->input('per_page', 10);
-
-        $query = Contract::query();
-
-        if ($request->input('order_by')) {
-            $sorteableField = $request->input('order_by');
-            $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderByField($sorteableField, $direction);
-        }
-
-        $contract = $query->where('event_id', $contract->id)->paginate($perPage);
-
-        return response()->json([
-            'data' => ContractResource::collection($contract),
-            'pagination' => [
-                'page' => $contract->currentPage(),
-                'total_pages' => $contract->lastPage(),
-                'per_page' => $contract->perPage(),
-                'total' => $contract->total(),
-            ],
-        ], 200);
+        return response()->json(['data' => ContractVersionResource::collection($contracts)]);
     }
 
     public function resetContract(Event $event)
@@ -1310,10 +1290,13 @@ class EventController extends Controller
                 'header-spacing' => 3,
                 'footer-spacing' => 3,
             ]);
-            return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
+
+        Contract::recordVersion($event, EventContractService::snapshot($event, $contract), implode("\n", $contract['sections']));
+
+        return response()->json(['pdf_url' => $pdfUrl]);
     }
 
     public function generateMenu(Event $event)
@@ -1411,7 +1394,7 @@ class EventController extends Controller
             ]);
         }
 
-        $blockedStatusIds = EventStatus::whereIn('name', ['Fechado', 'Pré-Reserva', 'Planejamento', 'Concluído'])
+        $blockedStatusIds = EventStatus::whereIn('name', EventStatus::CHECKS_PLACE_CONFLICT)
             ->pluck('id')
             ->toArray();
 

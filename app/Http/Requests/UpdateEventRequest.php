@@ -8,6 +8,7 @@ use App\Models\EventStatus;
 use App\Models\EventType;
 use App\Models\Material;
 use App\Rules\DateNotBlocked;
+use App\Traits\ValidatesEventPlaceConflicts;
 use App\Traits\ValidatesEventRegistrations;
 use App\Traits\ValidatesEventStatusReason;
 use Illuminate\Foundation\Http\FormRequest;
@@ -17,7 +18,7 @@ use Illuminate\Validation\Validator;
 
 class UpdateEventRequest extends FormRequest
 {
-    use ValidatesEventRegistrations, ValidatesEventStatusReason;
+    use ValidatesEventPlaceConflicts, ValidatesEventRegistrations, ValidatesEventStatusReason;
 
     protected $stopOnFirstFailure = true;
 
@@ -123,6 +124,7 @@ class UpdateEventRequest extends FormRequest
             $this->validateMaterials($validator);
             $this->validateRegistrationsForStatus($validator, $this->route('event'));
             $this->validateStatusReason($validator, $this->route('event'));
+            $this->validatePlaceConflicts($validator, $this->route('event'));
         });
     }
 

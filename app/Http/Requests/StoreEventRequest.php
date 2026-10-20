@@ -6,6 +6,7 @@ use App\Models\ContractTemplate;
 use App\Models\Event;
 use App\Models\Material;
 use App\Rules\DateNotBlocked;
+use App\Traits\ValidatesEventPlaceConflicts;
 use App\Traits\ValidatesEventRegistrations;
 use App\Traits\ValidatesEventStatusReason;
 use Illuminate\Foundation\Http\FormRequest;
@@ -15,7 +16,7 @@ use Illuminate\Validation\Validator as ValidationValidator;
 
 class StoreEventRequest extends FormRequest
 {
-    use ValidatesEventRegistrations, ValidatesEventStatusReason;
+    use ValidatesEventPlaceConflicts, ValidatesEventRegistrations, ValidatesEventStatusReason;
 
     protected $stopOnFirstFailure = true;
 
@@ -130,6 +131,7 @@ class StoreEventRequest extends FormRequest
             $this->validateMaterials($validator);
             $this->validateRegistrationsForStatus($validator);
             $this->validateStatusReason($validator);
+            $this->validatePlaceConflicts($validator);
         });
     }
 

@@ -240,6 +240,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('/events/generate-proposal/{event}', [EventController::class, 'generateProposal']);
     Route::post('/events/generate-letterhead-budget/{event}', [EventController::class, 'generateLetterheadBudget']);
     Route::get('/events/{event}/contract-data', [EventController::class, 'contractData']);
+    Route::get('/events/{event}/contract-history', [EventController::class, 'contractHistory']);
     Route::post('/events/generate-event-contract/{event}', [EventController::class, 'generateEventContract']);
     Route::post('/events/generate-closure/{event}', [EventController::class, 'generateClosure']);
     Route::post('/events/generate-summary/{event}', [EventController::class, 'generateSummary']);

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Enums\NotificationTypeEnum;
 use App\Models\Event;
+use App\Models\EventStatus;
 use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -27,6 +28,7 @@ class SendEventAlertNotifications extends Command
         $events = Event::query()
             ->whereDate('date', $targetDate)
             ->where('is_draft', false)
+            ->whereDoesntHave('eventStatus', fn ($query) => $query->whereIn('name', EventStatus::LOST))
             ->with('collaborator.user')
             ->get();
 

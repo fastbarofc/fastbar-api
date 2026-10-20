@@ -51,5 +51,52 @@ class Contract extends UuidModel implements AuditableInterface
     {
         return $this->belongsTo(Client::class);
     }
+
+    public static function recordVersion(Event $event, array $properties, ?string $body = null): self
+    {
+        $last = self::where('event_id', $event->id)->orderByDesc('version')->first();
+
+        return self::create([
+            'event_id' => $event->id,
+            'client_id' => $event->client_id,
+            'version' => ($last?->version ?? 0) + 1,
+            'body' => $body,
+            'properties' => $properties,
+            'properties_diff' => $last ? self::diffProperties($last->properties ?? [], $properties) : [],
+        ]);
+    }
+
+    public static function diffProperties(array $old, array $new): array
+    {
+        $old = self::sortRecursively($old);
+        $new = self::sortRecursively($new);
+
+        $modified = [];
+
+        foreach ($old as $key => $value) {
+            if (array_key_exists($key, $new) && $new[$key] !== $value) {
+                $modified[$key] = ['old' => $value, 'new' => $new[$key]];
+            }
+        }
+
+        return [
+            'added' => array_diff_key($new, $old),
+            'removed' => array_diff_key($old, $new),
+            'modified' => $modified,
+        ];
+    }
+
+    private static function sortRecursively(array $array): array
+    {
+        foreach ($array as &$value) {
+            if (is_array($value)) {
+                $value = self::sortRecursively($value);
+            }
+        }
+
+        ksort($array);
+
+        return $array;
+    }
 }
 

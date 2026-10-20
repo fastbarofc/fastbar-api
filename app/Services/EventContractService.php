@@ -28,8 +28,7 @@ class EventContractService
 
     /**
      * Status a partir dos quais o contrato pode ser impresso. "Contrato" é a
-     * fase em que o cliente assina, e o evento só sai dela para Planejamento
-     * com o contrato assinado: bloquear a impressão aqui travaria o fluxo.
+     * fase em que ele é gerado, antes de o evento seguir para Planejamento.
      */
     public const PRINTABLE_STATUSES = ['Contrato', 'Fechado', 'Planejamento', 'Concluído'];
 
@@ -154,6 +153,19 @@ class EventContractService
                 fn (string $html) => strtr($html, $replacements),
                 ContractTemplate::current()->sectionsWith($event->contract_sections)
             ),
+        ];
+    }
+
+    /**
+     * O que foi emitido, gravado como versão em `contracts`. As cláusulas vão sem
+     * os valores trocados para o diff entre versões apontar o campo que mudou.
+     */
+    public static function snapshot(Event $event, array $contract): array
+    {
+        return self::variables($event) + [
+            'contractant' => $contract['contractant'],
+            'menu' => $contract['menu'],
+            'sections' => ContractTemplate::current()->sectionsWith($event->contract_sections),
         ];
     }
 

@@ -69,17 +69,6 @@ class ContractController extends Controller
     {
         $event = Event::find($request->id);
 
-        $data = [];
-
-        $data['id'] = $event->id;
-        $data['version'] = Contract::where('event_id', $request->id)->count() + 1;
-        $data['event_id'] = $request->id;
-        $data['client_id'] = $event->client_id;
-
-        $data['body'] = $event->contract_body ?? '';
-
-        $data['properties'] = [];
-
         $properties = Arr::only($event->getAttributes(), ['id', 'name', 'date', 'time', 'duration', 'lease', 'buffet_value', 'event_guests', 'sub_total', 'total_value', 'payment_method']);
 
         $properties['date'] = $event->date;
@@ -134,11 +123,7 @@ class ContractController extends Controller
             'due_day' => $event->paymentPlan?->due_day ?? null,
         ];
 
-        $data['properties'] = $properties;
-
-        $data['properties_diff'] = $this->calculatePropertiesDiff($data) ?? [];
-
-        $contract = Contract::create($data);
+        $contract = Contract::recordVersion($event, $properties, $event->contract_body ?? '');
 
         if (!$contract) {
             return response()->json(['error' => 'Contract creation failed'], 500);
@@ -245,54 +230,6 @@ class ContractController extends Controller
         ];
     }
 
-
-    private function calculatePropertiesDiff(array $data)
-    {
-        $properties_diff = [];
-
-        if ($data['version'] > 1) {
-            $lastContract = Contract::where('event_id', $data['id'])->orderBy('version', 'desc')->first();
-
-            $newProperties = $data['properties'];
-            $oldProperties = $lastContract->properties;
-
-            $newProperties = $this->sortArrayRecursively($newProperties);
-            $oldProperties = $this->sortArrayRecursively($oldProperties);
-
-            $addedProperties = array_diff_key($newProperties, $oldProperties);
-            $removedProperties = array_diff_key($oldProperties, $newProperties);
-            $modifiedProperties = [];
-
-            foreach ($oldProperties as $key => $value) {
-                if (array_key_exists($key, $newProperties) && $newProperties[$key] !== $value) {
-                    $modifiedProperties[$key] = [
-                        'old' => $value,
-                        'new' => $newProperties[$key],
-                    ];
-                }
-            }
-
-            $properties_diff = [
-                'added' => $addedProperties,
-                'removed' => $removedProperties,
-                'modified' => $modifiedProperties,
-            ];
-        }
-
-        return $properties_diff;
-    }
-
-    private function sortArrayRecursively(array $array)
-    {
-        foreach ($array as $key => &$value) {
-            if (is_array($value)) {
-                $value = $this->sortArrayRecursively($value);
-            }
-        }
-
-        ksort($array);
-        return $array;
-    }
 
     public function show(Contract $contract)
     {
