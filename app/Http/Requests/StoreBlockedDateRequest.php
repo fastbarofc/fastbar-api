@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\DateWithoutEvents;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,7 +17,7 @@ class StoreBlockedDateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => ['bail', 'required', 'date', Rule::unique('blocked_dates', 'date')->whereNull('deleted_at'), new DateWithoutEvents],
+            'date' => ['bail', 'required', 'date', Rule::unique('blocked_dates', 'date')->whereNull('deleted_at')],
             'description' => 'required|string|max:255'
         ];
     }

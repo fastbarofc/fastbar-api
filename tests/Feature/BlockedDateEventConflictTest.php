@@ -61,43 +61,29 @@ class BlockedDateEventConflictTest extends TestCase
         $this->assertSame(1, Event::count());
     }
 
-    public function test_date_with_an_event_cannot_be_blocked(): void
+    public function test_date_with_events_can_be_blocked_to_stop_new_events(): void
     {
-        $this->createEvent('Fechado', ['name' => 'Casamento Ana', 'date' => '2027-03-10']);
+        $event = $this->createEvent('Fechado', ['name' => 'Casamento Ana', 'date' => '2027-03-10']);
         $this->createEvent('Aberto', ['name' => 'Formatura', 'date' => '2027-03-10']);
 
-        $this->postJson('/api/blocked-dates', ['date' => '2027-03-10', 'description' => 'Reforma do salão'])
+        $this->postJson('/api/blocked-dates', ['date' => '2027-03-10', 'description' => 'Limite de eventos atingido'])->assertCreated();
+
+        $this->postJson('/api/events', ['name' => 'Aniversário', 'date' => '2027-03-10'])
             ->assertStatus(422)
-            ->assertJsonPath('message', 'Não é possível bloquear o dia 10/03/2027: já existe evento nele (Casamento Ana, Formatura).');
+            ->assertJsonPath('message', 'O dia 10/03/2027 está bloqueado (Limite de eventos atingido). Escolha outra data para o evento.');
 
-        $this->assertSame(0, BlockedDate::count());
+        $this->putJson("/api/events/{$event->id}", ['date' => '2027-03-10', 'name' => 'Casamento Ana e Pedro'])->assertOk();
+        $this->assertSame(2, Event::count());
     }
 
-    public function test_lost_events_do_not_prevent_blocking_the_date(): void
+    public function test_blocked_date_can_be_moved_to_a_date_with_an_event(): void
     {
-        foreach (EventStatus::LOST as $status) {
-            $this->createEvent($status, ['date' => '2027-03-10', 'status_reason' => 'Cliente desistiu']);
-        }
-
-        $this->postJson('/api/blocked-dates', ['date' => '2027-03-10', 'description' => 'Reforma do salão'])->assertCreated();
-    }
-
-    public function test_blocked_date_cannot_be_moved_to_a_date_with_an_event(): void
-    {
-        $this->createEvent('Fechado', ['name' => 'Casamento Ana', 'date' => '2027-03-11']);
+        $this->createEvent('Fechado', ['date' => '2027-03-11']);
         $blockedDate = BlockedDate::create(['date' => '2027-03-10', 'description' => 'Reforma do salão']);
 
-        $this->putJson("/api/blocked-dates/{$blockedDate->id}", ['date' => '2027-03-11'])
-            ->assertJsonValidationErrors(['date' => 'Não é possível bloquear o dia 11/03/2027: já existe evento nele (Casamento Ana).']);
-    }
+        $this->putJson("/api/blocked-dates/{$blockedDate->id}", ['date' => '2027-03-11'])->assertOk();
 
-    public function test_blocked_date_keeping_its_date_can_be_edited_even_with_an_event_on_it(): void
-    {
-        $this->createEvent('Fechado', ['date' => '2027-03-10']);
-        $blockedDate = BlockedDate::create(['date' => '2027-03-10', 'description' => 'Reforma do salão']);
-
-        $this->putJson("/api/blocked-dates/{$blockedDate->id}", ['date' => '2027-03-10', 'description' => 'Reforma da cozinha'])
-            ->assertOk();
+        $this->assertSame('2027-03-11', substr($blockedDate->fresh()->date, 0, 10));
     }
 
     public function test_date_of_a_deleted_blocked_date_can_be_blocked_again(): void
