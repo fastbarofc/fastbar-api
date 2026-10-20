@@ -22,6 +22,10 @@ class EventStatus extends Model implements AuditableInterface
 
     public const LOST = ['Cancelado', 'Descartado', 'Fechou com o concorrente'];
 
+    public const NEGOTIATING = ['Aberto', 'Pré-Reserva'];
+
+    public const CONFIRMED = ['Contrato', 'Fechado', 'Planejamento', 'Concluído'];
+
     protected $fillable = [
         'name',
         'slug'

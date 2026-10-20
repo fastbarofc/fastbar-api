@@ -249,6 +249,10 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('/events/generate-event-checklist/{event}', [EventController::class, 'generateEventChecklist']);
     Route::get('/events/{event}/check-if-has-scheduled-events', [EventController::class, 'checkIfHasScheduledEvents']);
     Route::post('/reports/events/pdf', [ReportController::class, 'generatePdfReport']);
+    Route::get('/reports/filter-options', [ReportController::class, 'filterOptions']);
+    Route::get('/reports/clients', [ReportController::class, 'clients']);
+    Route::get('/reports/{report}', [ReportController::class, 'show'])->whereIn('report', array_keys(ReportController::REPORTS));
+    Route::get('/reports/{report}/export', [ReportController::class, 'export'])->whereIn('report', array_keys(ReportController::REPORTS));
 
     Route::post('/contract-template/save', [ContractTemplateController::class, 'save']);
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);

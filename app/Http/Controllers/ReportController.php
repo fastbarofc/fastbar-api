@@ -2,13 +2,172 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReportRequest;
+use App\Models\Address;
+use App\Models\City;
+use App\Models\Client;
+use App\Models\Collaborator;
+use App\Models\CompetingCompany;
 use App\Models\Event;
+use App\Models\EventCapture;
+use App\Models\EventPlace;
+use App\Models\EventStatus;
+use App\Models\EventType;
+use App\Models\HowDidYouHear;
+use App\Models\LostReason;
+use App\Models\ParthenonBankAccount;
+use App\Models\Partner;
+use App\Models\PaymentMethod;
+use App\Models\State;
+use App\Models\User;
 use App\Services\FileService;
+use App\Services\Reports\EventsReport;
+use App\Services\Reports\GroupedReport;
+use App\Services\Reports\LossesReport;
+use App\Services\Reports\PaymentsReport;
+use App\Services\Reports\Report;
+use App\Services\Reports\RevenueReport;
+use App\Services\Reports\SalesReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ReportController extends Controller
 {
+    public const REPORTS = [
+        'events' => EventsReport::class,
+        'revenue' => RevenueReport::class,
+        'payments' => PaymentsReport::class,
+        'sales' => SalesReport::class,
+        'losses' => LossesReport::class,
+    ];
+
+    private const EXPORT_PERMISSION = 'relatorios-exportar';
+
+    private const EXPORT_LIMIT = 10000;
+
+    public function show(ReportRequest $request, string $report)
+    {
+        $report = $this->resolve($request, $report);
+        $rows = $report->paginate($request->integer('per_page', 25), $request->integer('page', 1));
+
+        return response()->json([
+            'data' => $rows->items(),
+            'summary' => $report->summary(),
+            'pagination' => [
+                'page' => $rows->currentPage(),
+                'total_pages' => $rows->lastPage(),
+                'per_page' => $rows->perPage(),
+                'total' => $rows->total(),
+            ],
+        ]);
+    }
+
+    public function export(ReportRequest $request, string $report)
+    {
+        $this->authorizeReport($request->user(), self::EXPORT_PERMISSION);
+        $report = $this->resolve($request, $report);
+
+        if ($report->count() > self::EXPORT_LIMIT) {
+            return response()->json([
+                'message' => 'O relatório passa de ' . number_format(self::EXPORT_LIMIT, 0, ',', '.') . ' linhas. Refine os filtros para exportar.',
+            ], 422);
+        }
+
+        return response()->json([
+            'data' => $report->all(),
+            'summary' => $report->summary(),
+        ]);
+    }
+
+    public function filterOptions()
+    {
+        $statusGroups = [
+            'negotiating' => EventStatus::NEGOTIATING,
+            'confirmed' => EventStatus::CONFIRMED,
+            'lost' => EventStatus::LOST,
+        ];
+
+        $placeAddresses = Address::where('addressable_type', EventPlace::class);
+
+        return response()->json([
+            'statuses' => EventStatus::orderBy('id')->get(['id', 'name'])->map(fn (EventStatus $status) => [
+                'id' => $status->id,
+                'name' => $status->name,
+                'group' => collect($statusGroups)->search(fn (array $names) => in_array($status->name, $names, true)) ?: null,
+            ]),
+            'event_types' => EventType::orderBy('name')->get(['id', 'name']),
+            'event_places' => EventPlace::with('address.city', 'address.state')->orderBy('name')->get()->map(fn (EventPlace $place) => [
+                'id' => $place->id,
+                'name' => $place->name,
+                'city' => $place->address?->city?->name,
+                'state' => $place->address?->state?->letter,
+            ]),
+            'states' => State::whereIn('id', (clone $placeAddresses)->select('state_id'))->orderBy('name')->get(['id', 'name', 'letter']),
+            'cities' => City::with('state')->whereIn('id', (clone $placeAddresses)->select('city_id'))->orderBy('name')->get()->map(fn (City $city) => [
+                'id' => $city->id,
+                'name' => $city->name,
+                'state_id' => $city->state_id,
+                'state' => $city->state?->letter,
+            ]),
+            'collaborators' => Collaborator::whereIn('id', Event::select('collaborator_id'))->orderBy('name')->get(['id', 'name']),
+            'partners' => Partner::orderBy('name')->get(['id', 'name']),
+            'event_captures' => EventCapture::orderBy('name')->get(['id', 'name']),
+            'how_did_you_hears' => HowDidYouHear::orderBy('name')->get(['id', 'name']),
+            'lost_reasons' => LostReason::orderBy('name')->get(['id', 'name']),
+            'competitors' => CompetingCompany::orderBy('name')->get(['id', 'name']),
+            'payment_methods' => PaymentMethod::orderBy('name')->get(['id', 'name']),
+            'bank_accounts' => ParthenonBankAccount::orderBy('bank_name')->get()->map(fn (ParthenonBankAccount $account) => [
+                'id' => $account->id,
+                'name' => trim("{$account->bank_name} - {$account->account_number}", ' -'),
+            ]),
+        ]);
+    }
+
+    public function clients(Request $request)
+    {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'ids' => ['nullable', 'string'],
+        ]);
+
+        $query = Client::query()->select(['id', 'name'])->orderBy('name')->limit(30);
+
+        if ($request->filled('ids')) {
+            $query->whereIn('id', array_map('intval', explode(',', $request->input('ids'))));
+        } else {
+            $query->where('name', 'like', '%' . $request->input('search') . '%');
+        }
+
+        return response()->json($query->get());
+    }
+
+    private function resolve(ReportRequest $request, string $key): Report
+    {
+        $class = self::REPORTS[$key];
+        $this->authorizeReport($request->user(), $class::PERMISSION);
+
+        $report = new $class($request->filters());
+
+        if ($report instanceof GroupedReport) {
+            $request->validate(
+                ['group_by' => ['nullable', Rule::in($report->groupKeys())]],
+                ['group_by.in' => 'Este relatório não pode ser agrupado por esse campo.']
+            );
+        }
+
+        return $report;
+    }
+
+    private function authorizeReport(User $user, string $permission): void
+    {
+        abort_unless(
+            $user->isAdmin() || $user->getPermissionsViaRoles()->contains('slug', $permission),
+            403,
+            'Você não tem permissão para acessar este relatório.'
+        );
+    }
+
     public function generatePdfReport(Request $request)
     {
         try {
