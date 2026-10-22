@@ -73,6 +73,22 @@ class EventStatusChangesTest extends TestCase
         }
     }
 
+    public function test_contract_or_closed_event_can_be_cancelled_or_discarded(): void
+    {
+        foreach (['Contrato', 'Fechado'] as $from) {
+            foreach (['Cancelado', 'Descartado'] as $to) {
+                $event = $this->createEvent($from);
+
+                $this->putJson("/api/events/{$event->id}", ['event_status_id' => $this->statusId($to)])
+                    ->assertJsonValidationErrors('status_reason');
+
+                $this->putJson("/api/events/{$event->id}", ['event_status_id' => $this->statusId($to), 'status_reason' => 'Cliente desistiu'])
+                    ->assertOk()
+                    ->assertJsonPath('status.name', $to);
+            }
+        }
+    }
+
     public function test_cancelled_event_saves_again_without_asking_the_reason(): void
     {
         $event = $this->createEvent('Cancelado', ['status_reason' => 'Cliente desistiu']);
