@@ -2,11 +2,8 @@
 
 namespace App\Traits;
 
-use App\Models\Client;
 use App\Models\Event;
-use App\Models\EventPlace;
 use App\Models\EventStatus;
-use App\Models\Partner;
 use Illuminate\Validation\Validator;
 
 trait ValidatesEventRegistrations
@@ -21,34 +18,17 @@ trait ValidatesEventRegistrations
 
         $statusChanged = $event?->event_status_id != $status->id;
 
-        $registrations = [
-            'client_id'      => [Client::class, 'O cliente', 'Clientes'],
-            'partner_id'     => [Partner::class, 'O parceiro', 'Parceiros'],
-            'event_place_id' => [EventPlace::class, 'O local', 'Locais'],
-        ];
+        $ids = [];
 
-        $pending = [];
-
-        foreach ($registrations as $field => [$model, $label, $page]) {
+        foreach (array_keys(Event::REQUIRED_REGISTRATIONS) as $field) {
             $id = $this->has($field) ? $this->input($field) : $event?->{$field};
 
-            if (!$id || (!$statusChanged && $id == $event->{$field})) {
-                continue;
-            }
-
-            $registration = $model::find($id);
-            $missing = $registration?->missingRequiredFields() ?? [];
-
-            if (!empty($missing)) {
-                $pending[] = sprintf(
-                    '%s "%s" está com cadastro incompleto (%s). Preencha na página de %s.',
-                    $label,
-                    $registration->name,
-                    implode(', ', $missing),
-                    $page
-                );
+            if ($id && ($statusChanged || $id != $event->{$field})) {
+                $ids[$field] = $id;
             }
         }
+
+        $pending = Event::incompleteRegistrationMessages($ids);
 
         if (!empty($pending)) {
             $validator->errors()->add(

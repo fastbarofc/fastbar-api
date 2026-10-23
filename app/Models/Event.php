@@ -31,6 +31,12 @@ class Event extends Model implements AuditableInterface
         'premium_glass' => 'vidro linha premium',
     ];
 
+    public const REQUIRED_REGISTRATIONS = [
+        'client_id'      => [Client::class, 'O cliente', 'Clientes'],
+        'partner_id'     => [Partner::class, 'O parceiro', 'Parceiros'],
+        'event_place_id' => [EventPlace::class, 'O local', 'Locais'],
+    ];
+
     protected $fillable = [
         'name',
         'old_system_id',
@@ -139,6 +145,31 @@ class Event extends Model implements AuditableInterface
     {
         parent::boot();
         static::addGlobalScope(new EventScope());
+    }
+
+    /** @param array<string, int> $ids campo de REQUIRED_REGISTRATIONS => id do cadastro a conferir */
+    public static function incompleteRegistrationMessages(array $ids): array
+    {
+        $pending = [];
+
+        foreach ($ids as $field => $id) {
+            [$model, $label, $page] = self::REQUIRED_REGISTRATIONS[$field];
+
+            $registration = $model::find($id);
+            $missing = $registration?->missingRequiredFields() ?? [];
+
+            if (!empty($missing)) {
+                $pending[] = sprintf(
+                    '%s "%s" está com cadastro incompleto (%s). Preencha na página de %s.',
+                    $label,
+                    $registration->name,
+                    implode(', ', $missing),
+                    $page
+                );
+            }
+        }
+
+        return $pending;
     }
 
     public function client()
