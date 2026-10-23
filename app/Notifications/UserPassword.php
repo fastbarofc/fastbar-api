@@ -37,7 +37,7 @@ class UserPassword extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Bem-vindo à Parthenon - Seus Dados de Acesso')
+            ->subject('Bem-vindo à Fastbar - Seus Dados de Acesso')
             ->view('emails.user-password', [
                 'password' => $this->password,
                 'user' => $notifiable
