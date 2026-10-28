@@ -35,17 +35,16 @@ class GenerateEventProposalRequest extends FormRequest
             'budget_details.*' => 'required|string|max:255',
             'observations' => 'nullable|array|max:12',
             'observations.*' => 'required|string|max:255',
-
-            'optional_drinks_note' => 'nullable|string|max:500',
-
-            'additional_items' => 'nullable|array|max:12',
-            'additional_items.*' => 'required|string|max:255',
         ];
 
-        foreach (array_keys(EventProposalService::barSections()) as $key) {
+        foreach (EventProposalService::summarySections() as $key => $section) {
+            $rules["{$key}_title"] = 'nullable|string|max:60';
             $rules["{$key}_items"] = 'nullable|array|max:12';
             $rules["{$key}_items.*"] = 'required|string|max:255';
-            $rules["{$key}_price"] = "nullable|required_with:{$key}_items|numeric|min:0";
+
+            if ($section['priced']) {
+                $rules["{$key}_price"] = "nullable|required_with:{$key}_items|numeric|min:0";
+            }
         }
 
         return $rules;
@@ -77,12 +76,12 @@ class GenerateEventProposalRequest extends FormRequest
             'guests.required' => 'O campo número de convidados é obrigatório',
             'budget_details.max' => 'O orçamento detalhado aceita no máximo 12 itens',
             'observations.max' => 'As observações aceitam no máximo 12 itens',
-            'additional_items.max' => 'Os adicionais aceitam no máximo 12 itens',
         ];
 
-        foreach (EventProposalService::barSections() as $key => $title) {
-            $label = mb_strtolower(rtrim($title, ':'));
+        foreach (EventProposalService::summarySections() as $key => $section) {
+            $label = mb_strtolower(rtrim($section['title'], ':'));
 
+            $messages["{$key}_title.max"] = "O nome do bloco {$label} aceita no máximo 60 caracteres";
             $messages["{$key}_items.max"] = "O bloco {$label} aceita no máximo 12 itens";
             $messages["{$key}_price.required_with"] = "O valor por pessoa do bloco {$label} é obrigatório";
             $messages["{$key}_price.numeric"] = "O valor por pessoa do bloco {$label} deve ser um número";

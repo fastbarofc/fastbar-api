@@ -173,12 +173,6 @@
             line-height: 1.45;
             margin: 6px 0 0 0;
         }
-
-        p.note {
-            font-size: 13px;
-            line-height: 1.45;
-            margin: 12px 0 0 0;
-        }
     </style>
 </head>
 

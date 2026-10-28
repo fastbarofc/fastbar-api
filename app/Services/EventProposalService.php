@@ -41,18 +41,20 @@ class EventProposalService
     private const BLOCK_GAP = 14.0;
 
     /**
-     * Blocos do resumo que seguem o padrao do bar de drinks: lista de itens
-     * mais valor por pessoa. A chave gera os campos `<chave>_items` e
-     * `<chave>_price`; o valor e o titulo no PDF.
+     * Blocos do resumo, na ordem do PDF. A chave gera os campos `<chave>_items`
+     * e `<chave>_title` (titulo editavel, com `title` como padrao); os blocos
+     * com `priced` tambem tem `<chave>_price`, o valor por pessoa.
      */
-    public static function barSections(): array
+    public static function summarySections(): array
     {
         return [
-            'drinks_bar' => 'BAR DE DRINKS:',
-            'spirits_bar' => 'BAR DE DESTILADOS:',
-            'fast_vip' => 'FAST VIP:',
-            'fast_concept' => 'FAST CONCEPT:',
-            'fast_premium' => 'FAST PREMIUM:',
+            'drinks_bar' => ['title' => 'BAR DE DRINKS:', 'priced' => true],
+            'optional_drinks' => ['title' => 'BEBIDAS OPCIONAIS:', 'priced' => false],
+            'spirits_bar' => ['title' => 'BAR DE DESTILADOS:', 'priced' => true],
+            'fast_vip' => ['title' => 'FAST VIP:', 'priced' => true],
+            'fast_concept' => ['title' => 'FAST CONCEPT:', 'priced' => true],
+            'fast_premium' => ['title' => 'FAST PREMIUM:', 'priced' => true],
+            'additional' => ['title' => 'ADICIONAIS (troca):', 'priced' => false],
         ];
     }
 
@@ -63,7 +65,12 @@ class EventProposalService
         $guests = self::totalGuests($event);
         $duration = self::duration($event);
 
-        return [
+        $titles = [];
+        foreach (self::summarySections() as $key => $section) {
+            $titles["{$key}_title"] = $section['title'];
+        }
+
+        return $titles + [
             'proposal_number' => (string) $event->id,
             'validity_days' => self::DEFAULT_VALIDITY_DAYS,
             'client_name' => self::clientName($event),
@@ -85,7 +92,9 @@ class EventProposalService
                 'Bar 360º ou Lateral (Balcões inclusos)',
             ],
             'drinks_bar_price' => 28,
-            'optional_drinks_note' => 'Bebidas opcionais (Aperol, Rum, Saquê, Cachaça, Espumante) incluso de acordo com o cardápio escolhido.',
+            'optional_drinks_items' => [
+                'Aperol, Rum, Saquê, Cachaça e Espumante, inclusos de acordo com o cardápio escolhido.',
+            ],
 
             'spirits_bar_items' => ['SMIRNOFF', 'GILBEY’S', 'RED LABEL', 'MONSTER'],
             'spirits_bar_price' => 24,
@@ -124,13 +133,7 @@ class EventProposalService
     /** Campos do resumo: o PDF exige ao menos um deles marcado. */
     public static function summaryFields(): array
     {
-        $fields = ['optional_drinks_note', 'additional_items'];
-
-        foreach (array_keys(self::barSections()) as $key) {
-            $fields[] = "{$key}_items";
-        }
-
-        return $fields;
+        return array_map(fn ($key) => "{$key}_items", array_keys(self::summarySections()));
     }
 
     /** A coluna da direita do PDF nao pode sair vazia. */
@@ -208,46 +211,28 @@ class EventProposalService
         return $blocks;
     }
 
-    /** Coluna da direita: bares, pacotes Fast e adicionais. */
+    /** Coluna da direita: bares, bebidas opcionais, pacotes Fast e adicionais. */
     private static function summaryBlocks(array $proposal): array
     {
         $blocks = [];
-        $note = $proposal['optional_drinks_note'] ?? null;
 
-        // A nota de bebidas opcionais complementa o bar de drinks: fica no
-        // mesmo bloco para as duas nunca se separarem entre paginas. Marcada
-        // sozinha, ocupa o lugar do bar de drinks.
-        if (empty($proposal['drinks_bar_items']) && !empty($note)) {
-            $blocks[] = ['note' => $note];
-        }
-
-        foreach (self::barSections() as $key => $title) {
+        foreach (self::summarySections() as $key => $section) {
             if (empty($proposal["{$key}_items"])) {
                 continue;
             }
 
             $block = [
-                'title' => $title,
+                'title' => trim($proposal["{$key}_title"] ?? '') ?: $section['title'],
                 'color' => 'pink',
                 'tight' => true,
                 'items' => $proposal["{$key}_items"],
-                'line' => 'Valor por pessoa: ' . self::money($proposal["{$key}_price"] ?? 0) . '.',
             ];
 
-            if ($key === 'drinks_bar' && !empty($note)) {
-                $block['note'] = $note;
+            if ($section['priced']) {
+                $block['line'] = 'Valor por pessoa: ' . self::money($proposal["{$key}_price"] ?? 0) . '.';
             }
 
             $blocks[] = $block;
-        }
-
-        if (!empty($proposal['additional_items'])) {
-            $blocks[] = [
-                'title' => 'ADICIONAIS (troca):',
-                'color' => 'pink',
-                'tight' => true,
-                'items' => $proposal['additional_items'],
-            ];
         }
 
         return $blocks;
@@ -311,8 +296,8 @@ class EventProposalService
         $chunk = [];
 
         foreach ($items as $item) {
-            // O valor por pessoa e a nota entram na conta de todos os pedacos
-            // para que sobre espaco para eles no ultimo.
+            // O valor por pessoa entra na conta de todos os pedacos para que
+            // sobre espaco para ele no ultimo.
             $probe = $block;
             $probe['items'] = array_merge($chunk, [$item]);
 
@@ -339,9 +324,9 @@ class EventProposalService
                 $piece['title'] = $block['title'] . ' (cont.)';
             }
 
-            // Valor por pessoa e nota fecham a secao: so no ultimo pedaco.
+            // O valor por pessoa fecha a secao: so no ultimo pedaco.
             if ($index < $last) {
-                unset($piece['line'], $piece['note']);
+                unset($piece['line']);
             }
 
             $pieces[] = $piece;
@@ -367,10 +352,6 @@ class EventProposalService
 
         if (!empty($block['line'])) {
             $height += self::textHeight((string) $block['line'], $charsPerLine) + 6.0;
-        }
-
-        if (!empty($block['note'])) {
-            $height += self::textHeight((string) $block['note'], $charsPerLine) + 12.0;
         }
 
         return $height;

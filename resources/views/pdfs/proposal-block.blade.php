@@ -1,7 +1,7 @@
 {{--
     Um bloco de conteudo das paginas de orcamento da proposta.
 
-    $block  titulo, itens, linha de valor por pessoa e nota, montados em
+    $block  titulo, itens e linha de valor por pessoa, montados em
             EventProposalService::pages()
     $first  primeiro bloco da coluna: nao leva o respiro do topo
 --}}
@@ -19,8 +19,4 @@
 
 @if (!empty($block['line']))
     <p class="line">{{ $block['line'] }}</p>
-@endif
-
-@if (!empty($block['note']))
-    <p class="note">{{ $block['note'] }}</p>
 @endif
