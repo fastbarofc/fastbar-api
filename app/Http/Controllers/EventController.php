@@ -1118,8 +1118,8 @@ class EventController extends Controller
             'clients'
         ]);
 
-        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
-            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        if ($event->eventStatus && !in_array($event->eventStatus->name, EventStatus::PRINTABLE, true)) {
+            return response()->json(['error' => 'Este PDF só pode ser gerado para eventos em Fechado, Planejamento ou Concluído.'], 400);
         }
         $client = $event->client;
         $place = $event->eventPlace;
@@ -1167,8 +1167,8 @@ class EventController extends Controller
             'extraSales'
         ]);
 
-        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
-            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        if ($event->eventStatus && !in_array($event->eventStatus->name, EventStatus::PRINTABLE, true)) {
+            return response()->json(['error' => 'Este PDF só pode ser gerado para eventos em Fechado, Planejamento ou Concluído.'], 400);
         }
         $place = $event->eventPlace;
 
@@ -1206,8 +1206,8 @@ class EventController extends Controller
             'materials'
         ]);
 
-        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
-            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        if ($event->eventStatus && !in_array($event->eventStatus->name, EventStatus::PRINTABLE, true)) {
+            return response()->json(['error' => 'Este PDF só pode ser gerado para eventos em Fechado, Planejamento ou Concluído.'], 400);
         }
         $responsibles = $event->clients->pluck('name')->implode(', ');
 
@@ -1319,8 +1319,8 @@ class EventController extends Controller
             'eventBatches'
         ]);
 
-        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
-            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        if ($event->eventStatus && !in_array($event->eventStatus->name, EventStatus::PRINTABLE, true)) {
+            return response()->json(['error' => 'Este PDF só pode ser gerado para eventos em Fechado, Planejamento ou Concluído.'], 400);
         }
 
         $date = Carbon::now()->format('d/m/Y');
@@ -1354,8 +1354,8 @@ class EventController extends Controller
             'eventPlace'
         ]);
 
-        if ($event->eventStatus && $event->eventStatus->name !== 'Fechado') {
-            return response()->json(['error' => 'Não é permitido gerar este PDF para eventos não fechados.'], 400);
+        if ($event->eventStatus && !in_array($event->eventStatus->name, EventStatus::PRINTABLE, true)) {
+            return response()->json(['error' => 'Este PDF só pode ser gerado para eventos em Fechado, Planejamento ou Concluído.'], 400);
         }
 
         $date = Carbon::now()->format('d/m/Y');
