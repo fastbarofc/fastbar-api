@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateClientRequest;
 use App\Http\Resources\ClientResource;
 use App\Http\Resources\EventResource;
 use Spatie\Permission\Models\Role;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use App\Models\Address;
 use App\Models\Client;
@@ -71,12 +72,12 @@ class ClientController extends Controller
         ], 200);
     }
 
-    private function saveAddress(Client $client, array $address, AddressTypeEnum $type): void
+    private function saveAddress(Model $addressable, array $address, AddressTypeEnum $type): void
     {
         Address::updateOrCreate(
             [
-                'addressable_id'   => $client->id,
-                'addressable_type' => Client::class,
+                'addressable_id'   => $addressable->id,
+                'addressable_type' => $addressable::class,
                 'type'             => $type->value,
             ],
             [
@@ -90,6 +91,27 @@ class ClientController extends Controller
                 'reference'  => $address['reference'] ?? '',
             ]
         );
+    }
+
+    private function syncRepresentatives(Client $client, array $representatives): void
+    {
+        $kept = [];
+
+        foreach ($representatives as $data) {
+            $representative = $client->representatives()->findOrNew($data['id'] ?? null);
+            $representative->fill([
+                'name' => $data['name'] ?? null,
+                'cpf'  => $data['cpf'] ?? null,
+            ])->save();
+
+            if (!empty($data['address'])) {
+                $this->saveAddress($representative, $data['address'], AddressTypeEnum::REPRESENTATIVE);
+            }
+
+            $kept[] = $representative->id;
+        }
+
+        $client->representatives()->whereNotIn('id', $kept)->get()->each->delete();
     }
 
     public function store(StoreClientRequest $request)
@@ -138,8 +160,8 @@ class ClientController extends Controller
             $this->saveAddress($client, $data['address'], AddressTypeEnum::MAIN);
         }
 
-        if (!empty($data['representative_address'])) {
-            $this->saveAddress($client, $data['representative_address'], AddressTypeEnum::REPRESENTATIVE);
+        if ($request->has('representatives')) {
+            $this->syncRepresentatives($client, $data['representatives'] ?? []);
         }
 
         DB::commit();
@@ -223,8 +245,8 @@ class ClientController extends Controller
                 $this->saveAddress($client, $data['address'], AddressTypeEnum::MAIN);
             }
 
-            if (!empty($data['representative_address'])) {
-                $this->saveAddress($client, $data['representative_address'], AddressTypeEnum::REPRESENTATIVE);
+            if ($request->has('representatives')) {
+                $this->syncRepresentatives($client, $data['representatives'] ?? []);
             }
             
     

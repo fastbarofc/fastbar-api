@@ -91,6 +91,8 @@
 
 <body>
     @php($contractant = $document['contractant'])
+    {{-- Aditivos gravados antes da lista de representantes guardam só um, em `representative`. --}}
+    @php($representatives = $contractant['representatives'] ?? array_filter([$contractant['representative'] ?? null]))
     @php($event = $document['event'])
 
     <div class="header">
@@ -116,9 +118,12 @@
         <p>
             De outro lado, <strong>{{ $contractant['name'] }}</strong>, pessoa jurídica de direito privado, inscrita no
             CNPJ sob o n°: {{ $contractant['document'] }}, com sede na {{ $contractant['address'] }}, neste ato
-            representada por {{ $contractant['representative']['name'] }}, CPF
-            {{ $contractant['representative']['cpf'] }}, residente e domiciliado na
-            {{ $contractant['representative']['address'] }}, doravante denominada <strong>CONTRATANTE</strong>,
+            representada por
+            @foreach ($representatives as $representative)
+                {{ $representative['name'] }}, CPF {{ $representative['cpf'] }}, residente e domiciliado na
+                {{ $representative['address'] }}{{ $loop->last ? ',' : ($loop->remaining === 1 ? '; e por' : ';') }}
+            @endforeach
+            doravante denominada <strong>CONTRATANTE</strong>,
             resolvem assinar o presente <strong>TERMO ADITIVO</strong>, aplicando-se a este suas disposições irrestrita e
             incondicionalmente, conforme cláusulas e condições seguintes:
         </p>
@@ -218,22 +223,28 @@
     </p>
 
     <div class="signature">
-        <div class="party">
-            <p>_________________________________________</p>
-            <p><strong>CONTRATANTE:</strong></p>
-            @if ($contractant['is_company'])
-                <p>{{ $contractant['name'] }}</p>
-                <p>CNPJ: {{ $contractant['document'] }}</p>
-                <p>Representada por: {{ $contractant['representative']['name'] }}</p>
-                <p>CPF: {{ $contractant['representative']['cpf'] }}</p>
-            @else
+        @if ($contractant['is_company'])
+            @foreach ($representatives as $representative)
+                <div class="party">
+                    <p>_________________________________________</p>
+                    <p><strong>CONTRATANTE:</strong></p>
+                    <p>{{ $contractant['name'] }}</p>
+                    <p>CNPJ: {{ $contractant['document'] }}</p>
+                    <p>Representada por: {{ $representative['name'] }}</p>
+                    <p>CPF: {{ $representative['cpf'] }}</p>
+                </div>
+            @endforeach
+        @else
+            <div class="party">
+                <p>_________________________________________</p>
+                <p><strong>CONTRATANTE:</strong></p>
                 <p>{{ $contractant['name'] }}</p>
                 <p>CPF: {{ $contractant['document'] }}</p>
                 @if ($contractant['rg'])
                     <p>RG: {{ $contractant['rg'] }}</p>
                 @endif
-            @endif
-        </div>
+            </div>
+        @endif
 
         <div class="party">
             <p>_________________________________________</p>

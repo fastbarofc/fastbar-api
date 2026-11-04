@@ -30,8 +30,6 @@ class Client extends Model implements AuditableInterface
         'cpf',
         'rg',
         'cnpj',
-        'representative_name',
-        'representative_cpf',
         'opening_date',
         'ie',
         'im',
@@ -79,7 +77,6 @@ class Client extends Model implements AuditableInterface
         {
             $model->cpf = unmaskCpf($model->cpf);
             $model->cnpj = unmaskCnpj($model->cnpj);
-            $model->representative_cpf = unmaskCpf($model->representative_cpf);
         });
     }
 
@@ -89,10 +86,9 @@ class Client extends Model implements AuditableInterface
             ->where('type', AddressTypeEnum::MAIN->value);
     }
 
-    public function representativeAddress()
+    public function representatives()
     {
-        return $this->morphOne(Address::class, 'addressable')
-            ->where('type', AddressTypeEnum::REPRESENTATIVE->value);
+        return $this->hasMany(ClientRepresentative::class)->orderBy('id');
     }
 
     public function events()
@@ -126,9 +122,8 @@ class Client extends Model implements AuditableInterface
         }
 
         if ($this->type === self::TYPE_LEGAL && (
-            blank($this->representative_name)
-            || blank($this->representative_cpf)
-            || !$this->representativeAddress?->isComplete()
+            $this->representatives->isEmpty()
+            || $this->representatives->contains(fn (ClientRepresentative $representative) => !$representative->isComplete())
         )) {
             $missing[] = 'dados do representante legal';
         }

@@ -130,7 +130,7 @@ class EventAddendumService
                 'document' => [
                     'issued_at' => Carbon::now()->toDateString(),
                     'contract_code' => (string) $event->id,
-                    'contractant' => EventContractService::contractant($event->client),
+                    'contractant' => EventContractService::contractant($event->client, EventContractService::representativeIds($event)),
                     'event' => $details,
                     'items' => $items,
                     'menu' => $menu,

@@ -4,12 +4,15 @@ namespace App\Http\Requests;
 
 use App\Rules\Cnpj;
 use App\Rules\Cpf;
+use App\Traits\ValidatesClientRepresentatives;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class StoreClientRequest extends FormRequest
 {
+    use ValidatesClientRepresentatives;
+
     protected $stopOnFirstFailure = true;
 
     public function authorize(): bool
@@ -32,23 +35,19 @@ class StoreClientRequest extends FormRequest
             $documents['cnpj'] = unmaskCnpj($this->input('cnpj'));
         }
 
-        if ($this->has('representative_cpf')) {
-            $documents['representative_cpf'] = unmaskCpf($this->input('representative_cpf'));
-        }
-
         if (!empty($documents)) {
             $this->merge($documents);
         }
 
         // O front envia o CEP sem máscara, mas `formato_cep` só aceita 00000-000.
-        foreach (['address', 'representative_address'] as $key) {
-            $address = $this->input($key);
+        $address = $this->input('address');
 
-            if (is_array($address) && array_key_exists('zip_code', $address)) {
-                $address['zip_code'] = maskZipCode($address['zip_code']);
-                $this->merge([$key => $address]);
-            }
+        if (is_array($address) && array_key_exists('zip_code', $address)) {
+            $address['zip_code'] = maskZipCode($address['zip_code']);
+            $this->merge(['address' => $address]);
         }
+
+        $this->normalizeRepresentatives();
     }
 
     public function rules(): array
@@ -72,15 +71,11 @@ class StoreClientRequest extends FormRequest
             'ie'           => 'nullable|string|max:255',
             'im'           => 'nullable|string|max:255',
             'has_login'    => 'nullable|boolean',
-            'representative_name' => 'required_if:type,pj|nullable|string|max:255',
-            'representative_cpf'  => ['required_if:type,pj', 'nullable', 'string', new Cpf],
             'quick_registration'  => 'nullable|boolean',
-        ];
+        ] + $this->representativeRules($this->input('type') === 'pj' && !$this->boolean('quick_registration'));
 
         if ($this->boolean('quick_registration')) {
             $data['phone_1'] = 'nullable|string|max:20';
-            $data['representative_name'] = 'nullable|string|max:255';
-            $data['representative_cpf'] = ['nullable', 'string', new Cpf];
         }
 
         if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
@@ -88,17 +83,6 @@ class StoreClientRequest extends FormRequest
         }
 
         return $data;
-    }
-
-    public function withValidator($validator): void
-    {
-        $validator->after(function ($validator) {
-            if ($this->input('type') !== 'pj' || $this->boolean('quick_registration') || $validator->errors()->isNotEmpty()) {
-                return;
-            }
-
-            $this->validateRepresentativeAddress($this->input('representative_address') ?? []);
-        });
     }
 
     public function messages(): array
@@ -127,12 +111,7 @@ class StoreClientRequest extends FormRequest
             'ie.max'              => 'O campo inscrição estadual deve ter no máximo 255 caracteres.',
             'im.string'           => 'O campo inscrição municipal deve ser uma string.',
             'im.max'              => 'O campo inscrição municipal deve ter no máximo 255 caracteres.',
-            'representative_name.required_if' => 'O nome do representante é obrigatório para pessoa jurídica.',
-            'representative_name.string'      => 'O nome do representante deve ser uma string.',
-            'representative_name.max'         => 'O nome do representante deve ter no máximo 255 caracteres.',
-            'representative_cpf.required_if'  => 'O CPF do representante é obrigatório para pessoa jurídica.',
-            'representative_cpf.string'       => 'O CPF do representante deve ser uma string.',
-        ];
+        ] + $this->representativeMessages();
     }
 
     public function validateAddress(array $data) {
@@ -161,33 +140,6 @@ class StoreClientRequest extends FormRequest
             'zip_code.required'    => 'O campo CEP é obrigatório',
             'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido',
             'referencia.string'    => 'O campo referencia deve ser uma string',
-        ]);
-
-        $validator->validate();
-    }
-
-    public function validateRepresentativeAddress(array $data)
-    {
-        $validator = Validator::make($data, [
-            'street'     => ['required', 'string'],
-            'district'   => ['required', 'string'],
-            'complement' => ['nullable', 'string'],
-            'city_id'    => ['required', 'exists:cities,id'],
-            'state_id'   => ['required', 'exists:states,id'],
-            'number'     => ['required', 'string', 'max:50'],
-            'zip_code'   => ['required', 'formato_cep'],
-            'reference'  => ['nullable', 'string'],
-        ], [
-            'street.required'      => 'A rua do representante é obrigatória.',
-            'district.required'    => 'O bairro do representante é obrigatório.',
-            'city_id.required'     => 'A cidade do representante é obrigatória.',
-            'city_id.exists'       => 'A cidade do representante deve ser uma cidade válida.',
-            'state_id.required'    => 'O estado do representante é obrigatório.',
-            'state_id.exists'      => 'O estado do representante deve ser um estado válido.',
-            'number.required'      => 'O número do endereço do representante é obrigatório.',
-            'number.max'           => 'O número do endereço do representante não pode ter mais de 50 caracteres.',
-            'zip_code.required'    => 'O CEP do representante é obrigatório.',
-            'zip_code.formato_cep' => 'O CEP do representante deve ser um CEP válido.',
         ]);
 
         $validator->validate();

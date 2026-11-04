@@ -104,6 +104,14 @@
             margin-top: 50px;
         }
 
+        .signature .party {
+            page-break-inside: avoid;
+        }
+
+        .signature .party + .party {
+            margin-top: 50px;
+        }
+
         /* Regra no próprio `p` é necessária: a de cima é herdada e perde
            para o `p { text-align: justify }` das cláusulas. */
         .signature p,
@@ -137,10 +145,11 @@
             <strong>CONTRATANTE:</strong> {{ $contract['contractant']['name'] }}, pessoa jurídica de direito privado,
             inscrita no CNPJ sob o n°: {{ $contract['contractant']['document'] }}, com sede na
             {{ $contract['contractant']['address'] }}{{ $contract['contractant']['email'] ? ', Email: ' . $contract['contractant']['email'] : '' }}, neste ato representada por
-            {{ $contract['contractant']['representative']['name'] }}, CPF
-            {{ $contract['contractant']['representative']['cpf'] }}, residente e domiciliado na
-            {{ $contract['contractant']['representative']['address'] }}, doravante denominado
-            <strong>CONTRATANTE</strong>, resolvem assinar o presente CONTRATO, aplicando-se a este suas disposições
+            @foreach ($contract['contractant']['representatives'] as $representative)
+                {{ $representative['name'] }}, CPF {{ $representative['cpf'] }}, residente e domiciliado na
+                {{ $representative['address'] }}{{ $loop->last ? ',' : ($loop->remaining === 1 ? '; e por' : ';') }}
+            @endforeach
+            doravante denominado <strong>CONTRATANTE</strong>, resolvem assinar o presente CONTRATO, aplicando-se a este suas disposições
             irrestrita e incondicionalmente, conforme cláusulas e condições seguintes:
         </p>
     @else
@@ -172,24 +181,35 @@
     </p>
 
     <div class="signature">
-        <p>_________________________________________</p>
-        <p>{{ $contract['contractant']['name'] }}</p>
         @if ($contract['contractant']['is_company'])
-            <p>CNPJ: {{ $contract['contractant']['document'] }}</p>
-            <p>Representado por: {{ $contract['contractant']['representative']['name'] }}</p>
-            <p>CPF: {{ $contract['contractant']['representative']['cpf'] }}</p>
+            @foreach ($contract['contractant']['representatives'] as $representative)
+                <div class="party">
+                    <p>_________________________________________</p>
+                    <p>{{ $contract['contractant']['name'] }}</p>
+                    <p>CNPJ: {{ $contract['contractant']['document'] }}</p>
+                    <p>Representado por: {{ $representative['name'] }}</p>
+                    <p>CPF: {{ $representative['cpf'] }}</p>
+                    <p>CONTRATANTE</p>
+                </div>
+            @endforeach
         @else
-            <p>CPF: {{ $contract['contractant']['document'] }}</p>
-            @if ($contract['contractant']['rg'])
-                <p>RG: {{ $contract['contractant']['rg'] }}</p>
-            @endif
+            <div class="party">
+                <p>_________________________________________</p>
+                <p>{{ $contract['contractant']['name'] }}</p>
+                <p>CPF: {{ $contract['contractant']['document'] }}</p>
+                @if ($contract['contractant']['rg'])
+                    <p>RG: {{ $contract['contractant']['rg'] }}</p>
+                @endif
+                <p>CONTRATANTE</p>
+            </div>
         @endif
-        <p>CONTRATANTE</p>
 
-        <p style="margin-top: 50px;">_________________________________________</p>
-        <p>Pinheiro e Baltazar Ltda</p>
-        <p>CNPJ: 26.282.057/0001-14</p>
-        <p>CONTRATADO</p>
+        <div class="party">
+            <p>_________________________________________</p>
+            <p>Pinheiro e Baltazar Ltda</p>
+            <p>CNPJ: 26.282.057/0001-14</p>
+            <p>CONTRATADO</p>
+        </div>
     </div>
 
     <table class="witnesses" style="width: 100%; margin-top: 65px;">

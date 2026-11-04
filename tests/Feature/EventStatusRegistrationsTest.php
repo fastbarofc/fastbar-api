@@ -166,12 +166,10 @@ class EventStatusRegistrationsTest extends TestCase
             'name' => 'Empresa Ltda',
             'type' => 'pj',
             'phone_1' => '11999999999',
-            'representative_name' => 'João',
-            'representative_cpf' => '52998224725',
         ]);
 
         $this->createAddress($client, AddressTypeEnum::MAIN);
-        $this->createAddress($client, AddressTypeEnum::REPRESENTATIVE);
+        $this->createAddress($client->representatives()->create(['name' => 'João', 'cpf' => '52998224725']), AddressTypeEnum::REPRESENTATIVE);
 
         return $client;
     }

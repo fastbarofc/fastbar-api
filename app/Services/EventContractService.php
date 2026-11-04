@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Address;
 use App\Models\Client;
+use App\Models\ClientRepresentative;
 use App\Models\ContractTemplate;
 use App\Models\Event;
 use App\Models\EventKit;
@@ -31,6 +32,8 @@ class EventContractService
      * fase em que ele é gerado, antes de o evento seguir para Planejamento.
      */
     public const PRINTABLE_STATUSES = ['Contrato', 'Fechado', 'Planejamento', 'Concluído'];
+
+    private const REPRESENTATIVE_FIELDS = ['name' => 'Nome', 'cpf' => 'CPF', 'address' => 'Endereço'];
 
     /**
      * Logo, marca d'água e filete extraídos da arte do contrato Fast Bar.
@@ -65,7 +68,51 @@ class EventContractService
 
         return [
             'menu_modality' => $saved['menu_modality'] ?? '',
+            'representative_ids' => self::representativeIds($event),
         ];
+    }
+
+    /** Os marcados na última impressão; sem marcação salva (ou se todos saíram do cadastro), todos do cliente. */
+    public static function representativeIds(Event $event): array
+    {
+        $ids = $event->client?->representatives->pluck('id')->all() ?? [];
+        $saved = array_values(array_intersect($ids, $event->contract_print_data['representative_ids'] ?? []));
+
+        return $saved ?: $ids;
+    }
+
+    public static function representatives(Event $event): array
+    {
+        self::loadRelations($event);
+
+        if (!self::isCompany($event->client)) {
+            return [];
+        }
+
+        return $event->client->representatives
+            ->map(fn (ClientRepresentative $representative) => [
+                'id' => $representative->id,
+                'name' => $representative->name,
+                'cpf' => maskCpf($representative->cpf),
+                'missing_fields' => self::representativeMissingFields($representative),
+            ])
+            ->all();
+    }
+
+    public static function selectedRepresentatives(?Client $client, array $ids): Collection
+    {
+        return ($client?->representatives ?? collect())
+            ->filter(fn (ClientRepresentative $representative) => in_array($representative->id, $ids))
+            ->values();
+    }
+
+    private static function representativeMissingFields(ClientRepresentative $representative): array
+    {
+        return array_values(array_intersect_key(self::REPRESENTATIVE_FIELDS, array_filter([
+            'name' => blank($representative->name),
+            'cpf' => blank($representative->cpf),
+            'address' => !self::formatAddress($representative->address),
+        ])));
     }
 
     /** Pastas do Menu de drinks na ordem da aba; pasta sem drink em nenhum nível fica de fora. */
@@ -102,9 +149,10 @@ class EventContractService
     /**
      * Rótulos do que falta no cadastro para o contrato sair completo: os dados
      * do contratante do preâmbulo fixo e os campos que o texto das cláusulas
-     * deste evento usa. Campo removido do texto deixa de ser exigido.
+     * deste evento usa. Campo removido do texto deixa de ser exigido. Dos
+     * representantes, só os marcados para o contrato contam.
      */
-    public static function missingFields(Event $event): array
+    public static function missingFields(Event $event, array $representativeIds = []): array
     {
         self::loadRelations($event);
 
@@ -116,10 +164,16 @@ class EventContractService
             'Nome do cliente' => $client && !$client->name,
             ($isCompany ? 'CNPJ do cliente' : 'CPF do cliente') => $client && !($isCompany ? $client->cnpj : $client->cpf),
             'Endereço do cliente' => $client && !self::formatAddress($client->address),
-            'Nome do representante legal' => $isCompany && !$client->representative_name,
-            'CPF do representante legal' => $isCompany && !$client->representative_cpf,
-            'Endereço do representante legal' => $isCompany && !self::formatAddress($client->representativeAddress),
+            'Representante legal' => $isCompany && $client->representatives->isEmpty(),
         ]));
+
+        if ($isCompany) {
+            foreach (self::selectedRepresentatives($client, $representativeIds) as $representative) {
+                foreach (self::representativeMissingFields($representative) as $field) {
+                    $contractant[] = "{$field} do representante legal " . ($representative->name ?: "#{$representative->id}");
+                }
+            }
+        }
 
         $text = implode(' ', ContractTemplate::current()->sectionsWith($event->contract_sections));
         $values = self::variables($event);
@@ -143,7 +197,7 @@ class EventContractService
         return [
             'code' => $event->id,
             'issued_at' => Carbon::now(),
-            'contractant' => self::contractant($event->client),
+            'contractant' => self::contractant($event->client, $printable['representative_ids'] ?? []),
             'menu' => [
                 'modality' => $printable['menu_modality'] ?? '',
                 'folders' => self::menu($event),
@@ -190,8 +244,8 @@ class EventContractService
         $event->loadMissing([
             'client.address.state',
             'client.address.city.state',
-            'client.representativeAddress.state',
-            'client.representativeAddress.city.state',
+            'client.representatives.address.state',
+            'client.representatives.address.city.state',
             'eventPlace',
             'eventBatches',
             'paymentPlan.paymentMethod',
@@ -246,7 +300,7 @@ class EventContractService
         return (float) $value > 0 ? number_format((float) $value, 2, ',', '.') : null;
     }
 
-    public static function contractant(?Client $client): array
+    public static function contractant(?Client $client, array $representativeIds = []): array
     {
         $isCompany = self::isCompany($client);
 
@@ -260,11 +314,15 @@ class EventContractService
             'rg' => $client?->rg ?: null,
             'email' => $client?->email ?: null,
             'address' => self::formatAddress($client?->address) ?? 'Não informado',
-            'representative' => $isCompany ? [
-                'name' => $client?->representative_name,
-                'cpf' => maskCpf($client?->representative_cpf),
-                'address' => self::formatAddress($client?->representativeAddress) ?? 'Não informado',
-            ] : null,
+            'representatives' => $isCompany
+                ? self::selectedRepresentatives($client, $representativeIds)
+                    ->map(fn (ClientRepresentative $representative) => [
+                        'name' => $representative->name,
+                        'cpf' => maskCpf($representative->cpf),
+                        'address' => self::formatAddress($representative->address) ?? 'Não informado',
+                    ])
+                    ->all()
+                : [],
         ];
     }
 

@@ -1252,6 +1252,7 @@ class EventController extends Controller
         return response()->json([
             'data' => EventContractService::printableDefaults($event) + [
                 'menu' => EventContractService::menu($event),
+                'representatives' => EventContractService::representatives($event),
                 'missing_fields' => EventContractService::missingFields($event),
             ],
         ]);
@@ -1267,12 +1268,21 @@ class EventController extends Controller
             ], 400);
         }
 
-        $missing = EventContractService::missingFields($event);
+        $printable = $request->validated();
+        $representativeIds = $printable['representative_ids'] ?? [];
+        $missing = EventContractService::missingFields($event, $representativeIds);
 
         if ($missing) {
             return response()->json([
                 'message' => 'Preencha e salve antes de gerar o contrato: ' . implode(', ', $missing) . '.',
                 'missing_fields' => $missing,
+            ], 422);
+        }
+
+        if (EventContractService::isCompany($event->client)
+            && EventContractService::selectedRepresentatives($event->client, $representativeIds)->isEmpty()) {
+            return response()->json([
+                'message' => 'Marque pelo menos um representante legal para aparecer no contrato.',
             ], 422);
         }
 
@@ -1282,7 +1292,6 @@ class EventController extends Controller
             ], 422);
         }
 
-        $printable = $request->validated();
         $event->update(['contract_print_data' => $printable]);
 
         $contract = EventContractService::build($event, $printable);

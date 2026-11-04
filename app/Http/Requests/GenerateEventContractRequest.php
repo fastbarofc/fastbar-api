@@ -15,6 +15,8 @@ class GenerateEventContractRequest extends FormRequest
     {
         return [
             'menu_modality' => 'required|string|max:255',
+            'representative_ids' => 'nullable|array',
+            'representative_ids.*' => 'integer',
         ];
     }
 
