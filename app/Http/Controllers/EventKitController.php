@@ -12,13 +12,15 @@ use App\Models\Kit;
 use App\Models\Product;
 use App\Services\DrinkTreeService;
 use App\Services\EventDrinkMenuHistoryService;
+use App\Services\EventDrinkMenuService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class EventKitController extends Controller
 {
-    public function __construct(protected EventDrinkMenuHistoryService $drinkMenuHistory)
-    {
+    public function __construct(
+        protected EventDrinkMenuHistoryService $drinkMenuHistory,
+        protected EventDrinkMenuService $drinkMenu,
+    ) {
         //$this->authorizeResource(EventKitController::class, 'event_kit'); TODO: Implementar
     }
 
@@ -118,15 +120,8 @@ class EventKitController extends Controller
         $data = $request->all();
 
         if (empty($data['type']) || $data['type'] != 'product') {
-            $eventKitId = $this->checkKitParent(null, $kit, $data['event_id']);
-            $eventKit = EventKit::find($eventKitId);
-            $ordination = $this->getKitOrdination($eventKitId);
-            $this->transformKitToEventKit($kit, $eventKit);
-            $eventKit = EventKit::find($eventKitId);
-            while (!empty($eventKit->event_kit_id)) {
-                $eventKit = EventKit::find($eventKit->event_kit_id);
-            }
-            return response()->json(new EventKitTreeResource($eventKit), 201);
+            $eventKit = $this->drinkMenu->addFolder($data['event_id'], $kit);
+            return response()->json(new EventKitTreeResource($this->rootOf($eventKit)), 201);
         }
 
         $product = Product::find($data['id']);
@@ -135,141 +130,18 @@ class EventKitController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        $kit = Kit::find($data['kit_id']);
-        $eventKitId = $this->checkKitParent(null, $kit, $data['event_id']);
-        $ordination = $this->getProductOrdination($eventKitId);
+        $eventKit = $this->drinkMenu->addDrink($data['event_id'], Kit::find($data['kit_id']), $product);
 
-        $kitProduct = $kit->products()->where('product_id', $data['id'])->first();
+        return response()->json(new EventKitTreeResource($this->rootOf($eventKit)), 201);
+    }
 
-        $pivotData = [
-            'ordination' => $ordination,
-            'optional' => $kitProduct ? ($kitProduct->pivot->optional ?? false) : false,
-            'checklist' => $kitProduct ? ($kitProduct->pivot->checklist ?? false) : false,
-            'observation' => $kitProduct ? ($kitProduct->pivot->observation ?? null) : null,
-        ];
-
-        if (!$product->eventKits()->where('event_kits.id', $eventKitId)->exists()) {
-            $product->eventKits()->attach($eventKitId, $pivotData);
-        }
-        $eventKit = EventKit::find($eventKitId);
+    private function rootOf(EventKit $eventKit): EventKit
+    {
         while (!empty($eventKit->event_kit_id)) {
             $eventKit = EventKit::find($eventKit->event_kit_id);
         }
-        return response()->json(new EventKitTreeResource($eventKit), 201);
 
-        try {
-            $ordination = $this->getProductOrdination($eventKitId);
-            $product->eventKits()->attach($eventKitId, ['ordination' => $ordination]);
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            return response()->json(['error' => 'Error creating kit'], 500);
-        }
-        $product->type = 'product';
-        return response()->json(['data' => $product], 201);
-    }
-
-    private function getKitOrdination($eventKitId)
-    {
-        $eventKit = EventKit::find($eventKitId);
-        $kits = EventKit::where('event_kit_id', $eventKit->event_kit_id)->get();
-        return $kits->count() + 1;
-    }
-
-    private function getProductOrdination($eventKitId)
-    {
-        $eventKit = EventKit::find($eventKitId);
-        $this->fixProductEmptyOrdination($eventKit);
-        $products = $eventKit->products;
-        return $products->count() + 1;
-    }
-
-    private function fixProductEmptyOrdination($eventKit)
-    {
-        $products = $eventKit->products()->wherePivot('ordination', null)->get();
-        $totalProducts = $eventKit->products()->wherePivot('ordination', '!=', null)->get()->count();
-        foreach ($products as $index => $product) {
-            $product->pivot->update(['ordination' => $totalProducts + $index + 1]);
-        }
-    }
-
-    public function checkKitParent($parentId, $kit, $eventId)
-    {
-        if (!empty($kit->kit_id)) {
-            $parentKit = Kit::find($kit->kit_id);
-            if ($parentKit) {
-                $parentId = $this->checkKitParent($parentId, $parentKit, $eventId);
-            }
-        }
-
-        $eventKit = EventKit::where('event_kit_id', $parentId)->where('event_id', $eventId)->where('name', $kit->name)->first();
-
-        if (empty($eventKit)) {
-            $eventKit = EventKit::create([
-                'name' => $kit->name,
-                'event_id' => $eventId,
-                'event_kit_id' => $parentId,
-                'ordination' => EventKit::where('event_kit_id', $parentId)->where('event_id', $eventId)->count() + 1,
-                'themed_table' => $kit->themed_table ?? false,
-                'optional' => $kit->optional ?? false,
-                'checklist' => $kit->checklist ?? false,
-                'observation' => $kit->observation ?? null,
-            ]);
-        }
-
-        return $eventKit->id;
-    }
-
-    public function transformKitToEventKit($kit, $eventKit)
-    {
-        if ($kit && $kit->has_children) {
-            $children = $kit->children;
-            foreach ($children as $child) {
-                if ($child['data']['type'] == 'product') {
-                    $product = Product::find($child['data']['id']);
-
-                    if ($eventKit->products()->where('products.id', $product->id)->exists()) {
-                        continue;
-                    }
-
-                    $ordination = $this->getProductOrdination($eventKit->id);
-
-                    $kitProduct = $kit->products()->where('product_id', $child['data']['id'])->first();
-
-                    $pivotData = [
-                        'ordination' => $ordination,
-                        'optional' => $kitProduct ? ($kitProduct->pivot->optional ?? false) : ($child['data']['optional'] ?? false),
-                        'checklist' => $kitProduct ? ($kitProduct->pivot->checklist ?? false) : ($child['data']['checklist'] ?? false),
-                        'observation' => $kitProduct ? ($kitProduct->pivot->observation ?? null) : ($child['data']['observation'] ?? null),
-                    ];
-
-                    $product->eventKits()->attach($eventKit->id, $pivotData);
-                    continue;
-                }
-                $data = $child['data'];
-                $data['event_id'] = $eventKit->event_id;
-                $data['event_kit_id'] = $eventKit->id;
-
-                $originalKit = Kit::find($child['data']['id']);
-                if ($originalKit) {
-                    $data['themed_table'] = $originalKit->themed_table ?? false;
-                    $data['optional'] = $originalKit->optional ?? false;
-                    $data['checklist'] = $originalKit->checklist ?? false;
-                    $data['observation'] = $originalKit->observation ?? null;
-                } else {
-                    $data['themed_table'] = $child['data']['themed_table'] ?? false;
-                    $data['optional'] = $child['data']['optional'] ?? false;
-                    $data['checklist'] = $child['data']['checklist'] ?? false;
-                    $data['observation'] = $child['data']['observation'] ?? null;
-                }
-
-                $data['ordination'] = EventKit::where('event_kit_id', $data['event_kit_id'])->where('event_id', $data['event_id'])->get()->count() + 1;
-                $newEventKit = EventKit::create($data);
-                $newKit = Kit::find($child['data']['id']);
-                if ($newKit && $newKit->has_children) {
-                    $this->transformKitToEventKit($newKit, $newEventKit);
-                }
-            }
-        }
+        return $eventKit;
     }
 
     public function changeOrdination($movingItem, Request $request)
