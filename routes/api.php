@@ -57,6 +57,7 @@ use App\Http\Controllers\CostCenterController;
 use App\Http\Controllers\PayableController;
 use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ChartController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\StockController;
@@ -259,6 +260,10 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/reports/clients', [ReportController::class, 'clients']);
     Route::get('/reports/{report}', [ReportController::class, 'show'])->whereIn('report', array_keys(ReportController::REPORTS));
     Route::get('/reports/{report}/export', [ReportController::class, 'export'])->whereIn('report', array_keys(ReportController::REPORTS));
+
+    Route::get('/charts/financial', [ChartController::class, 'financial']);
+    Route::get('/charts/commercial', [ChartController::class, 'commercial']);
+    Route::get('/charts/monthly', [ChartController::class, 'monthly']);
 
     Route::post('/contract-template/save', [ContractTemplateController::class, 'save']);
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
