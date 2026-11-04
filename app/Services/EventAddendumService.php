@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Event;
 use App\Models\EventAddendum;
 use App\Models\EventHistory;
+use App\Models\EventStatus;
 use App\Models\Kit;
 use App\Models\Product;
 use Carbon\Carbon;
@@ -40,7 +41,7 @@ class EventAddendumService
 
     public static function canCreate(Event $event): bool
     {
-        return EventContractService::isPrintable($event);
+        return in_array($event->eventStatus?->name, EventStatus::ALLOWS_ADDENDUM, true);
     }
 
     public static function fileName(EventAddendum $addendum): string

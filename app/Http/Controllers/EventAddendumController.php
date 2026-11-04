@@ -6,6 +6,7 @@ use App\Http\Requests\StoreEventAddendumRequest;
 use App\Http\Resources\EventAddendumResource;
 use App\Models\Event;
 use App\Models\EventAddendum;
+use App\Models\EventStatus;
 use App\Services\EventAddendumService;
 use App\Services\EventContractService;
 use App\Services\FileService;
@@ -24,7 +25,7 @@ class EventAddendumController extends Controller
             'data' => EventAddendumResource::collection($event->addendums->sortByDesc('number')->values()),
             'context' => [
                 'can_create' => EventAddendumService::canCreate($event),
-                'statuses' => EventContractService::PRINTABLE_STATUSES,
+                'statuses' => EventStatus::ALLOWS_ADDENDUM,
                 'guest_unit_value' => (float) $event->guest_unit_value,
                 'event_guests' => (int) $event->event_guests,
                 'total_value' => (float) $event->total_value,
@@ -39,7 +40,7 @@ class EventAddendumController extends Controller
 
         if (!EventAddendumService::canCreate($event)) {
             return response()->json([
-                'message' => 'O aditivo só pode ser feito com o evento em ' . implode(', ', EventContractService::PRINTABLE_STATUSES) . '.',
+                'message' => 'O aditivo só pode ser feito com o evento em ' . implode(', ', EventStatus::ALLOWS_ADDENDUM) . '.',
             ], 422);
         }
 

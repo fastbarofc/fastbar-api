@@ -28,6 +28,9 @@ class EventStatus extends Model implements AuditableInterface
 
     public const PRINTABLE = ['Fechado', 'Planejamento', 'Concluído'];
 
+    // Aditivo muda contrato assinado; em Contrato o próprio contrato ainda é gerado de novo.
+    public const ALLOWS_ADDENDUM = ['Fechado', 'Planejamento', 'Concluído'];
+
     // Pré-Reserva não pode cair no local e dia de um evento confirmado, mas duas pré-reservas convivem.
     public const CHECKS_PLACE_CONFLICT = ['Pré-Reserva', 'Contrato', 'Fechado', 'Planejamento', 'Concluído'];
 

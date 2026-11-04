@@ -205,15 +205,23 @@ class EventAddendumTest extends TestCase
             ->assertJsonValidationErrors('types');
     }
 
-    public function test_addendum_is_only_allowed_once_the_event_has_a_contract(): void
+    public function test_addendum_is_only_allowed_once_the_contract_is_signed(): void
     {
-        $event = $this->createEvent('Pré-Reserva');
+        foreach (['Aberto', 'Pré-Reserva', 'Contrato'] as $status) {
+            $event = $this->createEvent($status);
 
-        $this->postJson("/api/events/{$event->id}/addendums", ['types' => ['guests'], 'guests_added' => 10])
-            ->assertUnprocessable();
+            $this->postJson("/api/events/{$event->id}/addendums", ['types' => ['guests'], 'guests_added' => 10])
+                ->assertUnprocessable()
+                ->assertJsonPath('message', 'O aditivo só pode ser feito com o evento em Fechado, Planejamento, Concluído.');
+
+            $this->getJson("/api/events/{$event->id}/addendums")->assertJsonPath('context.can_create', false);
+        }
 
         $this->assertSame(0, EventAddendum::count());
-        $this->getJson("/api/events/{$event->id}/addendums")->assertJsonPath('context.can_create', false);
+
+        foreach (['Fechado', 'Planejamento', 'Concluído'] as $status) {
+            $this->getJson('/api/events/' . $this->createEvent($status)->id . '/addendums')->assertJsonPath('context.can_create', true);
+        }
     }
 
     public function test_addendum_pdf_is_generated_from_the_recorded_document(): void
