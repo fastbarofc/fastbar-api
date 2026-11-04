@@ -81,6 +81,23 @@
 
         .menu-list {
             margin-top: 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .menu-list ul {
+            margin: 2px 0 6px;
+            padding-left: 18px;
+            list-style: none;
+        }
+
+        .menu-folder-name {
+            font-weight: bold;
+        }
+
+        .menu-drink::before {
+            content: '•';
+            margin-right: 6px;
         }
 
         .signature {
@@ -143,8 +160,8 @@
     </p>
     <p><strong>MODALIDADE ESCOLHIDA: {{ $contract['menu']['modality'] }}</strong></p>
     <ul class="menu-list">
-        @foreach ($contract['menu']['items'] as $item)
-            <li>{{ $item }}</li>
+        @foreach ($contract['menu']['folders'] as $folder)
+            @include('pdfs.partials.contract-menu-folder', ['folder' => $folder])
         @endforeach
     </ul>
 

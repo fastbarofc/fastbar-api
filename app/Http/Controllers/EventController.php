@@ -1237,7 +1237,7 @@ class EventController extends Controller
     {
         return response()->json([
             'data' => EventContractService::printableDefaults($event) + [
-                'drinks' => EventContractService::drinks($event),
+                'menu' => EventContractService::menu($event),
                 'missing_fields' => EventContractService::missingFields($event),
             ],
         ]);
@@ -1262,7 +1262,7 @@ class EventController extends Controller
             ], 422);
         }
 
-        if (!EventContractService::drinks($event)) {
+        if (!EventContractService::menu($event)) {
             return response()->json([
                 'message' => 'O evento não tem drinks cadastrados. Adicione os drinks no Menu de drinks do evento antes de gerar o contrato.',
             ], 422);

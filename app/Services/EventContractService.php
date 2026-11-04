@@ -17,8 +17,8 @@ use Illuminate\Support\Str;
  * O texto fixo do contrato mora no blade; daqui saem apenas as partes que
  * mudam de evento para evento. As cláusulas vêm do modelo de contrato, com
  * o que foi ajustado no próprio evento por cima, e os `{{campos}}` delas são
- * trocados pelos dados do evento. Os itens do cardápio são os drinks
- * cadastrados no evento. A modalidade não existe no cadastro: é digitada na
+ * trocados pelos dados do evento. O cardápio é a árvore do Menu de drinks
+ * do evento. A modalidade não existe no cadastro: é digitada na
  * hora de imprimir e fica gravada em `contract_print_data`, para voltar
  * preenchida na próxima impressão.
  */
@@ -68,26 +68,25 @@ class EventContractService
         ];
     }
 
-    /** Drinks de todas as pastas do evento, na ordem em que aparecem na árvore. */
-    public static function drinks(Event $event): array
+    /** Pastas do Menu de drinks na ordem da aba; pasta sem drink em nenhum nível fica de fora. */
+    public static function menu(Event $event): array
     {
-        return $event->eventKits()
-            ->whereNull('event_kit_id')
-            ->with(['products', 'eventKits'])
-            ->get()
-            ->sortBy('ordination')
-            ->flatMap(fn (EventKit $kit) => self::kitDrinks($kit))
-            ->unique()
-            ->values()
-            ->all();
+        return self::menuFolders($event->eventKits()->with('products')->get(), null);
     }
 
-    private static function kitDrinks(EventKit $kit): Collection
+    private static function menuFolders(Collection $folders, ?int $parentId): array
     {
-        return $kit->products
-            ->sortBy('pivot.ordination')
-            ->pluck('name')
-            ->merge($kit->eventKits->sortBy('ordination')->flatMap(fn (EventKit $child) => self::kitDrinks($child)));
+        return $folders
+            ->where('event_kit_id', $parentId)
+            ->sortBy('ordination')
+            ->map(fn (EventKit $folder) => [
+                'name' => $folder->name,
+                'drinks' => $folder->products->sortBy('pivot.ordination')->pluck('name')->values()->all(),
+                'folders' => self::menuFolders($folders, $folder->id),
+            ])
+            ->filter(fn (array $folder) => $folder['drinks'] || $folder['folders'])
+            ->values()
+            ->all();
     }
 
     public static function isPrintable(Event $event): bool
@@ -147,7 +146,7 @@ class EventContractService
             'contractant' => self::contractant($event->client),
             'menu' => [
                 'modality' => $printable['menu_modality'] ?? '',
-                'items' => self::drinks($event),
+                'folders' => self::menu($event),
             ],
             'sections' => array_map(
                 fn (string $html) => strtr($html, $replacements),

@@ -45,7 +45,10 @@ class EventContractVersionTest extends TestCase
         $this->assertNull($first->signed_at);
         $this->assertSame([], $first->properties_diff);
         $this->assertSame('Casamento', $first->properties['event_name']);
-        $this->assertEquals(['modality' => 'Completa', 'items' => ['Caipirinha']], $first->properties['menu']);
+        $this->assertEquals(
+            ['modality' => 'Completa', 'folders' => [['name' => 'Drinks', 'drinks' => ['Caipirinha'], 'folders' => []]]],
+            $first->properties['menu'],
+        );
         $this->assertStringContainsString('Cláusula de teste.', $first->body);
 
         $event->update(['name' => 'Casamento Ana e João']);
@@ -61,6 +64,40 @@ class EventContractVersionTest extends TestCase
         $this->assertArrayNotHasKey('sections', $diff['modified']);
         $this->assertSame([], $diff['added']);
         $this->assertSame([], $diff['removed']);
+    }
+
+    public function test_contract_menu_shows_folders_subfolders_and_drinks_in_the_menu_tab_order(): void
+    {
+        $event = $this->createPrintableEvent();
+        $drinks = EventKit::where('event_id', $event->id)->sole();
+
+        $plan = EventKit::create(['event_id' => $event->id, 'name' => 'Plano Fast Concept', 'ordination' => 0]);
+        $plan->products()->attach(Product::create(['name' => 'Mojito']), ['ordination' => 2]);
+        $plan->products()->attach(Product::create(['name' => 'Fast fruit']), ['ordination' => 1]);
+        $gins = EventKit::create(['event_id' => $event->id, 'event_kit_id' => $plan->id, 'name' => 'Gins', 'ordination' => 1]);
+        $gins->products()->attach(Product::create(['name' => 'Gin tônica']), ['ordination' => 1]);
+        EventKit::create(['event_id' => $event->id, 'event_kit_id' => $plan->id, 'name' => 'Vazia', 'ordination' => 2]);
+
+        $expected = [
+            [
+                'name' => 'Plano Fast Concept',
+                'drinks' => ['Fast fruit', 'Mojito'],
+                'folders' => [['name' => 'Gins', 'drinks' => ['Gin tônica'], 'folders' => []]],
+            ],
+            ['name' => $drinks->name, 'drinks' => ['Caipirinha'], 'folders' => []],
+        ];
+
+        $this->assertSame($expected, EventContractService::menu($event));
+        $this->getJson("/api/events/{$event->id}/contract-data")->assertOk()->assertJsonPath('data.menu', $expected);
+
+        $contract = EventContractService::build($event, ['menu_modality' => 'Completa']);
+        $html = view('pdfs.event-contract-pdf', ['contract' => $contract, 'brand' => EventContractService::brandAssets()])->render();
+
+        $this->assertMatchesRegularExpression(
+            '/Plano Fast Concept.*Fast fruit.*Mojito.*Gins.*Gin tônica.*<\/ul>.*Drinks.*Caipirinha/s',
+            $html,
+        );
+        $this->assertStringNotContainsString('Vazia', $html);
     }
 
     public function test_contract_that_cannot_be_generated_is_not_recorded(): void
