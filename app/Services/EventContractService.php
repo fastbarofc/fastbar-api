@@ -194,6 +194,11 @@ class EventContractService
             ->mapWithKeys(fn (?string $value, string $key) => ['{{' . $key . '}}' => str_replace("\n", '<br>', e($value ?? ''))])
             ->all();
 
+        $sections = array_map(
+            fn (string $html) => strtr($html, $replacements),
+            ContractTemplate::current()->sectionsWith($event->contract_sections)
+        );
+
         return [
             'code' => $event->id,
             'issued_at' => Carbon::now(),
@@ -202,11 +207,22 @@ class EventContractService
                 'modality' => $printable['menu_modality'] ?? '',
                 'folders' => self::menu($event),
             ],
-            'sections' => array_map(
-                fn (string $html) => strtr($html, $replacements),
-                ContractTemplate::current()->sectionsWith($event->contract_sections)
-            ),
+            'sections' => $sections,
+            'parties_closing' => self::continueParagraph($sections['parties_closing']),
         ];
+    }
+
+    /**
+     * O fecho da qualificação continua a frase do contratante: o primeiro parágrafo
+     * entra no mesmo parágrafo do PDF e o que vier depois fica em bloco próprio.
+     */
+    private static function continueParagraph(string $html): array
+    {
+        if (preg_match('/^\s*<p\b[^>]*>(.*?)<\/p>(.*)$/s', $html, $matches)) {
+            return ['inline' => $matches[1], 'after' => $matches[2]];
+        }
+
+        return ['inline' => '', 'after' => $html];
     }
 
     /**

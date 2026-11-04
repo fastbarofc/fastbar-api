@@ -9,8 +9,8 @@ class ContractTemplate extends Model
 {
     use HasFactory;
 
-    /** Trechos editáveis do contrato, na ordem em que aparecem no PDF: antes e depois da cláusula do cardápio. */
-    public const SECTIONS = ['clauses_before_menu', 'clauses_after_menu'];
+    /** Trechos editáveis do contrato, na ordem em que aparecem no PDF: o fecho da qualificação das partes e as cláusulas antes e depois do cardápio. */
+    public const SECTIONS = ['parties_closing', 'clauses_before_menu', 'clauses_after_menu'];
 
     /** Campos que o texto guarda como `{{chave}}` e que são trocados pelos dados do evento na emissão. */
     public const VARIABLES = [

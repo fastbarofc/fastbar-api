@@ -149,18 +149,18 @@
                 {{ $representative['name'] }}, CPF {{ $representative['cpf'] }}, residente e domiciliado na
                 {{ $representative['address'] }}{{ $loop->last ? ',' : ($loop->remaining === 1 ? '; e por' : ';') }}
             @endforeach
-            doravante denominado <strong>CONTRATANTE</strong>, resolvem assinar o presente CONTRATO, aplicando-se a este suas disposições
-            irrestrita e incondicionalmente, conforme cláusulas e condições seguintes:
+            doravante denominado <strong>CONTRATANTE</strong>, {!! $contract['parties_closing']['inline'] !!}
         </p>
     @else
         <p>
             <strong>CONTRATANTE:</strong> {{ $contract['contractant']['name'] }}, CPF
             {{ $contract['contractant']['document'] }}{{ $contract['contractant']['rg'] ? ', RG ' . $contract['contractant']['rg'] : '' }}{{ $contract['contractant']['email'] ? ', Email: ' . $contract['contractant']['email'] : '' }}
             residente e domiciliado na {{ $contract['contractant']['address'] }} doravante denominado
-            <strong>CONTRATANTE</strong>, resolvem assinar o presente CONTRATO, aplicando-se a este suas disposições
-            irrestrita e incondicionalmente, conforme cláusulas e condições seguintes:
+            <strong>CONTRATANTE</strong>, {!! $contract['parties_closing']['inline'] !!}
         </p>
     @endif
+
+    <div class="clauses">{!! $contract['parties_closing']['after'] !!}</div>
 
     <div class="clauses">{!! $contract['sections']['clauses_before_menu'] !!}</div>
 
