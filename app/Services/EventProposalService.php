@@ -8,10 +8,9 @@ use Carbon\Carbon;
 /**
  * Monta os dados da proposta comercial (Fast Bar).
  *
- * A proposta nao e persistida: o que sai daqui e apenas o preenchimento
- * inicial do formulario. O usuario ajusta o que faltar, marca os blocos
- * opcionais que quer no PDF e o payload que ele devolver e o que vai para o
- * PDF.
+ * O que sai daqui e o preenchimento inicial do formulario. O usuario ajusta o
+ * que faltar, marca os blocos opcionais que quer no PDF e o payload que ele
+ * devolver e o que vai para o PDF e fica gravado em EventProposal.
  */
 class EventProposalService
 {
@@ -183,6 +182,11 @@ class EventProposalService
         }
 
         return $pages;
+    }
+
+    public static function blocks(array $proposal): array
+    {
+        return array_merge(self::budgetBlocks($proposal), self::summaryBlocks($proposal));
     }
 
     /** Coluna da esquerda: orcamento detalhado e observacoes. */

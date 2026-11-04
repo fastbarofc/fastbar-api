@@ -247,6 +247,11 @@ class Event extends Model implements AuditableInterface
         return $this->hasMany(EventAddendum::class);
     }
 
+    public function proposals()
+    {
+        return $this->hasMany(EventProposal::class);
+    }
+
     /** Mesma conta do calculateTotal da aba Valores (event-batches.component.ts no front); mudar uma exige mudar a outra. */
     public function calculatedTotals(): array
     {

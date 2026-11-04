@@ -12,6 +12,7 @@ use App\Http\Resources\EventResource;
 use App\Http\Resources\EventListResource;
 use App\Http\Resources\ExtraSaleResource;
 use App\Http\Resources\EventKitResource;
+use App\Http\Resources\EventProposalResource;
 use App\Models\Event;
 use App\Models\EventGift;
 use App\Models\Material;
@@ -1067,15 +1068,26 @@ class EventController extends Controller
     }
 
     /**
-     * Preenchimento inicial do formulario de proposta: o que ja existe no
-     * evento vem preenchido, o resto vai vazio para o usuario completar.
+     * Preenchimento inicial do formulario de proposta: a ultima proposta gerada
+     * prevalece sobre os dados do evento, que so completam os blocos que ela nao usou.
      */
     public function proposalData(Event $event)
     {
+        $lastProposal = $event->proposals()->with('user.collaborator')->latest('id')->first();
+        $defaults = EventProposalService::defaults($event);
+
         return response()->json([
-            'data' => EventProposalService::defaults($event),
+            'data' => $lastProposal ? array_merge($defaults, $lastProposal->data) : $defaults,
             'required_fields' => EventProposalService::requiredFields(),
+            'last_proposal' => $lastProposal ? new EventProposalResource($lastProposal) : null,
         ]);
+    }
+
+    public function proposalHistory(Event $event)
+    {
+        $proposals = $event->proposals()->with('user.collaborator')->orderByDesc('id')->get();
+
+        return response()->json(['data' => EventProposalResource::collection($proposals)]);
     }
 
     public function generateProposal(GenerateEventProposalRequest $request, Event $event)
@@ -1100,6 +1112,8 @@ class EventController extends Controller
                 'margin-right' => '0',
                 'dpi' => 96,
             ]);
+
+            $event->proposals()->create(['data' => $proposal, 'user_id' => auth()->id()]);
 
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {

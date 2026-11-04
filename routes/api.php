@@ -238,6 +238,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::delete('/events/{event}/legal-representative/{legalRepresentative}', [EventController::class, 'detachLegalRepresentative']);
     Route::post('/events/generate-budget/{event}', [EventController::class, 'generateBudget']);
     Route::get('/events/{event}/proposal-data', [EventController::class, 'proposalData']);
+    Route::get('/events/{event}/proposal-history', [EventController::class, 'proposalHistory']);
     Route::post('/events/generate-proposal/{event}', [EventController::class, 'generateProposal']);
     Route::post('/events/generate-letterhead-budget/{event}', [EventController::class, 'generateLetterheadBudget']);
     Route::get('/events/{event}/contract-data', [EventController::class, 'contractData']);
