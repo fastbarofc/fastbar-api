@@ -41,7 +41,7 @@ class EventDrinkMenuHistoryService
     }
 
     /** A ordenação fica de fora: reordenar grava a posição de todos os irmãos e lotaria o histórico. */
-    private function snapshot(int $eventId): array
+    public function snapshot(int $eventId): array
     {
         $folders = EventKit::with('products')->where('event_id', $eventId)->get()->keyBy('id');
 
@@ -87,12 +87,17 @@ class EventDrinkMenuHistoryService
         return $snapshot;
     }
 
-    private function log(int $eventId, array $before, array $after): void
+    public function changes(array $before, array $after): array
     {
-        $changes = [
+        return [
             ...$this->folderChanges($before, $after),
             ...$this->drinkChanges($before, $after),
         ];
+    }
+
+    private function log(int $eventId, array $before, array $after): void
+    {
+        $changes = $this->changes($before, $after);
 
         if (empty($changes)) {
             return;

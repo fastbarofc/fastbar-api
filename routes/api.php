@@ -22,6 +22,7 @@ use App\Http\Controllers\EventKitController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\EventTypeController;
 use App\Http\Controllers\EventPlaceController;
+use App\Http\Controllers\EventAddendumController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\PartnerDirectoryController;
@@ -242,6 +243,9 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/events/{event}/contract-data', [EventController::class, 'contractData']);
     Route::get('/events/{event}/contract-history', [EventController::class, 'contractHistory']);
     Route::post('/events/generate-event-contract/{event}', [EventController::class, 'generateEventContract']);
+    Route::get('/events/{event}/addendums', [EventAddendumController::class, 'index']);
+    Route::post('/events/{event}/addendums', [EventAddendumController::class, 'store']);
+    Route::post('/events/{event}/addendums/{addendum}/pdf', [EventAddendumController::class, 'pdf'])->scopeBindings();
     Route::post('/events/generate-closure/{event}', [EventController::class, 'generateClosure']);
     Route::post('/events/generate-summary/{event}', [EventController::class, 'generateSummary']);
     Route::post('/events/generate-menu/{event}', [EventController::class, 'generateMenu']);

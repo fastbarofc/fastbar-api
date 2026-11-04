@@ -12,6 +12,7 @@ class EventHistory extends Model
     protected $fillable = [
         'event_id',
         'user_id',
+        'event_addendum_id',
         'action',
         'changes',
     ];
@@ -30,5 +31,10 @@ class EventHistory extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function addendum()
+    {
+        return $this->belongsTo(EventAddendum::class, 'event_addendum_id');
     }
 }

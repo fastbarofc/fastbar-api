@@ -55,6 +55,7 @@ class EventHistoryService
         'post_event_consumption_report_file_url',
         'post_event_consumption_report_remove',
         'has_tasting',
+        'addendum_value',
     ];
 
     private array $fieldLabels = [
@@ -636,7 +637,7 @@ class EventHistoryService
     public function getEventHistory(int $eventId, int $perPage = 15)
     {
         return EventHistory::where('event_id', $eventId)
-            ->with(['user.collaborator.sector', 'user.collaborator.sectorOffice'])
+            ->with(['user.collaborator.sector', 'user.collaborator.sectorOffice', 'addendum'])
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }

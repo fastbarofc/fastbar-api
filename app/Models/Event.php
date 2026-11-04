@@ -242,6 +242,37 @@ class Event extends Model implements AuditableInterface
         return $this->hasMany(Contract::class);
     }
 
+    public function addendums()
+    {
+        return $this->hasMany(EventAddendum::class);
+    }
+
+    /** Mesma conta do calculateTotal da aba Valores (event-batches.component.ts no front); mudar uma exige mudar a outra. */
+    public function calculatedTotals(): array
+    {
+        $guests = (int) $this->event_guests;
+        $buffet = $guests * ((float) $this->guest_unit_value - (float) $this->unit_discount) + $guests * (float) $this->unit_insurance;
+        $subTotal = $buffet + (float) $this->lease - (float) $this->discount;
+
+        $total = $subTotal + (float) $this->addendum_value;
+        $totalGuests = $guests + (int) $this->parthenon_courtesies + (int) $this->partner_courtesies;
+
+        foreach ($this->eventBatches as $batch) {
+            $total += (int) $batch->guests * (float) $batch->unit_value;
+            $totalGuests += (int) $batch->guests;
+        }
+
+        if ($totalGuests < (int) $this->present_guests) {
+            $total += ((int) $this->present_guests - $totalGuests) * (float) $this->excess_unit_value;
+        }
+
+        return [
+            'buffet_value' => round($buffet, 2),
+            'sub_total' => round($subTotal, 2),
+            'total_value' => round($total, 2),
+        ];
+    }
+
     public function clients()
     {
         return $this->belongsToMany(Client::class, 'client_event');

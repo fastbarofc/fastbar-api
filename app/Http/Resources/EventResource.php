@@ -58,6 +58,7 @@ class EventResource extends JsonResource
             'discount'           => $this->discount,
             'unit_discount'      => $this->unit_discount,
             'total_value'        => $this->total_value,
+            'addendum_value'     => $this->addendum_value,
             'partner_id'         => $this->partner_id,
             'decorator_id'       => $this->decorator_id,
             'is_draft'           => $this->is_draft,

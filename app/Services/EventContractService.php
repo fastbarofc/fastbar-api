@@ -169,6 +169,23 @@ class EventContractService
         ];
     }
 
+    /** Dados do evento como a cláusula de objeto do contrato e do aditivo descrevem. */
+    public static function eventDetails(Event $event): array
+    {
+        self::loadRelations($event);
+
+        $values = self::variables($event);
+
+        return [
+            'name' => $values['event_name'],
+            'place' => $values['event_place'],
+            'date' => $values['event_date'],
+            'time' => $event->time ? Carbon::parse($event->time)->format('H:i') : null,
+            'duration' => $values['event_duration'],
+            'guests' => $values['event_guests'],
+        ];
+    }
+
     private static function loadRelations(Event $event): void
     {
         $event->loadMissing([
@@ -230,7 +247,7 @@ class EventContractService
         return (float) $value > 0 ? number_format((float) $value, 2, ',', '.') : null;
     }
 
-    private static function contractant(?Client $client): array
+    public static function contractant(?Client $client): array
     {
         $isCompany = self::isCompany($client);
 
