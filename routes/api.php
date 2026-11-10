@@ -64,6 +64,8 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\StockLevelController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\RequisitionController;
 use App\Http\Controllers\DevolutionController;
 
@@ -305,6 +307,14 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+
+    Route::get('tasks/form-data', [TaskController::class, 'formData'])->name('tasks.form-data');
+    Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
+    Route::get('tasks/{task}/comments', [TaskController::class, 'comments'])->name('tasks.comments');
+    Route::post('tasks/{task}/comments', [TaskController::class, 'storeComment'])->name('tasks.store-comment');
+    Route::delete('tasks/{task}/comments/{comment}', [TaskController::class, 'destroyComment'])->name('tasks.destroy-comment');
+    Route::resource('tasks', TaskController::class)->except(['create', 'edit']);
+    Route::resource('appointments', AppointmentController::class)->except(['create', 'edit']);
 
     Route::get('/events/{event}/duplicate', [EventController::class, 'duplicate']);
     Route::get('/events/{event}/history', [EventController::class, 'history'])->name('events.history');

@@ -168,6 +168,12 @@ class EventController extends Controller
 
         $query->whereDate('date', '>=', $start)->whereDate('date', '<', $end);
 
+        // Tela Início: só os eventos em que o usuário logado é o responsável.
+        if ($request->boolean('mine')) {
+            $userId = $request->user()->id;
+            $query->whereHas('collaborator', fn ($q) => $q->where('user_id', $userId));
+        }
+
         // Eager loading de tudo que o EventCalendarResource usa: evita N+1 e
         // permite montar o modal de detalhes sem nenhuma requisicao adicional.
         $query->with([
