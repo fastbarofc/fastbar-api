@@ -329,3 +329,13 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('activity-history', [\App\Http\Controllers\ActivityHistoryController::class, 'index'])->name('activity-history.index');
     Route::get('activity-history/filters', [\App\Http\Controllers\ActivityHistoryController::class, 'filters'])->name('activity-history.filters');
 });
+
+// Configurações > APIs: serviços de fora e suas chaves (só Administrador).
+Route::group(['middleware' => ['auth:api', 'admin']], function () {
+    Route::get('api-integrations', [\App\Http\Controllers\ApiIntegrationController::class, 'index'])->name('api-integrations.index');
+    Route::get('api-integrations/anthropic/spend', [\App\Http\Controllers\ApiIntegrationController::class, 'anthropicSpend'])->name('api-integrations.anthropic-spend');
+    Route::get('api-integrations/anthropic/spend-history', [\App\Http\Controllers\ApiIntegrationController::class, 'anthropicSpendHistory'])->name('api-integrations.anthropic-spend-history');
+    Route::put('api-integrations/{key}', [\App\Http\Controllers\ApiIntegrationController::class, 'update'])->name('api-integrations.update');
+    Route::delete('api-integrations/{key}', [\App\Http\Controllers\ApiIntegrationController::class, 'destroy'])->name('api-integrations.destroy');
+    Route::post('api-integrations/{key}/test', [\App\Http\Controllers\ApiIntegrationController::class, 'test'])->name('api-integrations.test');
+});
