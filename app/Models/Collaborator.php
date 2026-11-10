@@ -31,11 +31,15 @@ class Collaborator extends Model implements AuditableInterface
         'user_id',
         'file_id',
         'has_login',
+        'employment_type',
+        'biometric_consent_at',
+        'biometric_consent_by',
     ];
 
     protected $casts = [
         'has_login' => 'boolean',
-        'active' => 'boolean'
+        'active' => 'boolean',
+        'biometric_consent_at' => 'datetime',
     ];
 
     protected static $sortableFields = [
@@ -56,6 +60,7 @@ class Collaborator extends Model implements AuditableInterface
         'email',
         'phone_1',
         'company_id',
+        'employment_type',
     ];
 
     protected static $searchableFields = [
@@ -170,5 +175,10 @@ class Collaborator extends Model implements AuditableInterface
     {
         return $this->belongsToMany(Company::class, 'collaborator_companies');
     }
-}
 
+    /** Vínculo vazio vira Freelancer (CLT só quando marcado). */
+    public function setEmploymentTypeAttribute($value): void
+    {
+        $this->attributes['employment_type'] = $value === 'clt' ? 'clt' : 'freelancer';
+    }
+}

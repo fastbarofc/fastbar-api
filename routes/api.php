@@ -93,11 +93,18 @@ Route::group(['middleware' => 'auth:api'], function () {
 });
 
 Route::group(['middleware' => ['auth:api']], function () {
-    Route::resource('users', UserController::class)->except(['store']);
+    Route::get('users-available-collaborators', [UserController::class, 'availableCollaborators'])->name('users.available-collaborators');
+    Route::resource('users', UserController::class);
+    Route::get('users/{user}/access', [UserController::class, 'access'])->name('users.access');
+    Route::put('users/{user}/access', [UserController::class, 'updateAccess'])->name('users.update-access');
     Route::post('users/{user}/sync-roles', [UserController::class, 'syncRoles'])->name('users.sync-roles');
     Route::post('users/{user}/sync-permissions', [UserController::class, 'syncPermissions'])->name('users.sync-permissions');
 
     Route::put('collaborators/{collaborator}/change-password', [CollaboratorController::class, 'changePassword'])->name('collaborators.change-password');
+    Route::post('collaborators-import', [CollaboratorController::class, 'import'])->name('collaborators.import');
+    Route::get('collaborators-imports', [CollaboratorController::class, 'imports'])->name('collaborators.imports');
+    Route::get('collaborators-imports/{collaboratorImport}/download', [CollaboratorController::class, 'downloadImport'])->name('collaborators.imports.download');
+    Route::post('collaborators-import-clt', [CollaboratorController::class, 'importClt'])->name('collaborators.import-clt');
     Route::resource('collaborators', CollaboratorController::class);
 
     Route::resource('roles', RoleController::class);

@@ -58,4 +58,11 @@ class Company extends Model
         return $this->belongsToMany(Collaborator::class, 'collaborator_companies');
     }
 
+    /** Empresa padrão dos colaboradores cadastrados sem empresa (Fastbar). */
+    public static function defaultId(): ?int
+    {
+        $company = static::where('internal_name', 'Fastbar')->first() ?? static::orderBy('id')->first();
+
+        return $company?->id;
+    }
 }

@@ -8,6 +8,7 @@ use App\Http\Requests\ChangeCollaboratorPasswordRequest;
 use App\Http\Resources\CollaboratorResource;
 use Spatie\Permission\Models\Role;
 use App\Models\Collaborator;
+use App\Models\CollaboratorImport;
 use App\Models\Company;
 use App\Models\User;
 use App\Models\File;
@@ -16,6 +17,7 @@ use App\Models\BankDetail;
 use App\Models\DataBank;
 use App\Models\PixKey;
 use App\Services\FileService;
+use App\Services\CollaboratorImportService;
 use App\Models\Qualification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -52,6 +54,9 @@ class CollaboratorController extends Controller
                         $query->where(function ($subQuery) use ($value) {
                             foreach (Collaborator::searchableFields() as $searchableField) {
                                 $subQuery->orWhere("collaborators.$searchableField", 'like', "%$value%");
+                            }
+                            if (ctype_digit(trim((string) $value))) {
+                                $subQuery->orWhere('collaborators.id', (int) trim($value));
                             }
                         });
                     } elseif ($field === 'company_id') {
@@ -131,8 +136,12 @@ class CollaboratorController extends Controller
 
             $companyIds = $data['company_ids'] ?? [];
             unset($data['company_ids']);
+            if (empty($companyIds) && ($defaultCompanyId = Company::defaultId())) {
+                $companyIds = [$defaultCompanyId];
+            }
 
             $collaborator = Collaborator::create($data);
+            $this->applyBiometricConsent($collaborator, $request);
 
             if (!empty($data['has_login'])) {
                 $existingUser = User::where('email', $collaborator->email)->first();
@@ -200,6 +209,9 @@ class CollaboratorController extends Controller
                             'bank_name' => $bankData['bank_name'],
                             'agency' => $bankData['agency'],
                             'account' => $bankData['account'],
+                            'account_type' => $bankData['account_type'] ?? null,
+                            'operation' => $bankData['operation'] ?? null,
+                            'account_holder' => $bankData['account_holder'] ?? null,
                             'status' => $bankData['status'],
                         ]
                     );
@@ -243,6 +255,20 @@ class CollaboratorController extends Controller
         }
     }
 
+    /** Aceite do uso da foto para confirmar presença nos eventos (LGPD). Guarda quando e quem marcou. */
+    private function applyBiometricConsent(Collaborator $collaborator, Request $request): void
+    {
+        if (!$request->has('biometric_consent')) {
+            return;
+        }
+        $consent = $request->boolean('biometric_consent');
+        if ($consent && !$collaborator->biometric_consent_at) {
+            $collaborator->update(['biometric_consent_at' => now(), 'biometric_consent_by' => $request->user()?->id]);
+        } elseif (!$consent && $collaborator->biometric_consent_at) {
+            $collaborator->update(['biometric_consent_at' => null, 'biometric_consent_by' => null]);
+        }
+    }
+
     public function show(Collaborator $collaborator)
     {
         $collaborator->load('companies');
@@ -256,10 +282,11 @@ class CollaboratorController extends Controller
             DB::beginTransaction();
             $data = $request->except('photo');
 
-            $companyIds = $data['company_ids'] ?? [];
+            $companyIds = $data['company_ids'] ?? null;
             unset($data['company_ids']);
 
             $collaborator->update($data);
+            $this->applyBiometricConsent($collaborator, $request);
             if ($request->filled('photo')) {
                 $photoUrl = $request->photo;
                 $photoPath = parse_url($photoUrl, PHP_URL_PATH);
@@ -379,6 +406,9 @@ class CollaboratorController extends Controller
                                 'bank_name' => $bankData['bank_name'],
                                 'agency' => $bankData['agency'],
                                 'account' => $bankData['account'],
+                            'account_type' => $bankData['account_type'] ?? null,
+                            'operation' => $bankData['operation'] ?? null,
+                            'account_holder' => $bankData['account_holder'] ?? null,
                                 'status' => $bankData['status'],
                             ]
                         );
@@ -389,6 +419,9 @@ class CollaboratorController extends Controller
                             'bank_name' => $bankData['bank_name'],
                             'agency' => $bankData['agency'],
                             'account' => $bankData['account'],
+                            'account_type' => $bankData['account_type'] ?? null,
+                            'operation' => $bankData['operation'] ?? null,
+                            'account_holder' => $bankData['account_holder'] ?? null,
                             'status' => $bankData['status'],
                         ]);
                     }
@@ -432,7 +465,11 @@ class CollaboratorController extends Controller
 
             $this->syncQualifications($collaborator, $data);
 
-            $collaborator->companies()->sync($companyIds);
+            if (!empty($companyIds)) {
+                $collaborator->companies()->sync($companyIds);
+            } elseif (!$collaborator->companies()->exists() && ($defaultCompanyId = Company::defaultId())) {
+                $collaborator->companies()->sync([$defaultCompanyId]);
+            }
 
             DB::commit();
             $collaborator->load('companies');
@@ -464,7 +501,7 @@ class CollaboratorController extends Controller
             $qualificationsData[$qualification->id] = ['points' => 0];
         }
 
-        foreach ($data['qualifications'] as $qualification) {
+        foreach (($data['qualifications'] ?? []) as $qualification) {
             if (!empty($qualification['id'])) {
                 $qualificationsData[$qualification['id']] = ['points' => $qualification['points']];
             }
@@ -503,5 +540,131 @@ class CollaboratorController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Importa a planilha do formulário de cadastro. Com preview=true só devolve o resumo.
+     * Ao gravar, guarda o arquivo enviado no histórico de importações.
+     */
+    public function import(Request $request, CollaboratorImportService $service)
+    {
+        $rows = $this->importRows($request);
+        if (!$rows) {
+            return response()->json(['message' => 'A planilha não tem linhas para importar.'], 422);
+        }
+        $preview = $request->boolean('preview');
+
+        @set_time_limit(600);
+
+        try {
+            $summary = $service->import($rows, !$preview);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao importar colaboradores: ' . $e->getMessage());
+            return response()->json(['message' => 'Não foi possível importar a planilha: ' . $e->getMessage()], 422);
+        }
+
+        if (!$preview) {
+            $copy = $summary;
+            unset($copy['sample']);
+            $this->archiveImport($request, 'cadastro', $copy);
+        }
+
+        return response()->json($summary);
+    }
+
+    /**
+     * Lista de carteira assinada: ajusta quem é CLT e quem é Freelancer. Com preview=true só mostra.
+     */
+    public function importClt(Request $request, CollaboratorImportService $service)
+    {
+        $rows = $this->importRows($request);
+        if (!$rows) {
+            return response()->json(['message' => 'A lista não tem linhas para importar.'], 422);
+        }
+        $preview = $request->boolean('preview');
+
+        $result = $service->syncClt($rows, !$preview);
+
+        if (!$preview) {
+            $this->archiveImport($request, 'clt', [
+                'in_list' => $result['in_list'],
+                'become_clt' => count($result['become_clt']),
+                'leave_clt' => count($result['leave_clt']),
+                'new_clt' => count($result['new_clt']),
+                'become_clt_names' => $result['become_clt'],
+                'leave_clt_names' => $result['leave_clt'],
+                'new_clt_names' => $result['new_clt'],
+            ]);
+        }
+
+        return response()->json($result);
+    }
+
+    /** Histórico de importações (mais recentes primeiro) e a data da última lista CLT. */
+    public function imports()
+    {
+        $imports = CollaboratorImport::with('user:id,name')->latest()->limit(100)->get();
+        $lastClt = $imports->firstWhere('type', 'clt');
+        $lastCadastro = $imports->firstWhere('type', 'cadastro');
+
+        return response()->json([
+            'data' => $imports->map(fn ($i) => [
+                'id' => $i->id,
+                'type' => $i->type,
+                'file_name' => $i->file_name,
+                'has_file' => (bool) $i->file_path,
+                'user' => $i->user?->name,
+                'summary' => $i->summary,
+                'created_at' => $i->created_at?->toIso8601String(),
+            ]),
+            'last_clt' => $lastClt ? ['created_at' => $lastClt->created_at?->toIso8601String(), 'user' => $lastClt->user?->name] : null,
+            'last_cadastro' => $lastCadastro ? ['created_at' => $lastCadastro->created_at?->toIso8601String(), 'user' => $lastCadastro->user?->name] : null,
+        ]);
+    }
+
+    /** Baixa a planilha guardada de uma importação. */
+    public function downloadImport(CollaboratorImport $collaboratorImport)
+    {
+        if (!$collaboratorImport->file_path || !Storage::disk('local')->exists($collaboratorImport->file_path)) {
+            return response()->json(['message' => 'Arquivo não encontrado.'], 404);
+        }
+
+        return Storage::disk('local')->download(
+            $collaboratorImport->file_path,
+            $collaboratorImport->file_name ?: basename($collaboratorImport->file_path)
+        );
+    }
+
+    /** Linhas da planilha: vêm como lista JSON ou como texto JSON (quando o arquivo vai junto). */
+    private function importRows(Request $request): array
+    {
+        $rows = $request->input('rows');
+        if (is_string($rows)) {
+            $rows = json_decode($rows, true);
+        }
+        return is_array($rows) ? array_values(array_filter($rows, 'is_array')) : [];
+    }
+
+    private function archiveImport(Request $request, string $type, array $summary): void
+    {
+        $path = null;
+        $name = null;
+        $file = $request->file('file');
+        if ($file && $file->isValid()) {
+            $name = $file->getClientOriginalName();
+            $path = $file->storeAs(
+                'colaboradores-importacoes',
+                now()->format('Ymd-His') . '-' . $type . '-' . Str::slug(pathinfo($name, PATHINFO_FILENAME)) . '.' . ($file->getClientOriginalExtension() ?: 'xlsx'),
+                'local'
+            );
+        }
+
+        CollaboratorImport::create([
+            'type' => $type,
+            'file_name' => $name,
+            'file_path' => $path,
+            'user_id' => $request->user()?->id,
+            'summary' => $summary,
+        ]);
     }
 }

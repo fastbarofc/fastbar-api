@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\Collaborator;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use App\Http\Resources\UserResource;
 use App\Http\Requests\SyncRoleUserRequest;
 use App\Http\Requests\SyncPermissionUserRequest;
@@ -24,7 +29,7 @@ class UserController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = User::query();
+        $query = User::query()->with(['roles', 'collaborator']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -70,8 +75,105 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function destroy(User $user)
+    /**
+     * Colaboradores que ainda não têm acesso ao sistema (para a tela Gestão de usuários > Adicionar).
+     * Regra: todo usuário nasce de um colaborador já cadastrado.
+     */
+    public function availableCollaborators(Request $request)
     {
+        $search = trim((string) $request->input('search', ''));
+
+        $query = Collaborator::query()
+            ->with('sectorOffice')
+            ->where('active', true)
+            ->where(function ($q) {
+                $q->whereNull('user_id')
+                    ->orWhereDoesntHave('user'); // usuário excluído: colaborador volta a ficar disponível
+            })
+            ->orderBy('name');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('nickname', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+                if (ctype_digit($search)) {
+                    $q->orWhere('id', (int) $search);
+                }
+            });
+        }
+
+        return response()->json([
+            'data' => $query->limit(50)->get()->map(fn (Collaborator $c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+                'email' => $c->email,
+                'office' => $c->sectorOffice?->name,
+            ]),
+        ]);
+    }
+
+    /** Cria o acesso de um colaborador já cadastrado (Gestão de usuários > Adicionar). */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'collaborator_id' => ['required', 'integer', 'exists:collaborators,id'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->whereNull('deleted_at')],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role_id' => ['nullable', 'integer', 'exists:roles,id'],
+        ], [
+            'collaborator_id.required' => 'Escolha o colaborador que vai receber o acesso.',
+            'collaborator_id.exists' => 'Colaborador não encontrado. Cadastre a pessoa em Cadastros > Colaboradores primeiro.',
+            'email.required' => 'Informe o e-mail de acesso.',
+            'email.email' => 'O e-mail de acesso não é válido.',
+            'email.unique' => 'Já existe um usuário com este e-mail.',
+            'password.required' => 'Informe a senha.',
+            'password.min' => 'A senha deve ter no mínimo 8 caracteres.',
+            'password.confirmed' => 'As senhas não conferem.',
+        ]);
+
+        $collaborator = Collaborator::findOrFail($data['collaborator_id']);
+        if ($collaborator->user_id && $collaborator->user) {
+            return response()->json(['message' => "{$collaborator->name} já tem acesso ao sistema."], 422);
+        }
+
+        return DB::transaction(function () use ($data, $collaborator) {
+            // Um usuário excluído com o mesmo e-mail não pode travar o novo acesso.
+            User::onlyTrashed()->where('email', $data['email'])->each(function (User $old) {
+                $old->update(['email' => $old->email . '.deleted_' . time()]);
+            });
+
+            $user = User::create([
+                'name' => $collaborator->name,
+                'email' => $data['email'],
+                'password' => bcrypt($data['password']),
+                'is_employee' => true,
+                'active' => true,
+            ]);
+
+            $collaborator->update([
+                'user_id' => $user->id,
+                'has_login' => true,
+                'email' => $collaborator->email ?: $data['email'],
+            ]);
+
+            if (!empty($data['role_id'])) {
+                $user->assignRole(Role::findOrFail($data['role_id']));
+            }
+
+            return (new UserResource($user->load(['roles', 'collaborator'])))->response()->setStatusCode(201);
+        });
+    }
+
+    public function destroy(Request $request, User $user)
+    {
+        if ($request->user()?->id === $user->id) {
+            return response()->json(['message' => 'Você não pode excluir o seu próprio usuário.'], 422);
+        }
+
+        // O colaborador continua cadastrado, só perde o acesso (e pode receber outro depois).
+        Collaborator::where('user_id', $user->id)->update(['user_id' => null, 'has_login' => false]);
+
         $user->delete();
         return response([], 204);
     }
@@ -90,6 +192,43 @@ class UserController extends Controller
 
         $user->syncPermissions($request->permissions);
         return new UserResource($user);
+    }
+
+    /** Perfil e permissões da pessoa (tela Gestão de usuários). */
+    public function access(User $user)
+    {
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+            'role_id' => $user->roles->first()?->id,
+            'custom_permissions' => (bool) $user->custom_permissions,
+            'role_permission_ids' => $user->getPermissionsViaRoles()->pluck('id')->values(),
+            'permission_ids' => $user->effectivePermissions()->pluck('id')->values(),
+        ]);
+    }
+
+    /**
+     * Troca o perfil da pessoa e, se pedido, grava permissões só dela.
+     * Sem personalização, a pessoa volta a seguir as permissões do perfil.
+     */
+    public function updateAccess(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'role_id' => ['nullable', 'integer', 'exists:roles,id'],
+            'custom_permissions' => ['required', 'boolean'],
+            'permissions' => ['array'],
+            'permissions.*' => ['integer', 'exists:permissions,id'],
+        ]);
+
+        $user->syncRoles(!empty($data['role_id']) ? [Role::findOrFail($data['role_id'])] : []);
+        $user->custom_permissions = $data['custom_permissions'];
+        $user->save();
+        $user->syncPermissions($data['custom_permissions'] ? Permission::whereIn('id', $data['permissions'] ?? [])->get() : []);
+
+        return $this->access($user->fresh());
     }
 
     public function getClientIdByUserId($id)

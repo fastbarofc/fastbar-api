@@ -31,7 +31,9 @@ class AuthController extends Controller
 
         $token = $user->createToken('Laravel Password Grant Client')->accessToken;
 
-        $permissions = $user->getPermissionsViaRoles()->pluck('slug')->toArray() ?? [];
+        $user->touchLastSeen();
+
+        $permissions = $user->effectivePermissions()->pluck('slug')->toArray() ?? [];
 
         $collaboratorCompanies = [];
         if ($user->collaborator) {

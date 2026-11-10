@@ -45,6 +45,8 @@ class UpdateCollaboratorRequest extends FormRequest
             'phone_2'    => 'nullable|string|max:20',
             'sector_id'  => 'nullable|exists:sectors,id',
             'sector_office_id'  => 'nullable|exists:sector_offices,id',
+            'employment_type' => 'nullable|in:clt,freelancer',
+            'biometric_consent' => 'nullable|boolean',
             'has_login'  => 'nullable|boolean',
             'active'     => 'nullable|boolean',
             'user_id'    => 'nullable|exists:users,id',
@@ -52,9 +54,14 @@ class UpdateCollaboratorRequest extends FormRequest
             'pix_keys'   => 'nullable|array',
             'bank_details' => 'nullable|array',
             'qualifications' => 'nullable|array',
-            'company_ids' => 'required|array|min:1',
+            'company_ids' => 'nullable|array',
             'company_ids.*' => 'exists:companies,id',
         ];
+
+        // E-mail é opcional, mas continua obrigatório para quem tem acesso ao sistema (login).
+        if ($this->request->get('has_login')) {
+            $data['email'][0] = 'required';
+        }
 
         /* if ($this->request->get('has_login')) {
             $data['password'] = 'nullable|string|min:8';
@@ -92,6 +99,7 @@ class UpdateCollaboratorRequest extends FormRequest
             'phone_2.max'             => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
             'email.email'             => 'O campo e-mail deve ser um e-mail válido.',
             'email.unique'            => 'E-mail já cadastrado.',
+            'email.required'          => 'Para dar acesso ao sistema (login), informe o e-mail.',
             'sector_id.exists'        => 'O campo setor deve ser um setor válido.',
             'sector_office_id.exists'        => 'O campo cargo deve ser um cargo válido.',
             'has_login.boolean'       => 'O campo possui login deve ser um booleano.',

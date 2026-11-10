@@ -23,15 +23,24 @@ class User extends Authenticatable implements AuditableInterface
         'email',
         'password',
         'active',
-        'is_employee'
+        'is_employee',
+        'custom_permissions',
     ];
 
     protected static $sortableFields = [
         'name',
         'email',
+        'last_seen_at',
     ];
 
     protected static $filterableFields = [
+        'name',
+        'email',
+        'is_employee',
+        'active',
+    ];
+
+    protected static $searchableFields = [
         'name',
         'email',
     ];
@@ -42,6 +51,7 @@ class User extends Authenticatable implements AuditableInterface
     ];
 
     protected $casts = [
+        'last_seen_at' => 'datetime',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
@@ -57,8 +67,35 @@ class User extends Authenticatable implements AuditableInterface
         return $this->hasOne(Client::class);
     }
 
+    /**
+     * Permissões que valem para a pessoa: as do perfil, ou as personalizadas
+     * quando alguém ajustou as permissões só dela (Gestão de usuários).
+     */
+    public function effectivePermissions()
+    {
+        return $this->custom_permissions ? $this->getDirectPermissions() : $this->getPermissionsViaRoles();
+    }
+
+    /** Marca quando a pessoa usou o sistema pela última vez (no máximo a cada 5 minutos). */
+    public function touchLastSeen(): void
+    {
+        if ($this->last_seen_at && now()->diffInMinutes($this->last_seen_at) < 5) {
+            return;
+        }
+
+        // Atualiza direto no banco para não gerar registro no histórico de alterações.
+        // Nunca deixa a requisição falhar por causa disso (ex.: migration ainda não rodou no servidor).
+        try {
+            static::whereKey($this->id)->update(['last_seen_at' => now()]);
+            $this->last_seen_at = now();
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
     public function isAdmin() {
-        return $this->hasRole('Admin');
+        // Reconhece pelo slug: o nome exibido do perfil é "Administrador".
+        return $this->roles->contains(fn ($role) => $role->slug === 'admin' || in_array($role->name, ['Admin', 'Administrador'], true));
     }
 
     public function collaborator() {
