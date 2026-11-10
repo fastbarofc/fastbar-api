@@ -33,6 +33,8 @@ class AuthController extends Controller
 
         $user->touchLastSeen();
 
+        app(\App\Services\ActivityHistoryService::class)->logLogin($user);
+
         $permissions = $user->effectivePermissions()->pluck('slug')->toArray() ?? [];
 
         $collaboratorCompanies = [];

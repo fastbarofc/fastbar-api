@@ -325,4 +325,7 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::get('/events/{event}/duplicate', [EventController::class, 'duplicate']);
     Route::get('/events/{event}/history', [EventController::class, 'history'])->name('events.history');
+
+    Route::get('activity-history', [\App\Http\Controllers\ActivityHistoryController::class, 'index'])->name('activity-history.index');
+    Route::get('activity-history/filters', [\App\Http\Controllers\ActivityHistoryController::class, 'filters'])->name('activity-history.filters');
 });
