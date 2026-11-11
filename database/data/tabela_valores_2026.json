@@ -1,0 +1,1446 @@
+{
+ "title_left": "VALORES DE FREELANCERS VIÇOSA - 6 HORAS D EVENTO",
+ "title_right": "8 HORAS DE EVENTO",
+ "columns": [
+  {
+   "label": "Local",
+   "hours": 6,
+   "km_max": 0,
+   "cities": [
+    {
+     "name": "VIÇOSA",
+     "pink": false
+    }
+   ]
+  },
+  {
+   "label": "Até 100km",
+   "hours": 6,
+   "km_max": 100,
+   "cities": [
+    {
+     "name": "PIRANGA (57km)",
+     "pink": false
+    },
+    {
+     "name": "PONTE NOVA (48km)",
+     "pink": false
+    },
+    {
+     "name": "MURIAÉ (86km)",
+     "pink": false
+    },
+    {
+     "name": "SENADOR FIRMINO (51km)",
+     "pink": false
+    },
+    {
+     "name": "PAULA CÂNDIDO (25km)",
+     "pink": false
+    },
+    {
+     "name": "UBÁ (61km)",
+     "pink": false
+    }
+   ]
+  },
+  {
+   "label": "Até 180 km",
+   "hours": 6,
+   "km_max": 180,
+   "cities": [
+    {
+     "name": "BOM JESUS DO ITABAPOANA (177km)",
+     "pink": false
+    },
+    {
+     "name": "CARANGOLA (168km)",
+     "pink": false
+    },
+    {
+     "name": "CATAS ALTAS (166km)",
+     "pink": false
+    },
+    {
+     "name": "ITAPERUNA (142km)",
+     "pink": false
+    },
+    {
+     "name": "MANHUAÇU (172km)",
+     "pink": false
+    },
+    {
+     "name": "JOÃO MONLEVADE (175km)",
+     "pink": false
+    },
+    {
+     "name": "LAFAIETE (126km)",
+     "pink": false
+    },
+    {
+     "name": "REDUTO (179km)",
+     "pink": false
+    },
+    {
+     "name": "MARIANA (116km)",
+     "pink": false
+    },
+    {
+     "name": "MATIPÓ (135km)",
+     "pink": false
+    },
+    {
+     "name": "OURO BRANCO (125km)",
+     "pink": false
+    },
+    {
+     "name": "OURO PRETO (129km)",
+     "pink": false
+    }
+   ]
+  },
+  {
+   "label": "Até 260km",
+   "hours": 6,
+   "km_max": 260,
+   "cities": [
+    {
+     "name": "CARATINGA (187km)",
+     "pink": false
+    },
+    {
+     "name": "VESPASIANO (258km)",
+     "pink": false
+    },
+    {
+     "name": "TIRADENTES (201km)",
+     "pink": false
+    },
+    {
+     "name": "IPATINGA (202km)",
+     "pink": false
+    },
+    {
+     "name": "SANTA BARBARA (207)",
+     "pink": false
+    },
+    {
+     "name": "BELO HORIZONTE (224km)",
+     "pink": false
+    },
+    {
+     "name": "LAGOA SANTA (264km)",
+     "pink": false
+    },
+    {
+     "name": "ITABIRITO (174km)",
+     "pink": false
+    },
+    {
+     "name": "ITABIRA (204km)",
+     "pink": false
+    },
+    {
+     "name": "SÃO JOÃO DEL REY (206km)",
+     "pink": false
+    },
+    {
+     "name": "BARBACENA (173km)",
+     "pink": true
+    },
+    {
+     "name": "JUIZ DE FORA (169km)",
+     "pink": true
+    }
+   ]
+  },
+  {
+   "label": "Até 380km",
+   "hours": 6,
+   "km_max": 380,
+   "cities": [
+    {
+     "name": "VALENÇA (285km)",
+     "pink": false
+    },
+    {
+     "name": "GOVERNADOR VALADARES (304km)",
+     "pink": false
+    },
+    {
+     "name": "VOLTA REDONDA (364km)",
+     "pink": false
+    },
+    {
+     "name": "TERESÓPOLIS (266km)",
+     "pink": false
+    },
+    {
+     "name": "DIVINÓPOLIS (322km)",
+     "pink": false
+    },
+    {
+     "name": "LAVRAS (296km)",
+     "pink": false
+    },
+    {
+     "name": "PETRÓPOLIS (301km)",
+     "pink": false
+    },
+    {
+     "name": "VASSOURAS (313km)",
+     "pink": false
+    },
+    {
+     "name": "CAMPO DOS GOYTACAZES (249km)",
+     "pink": true
+    }
+   ]
+  },
+  {
+   "label": "Até 500km",
+   "hours": 6,
+   "km_max": 500,
+   "cities": [
+    {
+     "name": "VARGINHA (445km)",
+     "pink": false
+    },
+    {
+     "name": "ITAJUBÁ (462km)",
+     "pink": false
+    },
+    {
+     "name": "SÃO PEDRO DA ALDEIA (421km)",
+     "pink": false
+    },
+    {
+     "name": "FORMIGA (412km)",
+     "pink": false
+    },
+    {
+     "name": "RESENDE AMAN (368km)",
+     "pink": true
+    }
+   ]
+  },
+  {
+   "label": "Acima de 500km",
+   "hours": 6,
+   "km_max": null,
+   "cities": [
+    {
+     "name": "UBERLÂNDIA (751km)",
+     "pink": false
+    }
+   ]
+  },
+  {
+   "label": "Até 500km",
+   "hours": 8,
+   "km_max": 500,
+   "cities": [
+    {
+     "name": "TRÊS CORAÇÕES (426km)",
+     "pink": false
+    },
+    {
+     "name": "POUSO ALEGRE (499km)",
+     "pink": false
+    }
+   ]
+  },
+  {
+   "label": "Até 620km",
+   "hours": 8,
+   "km_max": 620,
+   "cities": [
+    {
+     "name": "S. JOSÉ DOS CAMPOS (556km)",
+     "pink": false
+    },
+    {
+     "name": "TREMEMBÉ (520km)",
+     "pink": false
+    }
+   ]
+  },
+  {
+   "label": "Até 740km",
+   "hours": 8,
+   "km_max": 740,
+   "cities": [
+    {
+     "name": "ARAÇARIGUAMA (680km)",
+     "pink": false
+    },
+    {
+     "name": "SOROCABA (728km)",
+     "pink": false
+    },
+    {
+     "name": "PIRASSUNUNGA (695km)",
+     "pink": false
+    }
+   ]
+  }
+ ],
+ "sections": [
+  {
+   "name": "VALOR BASE",
+   "rows": [
+    {
+     "name": "GARÇOM",
+     "cells": [
+      {
+       "span": 1,
+       "value": 130.0
+      },
+      {
+       "span": 1,
+       "value": 140.0
+      },
+      {
+       "span": 1,
+       "value": 160.0
+      },
+      {
+       "span": 1,
+       "value": 170.0
+      },
+      {
+       "span": 1,
+       "value": 180.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 210.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 240.0
+      }
+     ]
+    },
+    {
+     "name": "LIMPEZA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 130.0
+      },
+      {
+       "span": 1,
+       "value": 140.0
+      },
+      {
+       "span": 1,
+       "value": 160.0
+      },
+      {
+       "span": 1,
+       "value": 170.0
+      },
+      {
+       "span": 1,
+       "value": 180.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 210.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 240.0
+      }
+     ]
+    },
+    {
+     "name": "BANHEIRISTA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 130.0
+      },
+      {
+       "span": 1,
+       "value": 140.0
+      },
+      {
+       "span": 1,
+       "value": 160.0
+      },
+      {
+       "span": 1,
+       "value": 170.0
+      },
+      {
+       "span": 1,
+       "value": 180.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 210.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 240.0
+      }
+     ]
+    },
+    {
+     "name": "COZINHA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 140.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 170.0
+      },
+      {
+       "span": 1,
+       "value": 180.0
+      },
+      {
+       "span": 1,
+       "value": 190.0
+      },
+      {
+       "span": 1,
+       "value": 210.0
+      },
+      {
+       "span": 1,
+       "value": 230.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 230.0
+      },
+      {
+       "span": 1,
+       "value": 250.0
+      }
+     ]
+    },
+    {
+     "name": "CHAPEIROS",
+     "cells": [
+      {
+       "span": 1,
+       "value": 140.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 170.0
+      },
+      {
+       "span": 1,
+       "value": 180.0
+      },
+      {
+       "span": 1,
+       "value": 190.0
+      },
+      {
+       "span": 1,
+       "value": 210.0
+      },
+      {
+       "span": 1,
+       "value": 230.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 230.0
+      },
+      {
+       "span": 1,
+       "value": 250.0
+      }
+     ]
+    },
+    {
+     "name": "VOLTA DE COPA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 140.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 170.0
+      },
+      {
+       "span": 1,
+       "value": 180.0
+      },
+      {
+       "span": 1,
+       "value": 190.0
+      },
+      {
+       "span": 1,
+       "value": 210.0
+      },
+      {
+       "span": 1,
+       "value": 230.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 230.0
+      },
+      {
+       "span": 1,
+       "value": 250.0
+      }
+     ]
+    },
+    {
+     "name": "LAVAGEM DE UTENSÍLIOS",
+     "cells": [
+      {
+       "span": 1,
+       "value": 160.0
+      },
+      {
+       "span": 1,
+       "value": 170.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 210.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 230.0
+      },
+      {
+       "span": 1,
+       "value": 250.0
+      },
+      {
+       "span": 1,
+       "value": 240.0
+      },
+      {
+       "span": 1,
+       "value": 250.0
+      },
+      {
+       "span": 1,
+       "value": 270.0
+      }
+     ]
+    },
+    {
+     "name": "NUTRICIONISTA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 210.0
+      },
+      {
+       "span": 1,
+       "value": 230.0
+      },
+      {
+       "span": 1,
+       "value": 240.0
+      },
+      {
+       "span": 1,
+       "value": 250.0
+      },
+      {
+       "span": 1,
+       "value": 270.0
+      },
+      {
+       "span": 1,
+       "value": 290.0
+      },
+      {
+       "span": 1,
+       "value": 280.0
+      },
+      {
+       "span": 1,
+       "value": 290.0
+      },
+      {
+       "span": 1,
+       "value": 310.0
+      }
+     ]
+    },
+    {
+     "name": "CHEFS DE COZINHA (Evento)",
+     "cells": [
+      {
+       "span": 1,
+       "value": 130.0
+      },
+      {
+       "span": 1,
+       "value": 140.0
+      },
+      {
+       "span": 1,
+       "value": 160.0
+      },
+      {
+       "span": 1,
+       "value": 160.0
+      },
+      {
+       "span": 1,
+       "value": 180.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 210.0
+      },
+      {
+       "span": 1,
+       "value": 220.0
+      },
+      {
+       "span": 1,
+       "value": 240.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "COORDENAÇÕES",
+   "rows": [
+    {
+     "name": "COORDENADOR GERAL",
+     "cells": [
+      {
+       "span": 1,
+       "value": 120.0
+      },
+      {
+       "span": 1,
+       "value": 130.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      }
+     ]
+    },
+    {
+     "name": "FISCAL DE EVENTO",
+     "cells": [
+      {
+       "span": 1,
+       "value": 120.0
+      },
+      {
+       "span": 1,
+       "value": 130.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      }
+     ]
+    },
+    {
+     "name": "NUTRICIONISTA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 120.0
+      },
+      {
+       "span": 1,
+       "value": 130.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      }
+     ]
+    },
+    {
+     "name": "CHEFS DE COZINHA (Evento)",
+     "cells": [
+      {
+       "span": 1,
+       "value": 120.0
+      },
+      {
+       "span": 1,
+       "value": 130.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      }
+     ]
+    },
+    {
+     "name": "FINANCEIRO",
+     "cells": [
+      {
+       "span": 1,
+       "value": 120.0
+      },
+      {
+       "span": 1,
+       "value": 130.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      },
+      {
+       "span": 1,
+       "value": 200.0
+      }
+     ]
+    },
+    {
+     "name": "MESA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      }
+     ]
+    },
+    {
+     "name": "COPA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      }
+     ]
+    },
+    {
+     "name": "COZINHA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      }
+     ]
+    },
+    {
+     "name": "PORTARIA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      }
+     ]
+    },
+    {
+     "name": "FISCAL DE CAMINHÃO",
+     "cells": [
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      }
+     ]
+    },
+    {
+     "name": "GESTOR DE EXPERIÊNCIA",
+     "cells": [
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 100.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "EXTRAS",
+   "rows": [
+    {
+     "name": "DEGUSTAÇÃO",
+     "cells": [
+      {
+       "span": 1,
+       "value": 100.0
+      },
+      {
+       "span": 1,
+       "value": 110.0
+      },
+      {
+       "span": 1,
+       "value": 130.0
+      },
+      {
+       "span": 1,
+       "value": 140.0
+      },
+      {
+       "span": 1,
+       "value": 150.0
+      },
+      {
+       "span": 1,
+       "value": 170.0
+      },
+      {
+       "span": 1,
+       "value": 190.0
+      },
+      {
+       "span": 1,
+       "value": 180.0
+      },
+      {
+       "span": 1,
+       "value": 190.0
+      },
+      {
+       "span": 1,
+       "value": 210.0
+      }
+     ]
+    },
+    {
+     "name": "CHEFS DE COZINHA (Degustação)",
+     "cells": [
+      {
+       "span": 4,
+       "value": "MATHEUS R$250"
+      },
+      {
+       "span": 6,
+       "value": null
+      }
+     ]
+    },
+    {
+     "name": "CHURRASQUEIRO",
+     "cells": [
+      {
+       "span": 1,
+       "value": 240.0
+      },
+      {
+       "span": 1,
+       "value": 260.0
+      },
+      {
+       "span": 1,
+       "value": 270.0
+      },
+      {
+       "span": 1,
+       "value": 280.0
+      },
+      {
+       "span": 1,
+       "value": 290.0
+      },
+      {
+       "span": 1,
+       "value": null
+      },
+      {
+       "span": 1,
+       "value": 290.0
+      },
+      {
+       "span": 1,
+       "value": 290.0
+      },
+      {
+       "span": 1,
+       "value": 290.0
+      },
+      {
+       "span": 1,
+       "value": 290.0
+      }
+     ]
+    },
+    {
+     "name": "MANUTENÇÃO GERAL",
+     "cells": [
+      {
+       "span": 3,
+       "value": "PARTHENON VIÇOSA: R$200,00"
+      },
+      {
+       "span": 2,
+       "value": "SÍTIO PARTHENON: R$ Valor Base"
+      },
+      {
+       "span": 1,
+       "value": null
+      },
+      {
+       "span": 4,
+       "value": "PARTHENON UBÁ: R$155,00"
+      }
+     ]
+    },
+    {
+     "name": "AFERIDOR DE SOM",
+     "cells": [
+      {
+       "span": 10,
+       "value": 200.0
+      }
+     ]
+    },
+    {
+     "name": "PÓS FESTA",
+     "cells": [
+      {
+       "span": 10,
+       "value": 20.0
+      }
+     ]
+    },
+    {
+     "name": "HORA ADICIONAL",
+     "cells": [
+      {
+       "span": 10,
+       "value": 20.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "CARGAS",
+   "rows": [
+    {
+     "name": "3/4",
+     "cells": [
+      {
+       "span": 10,
+       "value": 120.0
+      }
+     ]
+    },
+    {
+     "name": "TOCO",
+     "cells": [
+      {
+       "span": 10,
+       "value": 210.0
+      }
+     ]
+    },
+    {
+     "name": "TRUCADO",
+     "cells": [
+      {
+       "span": 10,
+       "value": 280.0
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "note": "OBS: Eventos que estão no cor rosa, estão fora do KM padrão por conter condição diferenciada de pagamento",
+ "jf": {
+  "title": "VALORES DE FREELANCERS JF - 6 HORAS D EVENTO",
+  "header": [
+   "Cidades",
+   "Valores"
+  ],
+  "rows": [
+   {
+    "city": "JUIZ DE FORA (169km)",
+    "value": 160.0
+   },
+   {
+    "city": "LAVRAS (246km)",
+    "value": 200.0
+   },
+   {
+    "city": "PETRÓPOLIS (120km)",
+    "value": 180.0
+   },
+   {
+    "city": "POUSO ALEGRE (345km)",
+    "value": 210.0
+   },
+   {
+    "city": "RESENDE (232km)",
+    "value": 200.0
+   },
+   {
+    "city": "SÃO PEDRO DA ALDEIA (297km)",
+    "value": 210.0
+   },
+   {
+    "city": "TERESÓPOLIS (139km)",
+    "value": 180.0
+   },
+   {
+    "city": "TRÊS CORAÇÕES (280km)",
+    "value": 200.0
+   },
+   {
+    "city": "VALENÇA (102km)",
+    "value": 180.0
+   },
+   {
+    "city": "VARGINHA - (314km)",
+    "value": 210.0
+   },
+   {
+    "city": "VASSOURAS (129km)",
+    "value": 180.0
+   },
+   {
+    "city": "VOLTA REDONDA (181km)",
+    "value": 190.0
+   }
+  ]
+ }
+}
