@@ -20,11 +20,11 @@ class Product extends Model implements AuditableInterface
         'barcode',
         'unit_id',
         'weight',
-        'manufacturer',
+        'volume',
         'value',
         'supplier',
         'marketable',
-        'average_consumption',
+        'consumption_per_guest',
         'display_checklist',
         'own_production',
         'composition_item',
@@ -39,6 +39,8 @@ class Product extends Model implements AuditableInterface
         'display_checklist' => 'boolean',
         'own_production' => 'boolean',
         'composition_item' => 'boolean',
+        'volume' => 'float',
+        'consumption_per_guest' => 'float',
     ];
 
     protected static $sortableFields = [
@@ -46,7 +48,7 @@ class Product extends Model implements AuditableInterface
         'product_group_id',
         'barcode',
         'weight',
-        'manufacturer',
+        'volume',
         'value',
         'supplier',
     ];
@@ -56,7 +58,7 @@ class Product extends Model implements AuditableInterface
         'product_group_id',
         'barcode',
         'weight',
-        'manufacturer',
+        'volume',
         'value',
         'supplier',
         'unit_id',
