@@ -58,6 +58,10 @@ use App\Http\Controllers\PayableController;
 use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\EventStockController;
+use App\Http\Controllers\StockAdjustmentController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\StockPurchaseController;
 use App\Http\Controllers\NotificationController;
 
 Route::controller(AuthController::class)->group(function () {
@@ -257,6 +261,18 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/charts/financial', [ChartController::class, 'financial']);
     Route::get('/charts/commercial', [ChartController::class, 'commercial']);
     Route::get('/charts/monthly', [ChartController::class, 'monthly']);
+
+    Route::get('stock/products', [StockController::class, 'products']);
+    Route::get('stock/movements', [StockController::class, 'movements']);
+    Route::get('stock/events', [StockController::class, 'events']);
+    Route::get('stock/pending', [StockController::class, 'pending']);
+    Route::put('stock/limits', [StockController::class, 'updateLimits']);
+    Route::apiResource('stock/purchases', StockPurchaseController::class);
+    Route::apiResource('stock/adjustments', StockAdjustmentController::class)->only(['index', 'store', 'destroy']);
+    Route::get('events/{event}/stock', [EventStockController::class, 'show']);
+    Route::post('events/{event}/stock/send', [EventStockController::class, 'send']);
+    Route::post('events/{event}/stock/return', [EventStockController::class, 'saveReturn']);
+    Route::post('events/{event}/stock/pdf', [EventStockController::class, 'pdf']);
 
     Route::post('/contract-template/save', [ContractTemplateController::class, 'save']);
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
