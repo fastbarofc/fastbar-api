@@ -274,6 +274,18 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/charts/commercial', [ChartController::class, 'commercial']);
     Route::get('/charts/monthly', [ChartController::class, 'monthly']);
 
+    // Relatórios > DRE e ARM mensal
+    Route::get('financial-reports/dre', [\App\Http\Controllers\FinancialReportController::class, 'dre'])->name('financial-reports.dre');
+    Route::get('financial-reports/arm', [\App\Http\Controllers\FinancialReportController::class, 'arm'])->name('financial-reports.arm');
+    Route::get('financial-reports/dre-status', [\App\Http\Controllers\FinancialReportController::class, 'dreStatus'])->name('financial-reports.dre-status');
+    Route::get('financial-reports/dre-releases', [\App\Http\Controllers\FinancialReportController::class, 'releases'])->name('financial-reports.dre-releases');
+    Route::post('financial-reports/dre-release', [\App\Http\Controllers\FinancialReportController::class, 'release'])->name('financial-reports.dre-release');
+    Route::post('financial-reports/dre-reopen', [\App\Http\Controllers\FinancialReportController::class, 'reopen'])->name('financial-reports.dre-reopen');
+    Route::get('financial-reports/arm-notes', [\App\Http\Controllers\FinancialReportController::class, 'armNotes'])->name('financial-reports.arm-notes');
+    Route::put('financial-reports/arm-notes', [\App\Http\Controllers\FinancialReportController::class, 'saveArmNote'])->name('financial-reports.arm-notes.save');
+    Route::get('financial-reports/arm-commission', [\App\Http\Controllers\FinancialReportController::class, 'armCommission'])->name('financial-reports.arm-commission');
+    Route::get('financial-reports/arm-stock', [\App\Http\Controllers\FinancialReportController::class, 'armStock'])->name('financial-reports.arm-stock');
+
     Route::post('/contract-template/save', [ContractTemplateController::class, 'save']);
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
 
