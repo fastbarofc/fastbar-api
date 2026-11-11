@@ -114,8 +114,8 @@ class EventStockController extends Controller
     private function presentStock(EventStock $stock, array $balances, array $averages): array
     {
         $items = $stock->items
-            ->map(function ($item) use ($balances, $averages) {
-                $consumed = $item->consumedQuantity();
+            ->map(function ($item) use ($stock, $balances, $averages) {
+                $consumed = $item->consumedQuantity($stock->isReturned());
                 $average = $averages[$item->product_id] ?? null;
 
                 return [

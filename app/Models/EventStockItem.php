@@ -41,9 +41,10 @@ class EventStockItem extends Model implements AuditableInterface
         return $this->morphMany(StockMovement::class, 'movementable');
     }
 
-    public function consumedQuantity(): ?float
+    // Depois de finalizado, item sem retorno informado foi todo consumido; antes disso ainda não há consumo.
+    public function consumedQuantity(bool $returnFinalized): ?float
     {
-        if ($this->returned_quantity === null && $this->extra_quantity === null) {
+        if (! $returnFinalized && $this->returned_quantity === null && $this->extra_quantity === null) {
             return null;
         }
 

@@ -131,6 +131,26 @@ class StockTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_items_without_return_count_as_fully_consumed_after_finalizing(): void
+    {
+        $this->postJson('/api/stock/purchases', [
+            'purchased_at' => '2026-11-01',
+            'items' => [['product_id' => $this->lemon->id, 'quantity' => 5, 'unit_price' => 10]],
+        ])->assertCreated();
+
+        $event = $this->eventWithMenu('Planejamento');
+        $this->send($event, [$this->vodka->id => 3, $this->lemon->id => 2]);
+        $event->update(['date' => now()->subDay()->toDateString()]);
+
+        $response = $this->returnStock($event, [['product_id' => $this->vodka->id, 'returned_quantity' => 1]], true)->assertOk();
+
+        $lemon = collect($response->json('stock.items'))->firstWhere('product_id', $this->lemon->id);
+        $this->assertEquals(2, $lemon['consumed_quantity']);
+        $this->assertEquals(20, $lemon['consumed_value']);
+        $this->assertEquals(20, $response->json('stock.consumed_value'));
+        $this->assertEquals(3, $this->balance($this->lemon));
+    }
+
     public function test_return_cannot_exceed_sent_quantity(): void
     {
         $event = $this->eventWithMenu('Planejamento');

@@ -82,6 +82,7 @@
         .muted {
             color: #777;
             font-size: 10px;
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -137,21 +138,16 @@
                 </tr>
                 @foreach ($items as $item)
                     @php
-                        $consumed = $returned ? $item->consumedQuantity() : null;
+                        $consumed = $returned ? $item->consumedQuantity(true) : null;
                         $average = $averages[$item->product_id] ?? null;
                     @endphp
                     <tr>
-                        <td>
-                            {{ $item->product?->name }}
-                            @if ($item->product?->unit)
-                                <span class="muted">({{ $item->product->unit->description }})</span>
-                            @endif
-                        </td>
+                        <td>{{ $item->product?->name }}</td>
                         <td class="number">{{ $item->product?->consumption_per_guest ? rtrim(rtrim(number_format($item->product->consumption_per_guest, 5, ',', '.'), '0'), ',') : '' }}</td>
                         <td class="number">{{ $item->product?->volume ? rtrim(rtrim(number_format($item->product->volume, 3, ',', '.'), '0'), ',') : '' }}</td>
                         <td class="number">{{ $quantity($item->expected_quantity) }}</td>
                         <td class="number text-bold">{{ $quantity($item->sent_quantity) }}</td>
-                        <td class="number blank">{{ $returned ? $quantity($item->returned_quantity) : '' }}</td>
+                        <td class="number blank">{{ $returned ? $quantity($item->returned_quantity ?? 0) : '' }}</td>
                         <td class="number blank">{{ $returned ? $quantity($item->extra_quantity) : '' }}</td>
                         <td class="number blank">{{ $quantity($consumed) }}</td>
                         <td class="number">{{ $money($average) }}</td>
@@ -169,6 +165,7 @@
             </tfoot>
         @endif
     </table>
+    <p class="muted">Quantidades em embalagens (garrafa, caixa, pacote). Volume = conteúdo da embalagem. Valor unitário = preço médio das compras.</p>
 </body>
 
 </html>

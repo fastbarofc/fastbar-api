@@ -129,7 +129,7 @@ class StockOverview
     public function consumedValue(EventStock $stock, array $averages): float
     {
         return round($stock->items->sum(
-            fn ($item) => ($item->consumedQuantity() ?? 0) * ($averages[$item->product_id] ?? 0)
+            fn ($item) => ($item->consumedQuantity($stock->isReturned()) ?? 0) * ($averages[$item->product_id] ?? 0)
         ), 2);
     }
 
