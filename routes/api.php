@@ -66,8 +66,13 @@ use App\Http\Controllers\StockLevelController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\AppointmentRecordingController;
+use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\RequisitionController;
 use App\Http\Controllers\DevolutionController;
+
+// O Google volta para cá depois que a pessoa autoriza (sem login; a pessoa vem no "state" criptografado)
+Route::get('google/callback', [GoogleController::class, 'callback'])->name('google.callback');
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -370,6 +375,25 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::delete('tasks/{task}/comments/{comment}', [TaskController::class, 'destroyComment'])->name('tasks.destroy-comment');
     Route::resource('tasks', TaskController::class)->except(['create', 'edit']);
     Route::resource('appointments', AppointmentController::class)->except(['create', 'edit']);
+    // Reuniões (vindas do Parthenon): captação do áudio, resumo por IA, Google Meet e participantes
+    Route::post('appointments/{appointment}/recordings', [AppointmentRecordingController::class, 'start'])->name('appointments.recordings.start');
+    Route::post('appointment-recordings/{recording}/chunk', [AppointmentRecordingController::class, 'chunk'])->name('appointment-recordings.chunk');
+    Route::post('appointment-recordings/{recording}/finish', [AppointmentRecordingController::class, 'finish'])->name('appointment-recordings.finish');
+    Route::get('appointment-recordings/{recording}/audio', [AppointmentRecordingController::class, 'audio'])->name('appointment-recordings.audio');
+    Route::delete('appointment-recordings/{recording}', [AppointmentRecordingController::class, 'destroy'])->name('appointment-recordings.destroy');
+    Route::get('clients/{client}/appointments', [AppointmentRecordingController::class, 'clientAppointments'])->name('clients.appointments');
+    Route::get('partners/{partner}/appointments', [AppointmentRecordingController::class, 'partnerAppointments'])->name('partners.appointments');
+    Route::get('meetings/upcoming', [AppointmentRecordingController::class, 'upcomingMeetings'])->name('meetings.upcoming');
+    Route::post('appointments/{appointment}/google-meet', [AppointmentRecordingController::class, 'createGoogleMeet'])->name('appointments.google-meet');
+    Route::get('google/status', [GoogleController::class, 'status'])->name('google.status');
+    Route::get('google/connect-url', [GoogleController::class, 'connectUrl'])->name('google.connect-url');
+    Route::delete('google/account', [GoogleController::class, 'disconnect'])->name('google.disconnect');
+    Route::put('appointments/{appointment}/meeting-url', [AppointmentRecordingController::class, 'updateMeetingUrl'])->name('appointments.meeting-url');
+    Route::get('collaborators/{collaborator}/appointments', [AppointmentRecordingController::class, 'collaboratorAppointments'])->name('collaborators.appointments');
+    Route::get('suppliers/{supplier}/appointments', [AppointmentRecordingController::class, 'supplierAppointments'])->name('suppliers.appointments');
+    Route::post('appointments/{appointment}/summarize', [AppointmentRecordingController::class, 'summarize'])->name('appointments.summarize');
+    Route::get('meeting-ai-settings', [AppointmentRecordingController::class, 'aiSettings'])->name('meeting-ai-settings');
+    Route::put('meeting-ai-settings', [AppointmentRecordingController::class, 'updateAiSettings'])->name('meeting-ai-settings.update');
 
     Route::get('/events/{event}/duplicate', [EventController::class, 'duplicate']);
     Route::get('/events/{event}/history', [EventController::class, 'history'])->name('events.history');
@@ -383,6 +407,8 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('api-integrations', [\App\Http\Controllers\ApiIntegrationController::class, 'index'])->name('api-integrations.index');
     Route::get('api-integrations/anthropic/spend', [\App\Http\Controllers\ApiIntegrationController::class, 'anthropicSpend'])->name('api-integrations.anthropic-spend');
     Route::get('api-integrations/anthropic/spend-history', [\App\Http\Controllers\ApiIntegrationController::class, 'anthropicSpendHistory'])->name('api-integrations.anthropic-spend-history');
+    Route::put('api-integrations/google', [\App\Http\Controllers\ApiIntegrationController::class, 'updateGoogle'])->name('api-integrations.update-google');
+    Route::delete('api-integrations/google', [\App\Http\Controllers\ApiIntegrationController::class, 'destroyGoogle'])->name('api-integrations.destroy-google');
     Route::put('api-integrations/{key}', [\App\Http\Controllers\ApiIntegrationController::class, 'update'])->name('api-integrations.update');
     Route::delete('api-integrations/{key}', [\App\Http\Controllers\ApiIntegrationController::class, 'destroy'])->name('api-integrations.destroy');
     Route::post('api-integrations/{key}/test', [\App\Http\Controllers\ApiIntegrationController::class, 'test'])->name('api-integrations.test');

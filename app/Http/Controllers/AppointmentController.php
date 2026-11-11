@@ -44,13 +44,17 @@ class AppointmentController extends Controller
     {
         $data = $request->validated();
         $userIds = $data['user_ids'] ?? [];
-        unset($data['user_ids']);
+        $participants = $data['participants'] ?? null;
+        unset($data['user_ids'], $data['participants']);
         $data['created_by'] = $request->user()->id;
         $data['updated_by'] = $request->user()->id;
 
-        $appointment = DB::transaction(function () use ($data, $userIds) {
+        $appointment = DB::transaction(function () use ($data, $userIds, $participants) {
             $appointment = Appointment::create($data);
             $appointment->users()->sync($userIds);
+            if ($participants !== null) {
+                $appointment->syncParticipants($participants);
+            }
             return $appointment;
         });
 
@@ -76,12 +80,16 @@ class AppointmentController extends Controller
 
         $data = $request->validated();
         $newUserIds = array_key_exists('user_ids', $data) ? ($data['user_ids'] ?? []) : null;
-        unset($data['user_ids']);
+        $participants = array_key_exists('participants', $data) ? ($data['participants'] ?? []) : null;
+        unset($data['user_ids'], $data['participants']);
         $data['updated_by'] = $request->user()->id;
 
         $added = [];
-        DB::transaction(function () use ($appointment, $data, $newUserIds, &$added) {
+        DB::transaction(function () use ($appointment, $data, $newUserIds, $participants, &$added) {
             $appointment->update($data);
+            if ($participants !== null) {
+                $appointment->syncParticipants($participants);
+            }
             if ($newUserIds !== null) {
                 $added = $appointment->users()->sync($newUserIds)['attached'];
             }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
+use App\Services\GoogleMeetService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -22,6 +24,7 @@ class ApiIntegrationController extends Controller
     private const KEYS = [
         'anthropic' => ['setting' => 'anthropic_api_key', 'env' => 'ANTHROPIC_API_KEY'],
         'anthropic_admin' => ['setting' => 'anthropic_admin_key', 'env' => 'ANTHROPIC_ADMIN_KEY'],
+        'openai' => ['setting' => 'openai_api_key', 'env' => 'OPENAI_API_KEY'],
     ];
 
     /** Token do WhatsApp/Instagram, gravado pela futura tela Comercial > Comunicação. */
@@ -52,6 +55,44 @@ class ApiIntegrationController extends Controller
         return response()->json(['data' => $this->list()], 200);
     }
 
+    /**
+     * Google (Meet): a pessoa cola o conteúdo do arquivo JSON baixado do Google Cloud
+     * (credenciais OAuth) ou "ID_DO_CLIENTE|SEGREDO". Guarda os dois códigos.
+     */
+    public function updateGoogle(Request $request)
+    {
+        $request->validate(['value' => 'required|string|min:20|max:5000'], ['value.required' => 'Cole o código do Google.']);
+        $raw = trim($request->input('value'));
+
+        $id = null;
+        $secret = null;
+        $json = json_decode($raw, true);
+        if (is_array($json)) {
+            $web = $json['web'] ?? $json['installed'] ?? $json;
+            $id = $web['client_id'] ?? null;
+            $secret = $web['client_secret'] ?? null;
+        } elseif (str_contains($raw, '|')) {
+            [$id, $secret] = array_map('trim', explode('|', $raw, 2));
+        }
+
+        if (!$id || !$secret || !str_ends_with($id, '.apps.googleusercontent.com')) {
+            return response()->json(['message' => 'Não reconheci o código. Cole o conteúdo do arquivo JSON baixado do Google Cloud, ou "ID do cliente|Segredo do cliente".'], 422);
+        }
+
+        AppSetting::putSecret(GoogleMeetService::SETTING_CLIENT_ID, $id);
+        AppSetting::putSecret(GoogleMeetService::SETTING_CLIENT_SECRET, $secret);
+
+        return response()->json(['data' => $this->list()], 200);
+    }
+
+    public function destroyGoogle()
+    {
+        AppSetting::putSecret(GoogleMeetService::SETTING_CLIENT_ID, null);
+        AppSetting::putSecret(GoogleMeetService::SETTING_CLIENT_SECRET, null);
+
+        return response()->json(['data' => $this->list()], 200);
+    }
+
     public function destroy(string $key)
     {
         abort_unless(isset(self::KEYS[$key]), 404);
@@ -67,6 +108,8 @@ class ApiIntegrationController extends Controller
             [$ok, $message] = match ($key) {
                 'anthropic' => $this->testAnthropic(),
                 'anthropic_admin' => $this->testAnthropicAdmin(),
+                'openai' => $this->testOpenAi(),
+                'google' => $this->testGoogle(),
                 'meta' => $this->testMeta(),
                 'viacep' => $this->testViaCep(),
                 'open_meteo' => $this->testOpenMeteo(),
@@ -240,6 +283,33 @@ class ApiIntegrationController extends Controller
                 ...$this->keyStatus('anthropic_admin'),
             ],
             [
+                'key' => 'openai',
+                'name' => 'OpenAI',
+                'icon' => 'fas fa-microphone',
+                'purpose' => 'Transforma o áudio das reuniões em texto. Depois o Claude faz o resumo e o áudio é apagado.',
+                'used_in' => 'Reuniões (botão Meet do topo)',
+                'billing' => 'Pago por uso, cobrado no cartão pela recarga automática. Conta em platform.openai.com, que é diferente do ChatGPT.',
+                'site' => 'https://platform.openai.com/api-keys',
+                'site_label' => 'platform.openai.com',
+                'needs_key' => true,
+                'key_label' => 'Chave da API (começa com sk-)',
+                ...$this->keyStatus('openai'),
+            ],
+            [
+                'key' => 'google',
+                'name' => 'Google (Meet e Agenda)',
+                'icon' => 'fab fa-google',
+                'purpose' => 'Cria o link do Google Meet sozinho quando alguém cria uma reunião, já na Agenda Google da pessoa. Depois de colar o código aqui, cada pessoa clica em "Conectar Google" em Minha conta.',
+                'used_in' => 'Botão Meet do topo e Minha conta',
+                'billing' => 'Gratuito. Serve Gmail comum; não precisa de Google Workspace pago.',
+                'site' => 'https://console.cloud.google.com/apis/credentials',
+                'site_label' => 'console.cloud.google.com',
+                'needs_key' => true,
+                'key_label' => 'Código do Google (cole o conteúdo do arquivo JSON baixado, ou "ID do cliente|Segredo")',
+                'help' => 'No Google Cloud, em "URIs de redirecionamento autorizados", cadastre: ' . GoogleMeetService::redirectUri(),
+                ...$this->googleStatus(),
+            ],
+            [
                 'key' => 'meta',
                 'name' => 'WhatsApp e Instagram (Meta)',
                 'icon' => 'fab fa-whatsapp',
@@ -285,6 +355,41 @@ class ApiIntegrationController extends Controller
                 'source' => null,
             ],
         ];
+    }
+
+    private function googleStatus(): array
+    {
+        $id = GoogleMeetService::clientId();
+        $ok = GoogleMeetService::isConfigured();
+        $people = $ok ? \App\Models\GoogleAccount::count() : 0;
+
+        return [
+            'connected' => $ok,
+            'status' => $ok ? 'connected' : 'missing',
+            'masked' => $id ? '••••••••' . substr(explode('.', $id)[0], -4) . ' · ' . $people . ' pessoa(s) conectada(s)' : null,
+            'source' => env('GOOGLE_CLIENT_ID') ? 'server' : ($id ? 'screen' : null),
+        ];
+    }
+
+    private function testGoogle(): array
+    {
+        if (!GoogleMeetService::isConfigured()) {
+            return [false, 'O código do Google ainda não foi colado.'];
+        }
+        $people = \App\Models\GoogleAccount::count();
+
+        return [true, 'Código do Google salvo. ' . ($people ? "{$people} pessoa(s) já conectaram o Google em Minha conta." : 'Agora cada pessoa clica em "Conectar Google" em Minha conta.')];
+    }
+
+    private function testOpenAi(): array
+    {
+        $value = $this->secret('openai');
+        if (!$value) {
+            return [false, 'A chave da OpenAI ainda não foi colada.'];
+        }
+        $response = Http::timeout(15)->withToken($value)->get('https://api.openai.com/v1/models');
+
+        return $this->answer($response->status(), 'OpenAI');
     }
 
     /** Situação de uma chave: conectada ou não, de onde vem e os 4 últimos caracteres. */
