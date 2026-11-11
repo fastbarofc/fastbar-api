@@ -50,6 +50,7 @@ use App\Http\Requests\GenerateEventProposalRequest;
 use App\Services\FileService;
 use App\Services\EventHistoryService;
 use App\Services\EventContractService;
+use App\Services\EventDocumentService;
 use App\Services\EventProposalService;
 use App\Http\Resources\EventHistoryResource;
 use Carbon\Carbon;
@@ -1119,9 +1120,10 @@ class EventController extends Controller
                 'dpi' => 96,
             ]);
 
-            $event->proposals()->create(['data' => $proposal, 'user_id' => auth()->id()]);
+            $saved = $event->proposals()->create(['data' => $proposal, 'user_id' => auth()->id()]);
+            $document = EventDocumentService::record($event, 'orcamento', $pdfUrl, 'proposal', $saved->id);
 
-            return response()->json(['pdf_url' => $pdfUrl]);
+            return response()->json(['pdf_url' => $pdfUrl, 'document_id' => $document?->id]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
@@ -1210,6 +1212,30 @@ class EventController extends Controller
 
         try {
             $pdfUrl = FileService::generatePdf($viewContent, $fileName);
+            return response()->json(['pdf_url' => $pdfUrl]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Botão "Fechamento do evento" da aba Fechamento: mesmo relatório do Parthenon
+     * (dados do evento e do cliente, resumo, pagamentos, parcelas em aberto e saldo).
+     */
+    public function generateClosingStatement(Event $event)
+    {
+        $closing = \App\Services\EventClosingService::data($event);
+        $brand = EventContractService::brandAssets();
+        $viewContent = view('/pdfs/event-closing-pdf', compact('closing', 'brand'));
+
+        try {
+            $pdfUrl = FileService::generatePdf($viewContent, \App\Services\EventClosingService::fileName($event), null, null, [
+                'margin-top' => '0',
+                'margin-bottom' => '12mm',
+                'margin-left' => '14mm',
+                'margin-right' => '14mm',
+            ]);
+
             return response()->json(['pdf_url' => $pdfUrl]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
@@ -1323,9 +1349,10 @@ class EventController extends Controller
             return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
 
-        Contract::recordVersion($event, EventContractService::snapshot($event, $contract), implode("\n", $contract['sections']));
+        $version = Contract::recordVersion($event, EventContractService::snapshot($event, $contract), implode("\n", $contract['sections']));
+        $document = EventDocumentService::record($event, 'contrato', $pdfUrl, 'contract', $version->id);
 
-        return response()->json(['pdf_url' => $pdfUrl]);
+        return response()->json(['pdf_url' => $pdfUrl, 'document_id' => $document?->id]);
     }
 
     public function generateMenu(Event $event)

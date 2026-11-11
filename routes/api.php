@@ -257,7 +257,10 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/events/{event}/addendums', [EventAddendumController::class, 'index']);
     Route::post('/events/{event}/addendums', [EventAddendumController::class, 'store']);
     Route::post('/events/{event}/addendums/{addendum}/pdf', [EventAddendumController::class, 'pdf'])->scopeBindings();
+    Route::get('/events/{event}/documents', [\App\Http\Controllers\EventDocumentController::class, 'index']);
+    Route::patch('/event-documents/{eventDocument}/status', [\App\Http\Controllers\EventDocumentController::class, 'updateStatus']);
     Route::post('/events/generate-closure/{event}', [EventController::class, 'generateClosure']);
+    Route::post('/events/generate-closing-statement/{event}', [EventController::class, 'generateClosingStatement']);
     Route::post('/events/generate-summary/{event}', [EventController::class, 'generateSummary']);
     Route::post('/events/generate-menu/{event}', [EventController::class, 'generateMenu']);
     Route::post('/events/generate-menu-with-observations/{event}', [EventController::class, 'generateMenuWithObservations']);
