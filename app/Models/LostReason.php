@@ -16,6 +16,8 @@ class LostReason extends Model implements AuditableInterface
 
     protected $fillable = [
         'name',
+        'group',
+        'code',
     ];
 
     protected static $sortableFields = [

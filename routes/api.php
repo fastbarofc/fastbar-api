@@ -70,6 +70,16 @@ use App\Http\Controllers\AppointmentRecordingController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\RequisitionController;
 use App\Http\Controllers\DevolutionController;
+use App\Http\Controllers\BiddingController;
+use App\Http\Controllers\LeadController;
+use App\Http\Controllers\LeadImportController;
+use App\Http\Controllers\LeadCommissionController;
+use App\Http\Controllers\ServedCityController;
+use App\Http\Controllers\MarketRuleController;
+use App\Http\Controllers\CommercialRuleController;
+use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\MessagingSettingsController;
+use App\Http\Controllers\MetaWebhookController;
 
 // O Google volta para cá depois que a pessoa autoriza (sem login; a pessoa vem no "state" criptografado)
 Route::get('google/callback', [GoogleController::class, 'callback'])->name('google.callback');
@@ -400,6 +410,63 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::get('activity-history', [\App\Http\Controllers\ActivityHistoryController::class, 'index'])->name('activity-history.index');
     Route::get('activity-history/filters', [\App\Http\Controllers\ActivityHistoryController::class, 'filters'])->name('activity-history.filters');
+});
+
+// Comercial > Comunicação: a Meta (WhatsApp/Instagram) chama estes endereços sem login.
+Route::get('webhooks/meta', [MetaWebhookController::class, 'verify'])->name('webhooks.meta.verify');
+Route::post('webhooks/meta', [MetaWebhookController::class, 'receive'])->name('webhooks.meta.receive');
+
+// Menu Comercial (igual ao Parthenon): funil, meu dia, agenda, gráficos, comissão, comunicação, licitações e regras.
+Route::group(['middleware' => ['auth:api']], function () {
+    Route::get('bidding-ai-settings', [BiddingController::class, 'aiSettings'])->name('biddings.ai-settings');
+    Route::put('bidding-ai-settings', [BiddingController::class, 'updateAiSettings'])->name('biddings.ai-settings.update');
+    Route::resource('biddings', BiddingController::class);
+    Route::post('biddings/{bidding}/ai/lots', [BiddingController::class, 'aiLots'])->name('biddings.ai.lots');
+    Route::post('biddings/{bidding}/summary-pdf', [BiddingController::class, 'summaryPdf'])->name('biddings.summary.pdf');
+    Route::post('biddings/{bidding}/ai/summary', [BiddingController::class, 'aiSummary'])->name('biddings.ai.summary');
+    Route::post('biddings/{bidding}/notice', [BiddingController::class, 'storeNotice'])->name('biddings.notice.store');
+    Route::delete('biddings/{bidding}/notice', [BiddingController::class, 'destroyNotice'])->name('biddings.notice.destroy');
+    Route::post('biddings/{bidding}/comments', [BiddingController::class, 'storeComment'])->name('biddings.comments.store');
+    Route::delete('biddings/{bidding}/comments/{comment}', [BiddingController::class, 'destroyComment'])->name('biddings.comments.destroy');
+    Route::get('conversations-summary', [ConversationController::class, 'summary'])->name('conversations.summary');
+    Route::resource('conversations', ConversationController::class)->only(['index', 'show', 'update']);
+    Route::post('conversations/{conversation}/messages', [ConversationController::class, 'send'])->name('conversations.send');
+    Route::get('messaging-settings', [MessagingSettingsController::class, 'show'])->name('messaging-settings.show');
+    Route::put('messaging-settings', [MessagingSettingsController::class, 'update'])->name('messaging-settings.update');
+    Route::post('messaging-settings/import-phone-numbers', [MessagingSettingsController::class, 'importPhoneNumbers'])->name('messaging-settings.import');
+    Route::post('messaging-settings/demo', [MessagingSettingsController::class, 'seedDemo'])->name('messaging-settings.demo');
+    Route::get('messaging-accounts', [MessagingSettingsController::class, 'accounts'])->name('messaging-accounts.index');
+    Route::post('messaging-accounts', [MessagingSettingsController::class, 'storeAccount'])->name('messaging-accounts.store');
+    Route::put('messaging-accounts/{messagingAccount}', [MessagingSettingsController::class, 'updateAccount'])->name('messaging-accounts.update');
+    Route::delete('messaging-accounts/{messagingAccount}', [MessagingSettingsController::class, 'destroyAccount'])->name('messaging-accounts.destroy');
+    Route::get('leads-consultants', [LeadController::class, 'consultants'])->name('leads.consultants');
+    Route::get('leads-alerts', [LeadController::class, 'alerts'])->name('leads.alerts');
+    Route::get('leads-approvals', [LeadController::class, 'approvals'])->name('leads.approvals');
+    Route::get('leads-my-day', [LeadController::class, 'myDay'])->name('leads.my-day');
+    Route::get('leads-dashboard', [LeadController::class, 'dashboard'])->name('leads.dashboard');
+    Route::get('leads-calendar', [LeadController::class, 'calendar'])->name('leads.calendar');
+    Route::get('leads-date-check', [LeadController::class, 'dateCheck'])->name('leads.date-check');
+    Route::get('leads-commission', [LeadCommissionController::class, 'index'])->name('leads-commission.index');
+    Route::put('leads-commission/{lead}', [LeadCommissionController::class, 'update'])->name('leads-commission.update');
+    Route::put('leads-commission-settings', [LeadCommissionController::class, 'settings'])->name('leads-commission.settings');
+    Route::post('leads-import/preview', [LeadImportController::class, 'preview'])->name('leads-import.preview');
+    Route::post('leads-import', [LeadImportController::class, 'store'])->name('leads-import.store');
+    Route::delete('leads-import', [LeadImportController::class, 'destroy'])->name('leads-import.destroy');
+    Route::put('leads/{lead}/approval', [LeadController::class, 'approval'])->name('leads.approval');
+    Route::put('leads/{lead}/pre-reserve', [LeadController::class, 'preReserve'])->name('leads.pre-reserve');
+    Route::resource('served-cities', ServedCityController::class)->except(['create', 'edit']);
+    Route::resource('market-rules', MarketRuleController::class)->except(['create', 'edit']);
+    Route::get('commercial-rules', [CommercialRuleController::class, 'show'])->name('commercial-rules.show');
+    Route::put('commercial-rules', [CommercialRuleController::class, 'update'])->name('commercial-rules.update');
+    Route::get('lead-covers', [CommercialRuleController::class, 'covers'])->name('lead-covers.index');
+    Route::post('lead-covers', [CommercialRuleController::class, 'storeCover'])->name('lead-covers.store');
+    Route::delete('lead-covers/{cover}', [CommercialRuleController::class, 'destroyCover'])->name('lead-covers.destroy');
+    Route::resource('leads', LeadController::class)->except(['create', 'edit']);
+    Route::put('leads/{lead}/move', [LeadController::class, 'move'])->name('leads.move');
+    Route::post('leads/{lead}/comments', [LeadController::class, 'storeComment'])->name('leads.comments.store');
+    Route::delete('leads/{lead}/comments/{comment}', [LeadController::class, 'destroyComment'])->name('leads.comments.destroy');
+    Route::post('leads/{lead}/activities', [LeadController::class, 'storeActivity'])->name('leads.activities.store');
+    Route::delete('leads/{lead}/activities/{activity}', [LeadController::class, 'destroyActivity'])->name('leads.activities.destroy');
 });
 
 // Configurações > APIs: serviços de fora e suas chaves (só Administrador).

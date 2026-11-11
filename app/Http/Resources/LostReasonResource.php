@@ -16,7 +16,9 @@ class LostReasonResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name
+            'name' => $this->name,
+            'group' => $this->group,
+            'code' => $this->code,
         ];
     }
 }
