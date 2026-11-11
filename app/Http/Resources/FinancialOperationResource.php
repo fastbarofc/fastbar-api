@@ -21,6 +21,10 @@ class FinancialOperationResource extends JsonResource
             'account' => $this->account,
             'nature' => $this->nature,
             'type' => $this->type,
+            'dre_section' => $this->dre_section,
+            'effective_dre_section' => $this->effective_dre_section,
+            'dre_order' => $this->dre_order,
+            'active' => $this->active === null ? true : (bool) $this->active,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

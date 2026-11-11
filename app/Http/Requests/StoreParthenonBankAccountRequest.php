@@ -23,7 +23,17 @@ class StoreParthenonBankAccountRequest extends FormRequest
     {
         return [
             'bank_name' => 'required|string|max:255',
-            'account_number' => 'required|string|max:255',
+            'account_number' => 'required_unless:account_kind,cartao_credito,caixa|nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'account_kind' => 'nullable|in:banco,caixa,cartao_credito',
+            'agency' => 'nullable|string|max:30',
+            'opening_balance' => 'nullable|numeric',
+            'opening_balance_date' => 'nullable|date',
+            'card_brand' => 'nullable|string|max:40',
+            'card_last_digits' => 'nullable|string|max:8',
+            'closing_day' => 'nullable|integer|min:1|max:31',
+            'due_day' => 'nullable|integer|min:1|max:31',
+            'active' => 'nullable|boolean',
         ];
     }
 }

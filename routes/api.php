@@ -281,10 +281,43 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::resource('suppliers', SupplierController::class);
 
+    // Financeiro (igual ao Parthenon): contas a pagar/receber, BV, acerto, relatório, conciliação e cartão.
+    Route::get('payables/monthly-report', [PayableController::class, 'monthlyReport'])->name('payables.monthly-report');
+    Route::get('payables/event-settlement/{event}', [PayableController::class, 'eventSettlement'])->name('payables.event-settlement');
+    Route::get('payables/bv-suggestion/{event}', [PayableController::class, 'bvSuggestion'])->name('payables.bv-suggestion');
+    Route::post('payables/{payable}/approve', [PayableController::class, 'approve'])->name('payables.approve');
+    Route::post('payables/{payable}/reject', [PayableController::class, 'reject'])->name('payables.reject');
+    Route::post('payables/{payable}/settle', [PayableController::class, 'settle'])->name('payables.settle');
+    Route::post('payables/{payable}/reopen', [PayableController::class, 'reopen'])->name('payables.reopen');
+    Route::post('receivables/{receivable}/settle', [ReceivableController::class, 'settle'])->name('receivables.settle');
+    Route::post('receivables/{receivable}/reopen', [ReceivableController::class, 'reopen'])->name('receivables.reopen');
+    Route::get('bank-reconciliation', [\App\Http\Controllers\BankReconciliationController::class, 'overview'])->name('bank-reconciliation.overview');
+    Route::get('bank-reconciliation/statement', [\App\Http\Controllers\BankReconciliationController::class, 'statement'])->name('bank-reconciliation.statement');
+    Route::post('bank-reconciliation/import', [\App\Http\Controllers\BankReconciliationController::class, 'import'])->name('bank-reconciliation.import');
+    Route::delete('bank-reconciliation/imports/{import}', [\App\Http\Controllers\BankReconciliationController::class, 'destroyImport'])->name('bank-reconciliation.imports.destroy');
+    Route::post('bank-reconciliation/match-suggested', [\App\Http\Controllers\BankReconciliationController::class, 'matchSuggested'])->name('bank-reconciliation.match-suggested');
+    Route::post('bank-reconciliation/lines/{line}/match', [\App\Http\Controllers\BankReconciliationController::class, 'match'])->name('bank-reconciliation.lines.match');
+    Route::post('bank-reconciliation/lines/{line}/ignore', [\App\Http\Controllers\BankReconciliationController::class, 'ignore'])->name('bank-reconciliation.lines.ignore');
+    Route::post('bank-reconciliation/lines/{line}/reopen', [\App\Http\Controllers\BankReconciliationController::class, 'reopen'])->name('bank-reconciliation.lines.reopen');
+    Route::post('bank-reconciliation/lines/{line}/launch', [\App\Http\Controllers\BankReconciliationController::class, 'launch'])->name('bank-reconciliation.lines.launch');
+    Route::get('credit-cards', [\App\Http\Controllers\CreditCardController::class, 'index'])->name('credit-cards.index');
+    Route::get('credit-cards/{card}/invoice', [\App\Http\Controllers\CreditCardController::class, 'invoice'])->name('credit-cards.invoice');
+    Route::get('credit-cards/{card}/statement-due', [\App\Http\Controllers\CreditCardController::class, 'statementDue'])->name('credit-cards.statement-due');
+    Route::post('credit-cards/{card}/pay', [\App\Http\Controllers\CreditCardController::class, 'pay'])->name('credit-cards.pay');
+    Route::post('credit-cards/{card}/unpay', [\App\Http\Controllers\CreditCardController::class, 'unpay'])->name('credit-cards.unpay');
+    Route::post('credit-cards/{card}/import', [\App\Http\Controllers\CreditCardController::class, 'import'])->name('credit-cards.import');
+    Route::post('credit-cards/{card}/link-suggested', [\App\Http\Controllers\CreditCardController::class, 'linkSuggested'])->name('credit-cards.link-suggested');
+    Route::post('credit-cards/{card}/clear-import', [\App\Http\Controllers\CreditCardController::class, 'clearImport'])->name('credit-cards.clear-import');
+    Route::post('credit-cards/lines/{line}/link', [\App\Http\Controllers\CreditCardController::class, 'link'])->name('credit-cards.lines.link');
+    Route::post('credit-cards/lines/{line}/launch', [\App\Http\Controllers\CreditCardController::class, 'launch'])->name('credit-cards.lines.launch');
+    Route::post('credit-cards/lines/{line}/ignore', [\App\Http\Controllers\CreditCardController::class, 'ignore'])->name('credit-cards.lines.ignore');
+    Route::post('credit-cards/lines/{line}/reopen', [\App\Http\Controllers\CreditCardController::class, 'reopen'])->name('credit-cards.lines.reopen');
     Route::resource('payables', PayableController::class);
     Route::resource('receivables', ReceivableController::class);
 
     Route::resource('companies', CompanyController::class);
+    Route::post('financial-operations/default-plan', [FinancialOperationController::class, 'defaultPlan'])->name('financial-operations.default-plan');
+    Route::post('financial-operations/structure', [FinancialOperationController::class, 'structure'])->name('financial-operations.structure');
     Route::resource('financial-operations', FinancialOperationController::class);
     Route::resource('cost-centers', CostCenterController::class);
 

@@ -26,6 +26,9 @@ class UpdateFinancialOperationRequest extends FormRequest
             'account' => 'sometimes|in:analytic,synthetic',
             'nature' => 'sometimes|in:revenue,expense',
             'type' => 'sometimes|in:fixed,variable',
+            'dre_section' => 'nullable|in:receita_total,deducoes,custos_variaveis,despesas_operacionais,despesas_nao_operacionais,receitas_nao_operacionais,retirada_socios,fora',
+            'dre_order' => 'nullable|integer',
+            'active' => 'nullable|boolean',
         ];
     }
 

@@ -37,6 +37,9 @@ class FinancialOperationController extends Controller
                                 foreach (FinancialOperation::searchableFields() as $searchableField) {
                                     $subQuery->orWhere('financial_operations.' . $searchableField, 'like', "%$value%");
                                 }
+                                if (ctype_digit(trim((string) $value))) {
+                                    $subQuery->orWhere('financial_operations.id', (int) trim($value));
+                                }
                             });
                         }
                     } else {
@@ -66,6 +69,55 @@ class FinancialOperationController extends Controller
             'sortable_fields' => ['code', 'description', 'account', 'nature', 'type'],
             'filterable_fields' => ['code', 'description', 'account', 'nature', 'type'],
         ], 200);
+    }
+
+    /**
+     * Salvar a estrutura do DRE/ARM (Configurações > Plano de contas > Estrutura do DRE):
+     * grupo e posição de cada conta. "fora" = não entra no demonstrativo.
+     */
+    public function structure(Request $request)
+    {
+        $data = $request->validate([
+            'items' => 'required|array',
+            'items.*.id' => 'required|exists:financial_operations,id',
+            'items.*.dre_section' => 'nullable|in:receita_total,deducoes,custos_variaveis,despesas_operacionais,despesas_nao_operacionais,receitas_nao_operacionais,retirada_socios,fora',
+            'items.*.dre_order' => 'nullable|integer',
+        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($data) {
+            foreach ($data['items'] as $item) {
+                FinancialOperation::where('id', $item['id'])->update([
+                    'dre_section' => $item['dre_section'] ?? 'fora',
+                    'dre_order' => $item['dre_order'] ?? null,
+                ]);
+            }
+        });
+        return response()->json(['saved' => count($data['items'])]);
+    }
+
+    /** Carregar o plano padrão de buffet: grava só as contas (códigos) que ainda não existem. */
+    public function defaultPlan()
+    {
+        $existing = FinancialOperation::query()->pluck('code')->flip();
+        $created = 0;
+        $order = [];
+        foreach (FinancialOperation::DEFAULT_PLAN as [$code, $description, $nature, $type, $section]) {
+            $order[$section] = ($order[$section] ?? 0) + 1;
+            if (isset($existing[$code])) {
+                continue;
+            }
+            FinancialOperation::create([
+                'code' => $code,
+                'description' => $description,
+                'account' => 'analytic',
+                'nature' => $nature,
+                'type' => $type,
+                'dre_section' => $section,
+                'dre_order' => 1000 + $order[$section],
+                'active' => true,
+            ]);
+            $created++;
+        }
+        return response()->json(['created' => $created]);
     }
 
     public function store(StoreFinancialOperationRequest $request)

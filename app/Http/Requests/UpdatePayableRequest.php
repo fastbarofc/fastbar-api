@@ -25,9 +25,20 @@ class UpdatePayableRequest extends FormRequest
             'description' => 'sometimes|string',
             'amount' => 'sometimes|numeric|min:0',
             'due_date' => 'sometimes|date',
-            'financial_operation_id' => 'sometimes|exists:financial_operations,id',
-            'payableable_id' => 'sometimes|integer',
-            'payableable_type' => 'sometimes|string',
+            'financial_operation_id' => 'nullable|exists:financial_operations,id',
+            'payableable_id' => 'nullable|integer',
+            'payableable_type' => 'nullable|string',
+            'event_id' => 'nullable|exists:events,id',
+            'category' => 'nullable|string|in:terceirizado,mao_de_obra,hotel,lanche,bv,nota,compra,outro',
+            'cost_center_id' => 'nullable|exists:cost_centers,id',
+            'supplier_id' => 'nullable|exists:suppliers,id',
+            'partner_id' => 'nullable|exists:partners,id',
+            'collaborator_id' => 'nullable|exists:collaborators,id',
+            'approval_status' => 'nullable|string|in:pending,approved,rejected',
+            'payment_method_id' => 'nullable|exists:payment_methods,id',
+            'parthenon_bank_account_id' => 'nullable|exists:parthenon_bank_accounts,id',
+            'card_account_id' => 'nullable|exists:parthenon_bank_accounts,id',
+            'notes' => 'nullable|string',
         ];
     }
 
