@@ -110,11 +110,6 @@ class Product extends Model implements AuditableInterface
         return $this->belongsTo(File::class);
     }
 
-    public function stockLevels()
-    {
-        return $this->hasMany(StockLevel::class);
-    }
-
     public function components()
     {
         return $this->belongsToMany(Product::class, 'product_compositions', 'product_id', 'component_id')

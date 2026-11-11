@@ -32,9 +32,6 @@ use App\Models\Qualification;
 use App\Models\Sector;
 use App\Models\Unit;
 use App\Models\User;
-use App\Models\PurchaseRequest;
-use App\Models\PurchaseOrder;
-use App\Models\Stock;
 use App\Policies\CeremonialPolicy;
 use App\Policies\ClientPolicy;
 use App\Policies\CollaboratorPolicy;
@@ -60,9 +57,6 @@ use App\Policies\SectorPolicy;
 use App\Policies\UnitPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\OfficeBudgetPolicy;
-use App\Policies\PurchaseRequestPolicy;
-use App\Policies\PurchaseOrderPolicy;
-use App\Policies\StockPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -97,9 +91,6 @@ class AuthServiceProvider extends ServiceProvider
         Unit::class => UnitPolicy::class,
         User::class => UserPolicy::class,
         OfficeBudget::class => OfficeBudgetPolicy::class,
-        PurchaseRequest::class => PurchaseRequestPolicy::class,
-        PurchaseOrder::class => PurchaseOrderPolicy::class,
-        Stock::class => StockPolicy::class,
     ];
 
     /**
