@@ -407,6 +407,12 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::get('/events/{event}/duplicate', [EventController::class, 'duplicate']);
     Route::get('/events/{event}/history', [EventController::class, 'history'])->name('events.history');
+    // Eventos > Nota fiscal (Focus NFe).
+    Route::get('/event-invoices', [\App\Http\Controllers\EventInvoiceController::class, 'list'])->name('event-invoices.list');
+    Route::get('/events/{event}/invoices', [\App\Http\Controllers\EventInvoiceController::class, 'index'])->name('events.invoices.index');
+    Route::post('/events/{event}/invoices', [\App\Http\Controllers\EventInvoiceController::class, 'store'])->name('events.invoices.store');
+    Route::post('/event-invoices/{invoice}/refresh', [\App\Http\Controllers\EventInvoiceController::class, 'refresh'])->name('event-invoices.refresh');
+    Route::post('/event-invoices/{invoice}/cancel', [\App\Http\Controllers\EventInvoiceController::class, 'cancel'])->name('event-invoices.cancel');
 
     Route::get('activity-history', [\App\Http\Controllers\ActivityHistoryController::class, 'index'])->name('activity-history.index');
     Route::get('activity-history/filters', [\App\Http\Controllers\ActivityHistoryController::class, 'filters'])->name('activity-history.filters');

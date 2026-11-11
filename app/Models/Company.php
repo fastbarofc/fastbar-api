@@ -19,10 +19,21 @@ class Company extends Model
         'legal_name',
         'trade_name',
         'type',
+        // Nota fiscal (Focus NFe)
+        'cnpj',
+        'municipal_registration',
+        'city_id',
+        'tax_regime',
+        'nf_environment',
+        'nf_service_code',
+        'nf_municipal_tax_code',
+        'nf_iss_rate',
+        'nf_default_description',
     ];
 
     protected $casts = [
         'type' => 'string',
+        'nf_iss_rate' => 'decimal:2',
     ];
 
     protected static $sortableFields = [
@@ -48,6 +59,17 @@ class Company extends Model
         'trade_name',
     ];
     
+    /** CNPJ guardado só com os números (a Focus NFe exige assim). */
+    public function setCnpjAttribute($value): void
+    {
+        $this->attributes['cnpj'] = $value ? preg_replace('/\D/', '', (string) $value) : null;
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
     public function events()
     {
         return $this->belongsToMany(Event::class, 'event_companies');

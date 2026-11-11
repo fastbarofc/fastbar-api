@@ -64,13 +64,13 @@ class CompanyController extends Controller
 
     public function show(Company $company)
     {
-        return response()->json(new CompanyResource($company), 200);
+        return response()->json(new CompanyResource($company->loadMissing('city')), 200);
     }
 
     public function update(UpdateCompanyRequest $request, Company $company)
     {
         $company->update($request->all());
-        return response()->json(new CompanyResource($company), 200);
+        return response()->json(new CompanyResource($company->loadMissing('city')), 200);
     }
 
     public function destroy(Company $company)

@@ -25,6 +25,8 @@ class ApiIntegrationController extends Controller
         'anthropic' => ['setting' => 'anthropic_api_key', 'env' => 'ANTHROPIC_API_KEY'],
         'anthropic_admin' => ['setting' => 'anthropic_admin_key', 'env' => 'ANTHROPIC_ADMIN_KEY'],
         'openai' => ['setting' => 'openai_api_key', 'env' => 'OPENAI_API_KEY'],
+        'focus_nfe' => ['setting' => 'focus_nfe_token', 'env' => 'FOCUS_NFE_TOKEN'],
+        'focus_nfe_homolog' => ['setting' => 'focus_nfe_homolog_token', 'env' => 'FOCUS_NFE_HOMOLOG_TOKEN'],
     ];
 
     /** Token do WhatsApp/Instagram, gravado pela futura tela Comercial > Comunicação. */
@@ -109,6 +111,8 @@ class ApiIntegrationController extends Controller
                 'anthropic' => $this->testAnthropic(),
                 'anthropic_admin' => $this->testAnthropicAdmin(),
                 'openai' => $this->testOpenAi(),
+                'focus_nfe' => $this->testFocus('producao'),
+                'focus_nfe_homolog' => $this->testFocus('homologacao'),
                 'google' => $this->testGoogle(),
                 'meta' => $this->testMeta(),
                 'viacep' => $this->testViaCep(),
@@ -325,6 +329,34 @@ class ApiIntegrationController extends Controller
                 'source' => null,
             ],
             [
+                'key' => 'focus_nfe',
+                'name' => 'Focus NFe (nota fiscal)',
+                'icon' => 'fas fa-file-invoice-dollar',
+                'purpose' => 'Emite a nota fiscal de serviço (NFS-e) dos eventos na prefeitura. Este é o token de produção: as notas valem de verdade.',
+                'used_in' => 'Eventos (ícone de nota fiscal)',
+                'billing' => 'Plano mensal da Focus NFe, cobrado pela quantidade de notas.',
+                'site' => 'https://app.focusnfe.com.br',
+                'site_label' => 'app.focusnfe.com.br',
+                'needs_key' => true,
+                'key_label' => 'Token de produção da Focus NFe',
+                'help' => 'No painel da Focus: Minha conta > Tokens. A empresa (CNPJ e certificado digital A1) também precisa estar cadastrada lá.',
+                ...$this->keyStatus('focus_nfe'),
+            ],
+            [
+                'key' => 'focus_nfe_homolog',
+                'name' => 'Focus NFe: teste (homologação)',
+                'icon' => 'fas fa-file-invoice-dollar',
+                'purpose' => 'Token de teste da Focus NFe. Use para conferir a emissão sem valor fiscal antes de passar a empresa para produção em Cadastros > Empresas.',
+                'used_in' => 'Eventos (ícone de nota fiscal)',
+                'billing' => 'Plano mensal da Focus NFe, cobrado pela quantidade de notas.',
+                'site' => 'https://app.focusnfe.com.br',
+                'site_label' => 'app.focusnfe.com.br',
+                'needs_key' => true,
+                'key_label' => 'Token de homologação da Focus NFe',
+                'help' => 'No painel da Focus: Minha conta > Tokens. A empresa (CNPJ e certificado digital A1) também precisa estar cadastrada lá.',
+                ...$this->keyStatus('focus_nfe_homolog'),
+            ],
+            [
                 'key' => 'viacep',
                 'name' => 'ViaCEP',
                 'icon' => 'fas fa-map-marker-alt',
@@ -521,6 +553,20 @@ class ApiIntegrationController extends Controller
         $response = Http::timeout(15)->get('https://graph.facebook.com/v21.0/me', ['access_token' => $token]);
 
         return $this->answer($response->status(), 'Meta');
+    }
+
+    private function testFocus(string $environment): array
+    {
+        $focus = \App\Services\FocusNfeService::for($environment);
+        if (!$focus->configured()) {
+            return [false, 'O token da Focus NFe ainda não foi colado.'];
+        }
+        // Consulta uma nota que não existe: 404 = token aceito; 401/403 = token recusado.
+        $status = $focus->ping()->status();
+        if ($status === 404 || ($status >= 200 && $status < 300)) {
+            return [true, 'Conectado à Focus NFe. O token está funcionando.'];
+        }
+        return $this->answer($status, 'Focus NFe');
     }
 
     private function testViaCep(): array
