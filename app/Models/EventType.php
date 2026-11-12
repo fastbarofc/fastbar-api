@@ -42,4 +42,10 @@ class EventType extends Model implements AuditableInterface
             ]
         ];
     }
+
+    /** Histórico (audits): do texto do contrato fica só o trecho que mudou. */
+    public function transformAudit(array $data): array
+    {
+        return \App\Services\ContractChangeService::compactAudit($data, ['contract_text']);
+    }
 }

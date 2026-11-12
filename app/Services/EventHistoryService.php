@@ -21,6 +21,9 @@ use Illuminate\Support\Facades\Log;
 
 class EventHistoryService
 {
+    /** Colunas com texto de contrato: o histórico guarda só o trecho que mudou. */
+    public const CONTRACT_FIELDS = ['contract_body', 'contract_sections', 'contract_print_data'];
+
     private array $ignoredFields = [
         'id',
         'created_at',
@@ -398,12 +401,8 @@ class EventHistoryService
                 $data[$key] = number_format((float) $value, 2, '.', '');
             }
 
-            if ($key === 'contract_body' && $value !== null && is_string($value)) {
-                $data[$key] = $this->normalizeHtml($value);
-            }
-
-            if ($key === 'contract_sections' && $value !== null) {
-                $data[$key] = $this->normalizeContractSections($value);
+            // Texto do contrato fica como veio: detectChanges compara por trecho (ContractChangeService).
+            if (in_array($key, self::CONTRACT_FIELDS, true)) {
                 continue;
             }
 
@@ -473,6 +472,24 @@ class EventHistoryService
                     'new_value' => $newValue,
                     'are_different' => $this->valuesAreDifferent($oldValue, $newValue),
                 ]);
+            }
+
+            // Contrato: em vez do texto inteiro (antes e depois), só os trechos que mudaram.
+            if (in_array($key, self::CONTRACT_FIELDS, true)) {
+                if (!array_key_exists($key, $newData)) {
+                    continue; // não veio na alteração: não mudou
+                }
+                foreach (ContractChangeService::rows($key, $oldValue, $newValue) as $row) {
+                    $changes[] = [
+                        'field' => $key,
+                        'field_label' => $row['label'],
+                        'old_value' => null,
+                        'new_value' => null,
+                        'old_value_display' => $row['old'] ?? '(vazio)',
+                        'new_value_display' => $row['new'] ?? '(vazio)',
+                    ];
+                }
+                continue;
             }
 
             if ($this->valuesAreDifferent($oldValue, $newValue)) {
@@ -591,6 +608,10 @@ class EventHistoryService
         $changes = [];
 
         foreach ($data as $key => $value) {
+            // Na criação o texto do contrato não é copiado para o histórico.
+            if (in_array($key, self::CONTRACT_FIELDS, true)) {
+                continue;
+            }
             if ($value !== null && $value !== '') {
                 $changes[] = [
                     'field' => $key,

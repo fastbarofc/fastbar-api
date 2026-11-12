@@ -66,6 +66,44 @@ class Contract extends UuidModel implements AuditableInterface
         ]);
     }
 
+    /**
+     * Histórico (audits): cada versão do contrato já fica guardada nesta tabela, então o histórico
+     * não copia o texto nem os dados inteiros. Guarda só o que mudou em relação à versão anterior.
+     */
+    public function transformAudit(array $data): array
+    {
+        $extra = null;
+        if (($data['event'] ?? null) === 'created' && $this->version > 1) {
+            $contract = $this;
+            $extra = function () use ($contract) {
+                $previous = self::withTrashed()->where('event_id', $contract->event_id)
+                    ->where('version', '<', $contract->version)->orderByDesc('version')->value('body');
+                $rows = \App\Services\ContractChangeService::rows('body', $previous, $contract->body);
+
+                foreach (($contract->properties_diff['modified'] ?? []) as $key => $change) {
+                    if ($key === 'sections' || !is_array($change)) {
+                        continue; // o texto das cláusulas já foi comparado acima
+                    }
+                    $old = $change['old'] ?? null;
+                    $new = $change['new'] ?? null;
+                    if (is_array($old) || is_array($new)) {
+                        continue; // contratante e cardápio aparecem nos próprios cadastros
+                    }
+                    $rows[] = [
+                        'field' => 'properties',
+                        'label' => 'Contrato – ' . (ContractTemplate::VARIABLES[$key] ?? ucfirst(str_replace('_', ' ', (string) $key))),
+                        'old' => $old === null || $old === '' ? null : (string) $old,
+                        'new' => $new === null || $new === '' ? null : (string) $new,
+                    ];
+                }
+
+                return $rows;
+            };
+        }
+
+        return \App\Services\ContractChangeService::compactAudit($data, ['body', 'properties', 'properties_diff'], $extra);
+    }
+
     public static function diffProperties(array $old, array $new): array
     {
         $old = self::sortRecursively($old);

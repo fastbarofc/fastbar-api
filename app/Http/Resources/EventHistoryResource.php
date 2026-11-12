@@ -54,6 +54,8 @@ class EventHistoryResource extends JsonResource
             return [];
         }
 
+        $changes = $this->compactContractChanges($changes);
+
         return array_map(function ($change) {
             // Garante que os valores sejam strings
             $old = isset($change['old']) ? (string) $change['old'] : '';
@@ -71,6 +73,41 @@ class EventHistoryResource extends JsonResource
                 ]),
             ];
         }, $changes);
+    }
+
+    /**
+     * Registros antigos guardavam o contrato inteiro (antes e depois).
+     * Na tela mostra só o trecho que mudou; na criação, o texto do contrato não aparece.
+     */
+    private function compactContractChanges(array $changes): array
+    {
+        $result = [];
+        foreach ($changes as $change) {
+            $field = $change['field'] ?? '';
+            $old = $change['old'] ?? null;
+            $new = $change['new'] ?? null;
+            $isLong = (is_string($old) && mb_strlen($old) > 1500) || (is_string($new) && mb_strlen($new) > 1500);
+
+            if (!in_array($field, ['contract_body', 'contract_sections'], true) || !$isLong) {
+                $result[] = $change;
+                continue;
+            }
+            if ($this->action === 'created') {
+                continue;
+            }
+
+            $clean = fn ($v) => ($v === '(vazio)' || $v === null) ? '' : (string) $v;
+            foreach (\App\Services\ContractChangeService::rows('contract_body', $clean($old), $clean($new)) as $row) {
+                $result[] = [
+                    'field' => $field,
+                    'label' => $row['label'],
+                    'old' => $row['old'] ?? '(vazio)',
+                    'new' => $row['new'] ?? '(vazio)',
+                ];
+            }
+        }
+
+        return $result;
     }
 
     /**

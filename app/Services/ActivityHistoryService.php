@@ -102,6 +102,13 @@ class ActivityHistoryService
         'App\Models\User' => ['Usuário', 'Acesso ao sistema'],
     ];
 
+    /** Colunas com texto de contrato: no histórico aparece só o trecho que mudou (ContractChangeService). */
+    private const CONTRACT_FIELDS = [
+        'App\Models\Event' => Event::HEAVY_COLUMNS,
+        'App\Models\EventType' => ['contract_text'],
+        'App\Models\Contract' => ['body', 'properties', 'properties_diff'],
+    ];
+
     /** Registros que pertencem a um evento (Model => tabela com a coluna event_id). */
     private const EVENT_CHILDREN = [
         'App\Models\EventBatch' => 'event_batches',
@@ -488,6 +495,9 @@ class ActivityHistoryService
         return $audits->map(function (Audit $audit) use ($users, $records, $names) {
             $old = $this->clean($audit->old_values ?? []);
             $new = $this->clean($audit->new_values ?? []);
+            [$contractChanges, $old, $new] = ContractChangeService::extractForDisplay(
+                (string) $audit->event, $old, $new, self::CONTRACT_FIELDS[$audit->auditable_type] ?? []
+            );
             $record = $records[$audit->auditable_type][$audit->auditable_id] ?? null;
             [$areaLabel, $group] = self::AREAS[$audit->auditable_type] ?? [class_basename($audit->auditable_type), null];
             $actionLabel = self::ACTIONS[$audit->event] ?? $audit->event;
@@ -520,6 +530,15 @@ class ActivityHistoryService
             }
 
             $displayAction = $audit->event;
+            if ($contractChanges) {
+                $changes = array_merge($changes, $contractChanges);
+                if ($audit->auditable_type === 'App\Models\Contract' && $audit->event === 'created') {
+                    // Nova versão do contrato: mostra Antes e Depois do que mudou na versão anterior.
+                    $changes = $contractChanges;
+                    $displayAction = 'updated';
+                    $actionLabel = 'Gerou nova versão';
+                }
+            }
             if ($audit->auditable_type === 'App\Models\EventDocument') {
                 // Não repete a ficha do documento: mostra o que ele muda no evento (Antes → Depois),
                 // que é a lista "O que mudou" que o próprio documento guarda.

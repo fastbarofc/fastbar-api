@@ -166,6 +166,15 @@ class Event extends Model implements AuditableInterface
         return self::$lightColumns;
     }
 
+    /**
+     * Histórico (audits): o texto do contrato não é copiado inteiro.
+     * Na alteração fica só o trecho que mudou (cláusula, antes e depois); na criação, nada do contrato.
+     */
+    public function transformAudit(array $data): array
+    {
+        return \App\Services\ContractChangeService::compactAudit($data, self::HEAVY_COLUMNS);
+    }
+
     /** Lista leve: o evento sem o texto do contrato. */
     public function scopeLight(Builder $query): Builder
     {
