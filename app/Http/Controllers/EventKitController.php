@@ -99,6 +99,8 @@ class EventKitController extends Controller
 
     public function children(EventKit $kit)
     {
+        // Tela de montar o menu: mostra também os itens desmarcados, com a caixinha vazia
+        EventKit::$includeUnselected = true;
         $children = $kit->children;
         return response()->json($children, 200);
     }
@@ -379,9 +381,11 @@ class EventKitController extends Controller
         $product = Product::find($data['id']);
         unset($data['id']);
         unset($data['themed_table']);
+        // Só colunas da tabela event_kit_product (a tela manda outros campos junto, como custom_item)
+        $pivot = array_intersect_key($data, array_flip(['value', 'ordination', 'optional', 'checklist', 'observation', 'selected', 'quantity', 'comments', 'unit']));
         $this->drinkMenuHistory->record(
             EventKit::find($data['event_kit_id'])?->event_id,
-            fn () => $product->eventKits()->updateExistingPivot($data['event_kit_id'], $data),
+            fn () => $product->eventKits()->updateExistingPivot($data['event_kit_id'], $pivot),
         );
         return response()->json(['message' => 'Alterado com sucesso.'], 200);
     }
@@ -419,5 +423,32 @@ class EventKitController extends Controller
             }
             $child->delete();
         }
+    }
+
+    /** Arrastar no evento: grava a nova ordem de tudo que está na pasta. */
+    public function reorder(Request $request)
+    {
+        $data = $request->validate([
+            'event_id' => 'required|integer',
+            'parent_id' => 'nullable|integer',
+            'items' => 'required|array',
+            'items.*.type' => 'required|in:kit,product',
+            'items.*.id' => 'required|integer',
+        ]);
+
+        $parentId = $data['parent_id'] ?? null;
+        $this->drinkMenuHistory->record($data['event_id'], function () use ($data, $parentId) {
+            foreach (array_values($data['items']) as $index => $item) {
+                if ($item['type'] === 'kit') {
+                    EventKit::where('id', $item['id'])->where('event_id', $data['event_id'])->where('event_kit_id', $parentId)
+                        ->update(['ordination' => $index + 1]);
+                } elseif ($parentId) {
+                    IlluminateSupportFacadesDB::table('event_kit_product')->where('event_kit_id', $parentId)
+                        ->where('product_id', $item['id'])->whereNull('deleted_at')->update(['ordination' => $index + 1]);
+                }
+            }
+        });
+
+        return response()->json(['message' => 'Ordem alterada.'], 200);
     }
 }

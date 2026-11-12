@@ -20,8 +20,12 @@ class EventKitTreeResource extends JsonResource
                 'value'        => $this->value,
                 'observation'  => $this->observation,
                 'ordination'   => $this->ordination,
+                'selected'     => (bool) ($this->selected ?? true),
+                'type'         => $this->is_item ? 'product' : 'kit',
+                'custom_item'  => (bool) $this->is_item,
             ],
-            'children'     => !empty($this->has_children) ? [[]] : [],
+            // Pasta sempre pode abrir (mostra o campo de digitar item); item digitado não tem filhos
+            'children'     => $this->is_item ? [] : [[]],
             'model'        => 'event_kit'
         ];
     }

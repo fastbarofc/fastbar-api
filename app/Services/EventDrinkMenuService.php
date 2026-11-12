@@ -79,7 +79,10 @@ class EventDrinkMenuService
                     $folderPath = $path === '' ? $folder->name : "{$path} > {$folder->name}";
 
                     return [
-                        ...$folder->products->sortBy('pivot.ordination')->map(fn (Product $product) => [
+                        ...$folder->products
+                            // Só o que está no menu: marcado em Básico ou como Opcional
+                            ->filter(fn (Product $product) => (bool) ($product->pivot->selected ?? true) || (bool) $product->pivot->optional)
+                            ->sortBy('pivot.ordination')->map(fn (Product $product) => [
                             'event_kit_id' => $folder->id,
                             'product_id' => $product->id,
                             'name' => $product->name,
@@ -159,6 +162,8 @@ class EventDrinkMenuService
                     'optional' => $kitProduct ? ($kitProduct->pivot->optional ?? false) : ($child['data']['optional'] ?? false),
                     'checklist' => $kitProduct ? ($kitProduct->pivot->checklist ?? false) : ($child['data']['checklist'] ?? false),
                     'observation' => $kitProduct ? ($kitProduct->pivot->observation ?? null) : ($child['data']['observation'] ?? null),
+                    // Entra desmarcado: no evento a pessoa marca em "Básico" só os drinks que quer (igual aos itens de buffet do Parthenon)
+                    'selected' => false,
                 ]);
                 continue;
             }
@@ -180,8 +185,15 @@ class EventDrinkMenuService
                 $data['observation'] = $child['data']['observation'] ?? null;
             }
 
-            $data['ordination'] = EventKit::where('event_kit_id', $data['event_kit_id'])->where('event_id', $data['event_id'])->get()->count() + 1;
-            $newEventKit = EventKit::create($data);
+            // Pasta adicionada de novo: reaproveita a subpasta que o evento já tem (não duplica)
+            $newEventKit = EventKit::where('event_kit_id', $data['event_kit_id'])->where('event_id', $data['event_id'])->where('name', $data['name'])->first();
+            if (!$newEventKit) {
+                $data['ordination'] = EventKit::where('event_kit_id', $data['event_kit_id'])->where('event_id', $data['event_id'])->get()->count() + 1;
+                // Subpasta entra desmarcada; marcar um drink dentro dela marca a pasta
+                $data['selected'] = false;
+                unset($data['id'], $data['type'], $data['custom_item']);
+                $newEventKit = EventKit::create($data);
+            }
 
             if ($originalKit && $originalKit->has_children) {
                 $this->copyChildren($originalKit, $newEventKit);

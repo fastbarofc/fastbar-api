@@ -153,6 +153,7 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::put('event-kits/update-product', [EventKitController::class, 'updateProductEventKit'])->name('event-kits.update-product');
     Route::get('event-kits/tree', [EventKitController::class, 'indexTree'])->name('event-kits.tree');
+    Route::post('event-kits/reorder', [EventKitController::class, 'reorder'])->name('event-kits.reorder');
     Route::get('event-kits/full-tree', [EventKitController::class, 'fullTree'])->name('event-kits.full-tree');
     Route::post('event-kits/{movingItem}/change-ordination', [EventKitController::class, 'changeOrdination'])->name('event-kits.change-ordination');
     Route::resource('event-kits', EventKitController::class);

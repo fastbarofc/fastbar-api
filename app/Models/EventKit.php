@@ -25,13 +25,23 @@ class EventKit extends Model implements AuditableInterface
         'observation',
         'optional',
         'checklist',
+        'selected',
+        'is_item',
     ];
 
     protected $casts = [
         'optional' => 'boolean',
         'themed_table' => 'boolean',
         'checklist' => 'boolean',
+        'selected' => 'boolean',
+        'is_item' => 'boolean',
     ];
+
+    /**
+     * Por padrão os filhos (children) trazem só os itens marcados (Básico ou Opcional), para menu e documentos.
+     * A tela de montar o menu do evento liga isto para ver também os desmarcados.
+     */
+    public static bool $includeUnselected = false;
 
     protected static $sortableFields = [
         'name',
@@ -64,7 +74,7 @@ class EventKit extends Model implements AuditableInterface
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'event_kit_product')->withPivot(['value', 'ordination', 'optional', 'average consumption ', 'quantity', 'unit', 'comments', 'checklist', 'observation']);
+        return $this->belongsToMany(Product::class, 'event_kit_product')->withPivot(['value', 'ordination', 'optional', 'average consumption ', 'quantity', 'unit', 'comments', 'checklist', 'observation', 'selected']);
     }
 
     public function getHasChildrenAttribute()
@@ -81,6 +91,12 @@ class EventKit extends Model implements AuditableInterface
             return [];
         }
 
+        if (!self::$includeUnselected) {
+            // Entra no menu o que está marcado como Básico ou como Opcional
+            $products = $products->filter(fn ($product) => (bool) ($product->pivot->selected ?? true) || (bool) $product->pivot->optional)->values();
+            $kits = $kits->filter(fn ($kit) => (bool) ($kit->selected ?? true) || (bool) $kit->optional)->values();
+        }
+
         if ($products) {
             $products->transform(function ($item) {
                 $item['event_kit_id'] = $this->id;
@@ -90,13 +106,16 @@ class EventKit extends Model implements AuditableInterface
                 $item['value'] = $item->pivot->value;
                 $item['observation'] = $item->pivot->observation;
                 $item['ordination'] = $item->pivot->ordination;
+                $item['selected'] = (bool) ($item->pivot->selected ?? true);
                 return $item;
             });
         }
 
         if ($kits) {
             $kits->transform(function ($item) {
-                $item['type'] = 'kit';
+                // Item digitado no evento aparece e imprime como item (drink), mas é guardado como event_kit
+                $item['type'] = $item->is_item ? 'product' : 'kit';
+                $item['custom_item'] = (bool) $item->is_item;
                 return $item;
             });
         }
@@ -124,6 +143,8 @@ class EventKit extends Model implements AuditableInterface
                     'ordination' => $item['ordination'],
                     'checklist' => $item['checklist'],
                     'observation' => $item['observation'],
+                    'selected' => (bool) ($item['selected'] ?? true),
+                    'custom_item' => (bool) ($item['custom_item'] ?? false),
                 ],
                 'children' => $getChild ? $item['children'] : ($item['type'] == 'kit' ? [[]] : [])
             ];
