@@ -23,7 +23,7 @@ class RequisitionController extends Controller
     {
         $perPage = $request->input('per_page', 30);
 
-        $query = Requisition::with(['event', 'stock', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
+        $query = Requisition::with(['event:id,name,date', 'stock', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -86,7 +86,7 @@ class RequisitionController extends Controller
 
             DB::commit();
 
-            $requisition->load(['event', 'stock', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
+            $requisition->load(['event:id,name,date', 'stock', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
 
             return response()->json(new RequisitionResource($requisition), 201);
         } catch (\Exception $e) {
@@ -97,7 +97,7 @@ class RequisitionController extends Controller
 
     public function show(Requisition $requisition)
     {
-        $requisition->load(['event', 'stock', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
+        $requisition->load(['event:id,name,date', 'stock', 'requester', 'requisitionItems.product', 'devolutions.devolutionItems']);
         return response()->json(new RequisitionResource($requisition), 200);
     }
 

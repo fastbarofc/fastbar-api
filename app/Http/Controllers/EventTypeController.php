@@ -20,7 +20,7 @@ class EventTypeController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = EventType::query();
+        $query = EventType::query()->select(['event_types.id', 'event_types.name']); // lista leve: sem o texto do contrato
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');

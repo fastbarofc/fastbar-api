@@ -935,7 +935,7 @@ class LaborConvocationController extends Controller
 
     private function monthEvents(Carbon $start, Carbon $end)
     {
-        return Event::query()
+        return Event::query()->light()
             ->with(['client:id,name', 'eventPlace:id,name', 'eventPlace.address.city:id,name', 'eventStatus:id,name', 'collaborator:id,name'])
             ->whereHas('eventStatus', fn ($q) => $q->whereIn('name', self::STATUSES))
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])

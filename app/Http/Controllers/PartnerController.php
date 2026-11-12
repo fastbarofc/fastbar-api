@@ -45,6 +45,8 @@ class PartnerController extends Controller
             $query->orderByField($sorteableField, $direction);
         }
 
+        // Ordem estável: o id desempata, para nenhuma linha sumir ou repetir entre páginas.
+        $query->orderBy($query->getModel()->getTable() . ".id");
         $partners = $query->paginate($perPage);
 
         return response()->json([

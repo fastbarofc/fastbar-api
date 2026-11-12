@@ -49,6 +49,8 @@ class BlockedDateController extends Controller
             $query->orderByField($sorteableField, $direction);
         }
 
+        // Ordem estável: o id desempata, para nenhuma linha sumir ou repetir entre páginas.
+        $query->orderBy($query->getModel()->getTable() . ".id");
         $blockedDates = $query->paginate($perPage);
 
         return response()->json([

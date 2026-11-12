@@ -70,15 +70,14 @@ class EventController extends Controller
 
     public function index(Request $request)
     {
-        $query = Event::where('is_draft', false)->with([
+        $query = Event::light()->where('is_draft', false)->with([
             'eventStatus',
             'eventPlace',
             'client',
             'eventType',
             'collaborator',
-            'eventKits',
             'companies'
-        ]);
+        ])->withExists('eventKits');
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');
@@ -162,7 +161,7 @@ class EventController extends Controller
     {
         $disconsideredStatusId = EventStatus::whereIn('slug', ['descartado', 'cancelado', 'fechou-com-o-concorrente'])->get()->pluck('id');
 
-        $query = Event::query()->whereNotIn('event_status_id', $disconsideredStatusId);
+        $query = Event::query()->light()->whereNotIn('event_status_id', $disconsideredStatusId);
 
         $start = $request->start ? Carbon::parse($request->start)->setHour(0)->setMinute(0)->setSecond(0) : Carbon::now()->startOfWeek(0);
         $end = $request->end ? Carbon::parse($request->end)->setHour(23)->setMinute(59)->setSecond(59) : Carbon::now()->endOfWeek(0);

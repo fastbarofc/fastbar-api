@@ -45,7 +45,7 @@ class EventPaymentController extends Controller
         $query->orderByField($sorteableField, $direction);
     }
 
-    $eventPayments = $query->with(['event', 'parthenonBankAccount'])->paginate($perPage);
+    $eventPayments = $query->with(['event' => fn ($q) => $q->light(), 'parthenonBankAccount'])->paginate($perPage);
 
     return response()->json([
         'data' => EventPaymentResource::collection($eventPayments),

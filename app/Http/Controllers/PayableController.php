@@ -23,7 +23,7 @@ class PayableController extends Controller
     {
         $base = $this->filteredQuery($request);
 
-        $query = (clone $base)->with(self::RELATIONS);
+        $query = (clone $base)->with(self::RELATIONS)->with(['event' => fn ($q) => $q->light()]);
         $this->applySituation($query, $request->input('situation', 'all'));
 
         $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
@@ -219,13 +219,13 @@ class PayableController extends Controller
 
         $paidIn = fn ($q) => $q->whereNotNull('paid_at')->whereBetween('paid_at', [$start, $end]);
 
-        $receivables = $paidIn(\App\Models\Receivable::with(['paymentMethod', 'parthenonBankAccount', 'receivableable']))
+        $receivables = $paidIn(\App\Models\Receivable::with(['paymentMethod', 'parthenonBankAccount', 'receivableable' => fn ($m) => $m->constrain([Event::class => fn ($q) => $q->light()])]))
             ->orderBy('paid_at')->get();
         $events = $receivables->pluck('receivableable')->filter(fn ($e) => $e instanceof Event);
         if ($events->isNotEmpty()) {
             (new \Illuminate\Database\Eloquent\Collection($events->values()->all()))->load('client:id,name');
         }
-        $payables = $paidIn(Payable::with(['event', 'supplier', 'partner', 'collaborator', 'costCenter', 'paymentMethod', 'parthenonBankAccount', 'financialOperation']))
+        $payables = $paidIn(Payable::with(['event' => fn ($q) => $q->light(), 'supplier', 'partner', 'collaborator', 'costCenter', 'paymentMethod', 'parthenonBankAccount', 'financialOperation']))
             ->orderBy('paid_at')->get();
 
         $inValue = fn ($r) => (float) ($r->received_amount ?? $r->amount);

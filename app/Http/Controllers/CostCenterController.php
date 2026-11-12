@@ -52,6 +52,8 @@ class CostCenterController extends Controller
             $query->orderBy($sortableField, $direction);
         }
 
+        // Ordem estável: o id desempata, para nenhuma linha sumir ou repetir entre páginas.
+        $query->orderBy($query->getModel()->getTable() . ".id");
         $costCenters = $query->paginate($perPage);
 
         return response()->json([

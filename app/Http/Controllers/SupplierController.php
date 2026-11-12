@@ -53,6 +53,8 @@ class SupplierController extends Controller
             $query->orderByField($sortableField, $direction);
         }
 
+        // Ordem estável: o id desempata, para nenhuma linha sumir ou repetir entre páginas.
+        $query->orderBy($query->getModel()->getTable() . ".id");
         $suppliers = $query->paginate($perPage);
 
         return response()->json([

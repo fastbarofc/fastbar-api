@@ -25,7 +25,7 @@ class DevolutionController extends Controller
         $perPage = $request->input('per_page', 30);
 
         $query = Devolution::with([
-            'requisition.event',
+            'requisition.event:id,name,date',
             'requisition.requisitionItems.product',
             'stock',
             'registeredBy',
@@ -98,7 +98,7 @@ class DevolutionController extends Controller
             DB::commit();
 
             $devolution->load([
-                'requisition.event',
+                'requisition.event:id,name,date',
                 'stock',
                 'registeredBy',
                 'devolutionItems.product',
@@ -114,7 +114,7 @@ class DevolutionController extends Controller
     public function show(Devolution $devolution)
     {
         $devolution->load([
-            'requisition.event',
+            'requisition.event:id,name,date',
             'requisition.requisitionItems.product',
             'stock',
             'registeredBy',
@@ -126,7 +126,7 @@ class DevolutionController extends Controller
     public function showByRequisition(Requisition $requisition)
     {
         $devolution = Devolution::with([
-            'requisition.event',
+            'requisition.event:id,name,date',
             'stock',
             'registeredBy',
             'devolutionItems.product',

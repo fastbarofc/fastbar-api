@@ -23,7 +23,7 @@ class ReceivableController extends Controller
     {
         $base = $this->filteredQuery($request);
 
-        $query = (clone $base)->with(self::RELATIONS);
+        $query = (clone $base)->with(self::RELATIONS)->with(['receivableable' => fn ($m) => $m->constrain([Event::class => fn ($q) => $q->light()])]);
         $this->applySituation($query, $request->input('situation', 'open'));
 
         $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';

@@ -40,7 +40,7 @@ class EventPlanningController extends Controller
         }
         $end = (clone $start)->endOfMonth();
 
-        $events = Event::query()
+        $events = Event::query()->light()
             ->with(['client:id,name', 'eventPlace:id,name', 'eventStatus:id,name'])
             ->whereHas('eventStatus', fn ($q) => $q->whereIn('name', self::STATUSES))
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])

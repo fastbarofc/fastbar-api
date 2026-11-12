@@ -132,11 +132,44 @@ class Event extends Model implements AuditableInterface
         $foreignKey = $this->{$relation}()->getForeignKeyName();
 
 
-        $query->select("{$this->getTable()}.*")
-            ->leftJoin("{$relatedTable}", "{$relatedTable}.id", '=', "{$this->getTable()}.{$foreignKey}")
+        $query->leftJoin("{$relatedTable}", "{$relatedTable}.id", '=', "{$this->getTable()}.{$foreignKey}")
             ->orderBy("{$relatedTable}.{$field}", $direction);
 
-        return $query->groupBy("{$this->getTable()}.id");
+        // Lista leve (colunas já escolhidas): a junção é por id e não repete
+        // eventos, então não precisa agrupar. Senão, mantém como sempre foi.
+        if (!empty($query->getQuery()->columns)) {
+            return $query;
+        }
+
+        return $query->select("{$this->getTable()}.*")->groupBy("{$this->getTable()}.id");
+    }
+
+    /**
+     * Colunas grandes do evento (texto do contrato). Ficam fora das listas e
+     * só são lidas ao abrir o evento ou gerar o contrato.
+     */
+    public const HEAVY_COLUMNS = ['contract_body', 'contract_sections', 'contract_print_data'];
+
+    private static ?array $lightColumns = null;
+
+    /** Todas as colunas do evento, menos as grandes (usar em listas). */
+    public static function lightColumns(): array
+    {
+        if (self::$lightColumns === null) {
+            $table = (new static)->getTable();
+            $all = \Illuminate\Support\Facades\Schema::getColumnListing($table);
+            self::$lightColumns = array_values(array_map(
+                fn ($c) => "{$table}.{$c}",
+                array_diff($all, self::HEAVY_COLUMNS)
+            ));
+        }
+        return self::$lightColumns;
+    }
+
+    /** Lista leve: o evento sem o texto do contrato. */
+    public function scopeLight(Builder $query): Builder
+    {
+        return $query->select(self::lightColumns());
     }
 
 

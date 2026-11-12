@@ -12,7 +12,11 @@ class RequisitionResource extends JsonResource
         return [
             'id'                    => $this->id,
             'event_id'              => $this->event_id,
-            'event'                 => EventResource::make($this->whenLoaded('event')),
+            'event'                 => $this->whenLoaded('event', fn () => $this->event ? [
+                'id'   => $this->event->id,
+                'name' => $this->event->name,
+                'date' => optional($this->event->date)->format('Y-m-d'),
+            ] : null),
             'stock_id'              => $this->stock_id,
             'stock'                 => StockResource::make($this->whenLoaded('stock')),
             'destination_stock_id'  => $this->destination_stock_id,

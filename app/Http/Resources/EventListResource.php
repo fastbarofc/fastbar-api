@@ -34,7 +34,7 @@ class EventListResource extends JsonResource
             ]),
             'type'           => $this->whenLoaded('eventType', fn() => $this->eventType->name),
             'collaborator'   => $this->whenLoaded('collaborator', fn() => $this->collaborator->name),
-            'has_kit'        => $this->eventKits()->exists(),
+            'has_kit'        => isset($this->event_kits_exists) ? (bool) $this->event_kits_exists : $this->eventKits()->exists(),
             'companies'      => $this->whenLoaded('companies', fn() => $this->companies->map(fn($c) => [
                 'id' => $c->id,
                 'internal_name' => $c->internal_name

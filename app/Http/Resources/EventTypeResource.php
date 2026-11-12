@@ -12,7 +12,7 @@ class EventTypeResource extends JsonResource
         return [
             'id'         => $this->id,
             'name'       => $this->name,
-            'contract_text'       => $this->contract_text,
+            'contract_text'       => $this->whenHas('contract_text'),
         ];
     }
 }

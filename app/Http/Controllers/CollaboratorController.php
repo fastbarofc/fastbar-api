@@ -110,6 +110,8 @@ class CollaboratorController extends Controller
 
         $query->select('collaborators.*');
 
+        // Ordem estável: o id desempata, para nenhuma linha sumir ou repetir entre páginas.
+        $query->orderBy($query->getModel()->getTable() . ".id");
         $collaborators = $query->paginate($perPage);
 
         $collaboratorCompanies = Company::where('internal_name', 'Fastbar')->whereNull('deleted_at')->get(['id', 'internal_name']);
