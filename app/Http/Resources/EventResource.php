@@ -28,6 +28,7 @@ class EventResource extends JsonResource
             'event_place'        => $this->whenLoaded('eventPlace'),
             'event_status_id'    => $this->event_status_id,
             'status'             => $this->whenLoaded('eventStatus'),
+            'has_kit'            => $this->eventKits()->exists(),
             'status_reason'      => $this->status_reason,
             'lease'              => $this->lease,
             'duration'           => $this->duration,
