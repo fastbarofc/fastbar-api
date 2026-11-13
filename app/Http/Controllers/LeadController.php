@@ -48,7 +48,7 @@ class LeadController extends Controller
         $user = $request->user();
         $seeAll = $this->canSeeAll($user);
 
-        $query = Lead::query()->with(array_merge(self::RELATIONS, ['activities']))->withCount(['comments', 'activities']);
+        $query = Lead::query()->with(array_merge(self::RELATIONS, ['activities.user']))->withCount(['comments', 'activities']);
 
         if (!$seeAll) {
             $query->whereIn('user_id', $this->portfolioUserIds($user));

@@ -171,7 +171,7 @@ class ReportController extends Controller
     public function generatePdfReport(Request $request)
     {
         try {
-            $query = Event::query();
+            $query = Event::query()->light(); // o PDF não usa o texto do contrato
             
             $this->applyFilters($query, $request);
             

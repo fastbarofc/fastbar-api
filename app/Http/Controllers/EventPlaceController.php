@@ -21,7 +21,8 @@ class EventPlaceController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = EventPlace::query();
+        // Carrega junto o que a lista mostra (endereço, cidade, estado...), em vez de uma consulta por linha.
+        $query = EventPlace::query()->with(['address.city', 'address.state']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');

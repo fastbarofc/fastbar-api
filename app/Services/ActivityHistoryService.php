@@ -29,8 +29,11 @@ use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use OwenIt\Auditing\Models\Audit;
@@ -375,7 +378,8 @@ class ActivityHistoryService
         if (!empty($filters['event_id'])) {
             $eventId = (int) $filters['event_id'];
             $query->where(function ($q) use ($eventId) {
-                $q->where(fn($q) => $q->where('auditable_type', Event::class)->where('auditable_id', $eventId));
+                // auditable_id é texto no banco: comparar como texto usa o índice (com número, varria tudo).
+                $q->where(fn($q) => $q->where('auditable_type', Event::class)->where('auditable_id', (string) $eventId));
                 foreach (self::EVENT_CHILDREN as $type => $table) {
                     if (!Schema::hasTable($table)) {
                         continue;
@@ -393,7 +397,16 @@ class ActivityHistoryService
             $query->where('auditable_type', $filters['area']);
         }
 
-        $page = $query->paginate($perPage);
+        // O total de linhas é a parte lenta (cresce com o histórico): fica guardado por 1 minuto para cada filtro.
+        // As linhas da página são sempre buscadas na hora.
+        $totalKey = 'activity-history:total:' . md5(json_encode(collect($filters)->except(['per_page', 'page'])->sortKeys()->all()));
+        $total = (int) Cache::remember($totalKey, 60, fn () => $query->toBase()->getCountForPagination());
+        $pageNumber = Paginator::resolveCurrentPage();
+        $items = $total > 0 ? $query->forPage($pageNumber, $perPage)->get() : $query->getModel()->newCollection();
+        $page = new LengthAwarePaginator($items, $total, $perPage, $pageNumber, [
+            'path' => Paginator::resolveCurrentPath(),
+            'pageName' => 'page',
+        ]);
         $page->setCollection($this->format($page->getCollection()));
 
         return $page;
@@ -407,6 +420,11 @@ class ActivityHistoryService
      */
     private function hideAddendumDrafts($query): void
     {
+        // Sem a coluna do aditivo-sombra no evento não existe rascunho para esconder: não varre o histórico à toa.
+        if (!Schema::hasColumn('events', 'addendum_of_event_id')) {
+            return;
+        }
+
         $draftEventIds = Audit::query()
             ->where('auditable_type', Event::class)
             ->where('event', 'created')

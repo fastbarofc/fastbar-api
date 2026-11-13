@@ -86,7 +86,35 @@ class CommercialRule extends Model implements AuditableInterface
         'no_answer_days' => 'integer',
     ];
 
+    private static ?self $currentCache = null;
+    private static float $currentCacheAt = 0.0;
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => self::forgetCurrent());
+        static::deleted(fn () => self::forgetCurrent());
+    }
+
+    public static function forgetCurrent(): void
+    {
+        self::$currentCache = null;
+    }
+
+    /**
+     * Regras em vigor. Guardadas por até 5 segundos dentro do mesmo pedido, porque as listas do Comercial
+     * perguntavam ao banco uma vez por lead. Ao salvar as regras a guarda é zerada.
+     */
     public static function current(): self
+    {
+        if (self::$currentCache !== null && (microtime(true) - self::$currentCacheAt) < 5) {
+            return self::$currentCache;
+        }
+        self::$currentCacheAt = microtime(true);
+
+        return self::$currentCache = static::loadCurrent();
+    }
+
+    private static function loadCurrent(): self
     {
         return static::query()->orderBy('id')->first() ?? static::create([
             'high_season_months' => [9, 10, 11, 12],

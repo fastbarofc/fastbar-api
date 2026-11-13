@@ -34,7 +34,11 @@ class CollaboratorController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = Collaborator::query()->with('companies');
+        // Carrega junto o que a lista mostra (endereço, cidade, estado...), em vez de uma consulta por linha.
+        $query = Collaborator::query()->with([
+            'companies', 'address.city', 'address.state', 'sector', 'sectorOffice', 'user.roles', 'file',
+            'qualifications', 'collaboratorIncidents', 'bankDetails', 'pixKeys', 'goals',
+        ]);
 
         $joins = [
             'sector_offices' => false,

@@ -460,6 +460,7 @@ class LeadRulesService
         $rules ??= $this->rules();
         $cancelled = EventStatus::whereIn('slug', ['cancelado', 'descartado'])->pluck('id');
         $events = Event::query()
+            ->light() // sem o texto do contrato: aqui só entram nome, data e convidados
             ->with('eventStatus')
             ->whereNotIn('event_status_id', $cancelled)
             ->whereBetween('date', [$from, $to])

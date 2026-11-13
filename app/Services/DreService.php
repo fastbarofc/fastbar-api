@@ -6,7 +6,9 @@ use App\Models\Event;
 use App\Models\FinancialOperation;
 use App\Models\Payable;
 use App\Models\Receivable;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * DRE gerencial e ARM mensal (como no sistema da MAV), a partir das contas a receber e a pagar.
@@ -87,9 +89,20 @@ class DreService
         $out = [];
 
         // Contas a receber
+        // O período é filtrado no banco (antes lia todas as contas de todos os anos e descartava aqui).
+        // O evento vem só com id, nome e data: o texto do contrato não é carregado.
         $receivables = Receivable::query()
-            ->with(['financialOperation', 'receivableable'])
+            ->with([
+                'financialOperation',
+                'receivableable' => fn (MorphTo $morph) => $morph->constrain([
+                    Event::class => fn ($q) => $q->select('events.id', 'events.name', 'events.date'),
+                ]),
+            ])
             ->when($regime === 'caixa', fn ($q) => $q->whereNotNull('paid_at'))
+            ->where(fn ($q) => $this->periodFilter($q, $regime, $from, $to, function ($q, $eventIds) {
+                $q->where('receivableable_type', (new Event())->getMorphClass())->whereIn('receivableable_id', $eventIds);
+            }))
+            ->orderBy('id')
             ->get();
         foreach ($receivables as $r) {
             $event = $r->receivableable instanceof Event ? $r->receivableable : null;
@@ -99,7 +112,9 @@ class DreService
             if (!empty($filters['cost_center_id'])) {
                 continue; // recebimentos não têm centro de custo
             }
-            $date = $this->dateFor($regime, $r->due_date, $r->paid_at, $event);
+            // Datas lidas como texto direto do banco (AAAA-MM-DD): montar um objeto de data por linha deixava o ARM do ano lento.
+            $paidRaw = $r->getRawOriginal('paid_at');
+            $date = $this->dateFor($regime, $r->getRawOriginal('due_date'), $paidRaw, $event);
             if (!$date || $date < $from || $date > $to) {
                 continue;
             }
@@ -112,7 +127,7 @@ class DreService
                 'counterparty' => $event?->name,
                 'event_id' => $event?->id,
                 'amount' => round($amount, 2),
-                'paid' => (bool) $r->paid_at,
+                'paid' => (bool) $paidRaw,
                 'line' => $this->lineFor($r->financialOperation, null, true),
             ];
         }
@@ -124,9 +139,12 @@ class DreService
             ->when($regime === 'caixa', fn ($q) => $q->whereNotNull('paid_at'))
             ->when(!empty($filters['event_id']), fn ($q) => $q->where('event_id', $filters['event_id']))
             ->when(!empty($filters['cost_center_id']), fn ($q) => $q->where('cost_center_id', $filters['cost_center_id']))
+            ->where(fn ($q) => $this->periodFilter($q, $regime, $from, $to, fn ($q, $eventIds) => $q->whereIn('event_id', $eventIds)))
+            ->orderBy('id')
             ->get();
         foreach ($payables as $p) {
-            $date = $this->dateFor($regime, $p->due_date, $p->paid_at, $p->event);
+            $paidRaw = $p->getRawOriginal('paid_at');
+            $date = $this->dateFor($regime, $p->getRawOriginal('due_date'), $paidRaw, $p->event);
             if (!$date || $date < $from || $date > $to) {
                 continue;
             }
@@ -140,7 +158,7 @@ class DreService
                 'counterparty' => $who ?? $p->event?->name,
                 'event_id' => $p->event_id,
                 'amount' => round($amount, 2),
-                'paid' => (bool) $p->paid_at,
+                'paid' => (bool) $paidRaw,
                 'line' => $this->lineFor($p->financialOperation, $p->category, false),
             ];
         }
@@ -222,18 +240,42 @@ class DreService
 
     // ---------------------------------------------------------------
 
-    private function dateFor(string $regime, $due, $paid, ?Event $event): ?string
+    /**
+     * Filtro do período feito no banco. Traz um conjunto igual ou um pouco maior que o necessário;
+     * o filtro exato continua no PHP (dateFor), então o resultado do relatório não muda.
+     * - caixa: pela data do pagamento;
+     * - vencimento: pela data de vencimento;
+     * - competência: vencimento no período OU evento com data no período.
+     */
+    private function periodFilter($q, string $regime, string $from, string $to, callable $byEvent): void
     {
         if ($regime === 'caixa') {
-            return $paid ? $paid->format('Y-m-d') : null;
+            $q->whereBetween('paid_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            return;
         }
-        if ($regime === 'competencia' && $event && $event->date) {
-            return $event->date->format('Y-m-d');
+        $q->whereBetween('due_date', [$from, $to]);
+        if ($regime === 'competencia') {
+            $eventIds = DB::table('events')->whereBetween('date', [$from, $to])->select('id');
+            $q->orWhere(fn ($q2) => $byEvent($q2, $eventIds));
         }
-        return $due ? $due->format('Y-m-d') : null;
+    }
+
+    private function dateFor(string $regime, $due, $paid, ?Event $event): ?string
+    {
+        // $due e $paid chegam como texto do banco; os 10 primeiros caracteres são a data (AAAA-MM-DD).
+        if ($regime === 'caixa') {
+            return $paid ? substr((string) $paid, 0, 10) : null;
+        }
+        if ($regime === 'competencia' && $event && ($eventDate = $event->getRawOriginal('date'))) {
+            return substr((string) $eventDate, 0, 10);
+        }
+        return $due ? substr((string) $due, 0, 10) : null;
     }
 
     /** Linha do DRE para a conta (ou a conta padrão da categoria). */
+    /** @var array<int, array<string, mixed>> */
+    private array $lineCache = [];
+
     private function lineFor(?FinancialOperation $account, ?string $category, bool $revenue): array
     {
         if (!$account) {
@@ -241,12 +283,12 @@ class DreService
             $account = $code ? ($this->byCode[$code] ?? null) : null;
         }
         if ($account) {
-            $section = $account->effective_dre_section;
-            return [
+            // A linha de cada conta é montada uma vez só e reaproveitada nos milhares de lançamentos.
+            return $this->lineCache[$account->id] ??= [
                 'key' => 'acc:' . $account->id,
                 'code' => $account->code,
                 'label' => trim($account->code . ' ' . $account->description),
-                'section' => $section ?? 'fora',
+                'section' => $account->effective_dre_section ?? 'fora',
                 'order' => $account->dre_order ?? 999999,
             ];
         }

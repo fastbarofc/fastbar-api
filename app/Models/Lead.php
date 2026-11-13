@@ -340,11 +340,16 @@ class Lead extends Model implements AuditableInterface
     public function noAnswerAttempts(): array
     {
         $since = now()->subDays(self::noAnswerRule()['days'])->startOfDay();
-        $attempts = $this->activities()
-            ->whereIn('type', self::CONTACT_TYPES)
-            ->where('result', 'sem_resposta')
-            ->where('happened_at', '>=', $since)
-            ->get(['type']);
+        // Nas listas as atividades já vêm carregadas: conta nelas, sem ir ao banco uma vez por lead.
+        $attempts = $this->relationLoaded('activities')
+            ? $this->activities->filter(fn ($a) => in_array($a->type, self::CONTACT_TYPES, true)
+                && $a->result === 'sem_resposta'
+                && $a->happened_at !== null && $a->happened_at->gte($since))
+            : $this->activities()
+                ->whereIn('type', self::CONTACT_TYPES)
+                ->where('result', 'sem_resposta')
+                ->where('happened_at', '>=', $since)
+                ->get(['type']);
 
         return [
             'count' => $attempts->count(),

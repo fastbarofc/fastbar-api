@@ -30,7 +30,8 @@ class AppointmentController extends Controller
             ->involving($request->user()->id)
             ->whereDate('date', '>=', $request->input('from'))
             ->whereDate('date', '<=', $request->input('to'))
-            ->with(['users:id,name', 'event:id,name', 'creator:id,name'])
+            // Tudo o que a lista mostra vem junto (antes eram 5 consultas a mais por compromisso).
+            ->with(['users:id,name', 'event:id,name', 'creator:id,name', 'client:id,name', 'partner:id,name', 'supplier:id,corporate_name,fantasy_name', 'participants', 'recordings'])
             ->orderBy('date')
             ->orderByRaw('start_time IS NULL')
             ->orderBy('start_time')

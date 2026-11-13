@@ -28,7 +28,8 @@ class SupplierController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = Supplier::query();
+        // Carrega junto o que a lista mostra (endereço, cidade, estado...), em vez de uma consulta por linha.
+        $query = Supplier::query()->with(['address.city', 'address.state', 'bankDetails', 'pixKeys']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');

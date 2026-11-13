@@ -29,6 +29,7 @@ trait ValidatesEventPlaceConflicts
         }
 
         $conflicts = Event::query()
+            ->light() // sem o texto do contrato
             ->where('event_place_id', $placeId)
             ->whereDate('date', $date)
             ->when($event, fn ($query) => $query->whereKeyNot($event->id))

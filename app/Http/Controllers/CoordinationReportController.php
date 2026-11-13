@@ -28,6 +28,7 @@ class CoordinationReportController extends Controller
 
         $types = CoordinationReportType::orderBy('sort_order')->orderBy('id')->get();
         $events = Event::query()
+            ->light() // sem o texto do contrato
             ->with(['client:id,name', 'eventPlace:id,name', 'eventStatus:id,name', 'collaborator:id,name'])
             ->whereHas('eventStatus', fn ($q) => $q->whereIn('name', self::STATUSES))
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])

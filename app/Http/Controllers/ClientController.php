@@ -32,7 +32,8 @@ class ClientController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        $query = Client::query();
+        // Carrega junto o que a lista mostra (endereço, cidade, estado...), em vez de uma consulta por linha.
+        $query = Client::query()->with(['user', 'address.city', 'address.state', 'representatives.address.city', 'representatives.address.state']);
 
         if ($request->input('filter_by')) {
             $filterable = $request->input('filter_by');

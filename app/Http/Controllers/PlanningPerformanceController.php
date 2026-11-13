@@ -203,7 +203,7 @@ class PlanningPerformanceController extends Controller
             return [];
         }
         $out = [];
-        Audit::where('auditable_type', Event::class)->whereIn('auditable_id', $eventIds)
+        Audit::where('auditable_type', Event::class)->whereIn('auditable_id', collect($eventIds)->map(fn ($id) => (string) $id)->all()) // texto: usa o índice
             ->where('new_values', 'like', '%event_status_id%')->orderBy('created_at')
             ->get(['auditable_id', 'new_values', 'created_at'])
             ->each(function ($a) use (&$out, $planning) {
