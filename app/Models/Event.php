@@ -323,6 +323,17 @@ class Event extends Model implements AuditableInterface
         return $this->hasMany(EventBatch::class);
     }
 
+    public function eventStock()
+    {
+        return $this->hasOne(EventStock::class);
+    }
+
+    public function totalGuests(): int
+    {
+        return (int) $this->event_guests + (int) $this->parthenon_courtesies + (int) $this->partner_courtesies
+            + (int) $this->eventBatches->sum('guests');
+    }
+
     public function eventStatusHistory()
     {
         return $this->hasMany(EventStatusHistory::class);
@@ -361,11 +372,6 @@ class Event extends Model implements AuditableInterface
     public function paymentPlan()
     {
         return $this->hasOne(PaymentPlan::class);
-    }
-
-    public function requisitions()
-    {
-        return $this->hasMany(Requisition::class);
     }
 
     public function receivables(): MorphMany

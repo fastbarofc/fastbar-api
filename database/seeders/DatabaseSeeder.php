@@ -28,7 +28,6 @@ class DatabaseSeeder extends Seeder
             EventGiftSeeder::class,
             BlockedDateSeeder::class,
             UtensilSeeder::class,
-            StockSeeder::class,
             ProductGroupSeeder::class,
             ProductSubgroupSeeder::class,
             EventKitSeeder::class,
@@ -48,11 +47,6 @@ class DatabaseSeeder extends Seeder
             PayableSeeder::class,
             PaymentPlanSeeder::class,
             CostCenterSeeder::class,
-            PurchaseRequestSeeder::class,
-            PurchaseOrderSeeder::class,
-            StockMovementSeeder::class,
-            RequisitionSeeder::class,
-            DevolutionSeeder::class,
         ]);
     }
 }

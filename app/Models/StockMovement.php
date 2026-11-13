@@ -2,65 +2,53 @@
 
 namespace App\Models;
 
-use App\Traits\Filterable;
-use App\Traits\Sortable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use OwenIt\Auditing\Contracts\Auditable as AuditableInterface;
-use OwenIt\Auditing\Auditable;
 
-class StockMovement extends Model implements AuditableInterface
+class StockMovement extends Model
 {
-    use HasFactory, SoftDeletes, Auditable, Sortable, Filterable;
+    public const TYPE_PURCHASE = 'purchase';
+    public const TYPE_ADJUSTMENT = 'adjustment';
+    public const TYPE_EVENT_OUT = 'event_out';
+    public const TYPE_EVENT_RETURN = 'event_return';
+    public const TYPE_EVENT_EXTRA = 'event_extra';
 
-    const TYPE_IN = 'in';
-    const TYPE_OUT = 'out';
+    public const TYPES = [
+        self::TYPE_PURCHASE => 'Compra',
+        self::TYPE_ADJUSTMENT => 'Ajuste',
+        self::TYPE_EVENT_OUT => 'Saída para evento',
+        self::TYPE_EVENT_RETURN => 'Retorno de evento',
+        self::TYPE_EVENT_EXTRA => 'Consumo extra em evento',
+    ];
 
     protected $fillable = [
         'product_id',
-        'stock_id',
         'type',
         'quantity',
-        'price',
+        'unit_price',
         'movementable_type',
         'movementable_id',
+        'event_id',
+        'user_id',
     ];
 
     protected $casts = [
-        'type' => 'string',
-        'quantity' => 'integer',
-        'price' => 'decimal:2',
-    ];
-
-    protected static $sortableFields = [
-        'id',
-        'quantity',
-        'price',
-        'created_at',
-    ];
-
-    protected static $filterableFields = [
-        'id',
-        'product_id',
-        'stock_id',
-        'movementable_type',
-        'movementable_id',
-    ];
-
-    protected static $searchableFields = [
-        'quantity',
-        'price',
+        'quantity' => 'float',
+        'unit_price' => 'float',
     ];
 
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)->withTrashed();
     }
 
-    public function stock()
+    public function event()
     {
-        return $this->belongsTo(Stock::class);
+        return $this->belongsTo(Event::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function movementable()
@@ -68,4 +56,3 @@ class StockMovement extends Model implements AuditableInterface
         return $this->morphTo();
     }
 }
-

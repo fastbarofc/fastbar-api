@@ -58,14 +58,11 @@ use App\Http\Controllers\PayableController;
 use App\Http\Controllers\ReceivableController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ChartController;
-use App\Http\Controllers\PurchaseRequestController;
-use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\EventStockController;
+use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockController;
-use App\Http\Controllers\StockMovementController;
-use App\Http\Controllers\StockLevelController;
+use App\Http\Controllers\StockPurchaseController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\RequisitionController;
-use App\Http\Controllers\DevolutionController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
@@ -265,6 +262,18 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/charts/commercial', [ChartController::class, 'commercial']);
     Route::get('/charts/monthly', [ChartController::class, 'monthly']);
 
+    Route::get('stock/products', [StockController::class, 'products']);
+    Route::get('stock/movements', [StockController::class, 'movements']);
+    Route::get('stock/events', [StockController::class, 'events']);
+    Route::get('stock/pending', [StockController::class, 'pending']);
+    Route::put('stock/limits', [StockController::class, 'updateLimits']);
+    Route::apiResource('stock/purchases', StockPurchaseController::class);
+    Route::apiResource('stock/adjustments', StockAdjustmentController::class)->only(['index', 'store', 'destroy']);
+    Route::get('events/{event}/stock', [EventStockController::class, 'show']);
+    Route::post('events/{event}/stock/send', [EventStockController::class, 'send']);
+    Route::post('events/{event}/stock/return', [EventStockController::class, 'saveReturn']);
+    Route::post('events/{event}/stock/pdf', [EventStockController::class, 'pdf']);
+
     Route::post('/contract-template/save', [ContractTemplateController::class, 'save']);
     Route::get('/contract-template/get', [ContractTemplateController::class, 'show']);
 
@@ -278,28 +287,6 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::resource('companies', CompanyController::class);
     Route::resource('financial-operations', FinancialOperationController::class);
     Route::resource('cost-centers', CostCenterController::class);
-
-    Route::resource('stocks', StockController::class);
-
-    Route::get('stock', [StockMovementController::class, 'getStock'])->name('stock.index');
-    Route::get('stock/product/{product}', [StockMovementController::class, 'getProductStockDetail'])->name('stock.product-detail');
-    Route::resource('stock-movements', StockMovementController::class)->only(['index', 'show']);
-
-    Route::get('stock-levels', [StockLevelController::class, 'index'])->name('stock-levels.index');
-    Route::post('stock-levels/upsert', [StockLevelController::class, 'upsert'])->name('stock-levels.upsert');
-
-    Route::resource('purchase-requests', PurchaseRequestController::class);
-    Route::get('purchase-requests/{purchaseRequest}/products', [PurchaseRequestController::class, 'products'])->name('purchase-requests.products');
-    Route::patch('purchase-requests/{purchaseRequest}/status', [PurchaseRequestController::class, 'updateStatus'])->name('purchase-requests.update-status');
-
-    Route::resource('purchase-orders', PurchaseOrderController::class);
-    Route::patch('purchase-orders/{purchase_order}/status', [PurchaseOrderController::class, 'updateStatus'])->name('purchase-orders.update-status');
-
-    Route::resource('requisitions', RequisitionController::class)->only(['index', 'store', 'show', 'destroy']);
-    Route::get('events/{event}/requisitions', [RequisitionController::class, 'byEvent'])->name('events.requisitions');
-
-    Route::resource('devolutions', DevolutionController::class)->only(['index', 'store', 'show']);
-    Route::get('requisitions/{requisition}/devolution', [DevolutionController::class, 'showByRequisition'])->name('requisitions.devolution');
 
     Route::get('/notifications/unread', [NotificationController::class, 'unread'])->name('notifications.unread');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
