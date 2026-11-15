@@ -30,7 +30,8 @@
             margin: 0;
             color: #333;
             font-family: 'Times New Roman', serif;
-            font-size: 12px;
+            /* Sai como 12pt no PDF: 20px × 0,75 (px→pt) × 0,8 (smart shrinking). */
+            font-size: 20px;
             background-image: url('{{ $brand['watermark'] }}');
             background-repeat: repeat-y;
             background-position: left top;
@@ -60,7 +61,7 @@
         }
 
         .clauses h3 {
-            font-size: 12px;
+            font-size: inherit;
             font-weight: bold;
             margin-top: 20px;
             margin-bottom: 10px;
@@ -215,12 +216,12 @@
     <table class="witnesses" style="width: 100%; margin-top: 65px;">
         <tr>
             <td style="width: 50%; text-align: center;">
-                <p>________________________________________</p>
+                <p>______________________________</p>
                 <p>1ª TESTEMUNHA</p>
                 <p>CPF:</p>
             </td>
             <td style="width: 50%; text-align: center;">
-                <p>________________________________________</p>
+                <p>______________________________</p>
                 <p>2ª TESTEMUNHA</p>
                 <p>CPF:</p>
             </td>
