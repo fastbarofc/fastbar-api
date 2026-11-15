@@ -12,7 +12,8 @@
             margin: 0;
             color: #333;
             font-family: 'Times New Roman', serif;
-            font-size: 12px;
+            /* Sai como 12pt no PDF: 20px × 0,75 (px→pt) × 0,8 (smart shrinking). */
+            font-size: 20px;
             background-image: url('{{ $brand['watermark'] }}');
             background-repeat: repeat-y;
             background-position: left top;
@@ -44,7 +45,7 @@
         }
 
         h3 {
-            font-size: 12px;
+            font-size: inherit;
             font-weight: bold;
             margin-top: 20px;
             margin-bottom: 10px;
