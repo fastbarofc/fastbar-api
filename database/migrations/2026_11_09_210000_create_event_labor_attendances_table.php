@@ -14,8 +14,13 @@ return new class extends Migration
     public function up(): void
     {
         if (!Schema::hasColumn('collaborators', 'biometric_consent_at')) {
-            Schema::table('collaborators', function (Blueprint $table) {
-                $table->dateTime('biometric_consent_at')->nullable()->after('employment_type');
+            // Em banco novo, employment_type só é criada depois (2026_11_10_100003): a posição da coluna é só estética.
+            $afterEmploymentType = Schema::hasColumn('collaborators', 'employment_type');
+            Schema::table('collaborators', function (Blueprint $table) use ($afterEmploymentType) {
+                $consentAt = $table->dateTime('biometric_consent_at')->nullable();
+                if ($afterEmploymentType) {
+                    $consentAt->after('employment_type');
+                }
                 $table->unsignedBigInteger('biometric_consent_by')->nullable()->after('biometric_consent_at');
             });
         }

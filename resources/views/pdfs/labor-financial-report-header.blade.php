@@ -73,8 +73,8 @@
 <div id="decl">
     <div class="decl-h">DECLARAÇÃO DE RECEBIMENTO</div>
     <p class="decl-p">
-        Declaro para os devidos fins que participei do evento acima descrito, no qual recebi da empresa Organização Baratella e Baltazar Eventos Eireli,
-        inscrita no CNPJ nº 01.005.782/0001-14, em moeda corrente a importância abaixo discriminada. Declaro ainda que o trabalho foi prestado na
+        Declaro para os devidos fins que participei do evento acima descrito, no qual recebi da empresa Pinheiro e Baltazar Ltda (Fast Bar),
+        inscrita no CNPJ nº 26.282.057/0001-14, em moeda corrente a importância abaixo discriminada. Declaro ainda que o trabalho foi prestado na
         qualidade de autônomo e de forma eventual.
     </p>
 </div>
