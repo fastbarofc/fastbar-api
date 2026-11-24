@@ -50,6 +50,7 @@ class EventCalendarResource extends JsonResource
             'bar_counter_type'   => $this->bar_counter_type,
             'cup_type'           => $this->cup_type,
             'min_guests'         => $this->min_guests,
+            'courtesies'         => (int) $this->parthenon_courtesies + (int) $this->partner_courtesies,
             'present_guests'     => $this->present_guests,
             'total_value'        => $this->total_value,
 
