@@ -9,6 +9,7 @@ class EventsReport extends Report
     protected const CASTS = [
         'id' => 'int',
         'guests' => 'int',
+        'guest_unit_value' => 'float',
         'total_value' => 'float',
         'paid' => 'float',
         'balance' => 'float',
@@ -27,6 +28,7 @@ class EventsReport extends Report
                 'events.closed_at',
                 'events.created_at',
                 'events.event_guests as guests',
+                'events.guest_unit_value',
                 'events.total_value',
                 'events.status_reason',
                 'clients.name as client',
@@ -65,6 +67,7 @@ class EventsReport extends Report
             'lost_reason' => 'lost_reasons.name',
             'competitor' => 'competing_companies.name',
             'guests' => 'events.event_guests',
+            'guest_unit_value' => 'events.guest_unit_value',
             'total_value' => 'events.total_value',
             'paid' => self::PAID,
             'balance' => self::BALANCE,

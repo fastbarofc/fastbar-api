@@ -55,7 +55,7 @@ class ReportsTest extends TestCase
 
     public function test_events_report_lists_city_and_payment_balance(): void
     {
-        $event = $this->event('Fechado', ['name' => 'Casamento Ana', 'total_value' => 10000, 'event_guests' => 150, 'client_id' => $this->ana->id]);
+        $event = $this->event('Fechado', ['name' => 'Casamento Ana', 'total_value' => 10000, 'event_guests' => 150, 'guest_unit_value' => 66.67, 'client_id' => $this->ana->id]);
         $this->pay($event, 4000, '2026-05-10');
         $this->pay($event, 1000, '2026-06-10');
 
@@ -65,6 +65,8 @@ class ReportsTest extends TestCase
             ->assertJsonPath('data.0.city', 'Curitiba')
             ->assertJsonPath('data.0.state', 'PR')
             ->assertJsonPath('data.0.client', 'Ana Souza')
+            ->assertJsonPath('data.0.guests', 150)
+            ->assertJsonPath('data.0.guest_unit_value', 66.67)
             ->assertJsonPath('data.0.total_value', 10000)
             ->assertJsonPath('data.0.paid', 5000)
             ->assertJsonPath('data.0.balance', 5000)
