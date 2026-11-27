@@ -5,13 +5,13 @@ namespace App\Http\Requests;
 use App\Rules\Cnpj;
 use App\Rules\Cpf;
 use App\Traits\ValidatesClientRepresentatives;
+use App\Traits\ValidatesOptionalAddress;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class UpdateClientRequest extends FormRequest
 {
-    use ValidatesClientRepresentatives;
+    use ValidatesOptionalAddress, ValidatesClientRepresentatives;
 
     protected $stopOnFirstFailure = true;
 
@@ -74,16 +74,12 @@ class UpdateClientRequest extends FormRequest
             'im'           => 'nullable|string|max:191',
         ] + $this->representativeRules($this->input('type') === 'pj', $client);
 
-        if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
-            $this->validateAddress($this->request->all()['address']);
-        }
-
-        return $data;
+        return array_merge($data, $this->optionalAddressRules());
     }
 
     public function messages(): array
     {
-        return [
+        return array_merge($this->optionalAddressMessages(), [
             'phone_1.required' => 'O campo telefone 1 é obrigatório.',
             'type.string'             => 'O campo tipo deve ser uma string.',
             'type.in'                 => 'O tipo informado de ser PF ou PJ.',
@@ -106,31 +102,6 @@ class UpdateClientRequest extends FormRequest
             'ie.max'                  => 'O campo inscrição estadual deve ter no máximo 191 caracteres.',
             'im.string'               => 'O campo inscrição municipal deve ser uma string.',
             'im.max'                  => 'O campo inscrição municipal deve ter no máximo 191 caracteres.',
-        ] + $this->representativeMessages();
-    }
-
-    public function validateAddress(array $data) {
-        $validator = Validator::make($data, [
-            'street'     => ['nullable', 'string', 'max:191'],
-            'district'   => ['nullable', 'string', 'max:191'],
-            'complement' => ['nullable', 'string', 'max:191'],
-            'city_id'    => ['nullable', 'exists:cities,id'],
-            'state_id'   => ['nullable', 'exists:states,id'],
-            'number'     => ['nullable', 'string', 'max:50'],
-            'zip_code'   => ['nullable', 'formato_cep'],
-            'reference'  => ['nullable', 'nullable', 'string'],
-        ],[
-            'street.string'        => 'O campo rua deve ser uma string.',
-            'district.string'      => 'O campo bairro deve ser uma string.',
-            'complement.string'    => 'O campo complemento deve ser uma string.',
-            'city_id.exists'       => 'O campo Cidade deve ser uma Cidade valida.',
-            'state_id.exists'      => 'O campo Estado deve ser um Estado valido.',
-            'number.string'        => 'O campo número deve conter apenas letras e números',
-            'number.max'           => 'O campo número não pode ter mais de 50 caracteres',
-            'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido.',
-            'referencia.string'    => 'O campo referencia deve ser uma string.',
-        ]);
-
-        $validator->validate();
+        ]) + $this->representativeMessages();
     }
 }

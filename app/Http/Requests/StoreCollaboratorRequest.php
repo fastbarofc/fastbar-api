@@ -2,12 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Traits\ValidatesOptionalAddress;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class StoreCollaboratorRequest extends FormRequest
 {
+    use ValidatesOptionalAddress;
+
     protected $stopOnFirstFailure = true;
 
     public function authorize(): bool
@@ -38,13 +40,14 @@ class StoreCollaboratorRequest extends FormRequest
             'email'      => [
                 'required',
                 'email',
+                'max:191',
                 Rule::unique('collaborators')->whereNull('deleted_at'),
             ],
             'phone_1'    => 'required|string|max:20',
             'phone_2'    => 'nullable|string|max:20',
             'sector_id'  => 'required|exists:sectors,id',
             'sector_office_id'  => 'required|exists:sector_offices,id',
-            'has_login'  => 'nullable|boolean',
+            'has_login'  => 'sometimes|boolean',
             'active'     => 'boolean',
             'user_id'    => 'nullable|exists:users,id',
             'pix_keys'   => 'nullable|array',
@@ -58,20 +61,43 @@ class StoreCollaboratorRequest extends FormRequest
             $data['email'] = [
                 'required',
                 'email',
+                'max:191',
                 Rule::unique('users')->whereNull('deleted_at'),
             ];
             $data['role_id'] = 'required|exists:roles,id';
         }
-        if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
-            $this->validateAddress($this->request->all()['address']);
-        }
+        $needsNewUser = $this->boolean('has_login');
 
-        return $data;
+        return array_merge($data, $this->optionalAddressRules(), [
+            'role_id' => ['nullable', 'integer', 'exists:roles,id', Rule::requiredIf($needsNewUser)],
+            'goals' => 'nullable|array',
+            'goals.*.id' => 'nullable|integer',
+            'goals.*.type' => 'nullable|in:monthly,yearly',
+            'goals.*.start_date' => 'nullable|date',
+            'goals.*.end_date' => 'nullable|date',
+            'goals.*.expected_contracts' => 'nullable|integer|min:0|max:2147483647',
+            'qualifications' => 'nullable|array',
+            'qualifications.*.id' => 'nullable|integer|exists:qualifications,id',
+            'qualifications.*.points' => 'nullable|integer|min:0|max:2147483647',
+            'bank_details.*.bank_name' => 'nullable|string|max:191',
+            'bank_details.*.agency' => 'nullable|string|max:191',
+            'bank_details.*.account' => 'nullable|string|max:191',
+            'bank_details.*.account_holder' => 'nullable|string|max:191',
+            'bank_details.*.status' => 'nullable|boolean',
+            'pix_keys.*.type' => 'nullable|string|max:191',
+            'pix_keys.*.key' => 'nullable|string|max:191',
+        ]);
     }
 
     public function messages(): array
     {
-        return [
+        return array_merge($this->optionalAddressMessages(), [
+            'role_id.required' => 'Escolha o grupo de usuário para liberar o acesso ao sistema.',
+            'goals.*.type' => 'O tipo da meta deve ser mensal ou anual.',
+            'goals.*.*' => 'Um dos campos das metas é inválido.',
+            'qualifications.*.*' => 'Uma das qualificações é inválida.',
+            'bank_details.*.*' => 'Um dos dados bancários é inválido ou longo demais.',
+            'pix_keys.*.*' => 'Uma das chaves pix é inválida ou longa demais.',
             'name.required'          => 'O campo nome é obrigatório.',
             'name.string'            => 'O campo nome deve ser uma string.',
             'name.max'               => 'O campo nome deve ter no máximo 191 caracteres.',
@@ -105,37 +131,6 @@ class StoreCollaboratorRequest extends FormRequest
             'company_ids.required'    => 'Selecione pelo menos uma empresa.',
             'company_ids.min'         => 'Selecione pelo menos uma empresa.',
             'company_ids.*.exists'    => 'A empresa selecionada não é válida.',
-        ];
-    }
-
-    public function validateAddress(array $data) {
-        $validator = Validator::make($data, [
-            'street'     => ['required', 'string', 'max:191'],
-            'district'   => ['required', 'string', 'max:191'],
-            'complement' => ['nullable', 'string', 'max:191'],
-            'city_id'    => ['required', 'exists:cities,id'],
-            'state_id'   => ['required', 'exists:states,id'],
-            'number'     => ['required', 'string', 'max:50'],
-            'zip_code'   => ['required', 'formato_cep'],
-            'reference'  => ['nullable', 'string'],
-        ],[
-            'street.required'      => 'O campo rua é obrigatório',
-            'street.string'        => 'O campo rua deve ser uma string',
-            'district.required'    => 'O campo bairro é obrigatório',
-            'district.string'      => 'O campo bairro deve ser uma string',
-            'complement.string'    => 'O campo complemento deve ser uma string',
-            'city_id.required'     => 'O campo city ID é obrigatório',
-            'city_id.exists'       => 'O campo Cidade deve ser uma Cidade valida',
-            'state_id.required'    => 'O campo state ID é obrigatório',
-            'state_id.exists'      => 'O campo Estado deve ser um Estado valido',
-            'number.required'      => 'O campo número é obrigatório',
-            'number.string'        => 'O campo número deve conter apenas letras e números',
-            'number.max'           => 'O campo número não pode ter mais de 50 caracteres',
-            'zip_code.required'    => 'O campo CEP é obrigatório',
-            'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido',
-            'referencia.string'    => 'O campo referencia deve ser uma string',
         ]);
-
-        $validator->validate();
     }
 }
