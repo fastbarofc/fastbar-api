@@ -78,16 +78,12 @@ class UserController extends Controller
 
     public function syncRoles(SyncRoleUserRequest $request, User $user)
     {
-        $this->authorize('syncRoles', $user);
-        
         $user->syncRoles($request->roles);
         return new UserResource($user);
     }
     
     public function syncPermissions(SyncPermissionUserRequest $request, User $user)
     {
-        $this->authorize('syncPermissions', $user);
-
         $user->syncPermissions($request->permissions);
         return new UserResource($user);
     }

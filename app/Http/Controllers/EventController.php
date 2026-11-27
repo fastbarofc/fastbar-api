@@ -153,7 +153,6 @@ class EventController extends Controller
 
     public function legalRepresentatives(Event $event)
     {
-        $this->authorize('legalRepresentatives', $event);
         return response()->json($event->legal_representatives, 200);
     }
 
@@ -735,8 +734,6 @@ class EventController extends Controller
 
     public function gifts(Request $request, Event $event)
     {
-        $this->authorize('view', $event);
-
         $perPage = $request->input('per_page', 10);
 
         $query = EventGift::query();
@@ -763,7 +760,6 @@ class EventController extends Controller
 
     public function materials(Request $request, Event $event)
     {
-        $this->authorize('view', $event);
         $materials = Material::all();
 
         $materials = $materials->map(function ($material) use ($event) {
@@ -780,8 +776,6 @@ class EventController extends Controller
 
     public function extraSales(Request $request, Event $event)
     {
-        $this->authorize('view', $event);
-
         $perPage = $request->input('per_page', 10);
 
         $query = ExtraSale::query();
@@ -838,8 +832,6 @@ class EventController extends Controller
 
     public function updateExtraSales(Request $request, Event $event)
     {
-        $this->authorize('update', $event);
-
         $extraSales = $request->input('extraSales', []);
 
         foreach ($extraSales as $extraSaleData) {
@@ -857,8 +849,6 @@ class EventController extends Controller
 
     public function eventKits(Request $request, Event $event)
     {
-        $this->authorize('view', $event);
-
         $perPage = $request->input('per_page', 10);
 
         $query = EventKit::query();
@@ -891,8 +881,6 @@ class EventController extends Controller
 
     public function resetContract(Event $event)
     {
-        $this->authorize('resetContract', $event);
-
         $eventType = $event->eventType;
         $event->update([
             'contract_body' => $eventType->contract_text
@@ -901,8 +889,6 @@ class EventController extends Controller
 
     public function attachLegalRepresentatives(Request $request, Event $event)
     {
-        $this->authorize('attachLegalRepresentatives', $event);
-
         $originalLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
             return [
                 'id' => $client->id,
@@ -928,8 +914,6 @@ class EventController extends Controller
 
     public function attachLegalRepresentative(Request $request, Event $event)
     {
-        $this->authorize('attachLegalRepresentatives', $event);
-
         $originalLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
             return [
                 'id' => $client->id,
@@ -957,8 +941,6 @@ class EventController extends Controller
 
     public function detachLegalRepresentative(Event $event, $legalRepresentativeId)
     {
-        $this->authorize('attachLegalRepresentatives', $event);
-
         $originalLegalRepresentatives = $event->clients()->where('type', 'pf')->get()->map(function ($client) {
             return [
                 'id' => $client->id,
@@ -986,7 +968,6 @@ class EventController extends Controller
 
     public function syncMaterials(Event $event, Material $material, Request $request)
     {
-        $this->authorize('syncMaterials', $event);
         $relationship = $event->materials()->wherePivot('material_id', $material->id);
 
         if ($relationship->exists()) {
@@ -1000,7 +981,6 @@ class EventController extends Controller
 
     public function officeEvents(Event $event)
     {
-        $this->authorize('view', $event);
         $officeEvents = OfficeEvent::all();
 
         $officeEvents = $officeEvents->map(function ($officeEvent) use ($event) {
