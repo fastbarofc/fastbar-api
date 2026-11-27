@@ -8,6 +8,7 @@ use App\Http\Resources\BreakItemResource;
 use App\Models\BreakItem;
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BreakItemController extends Controller
 {
@@ -91,17 +92,30 @@ class BreakItemController extends Controller
     public function attachBreakItemsToEvent(Request $request, $eventId)
     {
         $event = Event::findOrFail($eventId);
-        $breakItems = $request->input('breakItems', []);
+        $request->validate([
+            'breakItems' => 'nullable|array',
+            'breakItems.*.id' => 'required|integer|exists:break_items,id',
+            'breakItems.*.quantity' => 'required|integer|min:0|max:2147483647',
+            'breakItems.*.value' => 'required|numeric|min:0|max:99999999.99',
+            'breakItems.*.unit_id' => 'required|integer|exists:units,id',
+        ], [
+            'breakItems.*.id' => 'Um dos itens de quebra informados não existe.',
+            'breakItems.*.quantity' => 'Informe uma quantidade válida em todos os itens de quebra.',
+            'breakItems.*.value' => 'Informe um valor válido em todos os itens de quebra.',
+            'breakItems.*.unit_id' => 'Informe a unidade de todos os itens de quebra.',
+        ]);
 
-        foreach ($breakItems as $breakItem) {
-            $event->breakItems()->syncWithoutDetaching([
-                $breakItem['id'] => [
-                    'quantity' => $breakItem['quantity'],
-                    'value' => $breakItem['value'],
-                    'unit_id' => $breakItem['unit_id']
-                ]
-            ]);
-        }
+        DB::transaction(function () use ($event, $request) {
+            foreach ($request->input('breakItems', []) as $breakItem) {
+                $event->breakItems()->syncWithoutDetaching([
+                    $breakItem['id'] => [
+                        'quantity' => $breakItem['quantity'],
+                        'value' => $breakItem['value'],
+                        'unit_id' => $breakItem['unit_id'],
+                    ],
+                ]);
+            }
+        });
 
         return response()->json(['message' => 'Itens de quebra associados ao evento com sucesso']);
     }

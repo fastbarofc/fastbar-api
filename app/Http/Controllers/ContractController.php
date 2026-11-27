@@ -238,7 +238,7 @@ class ContractController extends Controller
 
     public function update(UpdateContractRequest $request, Contract $contract)
     {
-        $newData = $request->all();
+        $newData = [];
 
         $event = $contract->event;
 
@@ -280,11 +280,13 @@ class ContractController extends Controller
                 continue;
             }
 
-            if ($oldData['properties'][$key] != $newData['properties'][$key]) {
+            $oldValue = $oldData['properties'][$key] ?? null;
+
+            if ($oldValue != $newData['properties'][$key]) {
                 $propertiesDiff[$key] = [
-                    'old' => $oldData['properties'][$key],
+                    'old' => $oldValue,
                     'new' => $newData['properties'][$key],
-                    'operation' => empty($oldData['properties'][$key]) ? 'add' : (empty($newData['properties'][$key]) ? 'remove' : 'update')
+                    'operation' => empty($oldValue) ? 'add' : (empty($newData['properties'][$key]) ? 'remove' : 'update')
                 ];
             }
         }

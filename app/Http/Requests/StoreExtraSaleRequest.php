@@ -18,8 +18,8 @@ class StoreExtraSaleRequest extends FormRequest
         return [
             'description' => 'required|string|max:191|unique:extra_sales,description',
             'unit_id'     => 'nullable|numeric|exists:units,id',
-            'quantity'    => 'required|numeric|min:0',
-            'unit_value'  => 'required|numeric|min:0',
+            'quantity'    => 'required|numeric|min:0|max:2147483647',
+            'unit_value'  => 'required|numeric|min:0|max:99999999.99',
             'event_id'    => 'required|numeric|exists:events,id',
         ];
     }

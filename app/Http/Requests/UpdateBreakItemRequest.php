@@ -24,7 +24,7 @@ class UpdateBreakItemRequest extends FormRequest
         return [
             'description' => 'string|max:191',
             'unit_id' => 'exists:units,id',
-            'value' => 'numeric',
+            'value' => 'numeric|max:999999.99',
         ];
     }
 

@@ -22,7 +22,7 @@ class UpdateHowDidYouHearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|max:191',
+            'name' => 'sometimes|required|string|max:191',
         ];
     }
 

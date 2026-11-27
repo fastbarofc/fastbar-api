@@ -16,7 +16,7 @@ class UpdateRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'nullable|string|max:191|unique:roles,name,' . $this->id
+            'name' => 'sometimes|required|string|max:191|unique:roles,name,' . ($this->route('role')?->id ?? $this->id)
         ];
     }
 

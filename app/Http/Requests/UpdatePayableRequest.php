@@ -23,8 +23,8 @@ class UpdatePayableRequest extends FormRequest
     {
         return [
             'description' => 'sometimes|string|max:191',
-            'amount' => 'sometimes|numeric|min:0',
-            'due_date' => 'sometimes|date',
+            'amount' => 'sometimes|numeric|min:0|max:99999999.99',
+            'due_date' => 'sometimes|date_format:Y-m-d',
             'financial_operation_id' => 'sometimes|exists:financial_operations,id',
             'payableable_id' => 'sometimes|integer',
             'payableable_type' => 'sometimes|string|max:191',

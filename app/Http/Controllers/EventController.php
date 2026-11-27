@@ -826,6 +826,17 @@ class EventController extends Controller
 
     public function updateExtraSales(Request $request, Event $event)
     {
+        $request->validate([
+            'extraSales' => 'nullable|array',
+            'extraSales.*.id' => 'required|integer',
+            'extraSales.*.quantity' => 'required|integer|min:0|max:2147483647',
+            'extraSales.*.unit_value' => 'required|numeric|min:0|max:99999999.99',
+        ], [
+            'extraSales.*.quantity' => 'Informe uma quantidade válida em todas as vendas extras.',
+            'extraSales.*.unit_value' => 'Informe um valor unitário válido em todas as vendas extras.',
+            'extraSales.*.id' => 'Uma das vendas extras é inválida.',
+        ]);
+
         $extraSales = $request->input('extraSales', []);
 
         foreach ($extraSales as $extraSaleData) {
@@ -889,6 +900,14 @@ class EventController extends Controller
                 'name' => $client->name,
             ];
         })->toArray();
+
+        $request->validate([
+            'legal_representatives' => 'present|array',
+            'legal_representatives.*' => 'integer|exists:clients,id',
+        ], [
+            'legal_representatives.present' => 'Informe a lista de representantes legais.',
+            'legal_representatives.*' => 'Um dos representantes legais informados não existe.',
+        ]);
 
         $event->clients()->sync($request->legal_representatives);
 
@@ -962,14 +981,24 @@ class EventController extends Controller
 
     public function syncMaterials(Event $event, Material $material, Request $request)
     {
+        $pivot = $request->validate([
+            'quantity' => 'sometimes|required|integer|min:0|max:2147483647',
+            'selected' => 'sometimes|nullable|boolean',
+            'shown_in_checklist' => 'sometimes|required|boolean',
+        ], [
+            'quantity' => 'Informe uma quantidade válida.',
+            'selected' => 'A opção escolhida é inválida.',
+            'shown_in_checklist' => 'O campo checklist é inválido.',
+        ]);
+
         $relationship = $event->materials()->wherePivot('material_id', $material->id);
 
         if ($relationship->exists()) {
-            $relationship->updateExistingPivot($material->id, $request->all());
+            $relationship->updateExistingPivot($material->id, $pivot);
             return response()->json([], 200);
         }
 
-        $event->materials()->attach($material, $request->all());
+        $event->materials()->attach($material, $pivot);
         return response()->json([], 201);
     }
 
@@ -1006,7 +1035,16 @@ class EventController extends Controller
 
     public function attachFailure(Request $request, Event $event)
     {
-        $event->failures()->attach($request->failure_id, ['deduct' => $request->deduct]);
+        $request->validate([
+            'failure_id' => 'required|integer|exists:failures,id',
+            'deduct' => 'required|boolean',
+        ], [
+            'failure_id.required' => 'Informe a falha.',
+            'failure_id.exists' => 'A falha informada não existe.',
+            'deduct' => 'Informe se a falha desconta.',
+        ]);
+
+        $event->failures()->attach($request->failure_id, ['deduct' => $request->boolean('deduct')]);
         return response()->json(['message' => 'Failure attached to event successfully'], 201);
     }
 

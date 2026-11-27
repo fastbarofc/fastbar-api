@@ -66,7 +66,7 @@ class UpdateClientRequest extends FormRequest
             'phone_2'      => 'nullable|string|max:20',
             'name'         => 'nullable|string|max:191',
             'nickname'     => 'nullable|string|max:191',
-            'birth_date'   => 'nullable|date',
+            'birth_date'   => 'nullable|date_format:Y-m-d',
             'cpf'          => ['nullable', 'string', new Cpf],
             'rg'           => 'nullable|string|max:20',
             'cnpj'         => ['nullable', 'string', new Cnpj],

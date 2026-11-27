@@ -17,8 +17,8 @@ class StoreEventBatchRequest extends FormRequest
     {
         $data = [
             'event_id' => 'required|exists:events,id',
-            'unit_value' => 'required|numeric|min:0',
-            'guests' => 'required|numeric',
+            'unit_value' => 'required|numeric|min:0|max:999999.99',
+            'guests' => 'required|numeric|max:2147483647',
             'discount' => 'nullable|numeric|min:0',
             'unit_discount' => 'nullable|numeric|min:0',
         ];

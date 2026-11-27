@@ -18,7 +18,7 @@ class UpdateEventGiftRequest extends FormRequest
         return [
             'description' => 'sometimes|required|string|max:191|unique:event_gifts,description,' . $this->route('event_gift')->id,
             'event_id'    => 'nullable|numeric|exists:events,id',
-            'quantity'    => 'sometimes|required|numeric|min:0',
+            'quantity'    => 'sometimes|required|numeric|min:0|max:2147483647',
         ];
     }
 

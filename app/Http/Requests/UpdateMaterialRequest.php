@@ -20,7 +20,7 @@ class UpdateMaterialRequest extends FormRequest
     {
         return [
             'description' => 'sometimes|required|string|max:191|unique:materials,description,' . $this->route('material')->id,
-            'quantity'      => 'sometimes|required|numeric|min:0',
+            'quantity'      => 'sometimes|required|numeric|min:0|max:2147483647',
         ];
     }
 

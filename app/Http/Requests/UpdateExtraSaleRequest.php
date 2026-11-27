@@ -18,8 +18,8 @@ class UpdateExtraSaleRequest extends FormRequest
         return [
             'description' => 'sometimes|required|string|max:191|unique:extra_sales,description,' . $this->route('extra_sale')->id,
             'unit_id'     => 'nullable|numeric|exists:units,id',
-            'quantity'    => 'sometimes|required|numeric|min:0',
-            'unit_value'  => 'sometimes|required|numeric|min:0',
+            'quantity'    => 'sometimes|required|numeric|min:0|max:2147483647',
+            'unit_value'  => 'sometimes|required|numeric|min:0|max:99999999.99',
             'event_id'    => 'sometimes|required|numeric|exists:events,id',
         ];
     }

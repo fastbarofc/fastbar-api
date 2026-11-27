@@ -73,8 +73,10 @@ class HowDidYouHearController extends Controller
 
     public function update(UpdateHowDidYouHearRequest $request, HowDidYouHear $howDidYouHear)
     {
-        $data = $request->all();
-        $data['slug'] = slug($data['name']);
+        $data = $request->validated();
+        if (isset($data['name'])) {
+            $data['slug'] = slug($data['name']);
+        }
         $howDidYouHear->update($data);
         return response()->json(new HowDidYouHearResource($howDidYouHear), 200);
     }

@@ -23,8 +23,8 @@ class StoreReceivableRequest extends FormRequest
     {
         return [
             'description' => 'required|string',
-            'amount' => 'required|numeric|min:0',
-            'due_date' => 'required|date',
+            'amount' => 'required|numeric|min:0|max:99999999.99',
+            'due_date' => 'required|date_format:Y-m-d',
             'payment_method_id' => 'required|exists:payment_methods,id',
             'receivableable_id' => 'required|integer',
             'receivableable_type' => 'required|string|max:191',

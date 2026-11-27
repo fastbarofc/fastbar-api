@@ -25,7 +25,7 @@ class UpdateCollaboratorRequest extends FormRequest
         $data = [
             'name'       => 'sometimes|required|string|max:191',
             'nickname'   => 'nullable|string|max:191',
-            'birth_date' => 'nullable|date',
+            'birth_date' => 'nullable|date_format:Y-m-d',
             'cpf'        => [
                 'nullable',
                 'string',
@@ -76,8 +76,8 @@ class UpdateCollaboratorRequest extends FormRequest
             'goals' => 'nullable|array',
             'goals.*.id' => 'nullable|integer',
             'goals.*.type' => 'nullable|in:monthly,yearly',
-            'goals.*.start_date' => 'nullable|date',
-            'goals.*.end_date' => 'nullable|date',
+            'goals.*.start_date' => 'nullable|date_format:Y-m-d',
+            'goals.*.end_date' => 'nullable|date_format:Y-m-d',
             'goals.*.expected_contracts' => 'nullable|integer|min:0|max:2147483647',
             'qualifications' => 'nullable|array',
             'qualifications.*.id' => 'nullable|integer|exists:qualifications,id',

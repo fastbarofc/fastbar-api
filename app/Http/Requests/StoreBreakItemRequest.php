@@ -24,7 +24,7 @@ class StoreBreakItemRequest extends FormRequest
         return [
             'description' => 'required|string|max:191',
             'unit_id' => 'required|exists:units,id',
-            'value' => 'required|numeric',
+            'value' => 'required|numeric|max:999999.99',
         ];
     }
 

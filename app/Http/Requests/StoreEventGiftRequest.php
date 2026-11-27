@@ -18,7 +18,7 @@ class StoreEventGiftRequest extends FormRequest
         return [
             'description' => 'required|string|max:191|unique:event_gifts',
             'event_id'    => 'required|numeric|exists:events,id',
-            'quantity'    => 'required|numeric|min:0',
+            'quantity'    => 'required|numeric|min:0|max:2147483647',
         ];
     }
 

@@ -17,7 +17,7 @@ class StoreMaterialRequest extends FormRequest
     {
         return [
             'description' => 'required|string|max:191|unique:materials',
-            'quantity'      => 'required|numeric|min:0',
+            'quantity'      => 'required|numeric|min:0|max:2147483647',
         ];
     }
 

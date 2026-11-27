@@ -17,8 +17,8 @@ class UpdateEventBatchRequest extends FormRequest
     {
         $data = [
             'event_id' => 'sometimes|required|exists:events,id',
-            'unit_value' => 'sometimes|required|numeric|min:0',
-            'guests' => 'sometimes|required|numeric',
+            'unit_value' => 'sometimes|required|numeric|min:0|max:999999.99',
+            'guests' => 'sometimes|required|numeric|max:2147483647',
         ];
 
         return $data;

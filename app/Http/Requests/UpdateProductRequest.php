@@ -41,7 +41,7 @@ class UpdateProductRequest extends FormRequest
             ],
             'barcode'             => 'nullable|string|max:191',
             'unit_id'             => 'nullable|numeric|exists:units,id',
-            'weight'              => 'nullable|numeric',
+            'weight'              => 'nullable|numeric|max:999999.99',
             'volume'              => 'nullable|numeric|min:0|max:9999999',
             'value'               => 'nullable|numeric|min:0|max:9999999',
             'supplier'            => 'nullable|string|max:191',

@@ -81,4 +81,25 @@ class WriteEndpointsValidationTest extends TestCase
 
         $this->assertSame('0.00', (string) $product->fresh()->value);
     }
+
+    public function test_break_items_and_password_change_are_validated(): void
+    {
+        $event = Event::create(['name' => 'Casamento']);
+
+        $this->postJson("/api/events/{$event->id}/break-items/attach", ['breakItems' => [['id' => 999999, 'quantity' => 1, 'value' => 10]]])
+            ->assertJsonValidationErrors(['breakItems.0.id', 'breakItems.0.unit_id']);
+
+        $this->putJson('/api/users/change-password', ['current_password' => 'password'])
+            ->assertJsonValidationErrors(['new_password' => 'Informe a nova senha.']);
+    }
+
+    public function test_extra_sales_and_failures_of_the_event_are_validated(): void
+    {
+        $event = Event::create(['name' => 'Casamento']);
+
+        $this->putJson("/api/events/{$event->id}/extra-sales", ['extraSales' => [['id' => 1, 'quantity' => 'muitos', 'unit_value' => 5]]])
+            ->assertJsonValidationErrors('extraSales.0.quantity');
+        $this->postJson("/api/events/{$event->id}/failures", ['failure_id' => 999999, 'deduct' => true])
+            ->assertJsonValidationErrors('failure_id');
+    }
 }
