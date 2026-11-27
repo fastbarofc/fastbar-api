@@ -20,8 +20,8 @@ class StoreCollaboratorRequest extends FormRequest
 
         
         $data = [
-            'name'       => 'required|string|max:255',
-            'nickname'   => 'nullable|string|max:255',
+            'name'       => 'required|string|max:191',
+            'nickname'   => 'nullable|string|max:191',
             'birth_date' => 'nullable|date|date_format:Y-m-d',
             'cpf'        => [
                 'nullable',
@@ -74,9 +74,9 @@ class StoreCollaboratorRequest extends FormRequest
         return [
             'name.required'          => 'O campo nome é obrigatório.',
             'name.string'            => 'O campo nome deve ser uma string.',
-            'name.max'               => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'               => 'O campo nome deve ter no máximo 191 caracteres.',
             'nickname.string'        => 'O campo apelido deve ser uma string.',
-            'nickname.max'           => 'O campo apelido deve ter no máximo 255 caracteres.',
+            'nickname.max'           => 'O campo apelido deve ter no máximo 191 caracteres.',
             'birth_date.date'        => 'O campo data de nascimento deve ser uma data válida.',
             'birth_date.date_format' => 'O campo data de nascimento deve ser no formato Y-m-d.',
             'cpf.string'             => 'O campo CPF deve ser uma string.',
@@ -110,9 +110,9 @@ class StoreCollaboratorRequest extends FormRequest
 
     public function validateAddress(array $data) {
         $validator = Validator::make($data, [
-            'street'     => ['required', 'string'],
-            'district'   => ['required', 'string'],
-            'complement' => ['nullable', 'string'],
+            'street'     => ['required', 'string', 'max:191'],
+            'district'   => ['required', 'string', 'max:191'],
+            'complement' => ['nullable', 'string', 'max:191'],
             'city_id'    => ['required', 'exists:cities,id'],
             'state_id'   => ['required', 'exists:states,id'],
             'number'     => ['required', 'string', 'max:50'],

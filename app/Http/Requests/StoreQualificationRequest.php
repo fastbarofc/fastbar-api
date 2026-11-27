@@ -16,7 +16,7 @@ class StoreQualificationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description'      => 'required|string|max:255|unique:qualifications',
+            'description'      => 'required|string|max:191|unique:qualifications',
         ];
     }
 
@@ -25,7 +25,7 @@ class StoreQualificationRequest extends FormRequest
         return [
             'description.required' => 'O campo descrição é obrigatório.',
             'description.string'   => 'O campo descrição deve ser uma string.',
-            'description.max'      => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'      => 'O campo descrição deve ter no máximo 191 caracteres.',
             'description.unique'   => 'Essa descrição já está em uso.',
         ];
     }

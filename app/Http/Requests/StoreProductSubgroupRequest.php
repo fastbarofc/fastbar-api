@@ -15,7 +15,7 @@ class StoreProductSubgroupRequest extends FormRequest
     {
         return [
             'product_group_id' => 'required|numeric|exists:product_groups,id',
-            'description'      => 'required|string|max:255',
+            'description'      => 'required|string|max:191',
         ];
     }
 
@@ -25,7 +25,7 @@ class StoreProductSubgroupRequest extends FormRequest
             'product_group_id.required' => 'O grupo é obrigatório.',
             'product_group_id.exists'   => 'O grupo informado não existe.',
             'description.required'      => 'A descrição é obrigatória.',
-            'description.max'           => 'A descrição deve ter no máximo 255 caracteres.',
+            'description.max'           => 'A descrição deve ter no máximo 191 caracteres.',
         ];
     }
 }

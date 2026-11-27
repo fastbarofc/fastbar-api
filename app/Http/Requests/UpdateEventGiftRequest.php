@@ -16,7 +16,7 @@ class UpdateEventGiftRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'nullable|string|max:255|unique:event_gifts,description,' . $this->route('event_gift')->id,
+            'description' => 'nullable|string|max:191|unique:event_gifts,description,' . $this->route('event_gift')->id,
             'event_id'    => 'nullable|numeric|exists:events,id',
             'quantity'    => 'nullable|numeric|min:0',
         ];
@@ -26,7 +26,7 @@ class UpdateEventGiftRequest extends FormRequest
     {
         return [
             'description.string' => 'O campo descrição deve ser uma string.',
-            'description.max'    => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'    => 'O campo descrição deve ter no máximo 191 caracteres.',
             'description.unique' => 'Essa descrição já está sendo utiliada',
             'event_id.numeric'   => 'O campo ID do evento deve conter apenas números.',
             'event_id.exists'    => 'O campo ID do evento deve ser um evento válida',

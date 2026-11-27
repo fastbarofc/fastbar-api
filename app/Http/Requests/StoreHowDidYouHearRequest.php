@@ -22,7 +22,7 @@ class StoreHowDidYouHearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:191',
         ];
     }
 
@@ -31,7 +31,7 @@ class StoreHowDidYouHearRequest extends FormRequest
         return [
             'name.required' => 'O nome é obrigatório',
             'name.string' => 'O nome deve ser uma string',
-            'name.max' => 'O nome deve ter no máximo 255 caracteres',
+            'name.max' => 'O nome deve ter no máximo 191 caracteres',
         ];
     }
 }

@@ -26,9 +26,10 @@ class StoreCostCenterRequest extends FormRequest
             'code' => [
                 'required',
                 'string',
+                'max:191',
                 Rule::unique('cost_centers')->whereNull('deleted_at'),
             ],
-            'description' => 'required|string',
+            'description' => 'required|string|max:191',
             'account' => 'required|in:analytic,synthetic',
         ];
     }

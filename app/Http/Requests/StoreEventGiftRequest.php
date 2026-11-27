@@ -16,7 +16,7 @@ class StoreEventGiftRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'required|string|max:255|unique:event_gifts',
+            'description' => 'required|string|max:191|unique:event_gifts',
             'event_id'    => 'required|numeric|exists:events,id',
             'quantity'    => 'required|numeric|min:0',
         ];
@@ -27,7 +27,7 @@ class StoreEventGiftRequest extends FormRequest
         return [
             'description.required' => 'O campo descrição é obrigatório.',
             'description.string'   => 'O campo descrição deve ser uma string.',
-            'description.max'      => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'      => 'O campo descrição deve ter no máximo 191 caracteres.',
             'description.unique'   => 'Esse descrição já está sendo utiliada',
             'event_id.required'    => 'O campo ID do evento é obrigatório.',
             'event_id.numeric'     => 'O campo ID do evento deve conter apenas números.',

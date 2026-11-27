@@ -27,7 +27,7 @@ class StoreReceivableRequest extends FormRequest
             'due_date' => 'required|date',
             'payment_method_id' => 'required|exists:payment_methods,id',
             'receivableable_id' => 'required|integer',
-            'receivableable_type' => 'required|string',
+            'receivableable_type' => 'required|string|max:191',
 
         ];
     }

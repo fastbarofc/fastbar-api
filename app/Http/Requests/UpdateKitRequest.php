@@ -18,11 +18,11 @@ class UpdateKitRequest extends FormRequest
     {
         return [
             'kit_id'          => 'nullable|numeric',
-            'name'         => ['nullable', 'string', 'max:255', Rule::unique('kits', 'name')->ignore($this->route('kit')->id)->whereNull('deleted_at')->where('kit_id', $this->kit_id)],
+            'name'         => ['nullable', 'string', 'max:191', Rule::unique('kits', 'name')->ignore($this->route('kit')->id)->whereNull('deleted_at')->where('kit_id', $this->kit_id)],
             'themed_table' => 'nullable|boolean',
             'optional'     => 'nullable|boolean',
             'checklist'    => 'nullable|boolean',
-            'observation'  => 'nullable|string|max:255',
+            'observation'  => 'nullable|string|max:191',
         ];
     }
 
@@ -31,7 +31,7 @@ class UpdateKitRequest extends FormRequest
         return [
             'kit_id.numeric'         => 'O campo ID do kit deve conter apenas números.',
             'name.string'           => 'O campo nome deve ser um texto.',
-            'name.max'              => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'              => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'           => 'O nome informado já está em uso.',
         ];
     }

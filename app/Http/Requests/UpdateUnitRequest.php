@@ -16,7 +16,7 @@ class UpdateUnitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'nullable|string|max:255|unique:units,description,' . $this->route('unit')->id,
+            'description' => 'nullable|string|max:191|unique:units,description,' . $this->route('unit')->id,
         ];
     }
 
@@ -24,7 +24,7 @@ class UpdateUnitRequest extends FormRequest
     {
         return [
             'description.string'          => 'O campo descrição deve ser uma string.',
-            'description.max'             => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'             => 'O campo descrição deve ter no máximo 191 caracteres.',
             'description.unique'          => 'Esse descrição já está sendo utiliada',
         ];
     }

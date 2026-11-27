@@ -27,7 +27,7 @@ class UpdateReceivableRequest extends FormRequest
             'due_date' => 'sometimes|date',
             'payment_method_id' => 'sometimes|exists:payment_methods,id',
             'receivableable_id' => 'sometimes|integer',
-            'receivableable_type' => 'sometimes|string',
+            'receivableable_type' => 'sometimes|string|max:191',
         ];
     }
 

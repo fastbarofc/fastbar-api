@@ -16,9 +16,9 @@ class StoreCeremonialRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => 'required|string|max:255|unique:ceremonials',
-            'responsible' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:ceremonials',
+            'name'        => 'required|string|max:191|unique:ceremonials',
+            'responsible' => 'nullable|string|max:191',
+            'email' => 'nullable|email|max:191|unique:ceremonials',
             'phone_1'     => 'required|string|max:20',
             'phone_2'     => 'nullable|string|max:20',
         ];
@@ -29,10 +29,10 @@ class StoreCeremonialRequest extends FormRequest
         return [
             'name.required'           => 'O campo nome é obrigatório.',
             'name.string'             => 'O campo nome deve ser uma string.',
-            'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'                => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'             => 'Esse nome já está sendo utiliado',
             'responsible.string'      => 'O campo responsável deve ser uma string.',
-            'responsible .max'         => 'O campo responsável deve ter no máximo 255 caracteres.',
+            'responsible .max'         => 'O campo responsável deve ter no máximo 191 caracteres.',
             'email.email'             => 'O campo e-mail deve ser um e-mail válido.',
             'email.unique'            => 'Esse E-mail já está cadastrado.',
             'phone_1.required'        => 'O campo telefone 1 é obrigatório.',

@@ -44,7 +44,7 @@ trait ValidatesClientRepresentatives
                 'integer',
                 Rule::exists('client_representatives', 'id')->where('client_id', $client?->id),
             ],
-            'representatives.*.name' => ['required', 'string', 'max:255'],
+            'representatives.*.name' => ['required', 'string', 'max:191'],
             'representatives.*.cpf' => [$required ? 'required' : 'nullable', 'string', new Cpf],
             'representatives.*.address' => [$required ? 'required' : 'nullable', 'array'],
         ];
@@ -54,9 +54,9 @@ trait ValidatesClientRepresentatives
         }
 
         return $rules + [
-            'representatives.*.address.street' => ['required', 'string'],
-            'representatives.*.address.district' => ['required', 'string'],
-            'representatives.*.address.complement' => ['nullable', 'string'],
+            'representatives.*.address.street' => ['required', 'string', 'max:191'],
+            'representatives.*.address.district' => ['required', 'string', 'max:191'],
+            'representatives.*.address.complement' => ['nullable', 'string', 'max:191'],
             'representatives.*.address.city_id' => ['required', 'exists:cities,id'],
             'representatives.*.address.state_id' => ['required', 'exists:states,id'],
             'representatives.*.address.number' => ['required', 'string', 'max:50'],
@@ -72,7 +72,7 @@ trait ValidatesClientRepresentatives
             'representatives.array' => 'Os representantes devem ser uma lista.',
             'representatives.*.id.exists' => 'O :positionº representante não pertence a este cliente.',
             'representatives.*.name.required' => 'O nome do :positionº representante é obrigatório.',
-            'representatives.*.name.max' => 'O nome do :positionº representante deve ter no máximo 255 caracteres.',
+            'representatives.*.name.max' => 'O nome do :positionº representante deve ter no máximo 191 caracteres.',
             'representatives.*.cpf.required' => 'O CPF do :positionº representante é obrigatório.',
             'representatives.*.address.required' => 'O endereço do :positionº representante é obrigatório.',
             'representatives.*.address.street.required' => 'A rua do :positionº representante é obrigatória.',

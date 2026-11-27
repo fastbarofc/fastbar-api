@@ -15,7 +15,7 @@ class UpdateProductSubgroupRequest extends FormRequest
     {
         return [
             'product_group_id' => 'nullable|numeric|exists:product_groups,id',
-            'description'      => 'nullable|string|max:255',
+            'description'      => 'nullable|string|max:191',
         ];
     }
 
@@ -23,7 +23,7 @@ class UpdateProductSubgroupRequest extends FormRequest
     {
         return [
             'product_group_id.exists' => 'O grupo informado não existe.',
-            'description.max'         => 'A descrição deve ter no máximo 255 caracteres.',
+            'description.max'         => 'A descrição deve ter no máximo 191 caracteres.',
         ];
     }
 }

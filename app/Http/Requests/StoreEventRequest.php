@@ -61,7 +61,7 @@ class StoreEventRequest extends FormRequest
             'old_system_id' => 'nullable|integer|min:1',
             'post_event_consumption_report' => 'nullable|string',
             'post_event_consumption_report_file_id' => 'nullable|exists:files,id',
-            'post_event_consumption_report_file_name' => 'nullable|string|max:255',
+            'post_event_consumption_report_file_name' => 'nullable|string|max:120',
             'post_event_consumption_report_remove' => 'nullable|boolean',
             'status_reason' => 'nullable|string|max:1000',
             'company_ids' => 'nullable|array',

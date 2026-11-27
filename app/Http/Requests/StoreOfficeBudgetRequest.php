@@ -22,7 +22,7 @@ class StoreOfficeBudgetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255|unique:office_events,description',
+            'name' => 'required|string|max:191|unique:office_events,description',
         ];
     }
 

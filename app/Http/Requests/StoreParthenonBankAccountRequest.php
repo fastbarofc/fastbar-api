@@ -22,8 +22,8 @@ class StoreParthenonBankAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'bank_name' => 'required|string|max:255',
-            'account_number' => 'required|string|max:255',
+            'bank_name' => 'required|string|max:191',
+            'account_number' => 'required|string|max:191',
         ];
     }
 }

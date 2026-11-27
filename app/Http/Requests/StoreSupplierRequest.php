@@ -18,13 +18,13 @@ class StoreSupplierRequest extends FormRequest
     public function rules(): array
     {
         $data = [
-            'corporate_name' => 'required|string|max:255',
-            'fantasy_name' => 'required|string|max:255',
+            'corporate_name' => 'required|string|max:191',
+            'fantasy_name' => 'required|string|max:191',
             'cnpj' => 'required|string|max:18',
-            'state_registration' => 'required|string|max:255',
+            'state_registration' => 'required|string|max:191',
             'phone_1' => 'required|string|max:20',
             'phone_2' => 'nullable|string|max:20',
-            'observations' => 'nullable|string',
+            'observations' => 'nullable|string|max:191',
             'user_id' => 'nullable|exists:users,id',
             'pix_keys'   => 'nullable|array',
             'bank_details' => 'nullable|array',
@@ -42,16 +42,16 @@ class StoreSupplierRequest extends FormRequest
         return [
             'corporate_name.required' => 'O campo razão social é obrigatório.',
             'corporate_name.string' => 'O campo razão social deve ser uma string.',
-            'corporate_name.max' => 'O campo razão social deve ter no máximo 255 caracteres.',
+            'corporate_name.max' => 'O campo razão social deve ter no máximo 191 caracteres.',
             'fantasy_name.required' => 'O campo nome fantasia é obrigatório.',
             'fantasy_name.string' => 'O campo nome fantasia deve ser uma string.',
-            'fantasy_name.max' => 'O campo nome fantasia deve ter no máximo 255 caracteres.',
+            'fantasy_name.max' => 'O campo nome fantasia deve ter no máximo 191 caracteres.',
             'cnpj.required' => 'O campo CNPJ é obrigatório.',
             'cnpj.string' => 'O campo CNPJ deve ser uma string.',
             'cnpj.max' => 'O campo CNPJ deve ter no máximo 18 caracteres.',
             'state_registration.required' => 'O campo inscrição estadual é obrigatório.',
             'state_registration.string' => 'O campo inscrição estadual deve ser uma string.',
-            'state_registration.max' => 'O campo inscrição estadual deve ter no máximo 255 caracteres.',
+            'state_registration.max' => 'O campo inscrição estadual deve ter no máximo 191 caracteres.',
             'phone_1.required' => 'O campo telefone 1 é obrigatório.',
             'phone_1.string' => 'O campo telefone 1 deve ser uma string.',
             'phone_1.max' => 'O campo telefone 1 deve ter no máximo 20 caracteres.',
@@ -65,9 +65,9 @@ class StoreSupplierRequest extends FormRequest
     public function validateAddress(array $data)
     {
         $validator = Validator::make($data, [
-            'street' => ['required', 'string'],
-            'district' => ['required', 'string'],
-            'complement' => ['nullable', 'string'],
+            'street' => ['required', 'string', 'max:191'],
+            'district' => ['required', 'string', 'max:191'],
+            'complement' => ['nullable', 'string', 'max:191'],
             'city_id' => ['required', 'exists:cities,id'],
             'state_id' => ['required', 'exists:states,id'],
             'number' => ['required', 'string', 'max:50'],

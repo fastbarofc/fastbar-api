@@ -16,7 +16,7 @@ class StoreRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255|unique:roles,name'
+            'name' => 'required|string|max:191|unique:roles,name'
         ];
     }
 
@@ -25,7 +25,7 @@ class StoreRoleRequest extends FormRequest
         return [
             'name.required' => 'O campo nome é obrigatório',
             'name.string'   => 'O campo nome deve ser uma string',
-            'name.max'      => 'O campo nome deve ter no máximo 255 caracteres',
+            'name.max'      => 'O campo nome deve ter no máximo 191 caracteres',
             'name.unique'   => 'O nome informado já está em uso'
         ];
     }

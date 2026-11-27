@@ -64,14 +64,14 @@ class UpdateClientRequest extends FormRequest
             ],
             'phone_1'      => 'nullable|string|max:20',
             'phone_2'      => 'nullable|string|max:20',
-            'name'         => 'nullable|string|max:255',
-            'nickname'     => 'nullable|string|max:255',
+            'name'         => 'nullable|string|max:191',
+            'nickname'     => 'nullable|string|max:191',
             'birth_date'   => 'nullable|date',
             'cpf'          => ['nullable', 'string', new Cpf],
             'rg'           => 'nullable|string|max:20',
             'cnpj'         => ['nullable', 'string', new Cnpj],
-            'ie'           => 'nullable|string|max:255',
-            'im'           => 'nullable|string|max:255',
+            'ie'           => 'nullable|string|max:191',
+            'im'           => 'nullable|string|max:191',
         ] + $this->representativeRules($this->input('type') === 'pj', $client);
 
         if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
@@ -93,26 +93,26 @@ class UpdateClientRequest extends FormRequest
             'phone_2.string'          => 'O campo telefone 2 deve ser uma string.',
             'phone_2.max'             => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
             'name.string'             => 'O campo nome deve ser uma string.',
-            'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'                => 'O campo nome deve ter no máximo 191 caracteres.',
             'nickname.string'         => 'O campo apelido deve ser uma string.',
-            'nickname.max'            => 'O campo apelido deve ter no máximo 255 caracteres.',
+            'nickname.max'            => 'O campo apelido deve ter no máximo 191 caracteres.',
             'birth_date.date'         => 'O campo data de nascimento deve ser uma data válida.',
             'cpf.string'              => 'O campo CPF deve ser uma string.',
             'rg.string'               => 'O campo RG deve ser uma string.',
             'rg.max'                  => 'O campo RG deve ter no máximo 20 caracteres.',
             'cnpj.string'             => 'O campo CNPJ deve ser uma string.',
             'ie.string'               => 'O campo inscrição estadual deve ser uma string.',
-            'ie.max'                  => 'O campo inscrição estadual deve ter no máximo 255 caracteres.',
+            'ie.max'                  => 'O campo inscrição estadual deve ter no máximo 191 caracteres.',
             'im.string'               => 'O campo inscrição municipal deve ser uma string.',
-            'im.max'                  => 'O campo inscrição municipal deve ter no máximo 255 caracteres.',
+            'im.max'                  => 'O campo inscrição municipal deve ter no máximo 191 caracteres.',
         ] + $this->representativeMessages();
     }
 
     public function validateAddress(array $data) {
         $validator = Validator::make($data, [
-            'street'     => ['nullable', 'string'],
-            'district'   => ['nullable', 'string'],
-            'complement' => ['nullable', 'string'],
+            'street'     => ['nullable', 'string', 'max:191'],
+            'district'   => ['nullable', 'string', 'max:191'],
+            'complement' => ['nullable', 'string', 'max:191'],
             'city_id'    => ['nullable', 'exists:cities,id'],
             'state_id'   => ['nullable', 'exists:states,id'],
             'number'     => ['nullable', 'string', 'max:50'],

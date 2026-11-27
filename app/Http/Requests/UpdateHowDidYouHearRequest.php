@@ -22,7 +22,7 @@ class UpdateHowDidYouHearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string|max:255',
+            'name' => 'string|max:191',
         ];
     }
 
@@ -30,7 +30,7 @@ class UpdateHowDidYouHearRequest extends FormRequest
     {
         return [
             'name.string' => 'Name must be a string',
-            'name.max' => 'Name must be less than 255 characters',
+            'name.max' => 'O nome deve ter no máximo 191 caracteres.',
         ];
     }
 }

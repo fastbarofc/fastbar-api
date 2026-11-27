@@ -22,7 +22,7 @@ class UpdateFailureRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'string|max:255',
+            'description' => 'string|max:191',
             'percentage' => 'numeric|between:0,100',
         ];
     }
@@ -30,7 +30,7 @@ class UpdateFailureRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'description.max' => 'O campo descrição deve ter no maximo 255 caracteres.',
+            'description.max' => 'O campo descrição deve ter no maximo 191 caracteres.',
             'percentage.between' => 'O campo porcentagem deve estar entre 0 e 100',
             'percentage.numeric' => 'O campo porcentagem deve ser um valor numérico',
             'description.string' => 'O campo descrição deve ser uma string',

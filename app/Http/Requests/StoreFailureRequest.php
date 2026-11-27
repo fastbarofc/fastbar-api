@@ -22,7 +22,7 @@ class StoreFailureRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'required|string|max:255',
+            'description' => 'required|string|max:191',
             'percentage' => 'required|numeric|between:0,100',
         ];
     }
@@ -32,7 +32,7 @@ class StoreFailureRequest extends FormRequest
         return [
             'description.required' => 'O campo descrição é obrigatório',
             'description.string' => 'O campo descrição deve ser uma string',
-            'description.max' => 'O campo descrição deve ter no máximo 255 caracteres',
+            'description.max' => 'O campo descrição deve ter no máximo 191 caracteres',
             'percentage.required' => 'O campo porcentagem é obrigatório',
             'percentage.numeric' => 'O campo porcentagem deve ser um valor numérico',
             'percentage.between' => 'O campo porcentagem deve estar entre 0 e 100',

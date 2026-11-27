@@ -16,7 +16,7 @@ class UpdateEventCaptureRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'nullable|string|max:255|unique:event_captures,name,' . $this->route('event_capture')->id,
+            'name' => 'nullable|string|max:191|unique:event_captures,name,' . $this->route('event_capture')->id,
         ];
     }
 
@@ -24,7 +24,7 @@ class UpdateEventCaptureRequest extends FormRequest
     {
         return [
             'name.string'   => 'O campo nome deve ser um texto.',
-            'name.max'      => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'      => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'   => 'O nome informado já está em uso.',
         ];
     }

@@ -21,13 +21,13 @@ class UpdateSupplierRequest extends FormRequest
         $supplierId = $this->route('supplier')->id;
 
         $data = [
-            'corporate_name' => 'nullable|string|max:255',
-            'fantasy_name' => 'nullable|string|max:255',
+            'corporate_name' => 'nullable|string|max:191',
+            'fantasy_name' => 'nullable|string|max:191',
             'cnpj' => 'nullable|string|max:18',
-            'state_registration' => 'nullable|string|max:255',
+            'state_registration' => 'nullable|string|max:191',
             'phone_1' => 'nullable|string|max:20',
             'phone_2' => 'nullable|string|max:20',
-            'observations' => 'nullable|string',
+            'observations' => 'nullable|string|max:191',
             'user_id' => 'nullable|exists:users,id',
             'pix_keys'   => 'nullable|array',
             'bank_details' => 'nullable|array',
@@ -44,13 +44,13 @@ class UpdateSupplierRequest extends FormRequest
     {
         return [
             'corporate_name.string' => 'O campo razão social deve ser uma string.',
-            'corporate_name.max' => 'O campo razão social deve ter no máximo 255 caracteres.',
+            'corporate_name.max' => 'O campo razão social deve ter no máximo 191 caracteres.',
             'fantasy_name.string' => 'O campo nome fantasia deve ser uma string.',
-            'fantasy_name.max' => 'O campo nome fantasia deve ter no máximo 255 caracteres.',
+            'fantasy_name.max' => 'O campo nome fantasia deve ter no máximo 191 caracteres.',
             'cnpj.string' => 'O campo CNPJ deve ser uma string.',
             'cnpj.max' => 'O campo CNPJ deve ter no máximo 18 caracteres.',
             'state_registration.string' => 'O campo inscrição estadual deve ser uma string.',
-            'state_registration.max' => 'O campo inscrição estadual deve ter no máximo 255 caracteres.',
+            'state_registration.max' => 'O campo inscrição estadual deve ter no máximo 191 caracteres.',
             'phone_1.string' => 'O campo telefone 1 deve ser uma string.',
             'phone_1.max' => 'O campo telefone 1 deve ter no máximo 20 caracteres.',
             'phone_2.string' => 'O campo telefone 2 deve ser uma string.',
@@ -63,9 +63,9 @@ class UpdateSupplierRequest extends FormRequest
     public function validateAddress(array $data)
     {
         $validator = Validator::make($data, [
-            'street' => ['nullable', 'string'],
-            'district' => ['nullable', 'string'],
-            'complement' => ['nullable', 'string'],
+            'street' => ['nullable', 'string', 'max:191'],
+            'district' => ['nullable', 'string', 'max:191'],
+            'complement' => ['nullable', 'string', 'max:191'],
             'city_id' => ['nullable', 'exists:cities,id'],
             'state_id' => ['nullable', 'exists:states,id'],
             'number' => ['nullable', 'string', 'max:50'],

@@ -16,7 +16,7 @@ class StoreExtraSaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'required|string|max:255|unique:extra_sales,description',
+            'description' => 'required|string|max:191|unique:extra_sales,description',
             'unit_id'     => 'nullable|numeric|exists:units,id',
             'quantity'    => 'required|numeric|min:0',
             'unit_value'  => 'required|numeric|min:0',
@@ -29,7 +29,7 @@ class StoreExtraSaleRequest extends FormRequest
         return [
             'description.required' => 'O campo descrição é obrigatório.',
             'description.string'   => 'O campo descrição deve ser uma string.',
-            'description.max'      => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'      => 'O campo descrição deve ter no máximo 191 caracteres.',
             'description.unique'   => 'Essa descrição já está em uso.',
             'unit_id.numeric'      => 'O campo ID da unidade deve conter apenas números.',
             'unit_id.exists'       => 'O campo ID da unidade deve ser uma unidade válida',

@@ -21,8 +21,8 @@ class UpdateCollaboratorRequest extends FormRequest
         $collaboratorId = $this->route('collaborator')->id;
 
         $data = [
-            'name'       => 'nullable|string|max:255',
-            'nickname'   => 'nullable|string|max:255',
+            'name'       => 'nullable|string|max:191',
+            'nickname'   => 'nullable|string|max:191',
             'birth_date' => 'nullable|date',
             'cpf'        => [
                 'nullable',
@@ -76,9 +76,9 @@ class UpdateCollaboratorRequest extends FormRequest
     {
         return [
             'name.string'             => 'O campo nome deve ser uma string.',
-            'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'                => 'O campo nome deve ter no máximo 191 caracteres.',
             'nickname.string'         => 'O campo apelido deve ser uma string.',
-            'nickname.max'            => 'O campo apelido deve ter no máximo 255 caracteres.',
+            'nickname.max'            => 'O campo apelido deve ter no máximo 191 caracteres.',
             'birth_date.date'         => 'O campo data de nascimento deve ser uma data válida.',
             'cpf.string'              => 'O campo CPF deve ser uma string.',
             'cpf.max'                 => 'O campo CPF deve ter no máximo 14 caracteres.',
@@ -105,9 +105,9 @@ class UpdateCollaboratorRequest extends FormRequest
 
     public function validateAddress(array $data) {
         $validator = Validator::make($data, [
-            'street'     => ['nullable', 'string'],
-            'district'   => ['nullable', 'string'],
-            'complement' => ['nullable', 'string'],
+            'street'     => ['nullable', 'string', 'max:191'],
+            'district'   => ['nullable', 'string', 'max:191'],
+            'complement' => ['nullable', 'string', 'max:191'],
             'city_id'    => ['nullable', 'exists:cities,id'],
             'state_id'   => ['nullable', 'exists:states,id'],
             'number'     => ['nullable', 'string', 'max:50'],

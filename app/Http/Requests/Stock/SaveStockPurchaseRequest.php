@@ -16,8 +16,8 @@ class SaveStockPurchaseRequest extends FormRequest
     {
         return [
             'purchased_at' => ['required', 'date'],
-            'supplier' => ['nullable', 'string', 'max:255'],
-            'invoice_number' => ['nullable', 'string', 'max:255'],
+            'supplier' => ['nullable', 'string', 'max:191'],
+            'invoice_number' => ['nullable', 'string', 'max:191'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'distinct', new StockProduct()],

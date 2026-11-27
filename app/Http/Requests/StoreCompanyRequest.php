@@ -16,9 +16,9 @@ class StoreCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'internal_name' => 'required|string|max:255',
-            'legal_name' => 'required|string|max:255',
-            'trade_name' => 'required|string|max:255',
+            'internal_name' => 'required|string|max:191',
+            'legal_name' => 'required|string|max:191',
+            'trade_name' => 'required|string|max:191',
             'type' => 'required|in:head_office,branch',
         ];
     }
@@ -28,13 +28,13 @@ class StoreCompanyRequest extends FormRequest
         return [
             'internal_name.required' => 'O campo nome interno é obrigatório.',
             'internal_name.string' => 'O campo nome interno deve ser uma string.',
-            'internal_name.max' => 'O campo nome interno deve ter no máximo 255 caracteres.',
+            'internal_name.max' => 'O campo nome interno deve ter no máximo 191 caracteres.',
             'legal_name.required' => 'O campo razão social é obrigatório.',
             'legal_name.string' => 'O campo razão social deve ser uma string.',
-            'legal_name.max' => 'O campo razão social deve ter no máximo 255 caracteres.',
+            'legal_name.max' => 'O campo razão social deve ter no máximo 191 caracteres.',
             'trade_name.required' => 'O campo nome fantasia é obrigatório.',
             'trade_name.string' => 'O campo nome fantasia deve ser uma string.',
-            'trade_name.max' => 'O campo nome fantasia deve ter no máximo 255 caracteres.',
+            'trade_name.max' => 'O campo nome fantasia deve ter no máximo 191 caracteres.',
             'type.required' => 'O campo tipo é obrigatório.',
             'type.in' => 'O campo tipo deve ser "head_office" ou "branch".',
         ];
