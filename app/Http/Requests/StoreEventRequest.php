@@ -28,7 +28,7 @@ class StoreEventRequest extends FormRequest
     public function rules(): array
     {
         $data = [
-            'name'               => 'nullable|string|max:255',
+            'name'               => 'nullable|string|max:191',
             'event_type_id'      => 'nullable|exists:event_types,id',
             'event_place_id'     => 'nullable|exists:event_places,id',
             'lease'              => 'nullable|numeric|min:0',
@@ -76,7 +76,7 @@ class StoreEventRequest extends FormRequest
         return [
             'name.required'             => 'O campo nome é obrigatório',
             'name.string'               => 'O campo nome deve ser uma string',
-            'name.max'                  => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'                  => 'O campo nome deve ter no máximo 191 caracteres.',
             'event_type_id.required'    => 'O campo tipo de evento é obrigatório',
             'event_type_id.exists'      => 'O campo tipo de evento deve ser um tipo válido.',
             'event_place_id.required'   => 'O campo local do evento é obrigatório',

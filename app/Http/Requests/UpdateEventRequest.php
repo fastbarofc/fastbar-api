@@ -30,7 +30,7 @@ class UpdateEventRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'               => 'nullable|string|max:255',
+            'name'               => 'nullable|string|max:191',
             'event_type_id'      => 'nullable|exists:event_types,id',
             'event_place_id'     => 'nullable|exists:event_places,id',
             'lease'              => 'nullable|numeric|min:0',
@@ -75,7 +75,7 @@ class UpdateEventRequest extends FormRequest
     {
         return [
             'name.string' => 'O campo nome deve ser uma string',
-            'name.max' => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max' => 'O campo nome deve ter no máximo 191 caracteres.',
             'event_type_id.exists' => 'O campo tipo de evento deve ser um tipo válido.',
             'event_place_id.exists' => 'O campo local do evento deve ser um local válido.',
             'lease.string' => 'O campo aluguel deve ser uma string',
