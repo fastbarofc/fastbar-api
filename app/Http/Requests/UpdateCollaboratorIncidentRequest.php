@@ -18,8 +18,8 @@ class UpdateCollaboratorIncidentRequest extends FormRequest
 
     
         return [
-            'collaborator_id' => 'nullable|integer',
-            'description'     => 'nullable|string',
+            'collaborator_id' => 'sometimes|required|integer',
+            'description'     => 'sometimes|required|string',
         ];
     }
     
@@ -29,6 +29,8 @@ class UpdateCollaboratorIncidentRequest extends FormRequest
     public function messages()
     {
         return [
+            'description.required' => 'O campo descrição é obrigatório.',
+            'collaborator_id.required' => 'O campo colaborador é obrigatório.',
             'collaborator_id.integer' => 'O campo ID do colaborador deve ser um número.',
             'collaborator_id.exists'   => 'O campo ID do colaborador deve ser um ID válido.',
             'description.string'       => 'O campo descrição deve ser uma string.',

@@ -16,7 +16,7 @@ class UpdateDecoratorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'       => 'nullable|string|max:191',
+            'name'       => 'sometimes|required|string|max:191',
             'email'      => 'nullable|email|max:191',
             'responsible'=> 'nullable|nullable|string|max:191',
             'phone_1'    => 'nullable|string|min:10|max:20',
@@ -27,6 +27,7 @@ class UpdateDecoratorRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.required' => 'O campo nome é obrigatório.',
             'name.string'        => 'O campo nome deve ser um texto.',
             'name.max'           => 'O campo nome deve ter no máximo 191 caracteres.',
             'email.email'        => 'O campo email deve ser um email real.',

@@ -21,7 +21,7 @@ class UpdateCollaboratorRequest extends FormRequest
         $collaboratorId = $this->route('collaborator')->id;
 
         $data = [
-            'name'       => 'nullable|string|max:191',
+            'name'       => 'sometimes|required|string|max:191',
             'nickname'   => 'nullable|string|max:191',
             'birth_date' => 'nullable|date',
             'cpf'        => [
@@ -37,16 +37,16 @@ class UpdateCollaboratorRequest extends FormRequest
                 Rule::unique('collaborators', 'rg')->ignore($collaboratorId)->whereNull('deleted_at'),
             ],
             'email'      => [
-                'nullable', 
+                'sometimes', 'required', 
                 'email',
                 Rule::unique('collaborators', 'email')->ignore($collaboratorId)->whereNull('deleted_at'),
             ],
             'phone_1'    => 'nullable|string|max:20',
             'phone_2'    => 'nullable|string|max:20',
-            'sector_id'  => 'nullable|exists:sectors,id',
-            'sector_office_id'  => 'nullable|exists:sector_offices,id',
-            'has_login'  => 'nullable|boolean',
-            'active'     => 'nullable|boolean',
+            'sector_id'  => 'sometimes|required|exists:sectors,id',
+            'sector_office_id'  => 'sometimes|required|exists:sector_offices,id',
+            'has_login'  => 'sometimes|required|boolean',
+            'active'     => 'sometimes|required|boolean',
             'user_id'    => 'nullable|exists:users,id',
             'role_id'    => 'nullable|exists:roles,id',
             'pix_keys'   => 'nullable|array',
@@ -75,6 +75,12 @@ class UpdateCollaboratorRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'active.required' => 'O campo ativo é obrigatório.',
+            'has_login.required' => 'O campo acesso ao sistema é obrigatório.',
+            'sector_office_id.required' => 'O campo cargo é obrigatório.',
+            'sector_id.required' => 'O campo setor é obrigatório.',
+            'email.required' => 'O campo e-mail é obrigatório.',
+            'name.required' => 'O campo nome é obrigatório.',
             'name.string'             => 'O campo nome deve ser uma string.',
             'name.max'                => 'O campo nome deve ter no máximo 191 caracteres.',
             'nickname.string'         => 'O campo apelido deve ser uma string.',

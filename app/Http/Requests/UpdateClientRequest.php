@@ -62,7 +62,7 @@ class UpdateClientRequest extends FormRequest
                 'email',
                 Rule::unique('clients')->whereNull('deleted_at')->ignore($clientId),
             ],
-            'phone_1'      => 'nullable|string|max:20',
+            'phone_1'      => 'sometimes|required|string|max:20',
             'phone_2'      => 'nullable|string|max:20',
             'name'         => 'nullable|string|max:191',
             'nickname'     => 'nullable|string|max:191',
@@ -84,6 +84,7 @@ class UpdateClientRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'phone_1.required' => 'O campo telefone 1 é obrigatório.',
             'type.string'             => 'O campo tipo deve ser uma string.',
             'type.in'                 => 'O tipo informado de ser PF ou PJ.',
             'email.email'             => 'O campo e-mail deve ser um e-mail válido.',

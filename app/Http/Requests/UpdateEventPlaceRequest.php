@@ -32,7 +32,7 @@ class UpdateEventPlaceRequest extends FormRequest
 
         $data = [
             'name'       => [
-                'nullable', 
+                'sometimes', 'required', 
                 'string',
                 'max:191',
                 Rule::unique('event_places', 'name')->ignore($eventPlaceId),
@@ -56,6 +56,7 @@ class UpdateEventPlaceRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.required' => 'O campo nome é obrigatório.',
             'name.string'             => 'O campo nome deve ser uma string.',
             'name.max'                => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'             => 'O nome informado já está em uso.',

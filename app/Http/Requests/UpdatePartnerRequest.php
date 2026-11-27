@@ -16,7 +16,7 @@ class UpdatePartnerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => 'nullable|string|max:191|unique:partners,name,' . $this->route('partner')->id,
+            'name'        => 'sometimes|required|string|max:191|unique:partners,name,' . $this->route('partner')->id,
             'responsible' => 'nullable|string|max:191',
             'email'       => 'nullable|email|unique:partners,email|max:191,' . $this->route('partner')->id,
             'phone_1'     => 'nullable|string|max:20',
@@ -27,6 +27,7 @@ class UpdatePartnerRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.required' => 'O campo nome é obrigatório.',
             'name.string'             => 'O campo nome deve ser uma string.',
             'name.max'                => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'             => 'Esse nome já está sendo utiliado',

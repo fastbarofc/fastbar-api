@@ -27,7 +27,7 @@ class UpdateProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'                => 'nullable|string|max:191|unique:products,name,' . $this->route('product')->id,
+            'name'                => 'sometimes|required|string|max:191|unique:products,name,' . $this->route('product')->id,
             'product_group_id'    => 'nullable|numeric|exists:product_groups,id',
             'product_subgroup_id' => [
                 Rule::requiredIf(function () {
@@ -50,7 +50,7 @@ class UpdateProductRequest extends FormRequest
             'display_checklist'   => 'nullable|boolean',
             'own_production'      => 'nullable|boolean',
             'recipe_yield'        => 'nullable|numeric|max:999999',
-            'composition_item'    => 'nullable|boolean',
+            'composition_item'    => 'sometimes|required|boolean',
             'composition'              => 'nullable|array',
             'composition.*.product_id' => [
                 'required',
@@ -66,6 +66,8 @@ class UpdateProductRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'composition_item.required' => 'O campo item de composição é obrigatório.',
+            'name.required' => 'O campo nome é obrigatório.',
             'name.string'                      => 'O campo nome deve ser uma string.',
             'name.max'                         => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'                      => 'O nome informado já está em uso.',

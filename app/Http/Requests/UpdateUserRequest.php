@@ -18,7 +18,7 @@ class UpdateUserRequest extends FormRequest
         $data = [
             'name'  => 'filled|string|max:191',
             'email' => 'filled|email|max:191|unique:users,email|max:191,' . $this->id,
-            'active' => 'nullable|boolean',
+            'active' => 'sometimes|required|boolean',
         ];
 
         if ($this->has('password')) {
@@ -32,6 +32,7 @@ class UpdateUserRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'active.required' => 'O campo ativo é obrigatório.',
             'name.max'                            => 'O nome deve ter no máximo 191 caracteres.',
             'name.filled'                         => 'O nome é obrigatório.',
             'email.email'                         => 'O email deve ser um endereço de email válido.',

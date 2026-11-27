@@ -19,14 +19,16 @@ class UpdateMaterialRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'nullable|string|max:191|unique:materials,description,' . $this->route('material')->id,
-            'quantity'      => 'nullable|numeric|min:0',
+            'description' => 'sometimes|required|string|max:191|unique:materials,description,' . $this->route('material')->id,
+            'quantity'      => 'sometimes|required|numeric|min:0',
         ];
     }
 
     public function messages(): array
     {
         return [
+            'quantity.required' => 'O campo quantidade é obrigatório.',
+            'description.required' => 'O campo descrição é obrigatório.',
             'description.string' => 'O campo descrição deve ser uma string.',
             'description.max'    => 'O campo descrição deve ter no máximo 191 caracteres.',
             'description.unique' => 'Essa descrição já está sendo utiliada',
