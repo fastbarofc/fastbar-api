@@ -66,7 +66,6 @@ use App\Http\Controllers\NotificationController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->name('login');
-    Route::post('/register', 'register')->name('register');
     Route::post('/logout', 'logout')->middleware('auth:api')->name('logout');
 });
 
