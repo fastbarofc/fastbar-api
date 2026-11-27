@@ -63,7 +63,7 @@ class EventPaymentController extends Controller
 
     public function store(StoreEventPaymentRequest $request)
     {
-        $eventPayment = EventPayment::create($request->all());
+        $eventPayment = EventPayment::create($request->validated());
         $eventPayment->load(['event', 'parthenonBankAccount']);
         return response()->json(new EventPaymentResource($eventPayment), 201);
     }
@@ -76,7 +76,7 @@ class EventPaymentController extends Controller
 
     public function update(UpdateEventPaymentRequest $request, EventPayment $eventPayment)
     {
-        $eventPayment->update($request->all());
+        $eventPayment->update($request->validated());
         $eventPayment->load(['event', 'parthenonBankAccount']);
         return response()->json(new EventPaymentResource($eventPayment), 200);
     }

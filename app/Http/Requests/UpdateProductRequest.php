@@ -16,6 +16,14 @@ class UpdateProductRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        // products.value é NOT NULL com default 0: o form manda vazio quando não há preço.
+        if ($this->exists('value') && $this->input('value') === null) {
+            $this->merge(['value' => 0]);
+        }
+    }
+
     public function rules(): array
     {
         return [

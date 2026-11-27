@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class UpdateSupplierRequest extends FormRequest
@@ -21,11 +20,11 @@ class UpdateSupplierRequest extends FormRequest
         $supplierId = $this->route('supplier')->id;
 
         $data = [
-            'corporate_name' => 'nullable|string|max:191',
-            'fantasy_name' => 'nullable|string|max:191',
-            'cnpj' => 'nullable|string|max:18',
-            'state_registration' => 'nullable|string|max:191',
-            'phone_1' => 'nullable|string|max:20',
+            'corporate_name' => 'sometimes|required|string|max:191',
+            'fantasy_name' => 'sometimes|required|string|max:191',
+            'cnpj' => 'sometimes|required|string|max:18',
+            'state_registration' => 'sometimes|required|string|max:191',
+            'phone_1' => 'sometimes|required|string|max:20',
             'phone_2' => 'nullable|string|max:20',
             'observations' => 'nullable|string|max:191',
             'user_id' => 'nullable|exists:users,id',
@@ -33,11 +32,30 @@ class UpdateSupplierRequest extends FormRequest
             'bank_details' => 'nullable|array',
         ];
 
-        if (!empty($this->request->all()['address'])) {
-            $this->validateAddress($this->request->all()['address']);
-        }
-
-        return $data;
+        return array_merge($data, [
+            'address' => 'nullable|array',
+            'address.street' => 'nullable|string|max:191',
+            'address.district' => 'nullable|string|max:191',
+            'address.complement' => 'nullable|string|max:191',
+            'address.number' => 'nullable|string|max:50',
+            'address.zip_code' => 'nullable|string|max:191',
+            'address.reference' => 'nullable|string|max:65535',
+            'address.city_id' => 'nullable|integer|exists:cities,id',
+            'address.state_id' => 'nullable|integer|exists:states,id',
+            'bank_details.*.id' => 'nullable|integer',
+            'bank_details.*.bank_name' => 'nullable|string|max:191',
+            'bank_details.*.agency' => 'nullable|string|max:191',
+            'bank_details.*.account' => 'nullable|string|max:191',
+            'bank_details.*.account_holder' => 'nullable|string|max:191',
+            'bank_details.*.status' => 'nullable|boolean',
+            'pix_keys.*.id' => 'nullable|integer',
+            'pix_keys.*.type' => 'nullable|string|max:191',
+            'pix_keys.*.key' => 'nullable|string|max:191',
+            'removed_bank_detail_ids' => 'nullable|array',
+            'removed_bank_detail_ids.*' => 'integer',
+            'removed_pix_key_ids' => 'nullable|array',
+            'removed_pix_key_ids.*' => 'integer',
+        ]);
     }
 
     public function messages(): array
@@ -57,32 +75,12 @@ class UpdateSupplierRequest extends FormRequest
             'phone_2.max' => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
             'observations.string' => 'O campo observações deve ser uma string.',
             'user_id.exists' => 'O usuário informado não existe.',
+            'address.city_id.exists' => 'A cidade informada não existe.',
+            'address.state_id.exists' => 'O estado informado não existe.',
+            'address.number.max' => 'O número do endereço deve ter no máximo 50 caracteres.',
+            'address.*.max' => 'Um dos campos do endereço passou do tamanho máximo.',
+            'bank_details.*.*' => 'Um dos dados bancários é inválido ou longo demais.',
+            'pix_keys.*.*' => 'Uma das chaves pix é inválida ou longa demais.',
         ];
-    }
-
-    public function validateAddress(array $data)
-    {
-        $validator = Validator::make($data, [
-            'street' => ['nullable', 'string', 'max:191'],
-            'district' => ['nullable', 'string', 'max:191'],
-            'complement' => ['nullable', 'string', 'max:191'],
-            'city_id' => ['nullable', 'exists:cities,id'],
-            'state_id' => ['nullable', 'exists:states,id'],
-            'number' => ['nullable', 'string', 'max:50'],
-            'zip_code' => ['nullable', 'formato_cep'],
-            'reference' => ['nullable', 'string'],
-        ], [
-            'street.string' => 'O campo rua deve ser uma string.',
-            'district.string' => 'O campo bairro deve ser uma string.',
-            'complement.string' => 'O campo complemento deve ser uma string.',
-            'city_id.exists' => 'O campo cidade deve ser uma cidade válida.',
-            'state_id.exists' => 'O campo estado deve ser um estado válido.',
-            'number.string'        => 'O campo número deve conter apenas letras e números',
-            'number.max'           => 'O campo número não pode ter mais de 50 caracteres',
-            'zip_code.formato_cep' => 'O campo CEP deve ser um CEP válido.',
-            'reference.string' => 'O campo referência deve ser uma string.',
-        ]);
-
-        $validator->validate();
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Validator;
 
 class StoreSupplierRequest extends FormRequest
 {
@@ -30,11 +29,26 @@ class StoreSupplierRequest extends FormRequest
             'bank_details' => 'nullable|array',
         ];
 
-        if (!empty($this->request->all()['address'])) {
-            $this->validateAddress($this->request->all()['address']);
-        }
-
-        return $data;
+        return array_merge($data, [
+            'address' => 'nullable|array',
+            'address.street' => 'nullable|string|max:191',
+            'address.district' => 'nullable|string|max:191',
+            'address.complement' => 'nullable|string|max:191',
+            'address.number' => 'nullable|string|max:50',
+            'address.zip_code' => 'nullable|string|max:191',
+            'address.reference' => 'nullable|string|max:65535',
+            'address.city_id' => 'nullable|integer|exists:cities,id',
+            'address.state_id' => 'nullable|integer|exists:states,id',
+            'bank_details.*.id' => 'nullable|integer',
+            'bank_details.*.bank_name' => 'nullable|string|max:191',
+            'bank_details.*.agency' => 'nullable|string|max:191',
+            'bank_details.*.account' => 'nullable|string|max:191',
+            'bank_details.*.account_holder' => 'nullable|string|max:191',
+            'bank_details.*.status' => 'nullable|boolean',
+            'pix_keys.*.id' => 'nullable|integer',
+            'pix_keys.*.type' => 'nullable|string|max:191',
+            'pix_keys.*.key' => 'nullable|string|max:191',
+        ]);
     }
 
     public function messages(): array
@@ -59,38 +73,12 @@ class StoreSupplierRequest extends FormRequest
             'phone_2.max' => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
             'observations.string' => 'O campo observações deve ser uma string.',
             'user_id.exists' => 'O usuário informado não existe.',
+            'address.city_id.exists' => 'A cidade informada não existe.',
+            'address.state_id.exists' => 'O estado informado não existe.',
+            'address.number.max' => 'O número do endereço deve ter no máximo 50 caracteres.',
+            'address.*.max' => 'Um dos campos do endereço passou do tamanho máximo.',
+            'bank_details.*.*' => 'Um dos dados bancários é inválido ou longo demais.',
+            'pix_keys.*.*' => 'Uma das chaves pix é inválida ou longa demais.',
         ];
-    }
-
-    public function validateAddress(array $data)
-    {
-        $validator = Validator::make($data, [
-            'street' => ['required', 'string', 'max:191'],
-            'district' => ['required', 'string', 'max:191'],
-            'complement' => ['nullable', 'string', 'max:191'],
-            'city_id' => ['required', 'exists:cities,id'],
-            'state_id' => ['required', 'exists:states,id'],
-            'number' => ['required', 'string', 'max:50'],
-            'zip_code' => ['required', 'formato_cep'],
-            'reference' => ['nullable', 'string'],
-        ], [
-            'street.required' => 'O campo rua é obrigatório.',
-            'street.string' => 'O campo rua deve ser uma string.',
-            'district.required' => 'O campo bairro é obrigatório.',
-            'district.string' => 'O campo bairro deve ser uma string.',
-            'complement.string' => 'O campo complemento deve ser uma string.',
-            'city_id.required' => 'O campo cidade é obrigatório.',
-            'city_id.exists' => 'O campo cidade deve ser uma cidade válida.',
-            'state_id.required' => 'O campo estado é obrigatório.',
-            'state_id.exists' => 'O campo estado deve ser um estado válido.',
-            'number.required' => 'O campo número é obrigatório.',
-            'number.string'        => 'O campo número deve conter apenas letras e números',
-            'number.max'           => 'O campo número não pode ter mais de 50 caracteres',
-            'zip_code.required' => 'O campo CEP é obrigatório.',
-            'zip_code.formato_cep' => 'O campo CEP deve ser um CEP válido.',
-            'reference.string' => 'O campo referência deve ser uma string.',
-        ]);
-
-        $validator->validate();
     }
 }
