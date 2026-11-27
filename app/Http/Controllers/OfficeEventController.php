@@ -9,6 +9,9 @@ use App\Models\Collaborator;
 use App\Models\OfficeEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\Office\DetachOfficeCollaboratorRequest;
+use App\Http\Requests\Office\SyncOfficeCollaboratorsRequest;
+use Illuminate\Support\Facades\DB;
 
 class OfficeEventController extends Controller
 {
@@ -93,27 +96,27 @@ class OfficeEventController extends Controller
         return response()->json([], 204);
     }
 
-    public function attachCollaborators(Request $request, OfficeEvent $officeEvent)
+    public function attachCollaborators(SyncOfficeCollaboratorsRequest $request, OfficeEvent $officeEvent)
     {
-        $collaboratorIds = $request->input('collaborators');
-        $eventId = $request->input('eventId');
+        $eventId = $request->integer('eventId');
 
-        $officeEvent->collaborators()->detach();
+        DB::transaction(function () use ($request, $officeEvent, $eventId) {
+            $officeEvent->collaborators()->wherePivot('event_id', $eventId)->detach();
 
-        foreach ($collaboratorIds as $collaboratorId) {
-            $officeEvent->collaborators()->attach($collaboratorId, ['event_id' => $eventId]);
-        }
+            foreach ($request->input('collaborators') as $collaboratorId) {
+                $officeEvent->collaborators()->attach($collaboratorId, ['event_id' => $eventId]);
+            }
+        });
 
         return response()->json(['message' => 'Collaborators synced to office event'], 200);
     }
 
-    public function detachCollaborator(Request $request, $officeEventId)
+    public function detachCollaborator(DetachOfficeCollaboratorRequest $request, $officeEventId)
     {
-        $collaboratorId = $request->input('collaborator_id');
-        $eventId = $request->input('event_id');
-
         $officeEvent = OfficeEvent::findOrFail($officeEventId);
-        $officeEvent->collaborators()->detach($collaboratorId, ['event_id' => $eventId]);
+        $officeEvent->collaborators()
+            ->wherePivot('event_id', $request->integer('event_id'))
+            ->detach($request->integer('collaborator_id'));
 
         return response()->json(['message' => 'Collaborator detached successfully'], 200);
     }
