@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateCostCenterRequest;
 use App\Http\Resources\CostCenterResource;
 use App\Models\CostCenter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class CostCenterController extends Controller
 {
@@ -40,7 +41,9 @@ class CostCenterController extends Controller
                         }
                     } else {
                         $operator = $field == 'description' ? 'like' : '=';
-                        $query->where($field, $operator, $operator == 'like' ? "%$value%" : $value);
+                        if (Schema::hasColumn('cost_centers', $field)) {
+                            $query->where($field, $operator, $operator == 'like' ? "%$value%" : $value);
+                        }
                     }
                 }
             }
@@ -49,7 +52,9 @@ class CostCenterController extends Controller
         if ($request->input('order_by')) {
             $sortableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderBy($sortableField, $direction);
+            if (Schema::hasColumn('cost_centers', $sortableField)) {
+                $query->orderBy($sortableField, $direction);
+            }
         }
 
         $costCenters = $query->paginate($perPage);

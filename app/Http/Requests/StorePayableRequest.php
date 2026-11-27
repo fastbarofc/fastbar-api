@@ -22,12 +22,12 @@ class StorePayableRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'required|string',
-            'amount' => 'required|numeric|min:0',
-            'due_date' => 'required|date',
+            'description' => 'required|string|max:191',
+            'amount' => 'required|numeric|min:0|max:99999999.99',
+            'due_date' => 'required|date_format:Y-m-d',
             'financial_operation_id' => 'required|exists:financial_operations,id',
             'payableable_id' => 'required|integer',
-            'payableable_type' => 'required|string',
+            'payableable_type' => 'required|string|max:191',
         ];
     }
 

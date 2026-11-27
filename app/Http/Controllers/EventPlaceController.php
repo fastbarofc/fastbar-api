@@ -8,6 +8,7 @@ use App\Http\Resources\EventPlaceResource;
 use App\Models\EventPlace;
 use App\Models\Address;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EventPlaceController extends Controller
 {
@@ -65,23 +66,27 @@ class EventPlaceController extends Controller
     {
         $data = $request->all();
 
-        $eventPlace = EventPlace::create($data);
+        $eventPlace = DB::transaction(function () use ($data) {
+            $eventPlace = EventPlace::create($data);
 
-        if (!empty($data['address'])) {
-            $address = $data['address'];
-            Address::create([
-               'addressable_id'      => $eventPlace->id,
-               'addressable_type'    => EventPlace::class,
-               'street'             => $address['street'],
-               'district'             => $address['district'],
-               'complement'             => $address['complement'],
-               'city_id'             => $address['city_id'],
-               'state_id'             => $address['state_id'],
-               'number'             => $address['number'],
-               'zip_code'             => $address['zip_code'],
-               'reference'             => $address['reference'],
-            ]);
-        }
+            if (!empty($data['address'])) {
+                $address = $data['address'];
+                Address::create([
+                   'addressable_id'      => $eventPlace->id,
+                   'addressable_type'    => EventPlace::class,
+                   'street'             => $address['street'] ?? null,
+                   'district'             => $address['district'] ?? null,
+                   'complement'             => $address['complement'] ?? null,
+                   'city_id'             => $address['city_id'] ?? null,
+                   'state_id'             => $address['state_id'] ?? null,
+                   'number'             => $address['number'] ?? null,
+                   'zip_code'             => $address['zip_code'] ?? null,
+                   'reference'             => $address['reference'] ?? null,
+                ]);
+            }
+
+            return $eventPlace;
+        });
 
         return response()->json(new EventPlaceResource($eventPlace), 201);
     }
@@ -94,30 +99,33 @@ class EventPlaceController extends Controller
     public function update(UpdateEventPlaceRequest $request, EventPlace $eventPlace)
     {
         $data = $request->all();
-        $eventPlace->update($data);
+        DB::transaction(function () use ($data, $eventPlace) {
+            $eventPlace->update($data);
 
-        if (!empty($data['address']) && !empty($data['address']['street'])) {
-            $address = $data['address'];
-            Address::updateOrCreate(
-                [
-                    'addressable_id'      => $eventPlace->id,
-                    'addressable_type'    => EventPlace::class
-                ], 
-                [
+            if (!empty($data['address']) && !empty($data['address']['street'])) {
+                $address = $data['address'];
+                Address::updateOrCreate(
+                    [
                         'addressable_id'      => $eventPlace->id,
-                        'addressable_type'    => EventPlace::class,
-                        'street'             => $address['street'],
-                        'district'             => $address['district'],
-                        'complement'             => $address['complement'],
-                        'city_id'             => $address['city_id'],
-                        'state_id'             => $address['state_id'],
-                        'number'             => $address['number'],
-                        'zip_code'             => $address['zip_code'],
-                        'reference'             => $address['reference'],
-                ]
-            );        
-        }     
+                        'addressable_type'    => EventPlace::class
+                    ], 
+                    [
+                            'addressable_id'      => $eventPlace->id,
+                            'addressable_type'    => EventPlace::class,
+                            'street'             => $address['street'] ?? null,
+                            'district'             => $address['district'] ?? null,
+                            'complement'             => $address['complement'] ?? null,
+                            'city_id'             => $address['city_id'] ?? null,
+                            'state_id'             => $address['state_id'] ?? null,
+                            'number'             => $address['number'] ?? null,
+                            'zip_code'             => $address['zip_code'] ?? null,
+                            'reference'             => $address['reference'] ?? null,
+                    ]
+                );        
+            }     
         
+        });
+
         return response()->json(new EventPlaceResource($eventPlace), 200);
     }
 

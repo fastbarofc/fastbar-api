@@ -16,15 +16,16 @@ class UpdateSectorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'nullable|string|max:255|unique:sectors,name,' . $this->id
+            'name' => 'sometimes|required|string|max:191|unique:sectors,name,' . $this->id
         ];
     }
 
     public function messages(): array
     {
         return [
+            'name.required' => 'O campo nome é obrigatório.',
             'name.string'   => 'O campo nome deve ser uma string',
-            'name.max'      => 'O campo nome deve ter no máximo 255 caracteres',
+            'name.max'      => 'O campo nome deve ter no máximo 191 caracteres',
             'name.unique'   => 'O nome informado já está em uso'
         ];
     }

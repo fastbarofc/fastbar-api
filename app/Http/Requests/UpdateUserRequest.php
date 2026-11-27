@@ -16,9 +16,9 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         $data = [
-            'name'  => 'filled|string|max:255',
-            'email' => 'filled|email|max:255|unique:users,email,' . $this->id,
-            'active' => 'nullable|boolean',
+            'name'  => 'filled|string|max:191',
+            'email' => 'filled|email|max:191|unique:users,email|max:191,' . $this->id,
+            'active' => 'sometimes|required|boolean',
         ];
 
         if ($this->has('password')) {
@@ -32,10 +32,11 @@ class UpdateUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.max'                            => 'O nome deve ter no máximo 255 caracteres.',
+            'active.required' => 'O campo ativo é obrigatório.',
+            'name.max'                            => 'O nome deve ter no máximo 191 caracteres.',
             'name.filled'                         => 'O nome é obrigatório.',
             'email.email'                         => 'O email deve ser um endereço de email válido.',
-            'email.max'                           => 'O email deve ter no máximo 255 caracteres.',
+            'email.max'                           => 'O email deve ter no máximo 191 caracteres.',
             'email.unique'                        => 'O email informado já está em uso.',
             'email.filled'                        => 'O email é obrigatório.',
             'password.min'                        => 'A senha deve ter no mínimo 8 caracteres.',

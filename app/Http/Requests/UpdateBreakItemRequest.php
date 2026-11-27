@@ -22,9 +22,9 @@ class UpdateBreakItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'string|max:255',
+            'description' => 'string|max:191',
             'unit_id' => 'exists:units,id',
-            'value' => 'numeric',
+            'value' => 'numeric|max:999999.99',
         ];
     }
 
@@ -33,7 +33,7 @@ class UpdateBreakItemRequest extends FormRequest
         return [
             'unit_id.exists' => 'Usuário não encontrado',
             'value.numeric' => 'Valor deve ser numérico',
-            'description.max' => 'Descrição deve ter no máximo 255 caracteres',
+            'description.max' => 'Descrição deve ter no máximo 191 caracteres',
             'description.string' => 'Descrição deve ser uma string',
 
         ];

@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Notifications\UserPassword;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CollaboratorController extends Controller
 {
@@ -90,15 +91,19 @@ class CollaboratorController extends Controller
                         $query->leftJoin('sector_offices', 'sector_offices.id', '=', 'collaborators.sector_office_id');
                         $joins['sector_offices'] = true;
                     }
-                    $query->orderBy("sector_offices.$field", $direction);
+                    if (Schema::hasColumn('sector_offices', $field)) {
+                        $query->orderBy("sector_offices.$field", $direction);
+                    }
                 } elseif ($relation === 'sector') {
                     if (!$joins['sectors']) {
                         $query->leftJoin('sectors', 'sectors.id', '=', 'collaborators.sector_id');
                         $joins['sectors'] = true;
                     }
-                    $query->orderBy("sectors.$field", $direction);
+                    if (Schema::hasColumn('sectors', $field)) {
+                        $query->orderBy("sectors.$field", $direction);
+                    }
                 }
-            } else {
+            } elseif (Schema::hasColumn('collaborators', $sortField)) {
                 $query->orderBy("collaborators.$sortField", $direction);
             }
         }
@@ -172,14 +177,14 @@ class CollaboratorController extends Controller
                 Address::create([
                     'addressable_id'   => $collaborator->id,
                     'addressable_type' => Collaborator::class,
-                    'street'           => $address['street'],
-                    'district'         => $address['district'],
-                    'complement'       => $address['complement'],
-                    'city_id'          => $address['city_id'],
-                    'state_id'         => $address['state_id'],
-                    'number'           => $address['number'],
-                    'zip_code'         => $address['zip_code'],
-                    'reference'        => $address['reference'],
+                    'street'           => $address['street'] ?? null,
+                    'district'         => $address['district'] ?? null,
+                    'complement'       => $address['complement'] ?? null,
+                    'city_id'          => $address['city_id'] ?? null,
+                    'state_id'         => $address['state_id'] ?? null,
+                    'number'           => $address['number'] ?? null,
+                    'zip_code'         => $address['zip_code'] ?? null,
+                    'reference'        => $address['reference'] ?? null,
                 ]);
             }
 
@@ -188,6 +193,8 @@ class CollaboratorController extends Controller
                     $file = FileService::saveImage('collaborators', $request->photo);
                     $collaborator->update(['file_id' => $file->id]);
                 } catch (\Exception $e) {
+                    DB::rollBack();
+
                     return response()->json(['error' => $e->getMessage()], 400);
                 }
             }
@@ -220,11 +227,11 @@ class CollaboratorController extends Controller
             if (!empty($data['goals'])) {
                 foreach ($data['goals'] as $goal) {
                     $collaborator->goals()->updateOrCreate(
-                        ['id' => $goal['id']],
-                        ['type' => $goal['type'],
-                        'start_date' => $goal['start_date'],
-                        'end_date' => $goal['end_date'],
-                        'expected_contracts' => $goal['expected_contracts']
+                        ['id' => $goal['id'] ?? null],
+                        ['type' => $goal['type'] ?? null,
+                        'start_date' => $goal['start_date'] ?? null,
+                        'end_date' => $goal['end_date'] ?? null,
+                        'expected_contracts' => $goal['expected_contracts'] ?? null
                         ]
                     );
                 }
@@ -237,9 +244,9 @@ class CollaboratorController extends Controller
 
             $collaborator->load('companies');
             return response()->json(new CollaboratorResource($collaborator), 201);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
+            throw $e;
         }
     }
 
@@ -271,6 +278,8 @@ class CollaboratorController extends Controller
                         $file = FileService::saveImage('collaborators', $request->photo);
                         $collaborator->update(['file_id' => $file->id]);
                     } catch (\Exception $e) {
+                        DB::rollBack();
+
                         return response()->json(['error' => $e->getMessage()], 400);
                     }
                 }
@@ -354,14 +363,14 @@ class CollaboratorController extends Controller
                     [
                         'addressable_id' => $collaborator->id,
                         'addressable_type' => Collaborator::class,
-                        'street' => $address['street'],
-                        'district' => $address['district'],
-                        'complement' => $address['complement'],
-                        'city_id' => $address['city_id'],
-                        'state_id' => $address['state_id'],
-                        'number' => $address['number'],
-                        'zip_code' => $address['zip_code'],
-                        'reference' => $address['reference'],
+                        'street' => $address['street'] ?? null,
+                        'district' => $address['district'] ?? null,
+                        'complement' => $address['complement'] ?? null,
+                        'city_id' => $address['city_id'] ?? null,
+                        'state_id' => $address['state_id'] ?? null,
+                        'number' => $address['number'] ?? null,
+                        'zip_code' => $address['zip_code'] ?? null,
+                        'reference' => $address['reference'] ?? null,
                     ]
                 );
             }
@@ -416,11 +425,11 @@ class CollaboratorController extends Controller
             if ($request->has('goals')) {
                 foreach ($request->goals as $goalData) {
                     $collaborator->goals()->updateOrCreate(
-                        ['id' => $goalData['id']],
-                        ['type' => $goalData['type'],
-                        'start_date' => $goalData['start_date'],
-                        'end_date' => $goalData['end_date'],
-                        'expected_contracts' => $goalData['expected_contracts']
+                        ['id' => $goalData['id'] ?? null],
+                        ['type' => $goalData['type'] ?? null,
+                        'start_date' => $goalData['start_date'] ?? null,
+                        'end_date' => $goalData['end_date'] ?? null,
+                        'expected_contracts' => $goalData['expected_contracts'] ?? null
                         ]
                     );
                 }
@@ -437,9 +446,9 @@ class CollaboratorController extends Controller
             DB::commit();
             $collaborator->load('companies');
             return response()->json(new CollaboratorResource($collaborator), 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
+            throw $e;
         }
     }
 
@@ -464,9 +473,9 @@ class CollaboratorController extends Controller
             $qualificationsData[$qualification->id] = ['points' => 0];
         }
 
-        foreach ($data['qualifications'] as $qualification) {
+        foreach ($data['qualifications'] ?? [] as $qualification) {
             if (!empty($qualification['id'])) {
-                $qualificationsData[$qualification['id']] = ['points' => $qualification['points']];
+                $qualificationsData[$qualification['id']] = ['points' => $qualification['points'] ?? 0];
             }
         }
 
@@ -475,6 +484,15 @@ class CollaboratorController extends Controller
 
     public function updateQualifications(Request $request, Collaborator $collaborator)
     {
+        $request->validate([
+            'qualifications' => 'nullable|array',
+            'qualifications.*.id' => 'required|integer|exists:qualifications,id',
+            'qualifications.*.points' => 'required|integer|min:0|max:2147483647',
+        ], [
+            'qualifications.*.id' => 'Uma das qualificações informadas não existe.',
+            'qualifications.*.points' => 'Informe uma pontuação válida em todas as qualificações.',
+        ]);
+
         if (!empty($request->qualifications)) {
             foreach ($request->qualifications as $qualification) {
                 $collaborator->qualifications()->syncWithoutDetaching([$qualification['id'] => ['points' => $qualification['points']]]);

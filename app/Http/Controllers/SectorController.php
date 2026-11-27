@@ -89,8 +89,6 @@ class SectorController extends Controller
 
     public function sectorOffices(Request $request, Sector $sector)
     {
-        $this->authorize('view', $sector);
-
         $perPage = $request->input('per_page', 10);
 
         $query = Sector::query();

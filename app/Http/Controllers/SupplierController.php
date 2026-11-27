@@ -14,6 +14,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use App\Models\BankDetail;
 use App\Models\PixKey;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 
 class SupplierController extends Controller
 {
@@ -68,52 +70,17 @@ class SupplierController extends Controller
         ], 200);
     }
 
-    public function store(Request $request)
+    public function store(StoreSupplierRequest $request)
     {
-        $data = $request->all();
+        $data = $request->validated();
 
-        $supplier = Supplier::create($data);
+        $supplier = DB::transaction(function () use ($data) {
+            $supplier = Supplier::create($data);
+            $this->saveRelations($supplier, $data);
 
-        if (!empty($data['address']) && !empty($data['address']['street'])) {
-            $address = $data['address'];
-            Address::create([
-                'addressable_id' => $supplier->id,
-                'addressable_type' => Supplier::class,
-                'street' => $address['street'],
-                'district' => $address['district'],
-                'complement' => $address['complement'],
-                'city_id' => $address['city_id'],
-                'state_id' => $address['state_id'],
-                'number' => $address['number'],
-                'zip_code' => $address['zip_code'],
-                'reference' => $address['reference'],
-            ]);
-        }
+            return $supplier;
+        });
 
-        if (!empty($data['bank_details'])) {
-            foreach ($data['bank_details'] as $bankData) {
-                BankDetail::create([
-                    'bank_detailable_id' => $supplier->id,
-                    'bank_detailable_type' => Supplier::class,
-                    'bank_name' => $bankData['bank_name'],
-                    'agency' => $bankData['agency'],
-                    'account' => $bankData['account'],
-                    'account_holder' => $bankData['account_holder'],
-                    'status' => $bankData['status'],
-                ]);
-            }
-        }
-        
-        if (!empty($data['pix_keys'])) {
-            foreach ($data['pix_keys'] as $pixKey) {
-                PixKey::create([
-                    'pix_keyable_id' => $supplier->id,
-                    'pix_keyable_type' => Supplier::class,
-                    'type' => $pixKey['type'],
-                    'key' => $pixKey['key']
-                ]);
-            }
-        }
         return response()->json(new SupplierResource($supplier), 201);
     }
 
@@ -122,89 +89,50 @@ class SupplierController extends Controller
         return response()->json(new SupplierResource($supplier), 200);
     }
 
-    public function update(Request $request, Supplier $supplier)
+    public function update(UpdateSupplierRequest $request, Supplier $supplier)
     {
-        $data = $request->all();
-        $supplier->update($data);
+        $data = $request->validated();
 
-        if (!empty($data['address'])) {
-            $address = $data['address'];
+        DB::transaction(function () use ($supplier, $data) {
+            $supplier->update($data);
+            $this->saveRelations($supplier, $data);
+
+            if (!empty($data['removed_bank_detail_ids'])) {
+                $supplier->bankDetails()->whereIn('id', $data['removed_bank_detail_ids'])->delete();
+            }
+
+            if (!empty($data['removed_pix_key_ids'])) {
+                $supplier->pixKeys()->whereIn('id', $data['removed_pix_key_ids'])->delete();
+            }
+        });
+
+        return response()->json(new SupplierResource($supplier), 200);
+    }
+
+    private function saveRelations(Supplier $supplier, array $data): void
+    {
+        $address = $data['address'] ?? null;
+
+        if (!empty($address['street'])) {
             Address::updateOrCreate(
-                [
-                    'addressable_id' => $supplier->id,
-                    'addressable_type' => Supplier::class,
-                ],
-                [
-                    'street' => $address['street'],
-                    'district' => $address['district'],
-                    'complement' => $address['complement'],
-                    'city_id' => $address['city_id'],
-                    'state_id' => $address['state_id'],
-                    'number' => $address['number'],
-                    'zip_code' => $address['zip_code'],
-                    'reference' => $address['reference'],
-                ]
+                ['addressable_id' => $supplier->id, 'addressable_type' => Supplier::class],
+                Arr::only($address, ['street', 'district', 'complement', 'city_id', 'state_id', 'number', 'zip_code', 'reference'])
             );
         }
-        if (!empty($data['bank_details'])) {
-            foreach ($data['bank_details'] as $bankData) {
-                if (isset($bankData['id'])) {
-                    BankDetail::updateOrCreate(
-                        ['id' => $bankData['id'], 'bank_detailable_id' => $supplier->id, 'bank_detailable_type' => Supplier::class],
-                        [
-                            'bank_name' => $bankData['bank_name'],
-                            'agency' => $bankData['agency'],
-                            'account' => $bankData['account'],
-                            'account_holder' => $bankData['account_holder'],
-                            'status' => $bankData['status'],
-                        ]
-                    );
-                } else {
-                    BankDetail::create([
-                        'bank_detailable_id' => $supplier->id,
-                        'bank_detailable_type' => Supplier::class,
-                        'bank_name' => $bankData['bank_name'],
-                        'agency' => $bankData['agency'],
-                        'account' => $bankData['account'],
-                        'account_holder' => $bankData['account_holder'],
-                        'status' => $bankData['status'],
-                    ]);
-                }
-            }
+
+        foreach ($data['bank_details'] ?? [] as $bankData) {
+            $attributes = Arr::only($bankData, ['bank_name', 'agency', 'account', 'account_holder', 'status']);
+            $existing = !empty($bankData['id']) ? $supplier->bankDetails()->find($bankData['id']) : null;
+
+            $existing ? $existing->update($attributes) : $supplier->bankDetails()->create($attributes);
         }
-        
-        if (!empty($data['removed_bank_detail_ids'])) {
-            BankDetail::whereIn('id', $data['removed_bank_detail_ids'])->delete();
+
+        foreach ($data['pix_keys'] ?? [] as $pixData) {
+            $attributes = Arr::only($pixData, ['type', 'key']);
+            $existing = !empty($pixData['id']) ? $supplier->pixKeys()->find($pixData['id']) : null;
+
+            $existing ? $existing->update($attributes) : $supplier->pixKeys()->create($attributes);
         }
-        
-        if (!empty($data['pix_keys'])) {
-            foreach ($data['pix_keys'] as $pixKey) {
-                if (isset($pixKey['id'])) {
-                 
-                    PixKey::updateOrCreate(
-                        ['id' => $pixKey['id']],
-                        [
-                            'type' => $pixKey['type'],
-                            'key' => $pixKey['key'],
-                            'pix_keyable_id' => $supplier->id,
-                            'pix_keyable_type' => Supplier::class,
-                        ]
-                    );
-                } else {
-                    PixKey::create([
-                        'type' => $pixKey['type'],
-                        'key' => $pixKey['key'],
-                        'pix_keyable_id' => $supplier->id,
-                        'pix_keyable_type' => Supplier::class,
-                    ]);
-                }
-            }
-        }
-        
-        if (!empty($data['removed_pix_key_ids'])) {
-            PixKey::whereIn('id', $data['removed_pix_key_ids'])->delete();
-        }
-        return response()->json(new SupplierResource($supplier), 200);
     }
 
     public function destroy(Supplier $supplier)

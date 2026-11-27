@@ -17,7 +17,7 @@ class StoreSectorOfficeRequest extends FormRequest
     {
         return [
             'sector_id' => 'required|exists:sectors,id',
-            'name'      => 'required|string|max:255|unique:sector_offices',
+            'name'      => 'required|string|max:191|unique:sector_offices',
         ];
     }
 
@@ -28,7 +28,7 @@ class StoreSectorOfficeRequest extends FormRequest
             'sector_id.exists'   => 'O setor informado não existe.',
             'name.required'      => 'O campo nome é obrigatório.',
             'name.string'        => 'O campo nome deve ser um texto.',
-            'name.max'           => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'           => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'        => 'O nome informado já está em uso.',
         ];
     }

@@ -22,7 +22,7 @@ class UpdatePaymentMethodRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'nullable|string|max:255|unique:payment_methods,name,' . $this->payment_method->id,
+            'name' => 'sometimes|required|string|max:191|unique:payment_methods,name,' . $this->payment_method->id,
         ];
     }
 }

@@ -5,13 +5,13 @@ namespace App\Http\Requests;
 use App\Rules\Cnpj;
 use App\Rules\Cpf;
 use App\Traits\ValidatesClientRepresentatives;
+use App\Traits\ValidatesOptionalAddress;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class UpdateClientRequest extends FormRequest
 {
-    use ValidatesClientRepresentatives;
+    use ValidatesOptionalAddress, ValidatesClientRepresentatives;
 
     protected $stopOnFirstFailure = true;
 
@@ -62,28 +62,25 @@ class UpdateClientRequest extends FormRequest
                 'email',
                 Rule::unique('clients')->whereNull('deleted_at')->ignore($clientId),
             ],
-            'phone_1'      => 'nullable|string|max:20',
+            'phone_1'      => 'sometimes|required|string|max:20',
             'phone_2'      => 'nullable|string|max:20',
-            'name'         => 'nullable|string|max:255',
-            'nickname'     => 'nullable|string|max:255',
-            'birth_date'   => 'nullable|date',
+            'name'         => 'nullable|string|max:191',
+            'nickname'     => 'nullable|string|max:191',
+            'birth_date'   => 'nullable|date_format:Y-m-d',
             'cpf'          => ['nullable', 'string', new Cpf],
             'rg'           => 'nullable|string|max:20',
             'cnpj'         => ['nullable', 'string', new Cnpj],
-            'ie'           => 'nullable|string|max:255',
-            'im'           => 'nullable|string|max:255',
+            'ie'           => 'nullable|string|max:191',
+            'im'           => 'nullable|string|max:191',
         ] + $this->representativeRules($this->input('type') === 'pj', $client);
 
-        if (!empty($this->request->all()['address']) && !empty($data['address']['street'])) {
-            $this->validateAddress($this->request->all()['address']);
-        }
-
-        return $data;
+        return array_merge($data, $this->optionalAddressRules());
     }
 
     public function messages(): array
     {
-        return [
+        return array_merge($this->optionalAddressMessages(), [
+            'phone_1.required' => 'O campo telefone 1 é obrigatório.',
             'type.string'             => 'O campo tipo deve ser uma string.',
             'type.in'                 => 'O tipo informado de ser PF ou PJ.',
             'email.email'             => 'O campo e-mail deve ser um e-mail válido.',
@@ -93,43 +90,18 @@ class UpdateClientRequest extends FormRequest
             'phone_2.string'          => 'O campo telefone 2 deve ser uma string.',
             'phone_2.max'             => 'O campo telefone 2 deve ter no máximo 20 caracteres.',
             'name.string'             => 'O campo nome deve ser uma string.',
-            'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'                => 'O campo nome deve ter no máximo 191 caracteres.',
             'nickname.string'         => 'O campo apelido deve ser uma string.',
-            'nickname.max'            => 'O campo apelido deve ter no máximo 255 caracteres.',
+            'nickname.max'            => 'O campo apelido deve ter no máximo 191 caracteres.',
             'birth_date.date'         => 'O campo data de nascimento deve ser uma data válida.',
             'cpf.string'              => 'O campo CPF deve ser uma string.',
             'rg.string'               => 'O campo RG deve ser uma string.',
             'rg.max'                  => 'O campo RG deve ter no máximo 20 caracteres.',
             'cnpj.string'             => 'O campo CNPJ deve ser uma string.',
             'ie.string'               => 'O campo inscrição estadual deve ser uma string.',
-            'ie.max'                  => 'O campo inscrição estadual deve ter no máximo 255 caracteres.',
+            'ie.max'                  => 'O campo inscrição estadual deve ter no máximo 191 caracteres.',
             'im.string'               => 'O campo inscrição municipal deve ser uma string.',
-            'im.max'                  => 'O campo inscrição municipal deve ter no máximo 255 caracteres.',
-        ] + $this->representativeMessages();
-    }
-
-    public function validateAddress(array $data) {
-        $validator = Validator::make($data, [
-            'street'     => ['nullable', 'string'],
-            'district'   => ['nullable', 'string'],
-            'complement' => ['nullable', 'string'],
-            'city_id'    => ['nullable', 'exists:cities,id'],
-            'state_id'   => ['nullable', 'exists:states,id'],
-            'number'     => ['nullable', 'string', 'max:50'],
-            'zip_code'   => ['nullable', 'formato_cep'],
-            'reference'  => ['nullable', 'nullable', 'string'],
-        ],[
-            'street.string'        => 'O campo rua deve ser uma string.',
-            'district.string'      => 'O campo bairro deve ser uma string.',
-            'complement.string'    => 'O campo complemento deve ser uma string.',
-            'city_id.exists'       => 'O campo Cidade deve ser uma Cidade valida.',
-            'state_id.exists'      => 'O campo Estado deve ser um Estado valido.',
-            'number.string'        => 'O campo número deve conter apenas letras e números',
-            'number.max'           => 'O campo número não pode ter mais de 50 caracteres',
-            'zip_code.formato_cep' => 'O campo CEP de ser um CEP valido.',
-            'referencia.string'    => 'O campo referencia deve ser uma string.',
-        ]);
-
-        $validator->validate();
+            'im.max'                  => 'O campo inscrição municipal deve ter no máximo 191 caracteres.',
+        ]) + $this->representativeMessages();
     }
 }

@@ -20,9 +20,10 @@ class UpdateFinancialOperationRequest extends FormRequest
             'code' => [
                 'sometimes',
                 'string',
+                'max:191',
                 Rule::unique('financial_operations', 'code')->whereNull('deleted_at')->ignore($this->route('financial_operation')),
             ],
-            'description' => 'sometimes|string',
+            'description' => 'sometimes|string|max:191',
             'account' => 'sometimes|in:analytic,synthetic',
             'nature' => 'sometimes|in:revenue,expense',
             'type' => 'sometimes|in:fixed,variable',

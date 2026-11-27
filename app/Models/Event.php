@@ -100,7 +100,6 @@ class Event extends Model implements AuditableInterface
         'event_place_id',
         'date',
         'time',
-        'email',
         'id',
         'old_system_id'
     ];
@@ -112,7 +111,6 @@ class Event extends Model implements AuditableInterface
         'client_id',
         'collaborator_id',
         'event_type_id',
-        'email',
         'date',
         'time',
         'event_status_id',

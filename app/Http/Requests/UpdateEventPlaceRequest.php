@@ -32,17 +32,17 @@ class UpdateEventPlaceRequest extends FormRequest
 
         $data = [
             'name'       => [
-                'nullable', 
+                'sometimes', 'required', 
                 'string',
-                'max:255',
+                'max:191',
                 Rule::unique('event_places', 'name')->ignore($eventPlaceId),
             ],
-            'nullable|string|max:255|unique:event_places,name,' . $this->route('event_place')->id,
-            'responsible'       => 'sometimes|required|string|max:255',
-            'description'       => 'nullable|string|max:255',
+            'nullable|string|max:191|unique:event_places,name,' . $this->route('event_place')->id,
+            'responsible'       => 'sometimes|required|string|max:191',
+            'description'       => 'nullable|string|max:191',
             'phone_1'           => 'sometimes|nullable|required_without:phone_2|string|min:10|max:20',
             'phone_2'           => 'sometimes|nullable|required_without:phone_1|string|min:10|max:20',
-            'email'             => 'nullable|email',
+            'email'             => 'nullable|email|max:191',
             'belongs_parthenon' => 'boolean',
         ];
 
@@ -56,14 +56,15 @@ class UpdateEventPlaceRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.required' => 'O campo nome é obrigatório.',
             'name.string'             => 'O campo nome deve ser uma string.',
-            'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'                => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'             => 'O nome informado já está em uso.',
             'responsible.required'    => 'O campo responsável é obrigatório.',
             'responsible.string'      => 'O campo nome do responsável deve ser uma string.',
-            'responsible.max'         => 'O campo nome do responsável deve ter no máximo 255 caracteres.',
+            'responsible.max'         => 'O campo nome do responsável deve ter no máximo 191 caracteres.',
             'description.string'      => 'O campo descrição deve ser uma string.',
-            'description.max'         => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'         => 'O campo descrição deve ter no máximo 191 caracteres.',
             'phone_1.required_without' => 'Informe o celular ou o telefone.',
             'phone_2.required_without' => 'Informe o celular ou o telefone.',
             'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
@@ -80,9 +81,9 @@ class UpdateEventPlaceRequest extends FormRequest
 
     public function validateAddress(array $data) {
         $validator = Validator::make($data, [
-            'street'     => ['required', 'string'],
-            'district'   => ['required', 'string'],
-            'complement' => ['nullable', 'string'],
+            'street'     => ['required', 'string', 'max:191'],
+            'district'   => ['required', 'string', 'max:191'],
+            'complement' => ['nullable', 'string', 'max:191'],
             'city_id'    => ['required', 'exists:cities,id'],
             'state_id'   => ['required', 'exists:states,id'],
             'number'     => ['required', 'string', 'max:50'],

@@ -20,9 +20,10 @@ class StoreFinancialOperationRequest extends FormRequest
             'code' => [
                 'required',
                 'string',
+                'max:191',
                 Rule::unique('financial_operations')->whereNull('deleted_at'),
             ],
-            'description' => 'required|string',
+            'description' => 'required|string|max:191',
             'account' => 'required|in:analytic,synthetic',
             'nature' => 'required|in:revenue,expense',
             'type' => 'required|in:fixed,variable',

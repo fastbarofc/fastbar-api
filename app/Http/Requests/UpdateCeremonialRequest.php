@@ -16,9 +16,9 @@ class UpdateCeremonialRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => 'nullable|string|max:255|unique:ceremonials,name,' . $this->route('ceremonial')->id,
-            'responsible' => 'nullable|string|max:255',
-            'email'       => 'nullable|email|unique:ceremonials,email,' . $this->route('ceremonial')->id,
+            'name'        => 'sometimes|required|string|max:191|unique:ceremonials,name,' . $this->route('ceremonial')->id,
+            'responsible' => 'nullable|string|max:191',
+            'email'       => 'nullable|email|unique:ceremonials,email|max:191,' . $this->route('ceremonial')->id,
             'phone_1'     => 'nullable|string|max:20',
             'phone_2'     => 'nullable|string|max:20',
         ];
@@ -27,11 +27,12 @@ class UpdateCeremonialRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.required' => 'O campo nome é obrigatório.',
             'name.string'             => 'O campo nome deve ser uma string.',
-            'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'                => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'             => 'Esse nome já está sendo utiliado',
             'responsible.string'      => 'O campo responsável deve ser uma string.',
-            'responsible.max'         => 'O campo responsável deve ter no máximo 255 caracteres.',
+            'responsible.max'         => 'O campo responsável deve ter no máximo 191 caracteres.',
             'email.email'             => 'O campo e-mail deve ser um e-mail válido.',
             'email.unique'            => 'Esse E-mail já está cadastrado.',
             'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',

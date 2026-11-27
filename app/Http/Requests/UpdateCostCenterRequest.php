@@ -21,9 +21,10 @@ class UpdateCostCenterRequest extends FormRequest
             'code' => [
                 'sometimes',
                 'string',
+                'max:191',
                 Rule::unique('cost_centers', 'code')->whereNull('deleted_at')->ignore($this->route('cost_center')),
             ],
-            'description' => 'sometimes|string',
+            'description' => 'sometimes|string|max:191',
             'account' => 'sometimes|in:analytic,synthetic',
         ];
     }

@@ -6,17 +6,19 @@ use App\Models\ContractTemplate;
 use App\Models\Event;
 use App\Models\Material;
 use App\Rules\DateNotBlocked;
+use App\Traits\ValidatesEventPayload;
 use App\Traits\ValidatesEventPlaceConflicts;
 use App\Traits\ValidatesEventRegistrations;
 use App\Traits\ValidatesEventStatusReason;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Validator as ValidationValidator;
 
 class StoreEventRequest extends FormRequest
 {
-    use ValidatesEventPlaceConflicts, ValidatesEventRegistrations, ValidatesEventStatusReason;
+    use ValidatesEventPayload, ValidatesEventPlaceConflicts, ValidatesEventRegistrations, ValidatesEventStatusReason;
 
     protected $stopOnFirstFailure = true;
 
@@ -61,19 +63,22 @@ class StoreEventRequest extends FormRequest
             'old_system_id' => 'nullable|integer|min:1',
             'post_event_consumption_report' => 'nullable|string',
             'post_event_consumption_report_file_id' => 'nullable|exists:files,id',
-            'post_event_consumption_report_file_name' => 'nullable|string|max:255',
+            'post_event_consumption_report_file_name' => 'nullable|string|max:120',
             'post_event_consumption_report_remove' => 'nullable|boolean',
             'status_reason' => 'nullable|string|max:1000',
             'company_ids' => 'nullable|array',
             'company_ids.*' => 'exists:companies,id',
         ];
 
-        return $data;
+        return array_merge($data, $this->eventPayloadRules(), [
+            'event_status_id' => ['nullable', 'integer', 'exists:event_statuses,id', Rule::requiredIf(fn () => !$this->boolean('is_draft'))],
+        ]);
     }
 
     public function messages(): array
     {
-        return [
+        return array_merge($this->eventPayloadMessages(), [
+            'event_status_id.required' => 'Informe o status do evento.',
             'name.required'             => 'O campo nome é obrigatório',
             'name.string'               => 'O campo nome deve ser uma string',
             'name.max'                  => 'O campo nome deve ter no máximo 191 caracteres.',
@@ -124,12 +129,17 @@ class StoreEventRequest extends FormRequest
             'cup_type.in' => 'O tipo de copo selecionado é inválido',
             'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
             'status_reason.max' => 'O motivo deve ter no máximo 1000 caracteres.',
-        ];
+        ]);
     }
 
     public function withValidator(ValidationValidator $validator): void
     {
         $validator->after(function (ValidationValidator $validator) {
+            // As checagens abaixo leem os campos crus e quebram (500) com valor já reprovado nas regras.
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
             $this->validateMaterials($validator);
             $this->validateRegistrationsForStatus($validator);
             $this->validateStatusReason($validator);

@@ -16,7 +16,7 @@ class StoreUnitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'required|string|max:255|unique:units',
+            'description' => 'required|string|max:191|unique:units',
         ];
     }
 
@@ -25,7 +25,7 @@ class StoreUnitRequest extends FormRequest
         return [
             'description.required'        => 'O campo descrição é obrigatório.',
             'description.string'          => 'O campo descrição deve ser uma string.',
-            'description.max'             => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'             => 'O campo descrição deve ter no máximo 191 caracteres.',
             'description.unique'          => 'Esse descrição já está sendo utiliada',
         ];
     }

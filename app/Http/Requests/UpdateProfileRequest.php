@@ -22,7 +22,7 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|unique:users,email,' . auth()->id(),
+            'email' => 'required|email|unique:users,email|max:191,' . auth()->id(),
         ];
     }
 

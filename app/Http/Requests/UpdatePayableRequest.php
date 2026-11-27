@@ -22,12 +22,12 @@ class UpdatePayableRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'sometimes|string',
-            'amount' => 'sometimes|numeric|min:0',
-            'due_date' => 'sometimes|date',
+            'description' => 'sometimes|string|max:191',
+            'amount' => 'sometimes|numeric|min:0|max:99999999.99',
+            'due_date' => 'sometimes|date_format:Y-m-d',
             'financial_operation_id' => 'sometimes|exists:financial_operations,id',
             'payableable_id' => 'sometimes|integer',
-            'payableable_type' => 'sometimes|string',
+            'payableable_type' => 'sometimes|string|max:191',
         ];
     }
 

@@ -16,8 +16,8 @@ class StoreMaterialRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'required|string|max:255|unique:materials',
-            'quantity'      => 'required|numeric|min:0',
+            'description' => 'required|string|max:191|unique:materials',
+            'quantity'      => 'required|numeric|min:0|max:2147483647',
         ];
     }
 
@@ -26,7 +26,7 @@ class StoreMaterialRequest extends FormRequest
         return [
             'description.required'        => 'O campo descrição é obrigatório.',
             'description.string'          => 'O campo descrição deve ser uma string.',
-            'description.max'             => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'             => 'O campo descrição deve ter no máximo 191 caracteres.',
             'description.unique'          => 'Esse descrição já está sendo utiliada',
             'quantity.required'        => 'O campo quantidade é obrigatório.',
             'quantity.numeric'          => 'O campo quantidade deve ser conter apenas números.',

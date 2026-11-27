@@ -8,6 +8,7 @@ use App\Http\Resources\FinancialOperationResource;
 use App\Models\FinancialOperation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class FinancialOperationController extends Controller
 {
@@ -41,7 +42,9 @@ class FinancialOperationController extends Controller
                         }
                     } else {
                         $operator = $field == 'description' ? 'like' : '=';
-                        $query->where($field, $operator, $operator == 'like' ? "%$value%" : $value);
+                        if (Schema::hasColumn('financial_operations', $field)) {
+                            $query->where($field, $operator, $operator == 'like' ? "%$value%" : $value);
+                        }
                     }
                 }
             }
@@ -50,7 +53,9 @@ class FinancialOperationController extends Controller
         if ($request->input('order_by')) {
             $sortableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderBy($sortableField, $direction);
+            if (Schema::hasColumn('financial_operations', $sortableField)) {
+                $query->orderBy($sortableField, $direction);
+            }
         }
 
         $financialOperations = $query->paginate($perPage);

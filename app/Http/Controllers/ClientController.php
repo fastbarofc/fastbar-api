@@ -306,7 +306,7 @@ class ClientController extends Controller
             $sortField = $request->input('order_by');
             $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
     
-            if (str_contains($sortField, '.')) {
+            if (str_contains($sortField, '.') && Client::isFieldSortable($sortField)) {
                 [$relation, $field] = explode('.', $sortField);
                 $query->whereHas($relation)->with($relation)->orderByRelation($relation, $field, $direction);
             } else {

@@ -16,10 +16,18 @@ class UpdateProductRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        // products.value é NOT NULL com default 0: o form manda vazio quando não há preço.
+        if ($this->exists('value') && $this->input('value') === null) {
+            $this->merge(['value' => 0]);
+        }
+    }
+
     public function rules(): array
     {
         return [
-            'name'                => 'nullable|string|max:255|unique:products,name,' . $this->route('product')->id,
+            'name'                => 'sometimes|required|string|max:191|unique:products,name,' . $this->route('product')->id,
             'product_group_id'    => 'nullable|numeric|exists:product_groups,id',
             'product_subgroup_id' => [
                 Rule::requiredIf(function () {
@@ -31,18 +39,18 @@ class UpdateProductRequest extends FormRequest
                 'numeric',
                 Rule::exists('product_subgroups', 'id')->where('product_group_id', $this->input('product_group_id')),
             ],
-            'barcode'             => 'nullable|string|max:255',
+            'barcode'             => 'nullable|string|max:191',
             'unit_id'             => 'nullable|numeric|exists:units,id',
-            'weight'              => 'nullable|numeric',
+            'weight'              => 'nullable|numeric|max:999999.99',
             'volume'              => 'nullable|numeric|min:0|max:9999999',
             'value'               => 'nullable|numeric|min:0|max:9999999',
-            'supplier'            => 'nullable|string|max:255',
+            'supplier'            => 'nullable|string|max:191',
             'marketable'          => 'nullable|boolean',
             'consumption_per_guest' => 'nullable|numeric|min:0|max:99999',
             'display_checklist'   => 'nullable|boolean',
             'own_production'      => 'nullable|boolean',
             'recipe_yield'        => 'nullable|numeric|max:999999',
-            'composition_item'    => 'nullable|boolean',
+            'composition_item'    => 'sometimes|required|boolean',
             'composition'              => 'nullable|array',
             'composition.*.product_id' => [
                 'required',
@@ -58,8 +66,10 @@ class UpdateProductRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'composition_item.required' => 'O campo item de composição é obrigatório.',
+            'name.required' => 'O campo nome é obrigatório.',
             'name.string'                      => 'O campo nome deve ser uma string.',
-            'name.max'                         => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'                         => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'                      => 'O nome informado já está em uso.',
             'product_group_id.numeric'         => 'O campo grupo deve ser numérico.',
             'product_group_id.exists'          => 'O grupo informado não existe.',
@@ -67,7 +77,7 @@ class UpdateProductRequest extends FormRequest
             'product_subgroup_id.numeric'      => 'O campo subgrupo deve ser numérico.',
             'product_subgroup_id.exists'       => 'O subgrupo informado não pertence ao grupo selecionado.',
             'barcode.string'              => 'O campo código de barra deve ser uma string.',
-            'barcode.max'                 => 'O campo código de barra deve ter no máximo 255 caracteres.',
+            'barcode.max'                 => 'O campo código de barra deve ter no máximo 191 caracteres.',
             'unit_id.numeric'             => 'O campo ID da unidade deve conter apenas números.',
             'unit_id.exists'              => 'O campo ID da unidade deve ser uma unidade válida',
             'weight.numeric'              => 'O campo peso deve ser uma string.',
@@ -78,7 +88,7 @@ class UpdateProductRequest extends FormRequest
             'value.min'                   => 'O campo valor não pode ser negativo',
             'value.max'                   => 'O campo valor não pode ser superior a 9.999.999.',
             'supplier.string'             => 'O campo fornecedor deve ser uma string.',
-            'supplier.max'                => 'O campo fornecedor deve ter no máximo 255 caracteres.',
+            'supplier.max'                => 'O campo fornecedor deve ter no máximo 191 caracteres.',
             'consumption_per_guest.numeric' => 'O campo consumo por convidado deve conter apenas números.',
             'consumption_per_guest.min'     => 'O campo consumo por convidado não pode ser negativo.',
             'consumption_per_guest.max'     => 'O campo consumo por convidado não pode ser superior a 99.999.',

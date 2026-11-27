@@ -22,9 +22,9 @@ class StoreBreakItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'required|string|max:255',
+            'description' => 'required|string|max:191',
             'unit_id' => 'required|exists:units,id',
-            'value' => 'required|numeric',
+            'value' => 'required|numeric|max:999999.99',
         ];
     }
 
@@ -36,7 +36,7 @@ class StoreBreakItemRequest extends FormRequest
             'description.required' => 'Descrição é obrigatória',
             'value.required' => 'Valor é obrigatório',
             'value.numeric' => 'Valor deve ser numérico',
-            'description.max' => 'Descrição deve ter no máximo 255 caracteres',
+            'description.max' => 'Descrição deve ter no máximo 191 caracteres',
             'description.string' => 'Descrição deve ser uma string',
             'description.required' => 'Descrição é obrigatória',
 

@@ -20,7 +20,7 @@ class UpdateBlockedDateRequest extends FormRequest
         $blockedDate = $this->route('blocked_date'); 
         return [
             'date'        => ['bail', 'nullable', 'date', Rule::unique('blocked_dates', 'date')->ignore($blockedDate)->whereNull('deleted_at')],
-            'description' => 'nullable|string|max:255'
+            'description' => 'nullable|string|max:191'
         ];
     }
 
@@ -30,7 +30,7 @@ class UpdateBlockedDateRequest extends FormRequest
             'date.date'          => 'O campo data deve ser uma data válida.',
             'date.unique'        => 'Já existe uma data bloqueada com essa data.',
             'description.string' => 'O campo descrição deve ser uma string.',
-            'description.max'    => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'    => 'O campo descrição deve ter no máximo 191 caracteres.',
         ];
     }
 }

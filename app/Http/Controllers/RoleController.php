@@ -61,7 +61,7 @@ class RoleController extends Controller
 
     public function store(StoreRoleRequest $request)
     {
-        $data = $request->all();
+        $data = $request->validated();
         $data['slug'] = slug($data['name']);
         $role = Role::create($data);
         return response()->json(new RoleResource($role), 201);
@@ -69,8 +69,10 @@ class RoleController extends Controller
 
     public function update(UpdateRoleRequest $request, Role $role)
     {
-        $data = $request->all();
-        $data['slug'] = slug($data['name']);
+        $data = $request->validated();
+        if (isset($data['name'])) {
+            $data['slug'] = slug($data['name']);
+        }
         $role->update($data);
         return response()->json(new RoleResource($role), 200);
     }

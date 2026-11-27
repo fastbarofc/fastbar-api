@@ -16,15 +16,18 @@ class UpdateEventNoteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'text' => 'nullable|string',
-            'event_id' => 'nullable|numeric|exists:events,id',
-            'checklist' => 'nullable|boolean',
+            'text' => 'sometimes|required|string',
+            'event_id' => 'sometimes|required|numeric|exists:events,id',
+            'checklist' => 'sometimes|required|boolean',
         ];
     }
 
     public function messages(): array
     {
         return [
+            'checklist.required' => 'O campo checklist é obrigatório.',
+            'event_id.required' => 'O campo evento é obrigatório.',
+            'text.required' => 'O campo texto é obrigatório.',
             'text.string' => 'O campo texto deve ser uma string.',
             'event_id.numeric' => 'O campo ID do evento deve conter apenas números.',
             'event_id.exists' => 'O campo ID do evento deve ser um evento válido',

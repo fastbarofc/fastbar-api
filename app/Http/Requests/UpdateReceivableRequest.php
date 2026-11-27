@@ -23,11 +23,11 @@ class UpdateReceivableRequest extends FormRequest
     {
         return [
             'description' => 'sometimes|string',
-            'amount' => 'sometimes|numeric|min:0',
-            'due_date' => 'sometimes|date',
+            'amount' => 'sometimes|numeric|min:0|max:99999999.99',
+            'due_date' => 'sometimes|date_format:Y-m-d',
             'payment_method_id' => 'sometimes|exists:payment_methods,id',
             'receivableable_id' => 'sometimes|integer',
-            'receivableable_type' => 'sometimes|string',
+            'receivableable_type' => 'sometimes|string|max:191',
         ];
     }
 

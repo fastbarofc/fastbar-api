@@ -14,7 +14,7 @@ class StoreProductGroupRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'required|string|max:255',
+            'description' => 'required|string|max:191',
         ];
     }
 
@@ -23,7 +23,7 @@ class StoreProductGroupRequest extends FormRequest
         return [
             'description.required' => 'A descrição é obrigatória.',
             'description.string'   => 'A descrição deve ser um texto.',
-            'description.max'      => 'A descrição deve ter no máximo 255 caracteres.',
+            'description.max'      => 'A descrição deve ter no máximo 191 caracteres.',
         ];
     }
 }

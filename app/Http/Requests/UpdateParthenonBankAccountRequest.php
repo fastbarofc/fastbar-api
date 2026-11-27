@@ -22,8 +22,8 @@ class UpdateParthenonBankAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'bank_name' => 'string|max:255',
-            'account_number' => 'string|max:255',
+            'bank_name' => 'string|max:191',
+            'account_number' => 'string|max:191',
         ];
     }
 }

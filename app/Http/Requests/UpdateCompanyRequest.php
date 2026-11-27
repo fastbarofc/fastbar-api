@@ -16,9 +16,9 @@ class UpdateCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'internal_name' => 'sometimes|string|max:255',
-            'legal_name' => 'sometimes|string|max:255',
-            'trade_name' => 'sometimes|string|max:255',
+            'internal_name' => 'sometimes|string|max:191',
+            'legal_name' => 'sometimes|string|max:191',
+            'trade_name' => 'sometimes|string|max:191',
             'type' => 'sometimes|in:head_office,branch',
         ];
     }
@@ -27,11 +27,11 @@ class UpdateCompanyRequest extends FormRequest
     {
         return [
             'internal_name.string' => 'O campo nome interno deve ser uma string.',
-            'internal_name.max' => 'O campo nome interno deve ter no máximo 255 caracteres.',
+            'internal_name.max' => 'O campo nome interno deve ter no máximo 191 caracteres.',
             'legal_name.string' => 'O campo razão social deve ser uma string.',
-            'legal_name.max' => 'O campo razão social deve ter no máximo 255 caracteres.',
+            'legal_name.max' => 'O campo razão social deve ter no máximo 191 caracteres.',
             'trade_name.string' => 'O campo nome fantasia deve ser uma string.',
-            'trade_name.max' => 'O campo nome fantasia deve ter no máximo 255 caracteres.',
+            'trade_name.max' => 'O campo nome fantasia deve ter no máximo 191 caracteres.',
             'type.in' => 'O campo tipo deve ser "head_office" ou "branch".',
         ];
     }

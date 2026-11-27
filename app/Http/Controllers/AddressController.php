@@ -12,6 +12,12 @@ class AddressController extends Controller
 {
     public function getAddressByCep($cep)
     {
+        $cep = preg_replace('/\D/', '', (string) $cep);
+
+        if (strlen($cep) !== 8) {
+            return response()->json(['error' => 'O CEP deve ter 8 dígitos.'], 422);
+        }
+
         $client = new Client();
         try {
             $response = $client->get("https://viacep.com.br/ws/{$cep}/json/");
@@ -45,8 +51,12 @@ class AddressController extends Controller
                 'state_name' => $state->name ?? '',
                 'state_letter' => $state->letter ?? $data['uf'] ?? '',
             ]);
+        } catch (\GuzzleHttp\Exception\ClientException) {
+            return response()->json(['error' => 'CEP inválido'], 404);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro ao buscar o CEPpppp'], 500);
+            report($e);
+
+            return response()->json(['error' => 'Não foi possível consultar o CEP agora.'], 502);
         }
     }
     

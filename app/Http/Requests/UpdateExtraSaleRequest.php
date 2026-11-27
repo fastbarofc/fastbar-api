@@ -16,19 +16,23 @@ class UpdateExtraSaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'nullable|string|max:255|unique:extra_sales,description,' . $this->route('extra_sale')->id,
+            'description' => 'sometimes|required|string|max:191|unique:extra_sales,description,' . $this->route('extra_sale')->id,
             'unit_id'     => 'nullable|numeric|exists:units,id',
-            'quantity'    => 'nullable|numeric|min:0',
-            'unit_value'  => 'nullable|numeric|min:0',
-            'event_id'    => 'nullable|numeric|exists:events,id',
+            'quantity'    => 'sometimes|required|numeric|min:0|max:2147483647',
+            'unit_value'  => 'sometimes|required|numeric|min:0|max:99999999.99',
+            'event_id'    => 'sometimes|required|numeric|exists:events,id',
         ];
     }
 
     public function messages(): array
     {
         return [
+            'event_id.required' => 'O campo evento é obrigatório.',
+            'unit_value.required' => 'O campo valor unitário é obrigatório.',
+            'quantity.required' => 'O campo quantidade é obrigatório.',
+            'description.required' => 'O campo descrição é obrigatório.',
             'description.string'   => 'O campo descrição deve ser uma string.',
-            'description.max'      => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'      => 'O campo descrição deve ter no máximo 191 caracteres.',
             'description.unique'   => 'Essa descrição já está em uso.',
             'unit_id.numeric'      => 'O campo ID da unidade deve conter apenas números.',
             'unit_id.exists'      => 'O campo ID da unidade deve ser uma unidade válida',

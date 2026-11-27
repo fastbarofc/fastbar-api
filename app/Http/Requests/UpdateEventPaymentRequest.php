@@ -22,7 +22,29 @@ class UpdateEventPaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'event_id' => 'sometimes|required|integer|exists:events,id',
+            'parthenon_bank_account_id' => 'sometimes|required|integer|exists:parthenon_bank_accounts,id',
+            'payment_method_id' => 'sometimes|required|integer|exists:payment_methods,id',
+            'value' => 'sometimes|required|numeric|min:0|max:99999999.99',
+            'date' => 'sometimes|required|date_format:Y-m-d',
+            'comment' => 'nullable|string|max:65535',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'event_id.required' => 'Informe o evento.',
+            'event_id.exists' => 'O evento informado não existe.',
+            'parthenon_bank_account_id.required' => 'Informe a conta bancária.',
+            'parthenon_bank_account_id.exists' => 'A conta bancária informada não existe.',
+            'payment_method_id.required' => 'Informe o método de pagamento.',
+            'payment_method_id.exists' => 'O método de pagamento informado não existe.',
+            'value.required' => 'Informe o valor do pagamento.',
+            'value' => 'O valor do pagamento deve estar entre 0 e 99.999.999,99.',
+            'date.required' => 'Informe a data do pagamento.',
+            'date' => 'A data do pagamento é inválida.',
+            'comment' => 'O comentário é longo demais.',
         ];
     }
 }

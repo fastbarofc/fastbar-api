@@ -29,12 +29,12 @@ class StoreEventPlaceRequest extends FormRequest
     public function rules(): array
     {
         $data = [
-            'name'              => 'required|string|max:255|unique:event_places',
-            'responsible'       => 'required|string|max:255',
-            'description'       => 'nullable|string|max:255',
+            'name'              => 'required|string|max:191|unique:event_places',
+            'responsible'       => 'required|string|max:191',
+            'description'       => 'nullable|string|max:191',
             'phone_1'           => 'nullable|required_without:phone_2|string|min:10|max:20',
             'phone_2'           => 'nullable|required_without:phone_1|string|min:10|max:20',
-            'email'             => 'nullable|email',
+            'email'             => 'nullable|email|max:191',
             'belongs_parthenon' => 'nullable|boolean',
             'quick_registration' => 'nullable|boolean',
         ];
@@ -42,7 +42,7 @@ class StoreEventPlaceRequest extends FormRequest
         $quickRegistration = $this->boolean('quick_registration');
 
         if ($quickRegistration) {
-            $data['responsible'] = 'nullable|string|max:255';
+            $data['responsible'] = 'nullable|string|max:191';
             $data['phone_1'] = 'nullable|string|min:10|max:20';
             $data['phone_2'] = 'nullable|string|min:10|max:20';
         }
@@ -57,13 +57,13 @@ class StoreEventPlaceRequest extends FormRequest
         return [
             'name.required'           => 'O campo nome é obrigatório.',
             'name.string'             => 'O campo nome deve ser uma string.',
-            'name.max'                => 'O campo nome deve ter no máximo 255 caracteres.',
+            'name.max'                => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'             => 'O nome informado já está em uso.',
             'responsible.required'    => 'O campo responsável é obrigatório.',
             'responsible.string'      => 'O campo nomeresponsável deve ser uma string.',
-            'responsible.max'         => 'O campo nomeresponsável deve ter no máximo 255 caracteres.',
+            'responsible.max'         => 'O campo nomeresponsável deve ter no máximo 191 caracteres.',
             'description.string'      => 'O campo descrição deve ser uma string.',
-            'description.max'         => 'O campo descrição deve ter no máximo 255 caracteres.',
+            'description.max'         => 'O campo descrição deve ter no máximo 191 caracteres.',
             'phone_1.required_without' => 'Informe o celular ou o telefone.',
             'phone_2.required_without' => 'Informe o celular ou o telefone.',
             'phone_1.string'          => 'O campo telefone 1 deve ser uma string.',
@@ -82,12 +82,12 @@ class StoreEventPlaceRequest extends FormRequest
         $presence = $required ? 'required' : 'nullable';
 
         $validator = Validator::make($data, [
-            'street'     => [$presence, 'string'],
-            'district'   => [$presence, 'string'],
-            'complement' => ['nullable', 'string'],
+            'street'     => [$presence, 'string', 'max:191'],
+            'district'   => [$presence, 'string', 'max:191'],
+            'complement' => ['nullable', 'string', 'max:191'],
             'city_id'    => [$presence, 'exists:cities,id'],
             'state_id'   => [$presence, 'exists:states,id'],
-            'number'     => [$presence, 'string'],
+            'number'     => [$presence, 'string', 'max:50'],
             'zip_code'   => [$presence, 'regex:/^\d{5}-?\d{3}$/'],
             'reference'  => ['nullable', 'string'],
         ],[

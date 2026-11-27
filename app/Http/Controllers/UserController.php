@@ -78,16 +78,12 @@ class UserController extends Controller
 
     public function syncRoles(SyncRoleUserRequest $request, User $user)
     {
-        $this->authorize('syncRoles', $user);
-        
         $user->syncRoles($request->roles);
         return new UserResource($user);
     }
     
     public function syncPermissions(SyncPermissionUserRequest $request, User $user)
     {
-        $this->authorize('syncPermissions', $user);
-
         $user->syncPermissions($request->permissions);
         return new UserResource($user);
     }
@@ -134,6 +130,16 @@ public function changePassword(Request $request)
     if (!$user) {
         return response()->json(['message' => 'User not found'], 404);
     }
+
+    $request->validate([
+        'current_password' => 'required|string',
+        'new_password' => 'required|string|min:6|max:191',
+    ], [
+        'current_password.required' => 'Informe a senha atual.',
+        'new_password.required' => 'Informe a nova senha.',
+        'new_password.min' => 'A nova senha deve ter pelo menos 6 caracteres.',
+        'new_password.max' => 'A nova senha deve ter no máximo 191 caracteres.',
+    ]);
 
     if (!Hash::check($request->current_password, $user->password)) {
         return response()->json(['message' => 'A senha fornecida está incorreta.'], 422);

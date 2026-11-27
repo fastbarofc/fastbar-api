@@ -22,7 +22,7 @@ class StoreCompetingCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:191',
         ];
     }
 
@@ -31,7 +31,7 @@ class StoreCompetingCompanyRequest extends FormRequest
         return [
             'name.required' => 'O nome da empresa deve ser informado',
             'name.string'   => 'O nome da empresa deve ser uma string',
-            'name.max'      => 'O nome da empresa deve ter no maximo 255 caracteres',
+            'name.max'      => 'O nome da empresa deve ter no maximo 191 caracteres',
         ];
     }
 }
