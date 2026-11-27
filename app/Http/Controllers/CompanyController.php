@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateCompanyRequest;
 use App\Http\Resources\CompanyResource;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class CompanyController extends Controller
 {
@@ -30,7 +31,9 @@ class CompanyController extends Controller
                     $field = array_keys($filter)[0];
                     $value = $filter[$field];
                     $operator = $field == 'internal_name' || $field == 'legal_name' || $field == 'trade_name' ? 'like' : '=';
-                    $query->where($field, $operator, $operator == 'like' ? "%$value%" : $value);
+                    if (Schema::hasColumn('companies', $field)) {
+                        $query->where($field, $operator, $operator == 'like' ? "%$value%" : $value);
+                    }
                 }
             }
         }
@@ -38,7 +41,9 @@ class CompanyController extends Controller
         if ($request->input('order_by')) {
             $sortableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderBy($sortableField, $direction);
+            if (Schema::hasColumn('companies', $sortableField)) {
+                $query->orderBy($sortableField, $direction);
+            }
         }
 
         $companies = $query->paginate($perPage);

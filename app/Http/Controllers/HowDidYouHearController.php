@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Resources\HowDidYouHearResource;
 use App\Http\Requests\UpdateHowDidYouHearRequest;
 use App\Models\HowDidYouHear;
+use Illuminate\Support\Facades\Schema;
 
 class HowDidYouHearController extends Controller
 {
@@ -38,7 +39,9 @@ class HowDidYouHearController extends Controller
         if($request->input('order_by')) {
             $sorteableField = $request->input('order_by');
             $direction = $request->input('direction') == 'desc' ? 'desc' : 'asc';
-            $query->orderBy($sorteableField, $direction);
+            if (Schema::hasColumn('how_did_you_hears', $sorteableField)) {
+                $query->orderBy($sorteableField, $direction);
+            }
         }
 
         $howDidYouHear = $query->paginate($perPage);

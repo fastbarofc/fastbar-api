@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Notifications\UserPassword;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CollaboratorController extends Controller
 {
@@ -90,15 +91,19 @@ class CollaboratorController extends Controller
                         $query->leftJoin('sector_offices', 'sector_offices.id', '=', 'collaborators.sector_office_id');
                         $joins['sector_offices'] = true;
                     }
-                    $query->orderBy("sector_offices.$field", $direction);
+                    if (Schema::hasColumn('sector_offices', $field)) {
+                        $query->orderBy("sector_offices.$field", $direction);
+                    }
                 } elseif ($relation === 'sector') {
                     if (!$joins['sectors']) {
                         $query->leftJoin('sectors', 'sectors.id', '=', 'collaborators.sector_id');
                         $joins['sectors'] = true;
                     }
-                    $query->orderBy("sectors.$field", $direction);
+                    if (Schema::hasColumn('sectors', $field)) {
+                        $query->orderBy("sectors.$field", $direction);
+                    }
                 }
-            } else {
+            } elseif (Schema::hasColumn('collaborators', $sortField)) {
                 $query->orderBy("collaborators.$sortField", $direction);
             }
         }

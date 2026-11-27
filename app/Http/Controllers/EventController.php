@@ -93,6 +93,10 @@ class EventController extends Controller
                     if ($field === 'company_id') {
                         $query->whereHas('companies', fn ($q) => $q->where('companies.id', $value));
                     } elseif (str_contains($field, '.')) {
+                        if (!Event::isFieldFilterable($field)) {
+                            continue;
+                        }
+
                         [$relation, $relationField] = explode('.', $field);
                         $query->whereHas($relation, function ($q) use ($relationField, $value, $operator) {
                             $q->where($relationField, $operator, $operator === 'like' ? "%$value%" : $value);
@@ -118,10 +122,11 @@ class EventController extends Controller
             $sortField = $request->input('order_by');
             $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
 
-            if (str_contains($sortField, '.')) {
+            // Só campos da lista: o nome da relação vira chamada de método no model.
+            if (Event::isFieldSortable($sortField) && str_contains($sortField, '.')) {
                 [$relation, $field] = explode('.', $sortField);
                 $query->orderByRelation($relation, $field, $direction);
-            } else {
+            } elseif (Event::isFieldSortable($sortField)) {
                 $query->orderBy('events.' . $sortField, $direction);
             }
         }
