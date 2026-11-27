@@ -17,7 +17,7 @@ class StoreKitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'kit_id'       => 'nullable|numeric',
+            'kit_id'       => 'nullable|integer|exists:kits,id',
             'name'         => ['required', 'string', 'max:191', Rule::unique('kits', 'name')->whereNull('deleted_at')->where('kit_id', $this->kit_id)],
             'themed_table' => 'nullable|boolean',
             'optional'     => 'nullable|boolean',
@@ -29,7 +29,8 @@ class StoreKitRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'kit_id.numeric'        => 'O campo ID do kit deve conter apenas números.',
+            'kit_id.exists' => 'O kit informado não existe.',
+            'kit_id.integer'        => 'O campo ID do kit deve conter apenas números.',
             'name.required'         => 'O campo nome é obrigatório.',
             'name.string'           => 'O campo nome deve ser um texto.',
             'name.max'              => 'O campo nome deve ter no máximo 191 caracteres.',

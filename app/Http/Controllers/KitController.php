@@ -10,6 +10,7 @@ use App\Models\Kit;
 use App\Models\Product;
 use App\Services\DrinkTreeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class KitController extends Controller
 {
@@ -104,11 +105,16 @@ class KitController extends Controller
 
     public function changeOrdination($movingItem, Request $request)
     {
+        return DB::transaction(fn () => $this->reorder($movingItem, $request));
+    }
+
+    private function reorder($movingItem, Request $request)
+    {
         if ($request->type == 'product' || $request->moving_type == 'product') {
             return $this->changeProductOrdination($movingItem, $request);
         }
 
-        $movingKit = Kit::find($movingItem);
+        $movingKit = Kit::findOrFail($movingItem);
 
         $destinationKit = Kit::find($request->id);
 
@@ -145,7 +151,7 @@ class KitController extends Controller
             if ($request->id != $request->moving_parent_kit_id) {
                 return response()->json(['message' => 'Você só pode reordenar produtos dentro do mesmo kit.'], 422);
             }
-            $parentKit = Kit::find($request->moving_parent_kit_id);
+            $parentKit = Kit::findOrFail($request->moving_parent_kit_id);
             $this->shiftProductToFirstOrdination($parentKit, $movingItem);
             return response()->json(['message' => 'Alterado com sucesso.'], 200);
         }
@@ -158,8 +164,16 @@ class KitController extends Controller
 
         $parentKit = Kit::find($request->moving_parent_kit_id);
 
+        if (!$parentKit) {
+            return response()->json(['message' => 'O kit de origem não existe.'], 422);
+        }
+
         $destinationProduct = $parentKit->products()->wherePivot('product_id', $request->id)->first();
         $movingProduct = $parentKit->products()->wherePivot('product_id', $movingItem)->first();
+
+        if (!$destinationProduct || !$movingProduct) {
+            return response()->json(['message' => 'Você só pode reordenar produtos dentro do mesmo kit.'], 422);
+        }
 
         if ($parentKit->id != $request->kit_id) {
             return response()->json(['message' => 'Você só pode reordenar produtos dentro do mesmo kit.'], 422);
@@ -357,22 +371,26 @@ class KitController extends Controller
 
     public function updateProductKit(Request $request)
     {
-        $data = $request->all();
-        unset($data['name']);
-        unset($data['type']);
-        $product = Product::find($data['id']);
+        $request->validate([
+            'id' => 'required|integer|exists:products,id',
+            'kit_id' => 'required|integer|exists:kits,id',
+            'value' => 'nullable|numeric|min:0|max:999999.99',
+            'ordination' => 'nullable|integer|min:0|max:2147483647',
+            'optional' => 'sometimes|required|boolean',
+            'checklist' => 'sometimes|required|boolean',
+            'observation' => 'nullable|string|max:65535',
+        ], [
+            'id.*' => 'O produto informado não existe.',
+            'kit_id.*' => 'O kit informado não existe.',
+            'value.*' => 'O valor deve estar entre 0 e 999.999,99.',
+            '*.boolean' => 'Os campos opcional e checklist devem ser verdadeiro ou falso.',
+        ]);
 
-        if (!$product) {
-            return response()->json(['message' => 'Produto não encontrado'], 404);
-        }
+        Product::findOrFail($request->id)->kits()->updateExistingPivot(
+            $request->kit_id,
+            $request->only(['value', 'ordination', 'optional', 'checklist', 'observation'])
+        );
 
-        if (!isset($data['kit_id'])) {
-            return response()->json(['message' => 'Kit ID é obrigatório'], 400);
-        }
-
-        unset($data['id']);
-        unset($data['themed_table']);
-        $product->kits()->updateExistingPivot($data['kit_id'], $data);
         return response()->json(['message' => 'Alterado com sucesso.'], 200);
     }
 }

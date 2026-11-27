@@ -178,34 +178,52 @@ class ProductController extends Controller
         }
     }
 
+    private const MOVE_MESSAGES = [
+        '*.exists' => 'O kit, a pasta ou o produto informado não existe.',
+        '*.id.exists' => 'O kit, a pasta ou o produto informado não existe.',
+        '*.required' => 'Informe o kit, a pasta e o produto.',
+        '*.id.required' => 'Informe o kit, a pasta e o produto.',
+    ];
+
     public function moveToKit(Request $request)
     {
-        $newKit = Kit::find($request->new_kit['id']);
-        $oldKit = Kit::find($request->old_kit['id']);
-        $product = Product::find($request->product['id']);
+        $request->validate([
+            'new_kit.id' => 'required|integer|exists:kits,id',
+            'old_kit.id' => 'required|integer|exists:kits,id',
+            'product.id' => 'required|integer|exists:products,id',
+        ], self::MOVE_MESSAGES);
 
-        $ordination = $this->getProductOrdination($newKit->id);
-        $newKit->products()->attach($product->id, [
-            'ordination' => $ordination
-        ]);
-        $oldKit->products()->detach($product->id);
+        $newKit = Kit::findOrFail($request->input('new_kit.id'));
+        $oldKit = Kit::findOrFail($request->input('old_kit.id'));
+        $product = Product::findOrFail($request->input('product.id'));
+
+        DB::transaction(function () use ($newKit, $oldKit, $product) {
+            $newKit->products()->attach($product->id, ['ordination' => $this->getProductOrdination($newKit)]);
+            $oldKit->products()->detach($product->id);
+        });
 
         return response()->json([], 201);
     }
 
     public function moveToEventKit(Request $request)
     {
-        $newEventKit = EventKit::find($request->new_event_kit['id']);
-        $oldEventKit = EventKit::find($request->old_event_kit['id']);
-        $product = Product::find($request->product['id']);
+        $request->validate([
+            'new_event_kit.id' => 'required|integer|exists:event_kits,id',
+            'old_event_kit.id' => 'required|integer|exists:event_kits,id',
+            'product.id' => 'required|integer|exists:products,id',
+        ], self::MOVE_MESSAGES);
 
-        $this->drinkMenuHistory->record($oldEventKit->event_id, function () use ($newEventKit, $oldEventKit, $product) {
+        $newEventKit = EventKit::findOrFail($request->input('new_event_kit.id'));
+        $oldEventKit = EventKit::findOrFail($request->input('old_event_kit.id'));
+        $product = Product::findOrFail($request->input('product.id'));
+
+        DB::transaction(fn () => $this->drinkMenuHistory->record($oldEventKit->event_id, function () use ($newEventKit, $oldEventKit, $product) {
             $ordination = $this->getProductOrdination($newEventKit);
             $newEventKit->products()->attach($product->id, [
                 'ordination' => $ordination
             ]);
             $oldEventKit->products()->detach($product->id);
-        });
+        }));
     }
 
     private function getProductOrdination(EventKit | Kit $kit)
@@ -217,7 +235,12 @@ class ProductController extends Controller
 
     public function attachToEventKit(Request $request)
     {
-        $eventKit = EventKit::find($request->event_kit_id);
+        $request->validate([
+            'event_kit_id' => 'required|integer|exists:event_kits,id',
+            'product_id' => 'required|integer|exists:products,id',
+        ], self::MOVE_MESSAGES);
+
+        $eventKit = EventKit::findOrFail($request->event_kit_id);
 
         $hasProduct = $eventKit->products()->where('product_id', $request->product_id)->exists();
 
@@ -234,7 +257,12 @@ class ProductController extends Controller
 
     public function attachToKit(Request $request)
     {
-        $kit = Kit::find($request->kit_id);
+        $request->validate([
+            'kit_id' => 'required|integer|exists:kits,id',
+            'product_id' => 'required|integer|exists:products,id',
+        ], self::MOVE_MESSAGES);
+
+        $kit = Kit::findOrFail($request->kit_id);
 
         $hasProduct = $kit->products()->where('product_id', $request->product_id)->exists();
 
@@ -257,7 +285,12 @@ class ProductController extends Controller
 
     public function detachFromEventKit(Request $request)
     {
-        $eventKit = EventKit::find($request->event_kit_id);
+        $request->validate([
+            'event_kit_id' => 'required|integer|exists:event_kits,id',
+            'product_id' => 'required|integer|exists:products,id',
+        ], self::MOVE_MESSAGES);
+
+        $eventKit = EventKit::findOrFail($request->event_kit_id);
         $this->drinkMenuHistory->record(
             $eventKit->event_id,
             fn () => $eventKit->products()->detach($request->product_id),
@@ -266,7 +299,12 @@ class ProductController extends Controller
 
     public function detachFromKit(Request $request)
     {
-        $kit = Kit::find($request->kit_id);
+        $request->validate([
+            'kit_id' => 'required|integer|exists:kits,id',
+            'product_id' => 'required|integer|exists:products,id',
+        ], self::MOVE_MESSAGES);
+
+        $kit = Kit::findOrFail($request->kit_id);
         $kit->products()->detach($request->product_id);
     }
 

@@ -14,6 +14,7 @@ use App\Services\DrinkTreeService;
 use App\Services\EventDrinkMenuHistoryService;
 use App\Services\EventDrinkMenuService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EventKitController extends Controller
 {
@@ -105,7 +106,7 @@ class EventKitController extends Controller
 
     public function store(StoreEventKitRequest $request)
     {
-        return $this->drinkMenuHistory->record($request->input('event_id'), fn () => $this->addToMenu($request));
+        return DB::transaction(fn () => $this->drinkMenuHistory->record($request->integer('event_id'), fn () => $this->addToMenu($request)));
     }
 
     private function addToMenu(StoreEventKitRequest $request)
@@ -146,11 +147,16 @@ class EventKitController extends Controller
 
     public function changeOrdination($movingItem, Request $request)
     {
+        return DB::transaction(fn () => $this->reorder($movingItem, $request));
+    }
+
+    private function reorder($movingItem, Request $request)
+    {
         if ($request->type == 'product' || $request->moving_type == 'product') {
             return $this->changeProductOrdination($movingItem, $request);
         }
 
-        $movingEventKit = EventKit::find($movingItem);
+        $movingEventKit = EventKit::findOrFail($movingItem);
         $destinationKit = EventKit::find($request->id);
 
         if (empty($destinationKit->id)) {
@@ -186,7 +192,7 @@ class EventKitController extends Controller
             if ($request->id != $request->moving_parent_event_kit_id) {
                 return response()->json(['message' => 'Você só pode reordenar produtos dentro do mesmo kit.'], 422);
             }
-            $parentKit = EventKit::find($request->moving_parent_event_kit_id);
+            $parentKit = EventKit::findOrFail($request->moving_parent_event_kit_id);
             $this->shiftProductToFirstOrdination($parentKit, $movingItem);
             return response()->json(['message' => 'Alterado com sucesso.'], 200);
         }
@@ -199,8 +205,16 @@ class EventKitController extends Controller
 
         $parentKit = EventKit::find($request->moving_parent_event_kit_id);
 
+        if (!$parentKit) {
+            return response()->json(['message' => 'O kit de origem não existe.'], 422);
+        }
+
         $destinationProduct = $parentKit->products()->wherePivot('product_id', $request->id)->first();
         $movingProduct = $parentKit->products()->wherePivot('product_id', $movingItem)->first();
+
+        if (!$destinationProduct || !$movingProduct) {
+            return response()->json(['message' => 'Você só pode reordenar produtos dentro do mesmo kit.'], 422);
+        }
 
         if ($parentKit->id != $request->event_kit_id) {
             return response()->json(['message' => 'Você só pode reordenar produtos dentro do mesmo kit.'], 422);
@@ -373,16 +387,32 @@ class EventKitController extends Controller
 
     public function updateProductEventKit(Request $request)
     {
-        $data = $request->all();
-        unset($data['name']);
-        unset($data['type']);
-        $product = Product::find($data['id']);
-        unset($data['id']);
-        unset($data['themed_table']);
+        $request->validate([
+            'id' => 'required|integer|exists:products,id',
+            'event_kit_id' => 'required|integer|exists:event_kits,id',
+            'value' => 'nullable|numeric|min:0|max:999999.99',
+            'ordination' => 'nullable|integer|min:0|max:2147483647',
+            'optional' => 'nullable|boolean',
+            'checklist' => 'sometimes|required|boolean',
+            'quantity' => 'nullable|integer|min:0|max:2147483647',
+            'unit' => 'nullable|string|max:191',
+            'comments' => 'nullable|string',
+            'observation' => 'nullable|string|max:65535',
+        ], [
+            'id.*' => 'O produto informado não existe.',
+            'event_kit_id.*' => 'A pasta informada não existe.',
+            'value.*' => 'O valor deve estar entre 0 e 999.999,99.',
+            '*.boolean' => 'Os campos opcional e checklist devem ser verdadeiro ou falso.',
+        ]);
+
+        $product = Product::findOrFail($request->id);
+        $pivot = $request->only(['value', 'ordination', 'optional', 'checklist', 'quantity', 'unit', 'comments', 'observation']);
+
         $this->drinkMenuHistory->record(
-            EventKit::find($data['event_kit_id'])?->event_id,
-            fn () => $product->eventKits()->updateExistingPivot($data['event_kit_id'], $data),
+            EventKit::find($request->event_kit_id)->event_id,
+            fn () => $product->eventKits()->updateExistingPivot($request->event_kit_id, $pivot),
         );
+
         return response()->json(['message' => 'Alterado com sucesso.'], 200);
     }
 

@@ -101,7 +101,6 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::resource('permissions', PermissionController::class)->only(['index', 'show']);
 
     Route::resource('sectors', SectorController::class);
-    Route::get('sectors/{sector}/offices', [SectorController::class, 'offices'])->name('sectors.offices');
 
     Route::resource('sector-offices', SectorOfficeController::class);
 
@@ -149,7 +148,6 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('events/{event}/materials', [EventController::class, 'materials'])->name('events.materials');
     Route::get('events/{event}/extra-sales', [EventController::class, 'extraSales'])->name('events.extra-sales');
     Route::put('events/{event}/extra-sales', [EventController::class, 'updateExtraSales'])->name('events.update-extra-sales');
-    Route::put('events/{event}/installments', [EventController::class, 'updateInstallments'])->name('events.update-installments');
     Route::get('events/{event}/event-kits', [EventController::class, 'eventKits'])->name('events.event-kits');
     Route::get('events/{event}/contracts', [EventController::class, 'resetContract'])->name('events.reset-contract');
     Route::get('events/{event}/office-events', [EventController::class, 'officeEvents'])->name('events.office-events');
@@ -188,7 +186,6 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::resource('contracts', ContractController::class);
 
-    Route::post('contracts/generate/{event}', [ContractController::class, 'storeGenerate'])->name('contracts.generate-pdf');
 
     Route::post('contracts/{contract}/to-sign', [ContractController::class, 'toSign'])->name('contracts.to-sign');
 
@@ -219,7 +216,6 @@ Route::group(['middleware' => ['auth:api']], function () {
 
     Route::get('product-get-photos/{product}/', [ProductController::class, 'getFilePath'])->name('products.get-photo');
 
-    Route::get('collaborator-get-photos/{collaborator}/', [CollaboratorController::class, 'getFilePath'])->name('collaborators.get-photo');
 
     Route::resource('failures', FailureController::class);
     Route::get('events/{event}/failures', [EventController::class, 'getEventFailures']);
@@ -237,7 +233,6 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/events/{event}/proposal-data', [EventController::class, 'proposalData']);
     Route::get('/events/{event}/proposal-history', [EventController::class, 'proposalHistory']);
     Route::post('/events/generate-proposal/{event}', [EventController::class, 'generateProposal']);
-    Route::post('/events/generate-letterhead-budget/{event}', [EventController::class, 'generateLetterheadBudget']);
     Route::get('/events/{event}/contract-data', [EventController::class, 'contractData']);
     Route::get('/events/{event}/contract-history', [EventController::class, 'contractHistory']);
     Route::post('/events/generate-event-contract/{event}', [EventController::class, 'generateEventContract']);

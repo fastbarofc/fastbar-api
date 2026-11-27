@@ -17,7 +17,7 @@ class UpdateKitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'kit_id'          => 'nullable|numeric',
+            'kit_id'          => 'nullable|integer|exists:kits,id',
             'name'         => ['sometimes', 'required', 'string', 'max:191', Rule::unique('kits', 'name')->ignore($this->route('kit')->id)->whereNull('deleted_at')->where('kit_id', $this->kit_id)],
             'themed_table' => 'sometimes|required|boolean',
             'optional'     => 'sometimes|required|boolean',
@@ -33,7 +33,8 @@ class UpdateKitRequest extends FormRequest
             'optional.required' => 'O campo opcional é obrigatório.',
             'themed_table.required' => 'O campo mesa temática é obrigatório.',
             'name.required' => 'O campo nome é obrigatório.',
-            'kit_id.numeric'         => 'O campo ID do kit deve conter apenas números.',
+            'kit_id.exists' => 'O kit informado não existe.',
+            'kit_id.integer'         => 'O campo ID do kit deve conter apenas números.',
             'name.string'           => 'O campo nome deve ser um texto.',
             'name.max'              => 'O campo nome deve ter no máximo 191 caracteres.',
             'name.unique'           => 'O nome informado já está em uso.',
