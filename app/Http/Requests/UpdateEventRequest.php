@@ -8,6 +8,7 @@ use App\Models\EventStatus;
 use App\Models\EventType;
 use App\Models\Material;
 use App\Rules\DateNotBlocked;
+use App\Traits\ValidatesEventPayload;
 use App\Traits\ValidatesEventPlaceConflicts;
 use App\Traits\ValidatesEventRegistrations;
 use App\Traits\ValidatesEventStatusReason;
@@ -18,7 +19,7 @@ use Illuminate\Validation\Validator;
 
 class UpdateEventRequest extends FormRequest
 {
-    use ValidatesEventPlaceConflicts, ValidatesEventRegistrations, ValidatesEventStatusReason;
+    use ValidatesEventPayload, ValidatesEventPlaceConflicts, ValidatesEventRegistrations, ValidatesEventStatusReason;
 
     protected $stopOnFirstFailure = true;
 
@@ -29,7 +30,7 @@ class UpdateEventRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        return array_merge([
             'name'               => 'nullable|string|max:191',
             'event_type_id'      => 'nullable|exists:event_types,id',
             'event_place_id'     => 'nullable|exists:event_places,id',
@@ -68,12 +69,12 @@ class UpdateEventRequest extends FormRequest
             'status_reason' => 'nullable|string|max:1000',
             'company_ids' => 'sometimes|array',
             'company_ids.*' => 'sometimes|exists:companies,id',
-        ];
+        ], $this->eventPayloadRules());
     }
 
     public function messages(): array
     {
-        return [
+        return array_merge($this->eventPayloadMessages(), [
             'name.string' => 'O campo nome deve ser uma string',
             'name.max' => 'O campo nome deve ter no máximo 191 caracteres.',
             'event_type_id.exists' => 'O campo tipo de evento deve ser um tipo válido.',
@@ -113,12 +114,17 @@ class UpdateEventRequest extends FormRequest
             'cup_type.in' => 'O tipo de copo selecionado é inválido',
             'is_medicine.boolean' => 'O campo é medicina deve ser um valor booleano',
             'status_reason.max' => 'O motivo deve ter no máximo 1000 caracteres.',
-        ];
+        ]);
     }
 
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
+            // As checagens abaixo leem os campos crus e quebram (500) com valor já reprovado nas regras.
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
             if ($this->requiresFinancialValidation()) {
                 $this->validateFinancialFields($validator);
             }

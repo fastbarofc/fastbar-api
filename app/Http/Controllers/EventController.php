@@ -238,96 +238,97 @@ class EventController extends Controller
         $data['contract_sections'] = ContractTemplate::current()->sectionsWith($data['contract_sections'] ?? []);
         $data['is_medicine'] = $data['is_medicine'] ?? false;
 
-        $event = Event::create($data);
+        DB::beginTransaction();
+
+        try {
+            $event = Event::create($data);
 
 
-        if ($request->is_draft) {
-            return response()->json(new EventResource($event), 201);
-        }
-        if (!empty($data['event_batches'])) {
-            foreach ($data['event_batches'] as $eventBatch) {
-                $eventBatch['event_id'] = $event->id;
-                EventBatch::create($eventBatch);
+            if ($request->is_draft) {
+                DB::commit();
+
+                return response()->json(new EventResource($event), 201);
             }
-        }
-
-        if (!empty($data['materials'])) {
-            $materialsArray = collect($data['materials'])->mapWithKeys(function ($material) {
-                return [
-                    $material['id'] => [
-                        'selected' => $material['selected'] === '-1' ? null : $material['selected'],
-                        'quantity' => !empty($material['quantity']) ? $material['quantity'] : 0
-                    ]
-                ];
-            })->toArray();
-            $event->materials()->sync($materialsArray);
-        }
-
-        if (!empty($data['utensils'])) {
-            $event->utensils()->sync($data['utensils']);
-        }
-
-        if (!empty($data['office_events'])) {
-            $officeArray = collect($data['office_events'])->mapWithKeys(function ($office) {
-                return [
-                    $office['id'] => [
-                        'quantity' => !empty($office['quantity']) ? $office['quantity'] : 0
-                    ]
-                ];
-            })->toArray();
-            $event->officeEvents()->sync($officeArray);
-        }
-
-        if (!empty($data['extra_sales'])) {
-            foreach ($data['extra_sales'] as $extraSale) {
-                $extraSalesIds = collect($data['extra_sales'])->pluck('id')->toArray();
-                $saleToDelete = $event->extraSales->whereNotIn('id', $extraSalesIds);
-                foreach ($saleToDelete as $sale) {
-                    $sale->delete();
+            if (!empty($data['event_batches'])) {
+                foreach ($data['event_batches'] as $eventBatch) {
+                    if (!isset($eventBatch['guests'])) {
+                        continue;
+                    }
+                    unset($eventBatch['id']);
+                    $eventBatch['event_id'] = $event->id;
+                    EventBatch::create($eventBatch);
                 }
-                $extraSaleModel = ExtraSale::find($extraSale['id']);
-                if ($extraSaleModel) {
-                    $extraSaleModel->update($extraSale);
-                    continue;
-                }
-                $extraSale['event_id'] = $event->id;
-                ExtraSale::create($extraSale);
             }
-        }
 
-        if (!empty($data['event_notes'])) {
-            foreach ($data['event_notes'] as $eventNote) {
-                $eventNotesIds = collect($data['event_notes'])->pluck('id')->toArray();
-                $eventNotesToDelete = $event->eventNotes->whereNotIn('id', $eventNotesIds);
-                foreach ($eventNotesToDelete as $eventNote) {
-                    $eventNote->delete();
-                }
-                $eventNoteModel = EventNote::find($eventNote['id']);
-                if ($eventNoteModel) {
-                    $eventNoteModel->update($eventNote);
-                    continue;
-                }
-                $eventNote['event_id'] = $event->id;
-                $eventNote['collaborator_id'] = auth()->user()->collaborator->id;
-                EventNote::create($eventNote);
+            if (!empty($data['materials'])) {
+                $materialsArray = collect($data['materials'])->mapWithKeys(function ($material) {
+                    return [
+                        $material['id'] => [
+                            'selected' => $material['selected'] === '-1' ? null : $material['selected'],
+                            'quantity' => !empty($material['quantity']) ? $material['quantity'] : 0
+                        ]
+                    ];
+                })->toArray();
+                $event->materials()->sync($materialsArray);
             }
-        }
 
-        if (!empty($data['office_budgets'])) {
-            $event->officeBudgets()->sync($data['office_budgets']);
-        }
+            if (!empty($data['utensils'])) {
+                $event->utensils()->sync($data['utensils']);
+            }
+
+            if (!empty($data['office_events'])) {
+                $officeArray = collect($data['office_events'])->mapWithKeys(function ($office) {
+                    return [
+                        $office['id'] => [
+                            'quantity' => !empty($office['quantity']) ? $office['quantity'] : 0
+                        ]
+                    ];
+                })->toArray();
+                $event->officeEvents()->sync($officeArray);
+            }
+
+            if (!empty($data['extra_sales'])) {
+                foreach ($data['extra_sales'] as $extraSale) {
+                    $extraSalesIds = collect($data['extra_sales'])->pluck('id')->toArray();
+                    $saleToDelete = $event->extraSales->whereNotIn('id', $extraSalesIds);
+                    foreach ($saleToDelete as $sale) {
+                        $sale->delete();
+                    }
+                    $extraSaleModel = $event->extraSales()->find($extraSale['id'] ?? null);
+                    if ($extraSaleModel) {
+                        $extraSaleModel->update($extraSale);
+                        continue;
+                    }
+                    $extraSale['event_id'] = $event->id;
+                    ExtraSale::create($extraSale);
+                }
+            }
+
+            if (!empty($data['event_notes'])) {
+                $this->syncEventNotes($event, $data['event_notes']);
+            }
+
+            if (!empty($data['office_budgets'])) {
+                $event->officeBudgets()->sync($data['office_budgets']);
+            }
 
 
-        EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
+            EventStatusHistory::create(['event_id' => $event->id, 'event_status_id' => $event->event_status_id, 'collaborator_id' => auth()->user()->collaborator->id]);
 
-        if (!empty($companyIds)) {
-            $event->companies()->sync($companyIds);
-        }
+            if (!empty($companyIds)) {
+                $event->companies()->sync($companyIds);
+            }
 
-        $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
+            $this->handleConsumptionReport($event, $consumptionReport, $consumptionReportFileName, $consumptionReportRemove);
 
-        if (!$request->is_draft) {
-            $this->historyService->logEventCreation($event);
+            if (!$request->is_draft) {
+                $this->historyService->logEventCreation($event);
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
 
         $event->load(['companies', 'eventStatus']);
@@ -463,10 +464,12 @@ class EventController extends Controller
 
                 foreach ($filteredBatches as $batch) {
                     $batch['event_id'] = $event->id;
-                    if (!empty($batch['id'])) {
-                        EventBatch::find($batch['id'])->update($batch);
+                    $existingBatch = !empty($batch['id']) ? $event->eventBatches()->find($batch['id']) : null;
+                    if ($existingBatch) {
+                        $existingBatch->update($batch);
                         continue;
                     }
+                    unset($batch['id']);
                     EventBatch::create($batch);
                 }
             }
@@ -536,7 +539,7 @@ class EventController extends Controller
                     foreach ($saleToDelete as $sale) {
                         $sale->delete();
                     }
-                    $extraSaleModel = ExtraSale::find($extraSale['id']);
+                    $extraSaleModel = $event->extraSales()->find($extraSale['id'] ?? null);
                     if ($extraSaleModel) {
                         $extraSaleModel->update($extraSale);
                         continue;
@@ -547,21 +550,7 @@ class EventController extends Controller
             }
 
             if (!empty($data['event_notes'])) {
-                foreach ($data['event_notes'] as $eventNote) {
-                    $eventNotesIds = collect($data['event_notes'])->pluck('id')->toArray();
-                    $eventNotesToDelete = $event->eventNotes->whereNotIn('id', $eventNotesIds);
-                    foreach ($eventNotesToDelete as $eventNote) {
-                        $eventNote->delete();
-                    }
-                    $eventNoteModel = EventNote::find($eventNote['id']);
-                    if ($eventNoteModel) {
-                        $eventNoteModel->update($eventNote);
-                        continue;
-                    }
-                    $eventNote['event_id'] = $event->id;
-                    $eventNote['collaborator_id'] = auth()->user()->collaborator->id;
-                    EventNote::create($eventNote);
-                }
+                $this->syncEventNotes($event, $data['event_notes']);
             }
 
             if (!empty($data['related_tasting_events'])) {
@@ -1466,6 +1455,24 @@ class EventController extends Controller
         }
     }
 
+    private function syncEventNotes(Event $event, array $notes): void
+    {
+        $keptIds = collect($notes)->pluck('id')->filter()->all();
+        $event->eventNotes()->whereNotIn('id', $keptIds)->get()->each->delete();
+
+        foreach ($notes as $note) {
+            $attributes = ['text' => $note['text'], 'checklist' => (bool) ($note['checklist'] ?? false)];
+            $existing = !empty($note['id']) ? $event->eventNotes()->find($note['id']) : null;
+
+            if ($existing) {
+                $existing->update($attributes);
+                continue;
+            }
+
+            $event->eventNotes()->create($attributes + ['user_id' => auth()->id()]);
+        }
+    }
+
     private function generateReceivables(Event $event, PaymentPlan $plan)
     {
         $today = now();
@@ -1499,7 +1506,8 @@ class EventController extends Controller
                 $dueYear += 1;
             }
 
-            $dueDate = \Carbon\Carbon::create($dueYear, $dueMonth, $plan->due_day);
+            $firstOfMonth = \Carbon\Carbon::create($dueYear, $dueMonth, 1);
+            $dueDate = $firstOfMonth->day(min($plan->due_day, $firstOfMonth->daysInMonth));
 
             $plan->installments()->create([
                 'installment_number' => $i,
@@ -1582,7 +1590,7 @@ class EventController extends Controller
                     $noteData = [
                         'event_id' => $newEvent->id,
                         'text' => $note->text,
-                        'user_id' => auth()->user()->collaborator->id,
+                        'user_id' => auth()->id(),
                         'created_at' => now(),
                         'updated_at' => now()
                     ];
@@ -1679,11 +1687,9 @@ class EventController extends Controller
             ])), 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'Erro ao duplicar evento',
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ], 500);
+            report($e);
+
+            return response()->json(['message' => 'Erro ao duplicar evento'], 500);
         }
     }
 
@@ -1999,7 +2005,7 @@ class EventController extends Controller
 
     private function ensureCompletePaymentPlan(array $paymentPlanData): void
     {
-        $requiredFields = ['num_installments', 'payment_method_id', 'due_day'];
+        $requiredFields = ['total_amount', 'num_installments', 'installment_amount', 'payment_method_id', 'due_day'];
 
         $hasRequired = collect($requiredFields)->every(function ($field) use ($paymentPlanData) {
             $value = $paymentPlanData[$field] ?? null;
